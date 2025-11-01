@@ -1,0 +1,67 @@
+# Laravel
+*.log
+.env
+.env.backup
+.env.production
+.env.*.local
+/.phpunit.cache
+/phpunit.xml.bak
+/bootstrap/cache/*
+!bootstrap/cache/.gitignore
+
+# Dependencies
+/vendor
+/node_modules
+/package-lock.json
+/yarn.lock
+
+# Build assets
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/storage/logs/*
+!storage/logs/.gitignore
+/storage/framework/cache/*
+!storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!storage/framework/views/.gitignore
+/storage/framework/testing/*
+!storage/framework/testing/.gitignore
+
+# IDE
+/.fleet
+/.idea
+/.nova
+/.phpactor.json
+/.vscode
+/.zed
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Laravel specific
+Homestead.json
+Homestead.yaml
+/auth.json
+
+# Filament
+/public/filament-assets
+
+# Testing
+.phpunit.result.cache
+coverage/
+/.phpunit.cache
