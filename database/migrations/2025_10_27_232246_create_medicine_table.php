@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('medicines')) {
+            return; // Table already exists
+        }
+
         Schema::create('medicines', function (Blueprint $table) {
             $table->id();
             $table->string('api_id')->nullable()->index();
@@ -66,7 +70,7 @@ return new class extends Migration
             $table->string('search_term')->nullable();
             $table->integer('batch_number')->nullable();
             $table->timestamps();
-            
+
             // $table->index('api_id');
         });
     }

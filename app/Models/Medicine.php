@@ -91,6 +91,10 @@ class Medicine extends Model
         'repeated' => 'boolean',
         'reported' => 'boolean',
     ];
+    public function requestLines()
+    {
+        return $this->hasMany(ClientRequestLine::class, 'medicine_id');
+    }
 }
 
 
