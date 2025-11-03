@@ -41,7 +41,7 @@ class ClientRequest extends Model
     {
         return $this->hasMany(ClientRequestLine::class);
     }
-    
+
 }
 
 

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Cities;
 use App\Filament\Resources\Cities\Pages\CreateCity;
 use App\Filament\Resources\Cities\Pages\EditCity;
 use App\Filament\Resources\Cities\Pages\ListCities;
+use App\Filament\Resources\Cities\RelationManagers\AreasRelationManager\AreasRelationManager;
 use App\Filament\Resources\Cities\Schemas\CityForm;
 use App\Filament\Resources\Cities\Tables\CitiesTable;
 use App\Models\City;
@@ -14,14 +15,15 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
+
 class CityResource extends Resource
 {
     protected static ?string $model = City::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice;
-    
+
     protected static ?string $navigationLabel = 'Cities';
-    
+
     protected static ?int $navigationSort = 5;
 
     protected static ?string $recordTitleAttribute = 'name';
@@ -39,7 +41,7 @@ class CityResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            AreasRelationManager::class,
         ];
     }
 

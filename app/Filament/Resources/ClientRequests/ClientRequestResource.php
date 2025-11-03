@@ -2,11 +2,11 @@
 
 namespace App\Filament\Resources\ClientRequests;
 
+use App\Filament\Resources\Cities\RelationManagers\AreasRelationManager\AreasRelationManager;
 use App\Filament\Resources\ClientRequests\Pages\CreateClientRequest;
 use App\Filament\Resources\ClientRequests\Pages\EditClientRequest;
 use App\Filament\Resources\ClientRequests\Pages\ListClientRequests;
 use App\Filament\Resources\ClientRequests\Pages\ViewClientRequest;
-use App\Filament\Resources\ClientRequests\RelationManagers\RequestLinesRelationManager;
 use App\Filament\Resources\ClientRequests\Schemas\ClientRequestForm;
 use App\Filament\Resources\ClientRequests\Schemas\ClientRequestInfolist;
 use App\Filament\Resources\ClientRequests\Tables\ClientRequestsTable;
@@ -43,7 +43,7 @@ class ClientRequestResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RequestLinesRelationManager::class,
+            AreasRelationManager::class,
         ];
     }
 
