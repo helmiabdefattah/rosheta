@@ -10,8 +10,9 @@ return new class extends Migration
     {
         Schema::create('offers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('client_request_id')->constrained('client_requests')->cascadeOnDelete();
-            $table->foreignId('pharmacy_agent_id')->constrained('pharmacy_agents')->cascadeOnDelete();
+            $table->foreignId('client_request_id')->constrained('client_requests');
+            $table->foreignId('pharmacy_id')->constrained('pharmacies');
+            $table->foreignId('user_id')->constrained('users');
             $table->string('status')->default('draft'); // draft, submitted, accepted, cancelled
             $table->decimal('total_price', 10, 2)->nullable();
             $table->timestamps();

@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('offer_lines', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('offer_id')->constrained('offers')->cascadeOnDelete();
-            $table->foreignId('medicine_id')->constrained('medicines')->restrictOnDelete();
+            $table->foreignId('offer_id')->constrained('offers');
+            $table->foreignId('medicine_id')->constrained('medicines');
             $table->unsignedInteger('quantity');
             $table->string('unit');
             $table->decimal('price', 10, 2)->nullable(); // agent must fill

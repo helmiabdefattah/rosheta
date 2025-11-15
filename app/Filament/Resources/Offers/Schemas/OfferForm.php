@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Offers\Schemas;
 
 use App\Models\ClientRequest;
-use App\Models\PharmacyAgent;
+use App\Models\Pharmacy;
 use App\Models\Medicine;
 use Filament\Forms;
 use Filament\Forms\Components\ViewField;
@@ -52,9 +52,9 @@ class OfferForm
                             $set('total_price', number_format($total, 2, '.', ''));
                         }),
 
-                    Forms\Components\Select::make('pharmacy_agent_id')
-                        ->label('Agent')
-                        ->options(fn() => PharmacyAgent::pluck('name', 'id'))
+                    Forms\Components\Select::make('pharmacy_id')
+                        ->label('Pharmacy')
+                        ->options(fn() => Pharmacy::pluck('name', 'id'))
                         ->searchable()
                         ->required(),
 
@@ -89,7 +89,45 @@ class OfferForm
                         ]),
                 ]),
 
-            // ✅ Section 3 - Offer Lines (full-width)
+            // ✅ Section 3 - Client Request Lines (full-width)
+            Section::make('Client Request Lines')
+                ->columnSpanFull()
+                ->schema([
+                    ViewField::make('request_lines_list')
+                        ->columnSpanFull()
+                        ->view('filament.offers.request-lines')
+                        ->reactive()
+                        ->viewData(function (Get $get) {
+                            $requestId = $get('client_request_id');
+                            if (!$requestId) {
+                                return ['requestLines' => []];
+                            }
+
+                            $request = ClientRequest::with('lines.medicine')->find($requestId);
+                            if (!$request || !$request->lines) {
+                                return ['requestLines' => []];
+                            }
+
+                            $requestLines = $request->lines->map(function ($line) {
+                                return [
+                                    'medicine_id' => $line->medicine_id,
+                                    'medicine_name' => $line->medicine->name ?? 'N/A',
+                                    'quantity' => $line->quantity,
+                                    'unit' => $line->unit,
+                                    'price' => '', // Price will be filled in offer line
+                                ];
+                            })->toArray();
+
+                            return [
+                                'requestLines' => $requestLines,
+                                'repeaterId' => 'requestLines',
+                            ];
+                        }),
+                ])
+                ->collapsible()
+                ->collapsed(false),
+
+            // ✅ Section 4 - Offer Lines (full-width)
             Section::make('Offer Lines')
                 ->columnSpanFull()
                 ->schema([

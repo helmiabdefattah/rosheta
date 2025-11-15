@@ -11,6 +11,8 @@ class Offer extends Model
 
     protected $fillable = [
         'client_request_id',
+        'pharmacy_id',
+        'user_id',
         'pharmacy_agent_id',
         'status',
         'total_price',
@@ -28,6 +30,16 @@ class Offer extends Model
     public function agent()
     {
         return $this->belongsTo(PharmacyAgent::class, 'pharmacy_agent_id');
+    }
+
+    public function pharmacy()
+    {
+        return $this->belongsTo(Pharmacy::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function lines()
