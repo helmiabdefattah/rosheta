@@ -6,6 +6,8 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Actions\Action;
+use App\Filament\Resources\Offers\OfferResource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -47,6 +49,10 @@ class ClientRequestsTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
+                Action::make('makeOffer')
+                    ->label('Make Offer')
+                    ->icon('heroicon-o-currency-dollar')
+                    ->url(fn ($record) => OfferResource::getUrl('create', ['request' => $record->id])),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

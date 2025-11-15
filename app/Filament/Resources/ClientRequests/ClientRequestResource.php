@@ -16,6 +16,9 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Filament\Resources\Pages\CreateRecord;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\Storage;
 
 class ClientRequestResource extends Resource
 {
@@ -43,7 +46,7 @@ class ClientRequestResource extends Resource
     public static function getRelations(): array
     {
         return [
-            AreasRelationManager::class,
+//            AreasRelationManager::class,
         ];
     }
 
@@ -56,6 +59,44 @@ class ClientRequestResource extends Resource
             'edit' => EditClientRequest::route('/{record}/edit'),
         ];
     }
+    public static function afterCreate(CreateRecord $event): void
+    {
+        self::renameTemporaryImages($event->getRecord());
+    }
+
+    public static function afterSave(EditRecord $event): void
+    {
+        self::renameTemporaryImages($event->getRecord());
+    }
+
+    protected static function renameTemporaryImages($record): void
+    {
+        $images = $record->images;
+
+        if ($images && is_array($images)) {
+            $updatedImages = [];
+
+            foreach ($images as $index => $image) {
+                // Check if it's a temporary file
+                if (str_starts_with($image, 'temp-')) {
+                    $extension = pathinfo($image, PATHINFO_EXTENSION);
+                    $newFilename = "{$record->id}-" . ($index + 1) . ".{$extension}";
+
+                    // Move and rename the file
+                    if (Storage::disk('public')->exists("requests/{$image}")) {
+                        Storage::disk('public')->move("requests/{$image}", "requests/{$newFilename}");
+                        $updatedImages[] = $newFilename;
+                    }
+                } else {
+                    $updatedImages[] = $image;
+                }
+            }
+
+            // Update the record with new filenames without triggering events
+            $record->updateQuietly(['images' => $updatedImages]);
+        }
+    }
+
 }
 
 

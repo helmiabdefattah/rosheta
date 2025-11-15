@@ -40,6 +40,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'agent' => [
+            'driver' => 'session',
+            'provider' => 'pharmacy_agents',
+        ],
     ],
 
     /*
@@ -63,6 +67,10 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
+        ],
+        'pharmacy_agents' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\PharmacyAgent::class,
         ],
 
         // 'users' => [
