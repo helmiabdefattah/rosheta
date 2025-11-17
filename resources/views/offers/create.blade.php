@@ -18,7 +18,7 @@
 
     <style>
         :root {
-            --primary: #f1c20d;
+            --primary: #3f51b5;
             --primary-dark: #303f9f;
             --primary-light: #c5cae9;
             --secondary: #ff4081;
