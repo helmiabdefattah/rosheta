@@ -73,3 +73,4 @@ class OfferLinesRelationManager extends RelationManager
             ]);
     }
 }
+

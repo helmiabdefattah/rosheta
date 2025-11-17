@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             GovernorateSeeder::class,
             ClientSeeder::class,
             PharmacySeeder::class,
+            PharmacyUsersSeeder::class,
             ClientRequestSeeder::class,
             OfferSeeder::class,
         ]);

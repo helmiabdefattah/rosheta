@@ -16,12 +16,7 @@
                         <h1 class="text-3xl font-bold text-gray-900">Offer #{{ $offer->id }}</h1>
                         <p class="mt-2 text-sm text-gray-600">View offer details</p>
                     </div>
-                    <a 
-                        href="{{ route('offers.create') }}"
-                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                    >
-                        Create New Offer
-                    </a>
+
                 </div>
             </div>
 
@@ -49,7 +44,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-500">Status</label>
-                        <span class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                        <span class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                             @if($offer->status === 'accepted') bg-green-100 text-green-800
                             @elseif($offer->status === 'submitted') bg-blue-100 text-blue-800
                             @elseif($offer->status === 'cancelled') bg-red-100 text-red-800

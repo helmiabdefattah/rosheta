@@ -52,7 +52,7 @@ class ClientRequestsTable
                 Action::make('makeOffer')
                     ->label('Make Offer')
                     ->icon('heroicon-o-currency-dollar')
-                    ->url(fn ($record) => OfferResource::getUrl('create', ['request' => $record->id])),
+                    ->url(fn ($record) => route('offers.create', ['request' => $record->id])),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

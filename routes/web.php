@@ -10,7 +10,7 @@ Route::get('/', function () {
 });
 
 // Offer routes
-Route::get('/offers/create', [OfferController::class, 'create'])->name('offers.create');
+Route::get('/admin/offers/create/{request}', [OfferController::class, 'create'])->name('offers.create');
 Route::post('/offers', [OfferController::class, 'store'])->name('offers.store');
 Route::get('/offers/{offer}', [OfferController::class, 'show'])->name('offers.show');
 
@@ -25,7 +25,7 @@ Route::get('/api/client-requests/{id}/lines', function ($id) {
     if (!$request) {
         return response()->json(['lines' => []]);
     }
-    
+
     $lines = $request->lines->map(function ($line) {
         return [
             'medicine_id' => $line->medicine_id,
@@ -34,7 +34,7 @@ Route::get('/api/client-requests/{id}/lines', function ($id) {
             'unit' => $line->unit,
         ];
     })->toArray();
-    
+
     return response()->json(['lines' => $lines]);
 });
 
