@@ -1,0 +1,332 @@
+{
+	"info": {
+		"_postman_id": "38812998-d8ddd74e-6ebc-4935-b33e-78977075a784",
+		"name": "Rosheta API",
+		"description": "API collection for Rosheta application with Sanctum authentication",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"access_token\", jsonData.access_token);",
+									"    pm.environment.set(\"client_id\", jsonData.client.id);",
+									"}"
+								],
+								"type": "text/javascript",
+								"id": "8312724b-952a-4675-ad96-fa84f29079e9"
+							}
+						}
+					],
+					"id": "38812998-c2e4c122-d91f-423a-a194-3348fbd41161",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"phone_number\": \"01234567890\",\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						},
+						"description": "Register a new client account"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d216d95e-695b-4963-ad2a-fb922c4d8ba0",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"access_token\", jsonData.access_token);",
+									"    pm.environment.set(\"client_id\", jsonData.client.id);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"id": "38812998-c570481d-4f33-4267-a28f-cb04c5c904a5",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phone_number\": \"(641) 544-0159\",\n    \"password\": \"password\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						},
+						"description": "Login with phone number and password"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Authenticated User",
+					"id": "38812998-2d454ba1-9d70-4ed3-90bf-ee4172d656ac",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"me"
+							]
+						},
+						"description": "Get authenticated client information"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"id": "38812998-0e61da24-f3e3-4835-8d50-871a405f70f3",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"logout"
+							]
+						},
+						"description": "Logout and revoke current access token"
+					},
+					"response": []
+				}
+			],
+			"id": "38812998-93ccd415-74e2-4b48-8333-68ffacd98b33"
+		},
+		{
+			"name": "Client Requests",
+			"item": [
+				{
+					"name": "Create Client Request",
+					"id": "38812998-93223cde-fc41-4667-ac20-95cec1a3300c",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"client_address_id\": 1,\n    \"pregnant\": false,\n    \"diabetic\": true,\n    \"heart_patient\": false,\n    \"high_blood_pressure\": false,\n    \"note\": \"Need urgent delivery. Please call before delivery.\",\n    \"status\": \"pending\",\n    \"lines\": [\n        {\n            \"medicine_id\": 1,\n            \"quantity\": 2,\n            \"unit\": \"box\"\n        },\n        {\n            \"medicine_id\": 2,\n            \"quantity\": 1,\n            \"unit\": \"strips\"\n        }\n    ],\n    \"images\": [\n        \"prescription1.jpg\",\n        \"prescription2.jpg\"\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/client-requests",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"client-requests"
+							]
+						},
+						"description": "Create a new client request with medicine lines"
+					},
+					"response": []
+				}
+			],
+			"id": "38812998-23acb61e-307a-40f6-afe5-799c88097ddc"
+		},
+		{
+			"name": "Medicines",
+			"item": [
+				{
+					"name": "Search Medicines",
+					"id": "38812998-e32bf301-7614-4c1b-bcb2-1fb05b4b1b75",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/medicines/search?search=paracetamol",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"medicines",
+								"search"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "paracetamol",
+									"description": "Search term for medicine name"
+								}
+							]
+						},
+						"description": "Search for medicines by name"
+					},
+					"response": []
+				}
+			],
+			"id": "38812998-b7447356-8a4f-418b-8043-45c597aa98dc"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "c0aec053-930f-4ba1-a1c5-c18922edb674",
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "48d621e5-64d1-4425-9a59-8ef0d9bafdfa",
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		},
+		{
+			"key": "access_token",
+			"value": ""
+		},
+		{
+			"key": "client_id",
+			"value": ""
+		}
+	]
+}
