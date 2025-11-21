@@ -44,6 +44,10 @@ return [
             'driver' => 'session',
             'provider' => 'pharmacy_agents',
         ],
+        'sanctum' => [
+            'driver' => 'sanctum',
+            'provider' => 'clients',
+        ],
     ],
 
     /*
@@ -71,6 +75,10 @@ return [
         'pharmacy_agents' => [
             'driver' => 'eloquent',
             'model' => App\Models\PharmacyAgent::class,
+        ],
+        'clients' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Client::class,
         ],
 
         // 'users' => [

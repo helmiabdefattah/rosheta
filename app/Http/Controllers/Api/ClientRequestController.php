@@ -12,10 +12,48 @@ use Illuminate\Validation\Rule;
 
 class ClientRequestController extends Controller
 {
+    /**
+     * List all client requests for authenticated client
+     */
+    public function index(Request $request)
+    {
+        $client = $request->user();
+
+        $query = ClientRequest::where('client_id', $client->id)
+            ->with(['address.city', 'address.area', 'lines.medicine', 'offers.pharmacy']);
+
+        // Filter by status if provided
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Sort by created_at descending (newest first)
+        $query->orderBy('created_at', 'desc');
+
+        // Paginate results
+        $perPage = $request->get('per_page', 15);
+        $requests = $query->paginate($perPage);
+
+        return response()->json([
+            'message' => 'Client requests retrieved successfully',
+            'data' => $requests->items(),
+            'pagination' => [
+                'current_page' => $requests->currentPage(),
+                'last_page' => $requests->lastPage(),
+                'per_page' => $requests->perPage(),
+                'total' => $requests->total(),
+                'from' => $requests->firstItem(),
+                'to' => $requests->lastItem(),
+            ],
+        ]);
+    }
+
+    /**
+     * Create a new client request
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'client_id' => ['required', 'exists:clients,id'],
             'client_address_id' => ['required', 'exists:client_addresses,id'],
 
             'pregnant' => ['sometimes', 'boolean'],
@@ -28,23 +66,29 @@ class ClientRequestController extends Controller
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.medicine_id' => ['required', 'exists:medicines,id'],
             'lines.*.quantity' => ['required', 'integer', 'min:1'],
-            'lines.*.unit' => ['required', Rule::in(['box', 'strips'])],
+            'lines.*.unit' => ['required', Rule::in(['box', 'strips', 'bottle', 'pack', 'piece', 'tablet', 'capsule', 'vial', 'ampoule'])],
+
+            'images' => ['nullable', 'array'],
+            'images.*' => ['nullable', 'string'],
         ]);
 
-        // Ensure the address belongs to the client
+        // Get authenticated client
+        $client = $request->user();
+
+        // Ensure the address belongs to the authenticated client
         $address = ClientAddress::where('id', $validated['client_address_id'])
-            ->where('client_id', $validated['client_id'])
+            ->where('client_id', $client->id)
             ->first();
 
         if (!$address) {
             return response()->json([
-                'message' => 'The selected address does not belong to the client.',
+                'message' => 'The selected address does not belong to you.',
             ], 422);
         }
 
-        $created = DB::transaction(function () use ($validated) {
+        $created = DB::transaction(function () use ($validated, $client) {
             $requestModel = ClientRequest::create([
-                'client_id' => $validated['client_id'],
+                'client_id' => $client->id,
                 'client_address_id' => $validated['client_address_id'],
                 'pregnant' => $validated['pregnant'] ?? false,
                 'diabetic' => $validated['diabetic'] ?? false,
@@ -52,6 +96,7 @@ class ClientRequestController extends Controller
                 'high_blood_pressure' => $validated['high_blood_pressure'] ?? false,
                 'note' => $validated['note'] ?? null,
                 'status' => $validated['status'] ?? 'pending',
+                'images' => $validated['images'] ?? [],
             ]);
 
             $linesPayload = collect($validated['lines'])
@@ -63,7 +108,7 @@ class ClientRequestController extends Controller
 
             $requestModel->lines()->createMany($linesPayload);
 
-            return $requestModel->load(['address.city', 'address.area', 'lines.medicine']);
+            return $requestModel->load(['address.city', 'address.area', 'lines.medicine', 'client']);
         });
 
         return response()->json([

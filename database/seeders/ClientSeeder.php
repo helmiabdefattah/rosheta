@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Client;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class ClientSeeder extends Seeder
 {
@@ -12,6 +13,9 @@ class ClientSeeder extends Seeder
      */
     public function run(): void
     {
-        Client::factory()->count(50)->create();
+        // Create clients with password "password"
+        Client::factory()->count(50)->create([
+            'password' => Hash::make('password'),
+        ]);
     }
 }

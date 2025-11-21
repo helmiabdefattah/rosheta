@@ -1,9 +1,13 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClientRequestController;
 
-Route::post('/client-requests', [ClientRequestController::class, 'store']);
+// Public routes
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/medicines/search', function (Request $request) {
     $search = $request->get('search');
@@ -27,4 +31,12 @@ Route::get('/medicines/search', function (Request $request) {
         'next_page_url' => $medicines->nextPageUrl()
     ]);
 })->name('medicines.search');
+
+// Protected routes (require authentication)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::get('/client-requests', [ClientRequestController::class, 'index']);
+    Route::post('/client-requests', [ClientRequestController::class, 'store']);
+});
 

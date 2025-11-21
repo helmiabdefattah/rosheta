@@ -22,6 +22,8 @@ class ClientFactory extends Factory
         return [
             'name' => $this->faker->name(),
             'phone_number' => $this->faker->phoneNumber(),
+            'email' => $this->faker->unique()->safeEmail(),
+            'password' => 'password', // Will be hashed automatically by the model
         ];
     }
 }
