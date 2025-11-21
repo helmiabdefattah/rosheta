@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ClientRequestResource;
 use App\Models\Client;
 use App\Models\ClientAddress;
 use App\Models\ClientRequest;
@@ -34,18 +35,10 @@ class ClientRequestController extends Controller
         $perPage = $request->get('per_page', 15);
         $requests = $query->paginate($perPage);
 
-        return response()->json([
-            'message' => 'Client requests retrieved successfully',
-            'data' => $requests->items(),
-            'pagination' => [
-                'current_page' => $requests->currentPage(),
-                'last_page' => $requests->lastPage(),
-                'per_page' => $requests->perPage(),
-                'total' => $requests->total(),
-                'from' => $requests->firstItem(),
-                'to' => $requests->lastItem(),
-            ],
-        ]);
+        return ClientRequestResource::collection($requests)
+            ->additional([
+                'message' => 'Client requests retrieved successfully',
+            ]);
     }
 
     /**
@@ -111,10 +104,12 @@ class ClientRequestController extends Controller
             return $requestModel->load(['address.city', 'address.area', 'lines.medicine', 'client']);
         });
 
-        return response()->json([
-            'message' => 'Request created successfully.',
-            'data' => $created,
-        ], 201);
+        return (new ClientRequestResource($created))
+            ->additional([
+                'message' => 'Request created successfully.',
+            ])
+            ->response()
+            ->setStatusCode(201);
     }
 }
 
