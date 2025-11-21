@@ -287,21 +287,44 @@
 			"id": "38812998-b7447356-8a4f-418b-8043-45c597aa98dc"
 		}
 	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "2828f873-1bd9-443f-b756-fb90fe2d5769",
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "b7d67826-ce94-4b12-a919-fde5dbeaf02f",
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
 	"variable": [
 		{
 			"key": "base_url",
-			"value": "http://localhost:8000",
-			"type": "string"
+			"value": "http://localhost:8000"
 		},
 		{
 			"key": "access_token",
-			"value": "",
-			"type": "string"
+			"value": ""
 		},
 		{
 			"key": "client_id",
-			"value": "",
-			"type": "string"
+			"value": ""
 		}
 	]
 }
