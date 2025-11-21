@@ -67,6 +67,7 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "d216d95e-695b-4963-ad2a-fb922c4d8ba0",
 								"exec": [
 									"if (pm.response.code === 200) {",
 									"    var jsonData = pm.response.json();",
@@ -75,7 +76,8 @@
 									"}"
 								],
 								"type": "text/javascript",
-								"id": "d216d95e-695b-4963-ad2a-fb922c4d8ba0"
+								"packages": {},
+								"requests": {}
 							}
 						}
 					],
@@ -97,7 +99,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"phone_number\": \"01234567890\",\n    \"password\": \"password123\"\n}"
+							"raw": "{\n    \"phone_number\": \"(641) 544-0159\",\n    \"password\": \"password\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/login",
