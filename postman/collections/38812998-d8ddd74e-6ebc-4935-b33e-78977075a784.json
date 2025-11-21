@@ -242,6 +242,58 @@
 						"description": "Create a new client request with medicine lines"
 					},
 					"response": []
+				},
+				{
+					"name": "List Client Requests",
+					"id": "38812998-ae5babd8-e664-44ce-a982-ffd4cf8b10f9",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/client-requests",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"client-requests"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "",
+									"description": "Filter by status (pending, approved, rejected)",
+									"disabled": true
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Number of items per page",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get list of all client requests for authenticated client. Supports filtering by status and pagination."
+					},
+					"response": []
 				}
 			],
 			"id": "38812998-23acb61e-307a-40f6-afe5-799c88097ddc"
