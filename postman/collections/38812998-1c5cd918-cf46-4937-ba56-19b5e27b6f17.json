@@ -4,5 +4,11 @@
 		"name": "saydality",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
-	"item": []
+	"item": [
+		{
+			"name": "New Folder",
+			"item": [],
+			"id": "38812998-b285d65e-384c-4024-9f47-a2d7b5c6b9bf"
+		}
+	]
 }
