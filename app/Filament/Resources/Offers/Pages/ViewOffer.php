@@ -22,3 +22,5 @@ class ViewOffer extends ViewRecord
 
 
 
+
+

@@ -62,10 +62,9 @@ class ClientRequestController extends Controller
             'lines.*.unit' => ['required', Rule::in(['box', 'strips', 'bottle', 'pack', 'piece', 'tablet', 'capsule', 'vial', 'ampoule'])],
 
             'images' => ['nullable', 'array'],
-            'images.*' => ['nullable', 'string'],
+            'images.*' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120'], // 5MB max
         ]);
 
-        // Get authenticated client
         $client = $request->user();
 
         // Ensure the address belongs to the authenticated client
@@ -79,7 +78,18 @@ class ClientRequestController extends Controller
             ], 422);
         }
 
-        $created = DB::transaction(function () use ($validated, $client) {
+        $created = DB::transaction(function () use ($validated, $client, $request) {
+
+            // Handle image uploads
+            $imageNames = [];
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $file) {
+                    $filename = $file->getClientOriginalName(); // just the file name with extension
+                    $file->storeAs('requests', $filename, 'public'); // store in storage/app/public/requests
+                    $imageNames[] = $filename;
+                }
+            }
+
             $requestModel = ClientRequest::create([
                 'client_id' => $client->id,
                 'client_address_id' => $validated['client_address_id'],
@@ -89,15 +99,15 @@ class ClientRequestController extends Controller
                 'high_blood_pressure' => $validated['high_blood_pressure'] ?? false,
                 'note' => $validated['note'] ?? null,
                 'status' => $validated['status'] ?? 'pending',
-                'images' => $validated['images'] ?? [],
+                'images' => $imageNames, // store array of file names
             ]);
 
-            $linesPayload = collect($validated['lines'])
-                ->map(fn ($line) => [
-                    'medicine_id' => $line['medicine_id'],
-                    'quantity' => $line['quantity'],
-                    'unit' => $line['unit'],
-                ])->toArray();
+            // Save request lines
+            $linesPayload = collect($validated['lines'])->map(fn($line) => [
+                'medicine_id' => $line['medicine_id'],
+                'quantity' => $line['quantity'],
+                'unit' => $line['unit'],
+            ])->toArray();
 
             $requestModel->lines()->createMany($linesPayload);
 

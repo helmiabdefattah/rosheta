@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\OfferController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\AuthResetController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
@@ -8,6 +11,9 @@ use App\Http\Controllers\Api\ClientRequestController;
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/password/send-code', [AuthResetController::class, 'sendCode']);
+Route::post('/password/check-code', [AuthResetController::class, 'checkCode']);
+Route::post('/password/reset', [AuthResetController::class, 'resetPassword']);
 
 Route::get('/medicines/search', function (Request $request) {
     $search = $request->get('search');
@@ -38,5 +44,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::get('/client-requests', [ClientRequestController::class, 'index']);
     Route::post('/client-requests', [ClientRequestController::class, 'store']);
+    Route::get('/offers/list', [OfferController::class, 'offersList']);
+    Route::post('/offers/action', [OrderController::class, 'handleOffer']);
+    Route::get('/orders/{orderId}/track', [OrderController::class, 'trackOrder']);
+
+
 });
 

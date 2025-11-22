@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Cities;
 use App\Filament\Resources\Cities\Pages\CreateCity;
 use App\Filament\Resources\Cities\Pages\EditCity;
 use App\Filament\Resources\Cities\Pages\ListCities;
-use App\Filament\Resources\Cities\RelationManagers\AreasRelationManager\AreasRelationManager;
+use App\Filament\Resources\Cities\RelationManagers\AreasRelationManager;
 use App\Filament\Resources\Cities\Schemas\CityForm;
 use App\Filament\Resources\Cities\Tables\CitiesTable;
 use App\Models\City;

@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class OfferLine extends Model
+class OrderLine extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'offer_id',
+        'order_id',
         'medicine_id',
         'quantity',
         'unit',
@@ -21,9 +21,9 @@ class OfferLine extends Model
         'price' => 'decimal:2',
     ];
 
-    public function offer()
+    public function order()
     {
-        return $this->belongsTo(Offer::class);
+        return $this->belongsTo(Order::class);
     }
 
     public function medicine()
@@ -31,10 +31,5 @@ class OfferLine extends Model
         return $this->belongsTo(Medicine::class);
     }
 }
-
-
-
-
-
 
 

@@ -1,50 +1,46 @@
 <?php
 
-namespace App\Filament\Resources\Cities\RelationManagers\AreasRelationManager;
+namespace App\Filament\Resources\Cities\RelationManagers;
 
-use App\Models\Medicine;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\EditAction;
 use Filament\Actions\CreateAction;
-use Filament\Forms;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
-use Illuminate\Support\HtmlString;
-use Filament\Schemas\Schema;
 use Filament\Schemas\Components\TextInput;
 use Filament\Schemas\Components\Toggle;
+use Filament\Schemas\Schema;
+use Filament\Tables;
+use Filament\Tables\Table;
 
 class AreasRelationManager extends RelationManager
 {
     protected static string $relationship = 'areas';
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                TextInput::make('name')
-                    ->label('Name (EN)')
-                    ->required()
-                    ->maxLength(255),
+        return $schema->components([
+            TextInput::make('name')
+                ->label('Name (EN)')
+                ->required()
+                ->maxLength(255),
 
-                TextInput::make('name_ar')
-                    ->label('Name (AR)')
-                    ->maxLength(255),
+            TextInput::make('name_ar')
+                ->label('Name (AR)')
+                ->maxLength(255),
 
-                Toggle::make('is_active')
-                    ->label('Active')
-                    ->default(true),
+            Toggle::make('is_active')
+                ->label('Active')
+                ->default(true),
 
-                TextInput::make('sort_order')
-                    ->numeric()
-                    ->label('Sort Order')
-                    ->default(0),
-            ]);
+            TextInput::make('sort_order')
+                ->numeric()
+                ->label('Sort Order')
+                ->default(0),
+        ]);
     }
 
     public function table(Table $table): Table

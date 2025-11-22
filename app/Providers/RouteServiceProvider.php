@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+
+class RouteServiceProvider extends ServiceProvider
+{
+    /**
+     * The path to the "home" route for your application.
+     *
+     * Typically, users are redirected here after authentication.
+     */
+    public const HOME = '/home';
+
+    /**
+     * Define your route model bindings, pattern filters, etc.
+     */
+    public function boot(): void
+    {
+        // Routing is configured in bootstrap/app.php via withRouting().
+        // We intentionally keep this empty to avoid double-registration.
+    }
+}
+
+
+

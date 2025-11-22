@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Filament\Resources\Offers\Tables;
+namespace App\Filament\Resources\Orders\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
-class OffersTable
+class OrdersTable
 {
     public static function configure(Table $table): Table
     {
@@ -18,12 +18,17 @@ class OffersTable
             ->columns([
                 TextColumn::make('id')->label('ID')->sortable(),
                 TextColumn::make('request.id')->label('Request'),
-                TextColumn::make('agent.name')->label('Agent'),
-                TextColumn::make('status')->badge(),
+                TextColumn::make('status')->badge()->color(fn (string $state) => match ($state) {
+                    'pending' => 'warning',
+                    'delivered' => 'success',
+                    'delivering' => 'gray',
+                    default => 'warning',
+                }),
+                TextColumn::make('payment_method')->label('Payment'),
+                IconColumn::make('payed')->label('Paid')->boolean(),
                 TextColumn::make('total_price')->money('EGP')->sortable(),
                 TextColumn::make('created_at')->dateTime()->sortable(),
             ])
-//            ->modifyQueryUsing(fn (Builder $q) => $q->with(['request', 'agent'])) السطر ده اشوف بتاع ايه
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
@@ -35,10 +40,5 @@ class OffersTable
             ]);
     }
 }
-
-
-
-
-
 
 

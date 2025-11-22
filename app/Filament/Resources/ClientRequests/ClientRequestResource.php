@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\ClientRequests;
 
-use App\Filament\Resources\Cities\RelationManagers\AreasRelationManager\AreasRelationManager;
+use App\Filament\Resources\Cities\RelationManagers\AreasRelationManager;
 use App\Filament\Resources\ClientRequests\Pages\CreateClientRequest;
 use App\Filament\Resources\ClientRequests\Pages\EditClientRequest;
 use App\Filament\Resources\ClientRequests\Pages\ListClientRequests;
