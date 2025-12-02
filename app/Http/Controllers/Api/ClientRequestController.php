@@ -7,6 +7,8 @@ use App\Http\Resources\ClientRequestResource;
 use App\Models\Client;
 use App\Models\ClientAddress;
 use App\Models\ClientRequest;
+use App\Models\MedicalTest;
+use App\Models\Medicine;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -18,9 +20,14 @@ class ClientRequestController extends Controller
      */
     public function index(Request $request)
     {
-        $client = $request->user();
+        // Validate that client_id is provided
+        $request->validate([
+            'client_id' => 'required|exists:clients,id'
+        ]);
 
-        $query = ClientRequest::where('client_id', $client->id)
+        $clientId = $request->get('client_id');
+
+        $query = ClientRequest::where('client_id', $clientId)
             ->with(['address.city', 'address.area', 'lines.medicine', 'offers.pharmacy']);
 
         // Filter by status if provided
@@ -56,10 +63,10 @@ class ClientRequestController extends Controller
             'note' => ['nullable', 'string'],
             'status' => ['nullable', Rule::in(['pending', 'approved', 'rejected'])],
 
-            'lines' => ['required', 'array', 'min:1'],
-            'lines.*.medicine_id' => ['required', 'exists:medicines,id'],
-            'lines.*.quantity' => ['required', 'integer', 'min:1'],
-            'lines.*.unit' => ['required', Rule::in(['box', 'strips', 'bottle', 'pack', 'piece', 'tablet', 'capsule', 'vial', 'ampoule'])],
+            'lines' => ['nullable', 'array'],
+            'lines.*.medicine_id' => ['required_with:lines', 'exists:medicines,id'],
+            'lines.*.quantity' => ['required_with:lines', 'integer', 'min:1'],
+            'lines.*.unit' => ['required_with:lines', Rule::in(['box', 'strips', 'bottle', 'pack', 'piece', 'tablet', 'capsule', 'vial', 'ampoule'])],
 
             'images' => ['nullable', 'array'],
             'images.*' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120'], // 5MB max
@@ -75,6 +82,13 @@ class ClientRequestController extends Controller
         if (!$address) {
             return response()->json([
                 'message' => 'The selected address does not belong to you.',
+            ], 422);
+        }
+
+        // Validate that either lines or images are provided
+        if (empty($validated['lines']) && empty($validated['images'])) {
+            return response()->json([
+                'message' => 'Either medicine lines or prescription images must be provided.',
             ], 422);
         }
 
@@ -102,14 +116,16 @@ class ClientRequestController extends Controller
                 'images' => $imageNames, // store array of file names
             ]);
 
-            // Save request lines
-            $linesPayload = collect($validated['lines'])->map(fn($line) => [
-                'medicine_id' => $line['medicine_id'],
-                'quantity' => $line['quantity'],
-                'unit' => $line['unit'],
-            ])->toArray();
+            // Save request lines if provided
+            if (!empty($validated['lines'])) {
+                $linesPayload = collect($validated['lines'])->map(fn($line) => [
+                    'medicine_id' => $line['medicine_id'],
+                    'quantity' => $line['quantity'],
+                    'unit' => $line['unit'],
+                ])->toArray();
 
-            $requestModel->lines()->createMany($linesPayload);
+                $requestModel->lines()->createMany($linesPayload);
+            }
 
             return $requestModel->load(['address.city', 'address.area', 'lines.medicine', 'client']);
         });
@@ -120,6 +136,26 @@ class ClientRequestController extends Controller
             ])
             ->response()
             ->setStatusCode(201);
+    }
+    public function medicineList()
+    {
+        // Return only selected fields
+        $medicines = Medicine::select('name', 'arabic', 'units','dosage_form', 'img','id')->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $medicines
+        ]);
+    }
+
+    public function testsList()
+    {
+        $tests = MedicalTest::select('test_name_en', 'test_name_ar', 'test_description')->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $tests
+        ]);
     }
 
 }
