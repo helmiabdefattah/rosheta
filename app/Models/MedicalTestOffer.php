@@ -13,6 +13,7 @@ class MedicalTestOffer extends Model
     protected $fillable = [
         'medical_test_id',
         'laboratory_id',
+        'client_request_id',
         'price',
         'offer_price',
         'discount',
@@ -31,6 +32,11 @@ class MedicalTestOffer extends Model
     public function lines()
     {
         return $this->hasMany(MedicalTestOfferLine::class);
+    }
+
+    public function clientRequest(): BelongsTo
+    {
+        return $this->belongsTo(ClientRequest::class, 'client_request_id');
     }
 }
 

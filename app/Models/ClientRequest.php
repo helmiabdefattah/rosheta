@@ -19,6 +19,7 @@ class ClientRequest extends Model
         'high_blood_pressure',
         'note',
         'status',
+        'type',
         'images', // ✅ added
 
     ];
@@ -46,9 +47,20 @@ class ClientRequest extends Model
         return $this->hasMany(ClientRequestLine::class);
     }
 
-    public function offers()
+    // Aliases to support UI field names
+    public function medicinesLines()
     {
-        return $this->hasMany(Offer::class, 'client_request_id');
+        return $this->hasMany(ClientRequestLine::class);
+    }
+
+    public function testLines()
+    {
+        return $this->hasMany(ClientRequestTestLine::class);
+    }
+
+    public function medicalTestsLines()
+    {
+        return $this->hasMany(ClientRequestTestLine::class);
     }
 // In your ClientRequest model
     public function getImagesAttribute($value)

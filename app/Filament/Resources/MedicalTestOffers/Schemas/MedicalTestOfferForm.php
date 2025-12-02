@@ -19,10 +19,30 @@ class MedicalTestOfferForm
                     ->schema([
                         Grid::make(2)
                             ->schema([
+                                Select::make('client_request_id')
+                                    ->label('Client Request')
+                                    ->relationship('clientRequest', 'id')
+                                    ->searchable()
+                                    ->preload()
+                                    ->hiddenOn('create')
+                                    ->nullable(),
                                 Select::make('medical_test_id')
                                     ->label('Medical Test')
                                     ->relationship('medicalTest', 'test_name_en')
                                     ->searchable()
+                                    ->getSearchResultsUsing(function (string $search): array {
+                                        return \App\Models\MedicalTest::query()
+                                            ->where('test_name_en', 'like', "%{$search}%")
+                                            ->orWhere('test_name_ar', 'like', "%{$search}%")
+                                            ->limit(50)
+                                            ->get()
+                                            ->mapWithKeys(fn ($t) => [$t->id => trim($t->test_name_en . ' / ' . $t->test_name_ar)])
+                                            ->toArray();
+                                    })
+                                    ->getOptionLabelUsing(function ($value): ?string {
+                                        $t = \App\Models\MedicalTest::find($value);
+                                        return $t ? trim($t->test_name_en . ' / ' . $t->test_name_ar) : null;
+                                    })
                                     ->preload()
                                     ->required(),
                                 Select::make('laboratory_id')
