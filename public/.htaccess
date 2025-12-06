@@ -23,3 +23,21 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# CORS for static assets (images, fonts, css, js)
+<IfModule mod_headers.c>
+    <FilesMatch "\.(?:jpg|jpeg|png|gif|webp|svg|ico|css|js|mjs|map|woff|woff2|ttf|eot|otf)$">
+        Header always set Access-Control-Allow-Origin "*"
+        Header always set Access-Control-Allow-Methods "GET, OPTIONS"
+        Header always set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Range, Authorization"
+        Header always set Timing-Allow-Origin "*"
+    </FilesMatch>
+
+    # Handle preflight fast (rare for <img>, but safe)
+    <If "%{REQUEST_METHOD} == 'OPTIONS'">
+        Header always set Access-Control-Allow-Origin "*"
+        Header always set Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        Header always set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+        Require all granted
+    </If>
+</IfModule>
