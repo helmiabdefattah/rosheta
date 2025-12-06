@@ -6,27 +6,22 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class ClientRequestsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with(['client', 'address']))
+
             ->columns([
+
                 TextColumn::make('id')
                     ->label('ID')
                     ->sortable(),
-                TextColumn::make('type')
-                    ->label('Type')
-                    ->badge()
-                    ->color(fn (string $state) => match ($state) {
-                        'test' => 'info',
-                        'medicine' => 'success',
-                        default => 'gray',
-                    }),
 
                 TextColumn::make('client_label')
                     ->label('Client')
@@ -51,20 +46,17 @@ class ClientRequestsTable
                     ->dateTime()
                     ->sortable(),
             ])
-            ->defaultSort('id', 'desc')
-            ->filters([
-                \Filament\Tables\Filters\SelectFilter::make('type')
-                    ->label('Type')
-                    ->options([
-                        'medicine' => 'Medicine',
-                        'test' => 'Test',
-                    ]),
-            ])
-            ->modifyQueryUsing(fn ($query) => $query->with(['client', 'address', 'lines', 'testLines']))
+
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
+
+                Action::make('makeOffer')
+                    ->label('Make Offer')
+                    ->icon('heroicon-o-currency-dollar')
+                    ->url(fn ($record) => route('offers.create', ['request' => $record->id])),
             ])
+
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
@@ -72,5 +64,3 @@ class ClientRequestsTable
             ]);
     }
 }
-
-

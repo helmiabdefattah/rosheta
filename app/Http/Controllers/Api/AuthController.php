@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use App\Models\ClientAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -97,13 +98,41 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
+        $user = $request->user();
+
+        $addresses = ClientAddress::where('client_id', $user->id)
+            ->with(['city', 'area'])
+            ->get()
+            ->map(function ($address) {
+                return [
+                    'id' => $address->id,
+                    'address' => $address->address,
+                    'location' => $address->location,
+                    'city' => $address->city ? [
+                        'id' => $address->city->id,
+                        'name' => $address->city->name,
+                        'name_ar' => $address->city->name_ar,
+                    ] : null,
+                    'area' => $address->area ? [
+                        'id' => $address->area->id,
+                        'name' => $address->area->name,
+                        'name_ar' => $address->area->name_ar,
+                    ] : null,
+                    'created_at' => $address->created_at?->toISOString(),
+                    'updated_at' => $address->updated_at?->toISOString(),
+                ];
+            });
+
         return response()->json([
             'client' => [
-                'id' => $request->user()->id,
-                'name' => $request->user()->name,
-                'phone_number' => $request->user()->phone_number,
-                'email' => $request->user()->email,
+                'id' => $user->id,
+                'name' => $user->name,
+                'phone_number' => $user->phone_number,
+                'email' => $user->email,
+                'created_at' => $user->created_at?->toISOString(),
             ],
+            'addresses' => $addresses,
+            'addresses_count' => $addresses->count(),
         ]);
     }
 }

@@ -19,3 +19,4 @@ class EditOffer extends EditRecord
 
 
 
+

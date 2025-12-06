@@ -30,7 +30,10 @@ class MedicalTest extends Model
     {
         return $this->hasMany(MedicalTestOffer::class, 'medical_test_id');
     }
-
+    public function testLines()
+    {
+        return $this->hasMany(ClientRequestTestLine::class, 'medical_test_id');
+    }
     /**
      * (Optional) Relation: A medical test has many offer lines through offers
      */

@@ -68,3 +68,4 @@ class OfferResource extends Resource
 
 
 
+

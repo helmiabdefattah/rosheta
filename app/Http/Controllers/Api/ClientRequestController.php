@@ -22,17 +22,28 @@ class ClientRequestController extends Controller
     {
         // Validate that client_id is provided
         $request->validate([
-            'client_id' => 'required|exists:clients,id'
+            'client_id' => 'required|exists:clients,id',
+            'type' => 'sometimes|in:medicine,test' // Add type validation
         ]);
 
         $clientId = $request->get('client_id');
 
         $query = ClientRequest::where('client_id', $clientId)
-            ->with(['address.city', 'address.area', 'lines.medicine', 'offers.pharmacy']);
-
+            ->with([
+                'lines.medicine', // Load medicine for medicine lines
+                'lines.medicalTest', // Load medicalTest for test lines
+                'address.city',
+                'address.area',
+                'offers.pharmacy',
+            ]);
         // Filter by status if provided
         if ($request->has('status')) {
             $query->where('status', $request->status);
+        }
+
+        // Filter by type if provided
+        if ($request->has('type')) {
+            $query->where('type', $request->type);
         }
 
         // Sort by created_at descending (newest first)
@@ -41,13 +52,11 @@ class ClientRequestController extends Controller
         // Paginate results
         $perPage = $request->get('per_page', 15);
         $requests = $query->paginate($perPage);
-
         return ClientRequestResource::collection($requests)
             ->additional([
                 'message' => 'Client requests retrieved successfully',
             ]);
     }
-
     /**
      * Create a new client request
      */

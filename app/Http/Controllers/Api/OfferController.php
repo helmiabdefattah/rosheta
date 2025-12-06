@@ -61,23 +61,24 @@ class OfferController extends Controller
                     ?? ($offer->price - ($offer->price * ($offer->discount / 100)));
 
                 return [
-                    'laboratory_name'   => $offer->laboratory->name,
-                    'laboratory_address'=> $offer->laboratory->address,
-                    "laboratory_logo" => $offer->laboratory?->logo
+                    'laboratory_name'    => $offer->laboratory->name,
+                    'laboratory_address' => $offer->laboratory->address,
+                    'laboratory_logo'    => $offer->laboratory?->logo
                         ? asset('storage/' . $offer->laboratory->logo)
                         : null,
-                    'test_name_en'      => $offer->medicalTest->test_name_en,
-                    'test_name_ar'      => $offer->medicalTest->test_name_ar,
+                    'test_name_en'       => $offer->medicalTest->test_name_en,
+                    'test_name_ar'       => $offer->medicalTest->test_name_ar,
 
-                    'price'             => $offer->price,
-                    'offer_price'       => $offerPrice,
-                    'discount'          => $offer->discount,
+                    // Cast to int
+                    'price'              => (int) round($offer->price),
+                    'offer_price'        => (int) round($offerPrice),
+                    'discount'           => (int) round($offer->discount),
                 ];
             });
 
         return response()->json([
             'status' => 'success',
-            'data' => $offers
+            'data'   => $offers
         ]);
     }
     public function clientOrders(Request $request)

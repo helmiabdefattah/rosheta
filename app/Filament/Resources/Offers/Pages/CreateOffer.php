@@ -16,22 +16,34 @@ class CreateOffer extends CreateRecord
 
         $requestId = (int) request()->query('request', 0);
         if ($requestId > 0) {
-            $req = ClientRequest::with('lines')->find($requestId);
+            $req = ClientRequest::with('lines.medicine', 'lines.medicalTest')->find($requestId);
             if ($req) {
                 $prefill = [
                     'client_request_id' => $req->id,
-                    'lines' => $req->lines->map(fn ($l) => [
+                ];
+
+                // Prefill offer lines based on type
+                if ($req->type === 'medicine') {
+                    $prefill['lines'] = $req->lines->map(fn($l) => [
                         'medicine_id' => $l->medicine_id,
                         'quantity' => $l->quantity,
                         'unit' => $l->unit,
                         'price' => null,
-                    ])->toArray(),
-                ];
+                    ])->toArray();
+                } elseif ($req->type === 'test') {
+                    $prefill['lines'] = $req->lines->map(fn($l) => [
+                        'medical_test_id' => $l->medical_test_id,
+                        'price' => null,
+                    ])->toArray();
+
+                    // If user has a lab, prefill and disable the field in the form
+                    if (auth()->user()?->laboratory_id) {
+                        $prefill['laboratory_id'] = auth()->user()->laboratory_id;
+                    }
+                }
+
                 $this->form->fill($prefill);
             }
         }
     }
 }
-
-
-
