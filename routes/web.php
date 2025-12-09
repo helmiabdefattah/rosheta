@@ -5,7 +5,7 @@ use App\Http\Controllers\OfferController;
 use App\Models\Offer;
 use App\Models\ClientRequest;
 
-Route::get('/', function () {
+Route::get('/home', function () {
     return view('welcome');
 });
 
