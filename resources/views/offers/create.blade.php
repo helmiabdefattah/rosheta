@@ -836,13 +836,13 @@
             if (currentRequestType === 'test') {
                 // Tests table header
                 thead.html(`
-                    <tr>
-                        <th width="25%" class="fw-semibold">Test Name (EN)</th>
-                        <th width="25%" class="fw-semibold">Test Name (AR)</th>
-                        <th width="20%" class="text-center">Price (EGP)</th>
-                        <th width="15%" class="text-center">Actions</th>
-                    </tr>
-                `);
+                <tr>
+                    <th width="25%" class="fw-semibold">Test Name (EN)</th>
+                    <th width="25%" class="fw-semibold">Test Name (AR)</th>
+                    <th width="20%" class="text-center">Price (EGP)</th>
+                    <th width="15%" class="text-center">Actions</th>
+                </tr>
+            `);
 
                 // Test rows
                 offerLines.forEach((line, i) => {
@@ -852,11 +852,16 @@
                     const testEnCell = $('<td>');
                     const testSelect = $('<select class="form-select form-select-sm test-select" required>')
                         .attr('name', `offer_lines[${i}][medical_test_id]`)
+                        .attr('id', `test_select_${i}`)
                         .css('min-width', '200px');
 
                     testSelect.append('<option value="">Select test</option>');
                     Object.entries(tests).forEach(([id, test]) => {
-                        testSelect.append(`<option value="${id}">${test.test_name_en}</option>`);
+                        testSelect.append(`<option value="${id}"
+                        data-name-en="${test.test_name_en || ''}"
+                        data-name-ar="${test.test_name_ar || ''}"
+                        data-description="${test.test_description || ''}"
+                        data-conditions="${test.conditions || ''}">${test.test_name_en}</option>`);
                     });
                     testSelect.val(line.medical_test_id);
                     testSelect.on('change', function() {
@@ -874,9 +879,8 @@
 
                     // Test Name AR (25%)
                     const testArCell = $('<td>');
-                    testArCell.append(
-                        $('<span class="small">').text(line.test_name_ar || '-')
-                    );
+                    const arNameSpan = $('<span class="small test-ar-name">').text(line.test_name_ar || '-');
+                    testArCell.append(arNameSpan);
                     row.append(testArCell);
 
                     // Price column (20%)
@@ -904,26 +908,65 @@
 
                     tbody.append(row);
 
-                    // Initialize Select2 for test dropdown
-                    testSelect.select2({
+                    // Initialize Select2 for test dropdown with custom search
+                    $(`#test_select_${i}`).select2({
                         width: '100%',
                         dropdownParent: container,
-                        minimumResultsForSearch: 3
+                        minimumResultsForSearch: 2,
+                        templateResult: formatTestResult,
+                        templateSelection: formatTestSelection,
+                        matcher: function(params, data) {
+                            // If there's no search term, return all results
+                            if ($.trim(params.term) === '') {
+                                return data;
+                            }
+
+                            // Normalize search term (remove diacritics, convert to lowercase)
+                            const term = params.term.toLowerCase()
+                                .normalize("NFD")
+                                .replace(/[\u0300-\u036f]/g, "");
+
+                            // Get test data
+                            const testId = data.id;
+                            const testData = tests[testId];
+
+                            if (!testData) return null;
+
+                            // Search in both English and Arabic names
+                            const nameEn = (testData.test_name_en || '').toLowerCase()
+                                .normalize("NFD")
+                                .replace(/[\u0300-\u036f]/g, "");
+                            const nameAr = (testData.test_name_ar || '').toLowerCase()
+                                .normalize("NFD")
+                                .replace(/[\u0300-\u036f]/g, "");
+
+                            // Check if search term exists in either name
+                            if (nameEn.includes(term) || nameAr.includes(term)) {
+                                return data;
+                            }
+
+                            return null;
+                        }
                     });
+
+                    // Update Arabic name when test is selected
+                    if (line.medical_test_id && tests[line.medical_test_id]) {
+                        arNameSpan.text(tests[line.medical_test_id].test_name_ar || '-');
+                    }
                 });
             } else {
                 // Medicines table header
                 thead.html(`
-                    <tr>
-                        <th width="25%" class="fw-semibold">Medicine</th>
-                        <th width="12%" class="text-center">Dosage Form</th>
-                        <th width="10%" class="text-center">Old Price</th>
-                        <th width="8%" class="text-center">Quantity</th>
-                        <th width="10%" class="text-center">Unit</th>
-                        <th width="12%" class="text-center">Price (EGP)</th>
-                        <th width="15%" class="text-center">Actions</th>
-                    </tr>
-                `);
+                <tr>
+                    <th width="25%" class="fw-semibold">Medicine</th>
+                    <th width="12%" class="text-center">Dosage Form</th>
+                    <th width="10%" class="text-center">Old Price</th>
+                    <th width="8%" class="text-center">Quantity</th>
+                    <th width="10%" class="text-center">Unit</th>
+                    <th width="12%" class="text-center">Price (EGP)</th>
+                    <th width="15%" class="text-center">Actions</th>
+                </tr>
+            `);
 
                 // Medicine rows
                 offerLines.forEach((line, i) => {
@@ -931,13 +974,19 @@
 
                     // Medicine column (25%)
                     const medicineCell = $('<td>');
-                    const medSelect = $('<select class="form-select form-select-sm" required>')
+                    const medSelect = $('<select class="form-select form-select-sm medicine-select" required>')
                         .attr('name', `offer_lines[${i}][medicine_id]`)
+                        .attr('id', `medicine_select_${i}`)
                         .css('min-width', '120px');
 
                     medSelect.append('<option value="">Select medicine</option>');
                     Object.entries(medicines).forEach(([id, med]) => {
-                        medSelect.append(`<option value="${id}">${med.name}</option>`);
+                        medSelect.append(`<option value="${id}"
+                        data-name="${med.name || ''}"
+                        data-name-ar="${med.name_ar || ''}"
+                        data-dosage-form="${med.dosage_form || ''}"
+                        data-old-price="${med.old_price || ''}"
+                        data-units="${med.units || 'box'}">${med.name}</option>`);
                     });
                     medSelect.val(line.medicine_id);
                     medSelect.on('change', function() {
@@ -957,16 +1006,14 @@
 
                     // Dosage Form column (12%)
                     const dosageCell = $('<td class="text-center">');
-                    dosageCell.append(
-                        $('<span class="small">').text(line.dosage_form || '-')
-                    );
+                    const dosageSpan = $('<span class="small dosage-form">').text(line.dosage_form || '-');
+                    dosageCell.append(dosageSpan);
                     row.append(dosageCell);
 
                     // Old Price column (10%)
                     const oldPriceCell = $('<td class="text-center">');
-                    oldPriceCell.append(
-                        $('<span class="text-muted small">').text(line.old_price || '0.00')
-                    );
+                    const oldPriceSpan = $('<span class="text-muted small old-price">').text(line.old_price || '0.00');
+                    oldPriceCell.append(oldPriceSpan);
                     row.append(oldPriceCell);
 
                     // Quantity column (8%)
@@ -1020,18 +1067,103 @@
 
                     tbody.append(row);
 
-                    // Initialize Select2 for medicine dropdown
-                    medSelect.select2({
+                    // Initialize Select2 for medicine dropdown with custom search
+                    $(`#medicine_select_${i}`).select2({
                         width: '100%',
                         dropdownParent: container,
-                        minimumResultsForSearch: 3
+                        minimumResultsForSearch: 2,
+                        templateResult: formatMedicineResult,
+                        templateSelection: formatMedicineSelection,
+                        matcher: function(params, data) {
+                            // If there's no search term, return all results
+                            if ($.trim(params.term) === '') {
+                                return data;
+                            }
+
+                            // Normalize search term (remove diacritics, convert to lowercase)
+                            const term = params.term.toLowerCase()
+                                .normalize("NFD")
+                                .replace(/[\u0300-\u036f]/g, "");
+
+                            // Get medicine data
+                            const medId = data.id;
+                            const medData = medicines[medId];
+
+                            if (!medData) return null;
+
+                            // Search in both English and Arabic names
+                            const nameEn = (medData.name || '').toLowerCase()
+                                .normalize("NFD")
+                                .replace(/[\u0300-\u036f]/g, "");
+                            const nameAr = (medData.name_ar || '').toLowerCase()
+                                .normalize("NFD")
+                                .replace(/[\u0300-\u036f]/g, "");
+
+                            // Check if search term exists in either name
+                            if (nameEn.includes(term) || nameAr.includes(term)) {
+                                return data;
+                            }
+
+                            return null;
+                        }
                     });
+
+                    // Update related fields when medicine is selected
+                    if (line.medicine_id && medicines[line.medicine_id]) {
+                        const med = medicines[line.medicine_id];
+                        dosageSpan.text(med.dosage_form || '-');
+                        oldPriceSpan.text(med.old_price || '0.00');
+                    }
                 });
             }
 
             table.append(thead, tbody);
             container.append(table);
             updateTotal();
+        }
+
+        // Custom format functions for Select2
+        function formatTestResult(result) {
+            if (!result.id) return result.text;
+
+            const testData = tests[result.id];
+            if (!testData) return result.text;
+
+            const $container = $('<span class="d-flex flex-column">');
+            $container.append(`<span class="fw-semibold">${testData.test_name_en || ''}</span>`);
+            if (testData.test_name_ar) {
+                $container.append(`<span class="text-muted small text-end">${testData.test_name_ar}</span>`);
+            }
+            return $container;
+        }
+
+        function formatTestSelection(selection) {
+            const testData = tests[selection.id];
+            if (!testData) return selection.text;
+            return testData.test_name_en || selection.text;
+        }
+
+        function formatMedicineResult(result) {
+            if (!result.id) return result.text;
+
+            const medData = medicines[result.id];
+            if (!medData) return result.text;
+
+            const $container = $('<span class="d-flex flex-column">');
+            $container.append(`<span class="fw-semibold">${medData.name || ''}</span>`);
+            if (medData.name_ar) {
+                $container.append(`<span class="text-muted small text-end">${medData.name_ar}</span>`);
+            }
+            if (medData.dosage_form) {
+                $container.append(`<span class="text-info small">${medData.dosage_form}</span>`);
+            }
+            return $container;
+        }
+
+        function formatMedicineSelection(selection) {
+            const medData = medicines[selection.id];
+            if (!medData) return selection.text;
+            return medData.name || selection.text;
         }
 
         function updateTotal() {
@@ -1057,6 +1189,5 @@
         }
     });
 </script>
-
 </body>
 </html>

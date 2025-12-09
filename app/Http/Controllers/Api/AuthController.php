@@ -129,6 +129,7 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'phone_number' => $user->phone_number,
                 'email' => $user->email,
+                'avatar' => $user->avatar,
                 'created_at' => $user->created_at?->toISOString(),
             ],
             'addresses' => $addresses,

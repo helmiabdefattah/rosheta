@@ -15,7 +15,7 @@ class ClientRequestsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with(['client', 'address']))
+            ->modifyQueryUsing(fn ($query) => $query->with(['client', 'address'])->orderBy('id', 'desc'))
 
             ->columns([
 
@@ -54,6 +54,7 @@ class ClientRequestsTable
                 Action::make('makeOffer')
                     ->label('Make Offer')
                     ->icon('heroicon-o-currency-dollar')
+                    ->color('success')
                     ->url(fn ($record) => route('offers.create', ['request' => $record->id])),
             ])
 

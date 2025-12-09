@@ -65,14 +65,14 @@ class ClientRequestController extends Controller
         $validated = $request->validate([
             'client_address_id' => ['required', 'exists:client_addresses,id'],
 
-            'pregnant' => ['sometimes', 'boolean'],
-            'diabetic' => ['sometimes', 'boolean'],
-            'heart_patient' => ['sometimes', 'boolean'],
-            'high_blood_pressure' => ['sometimes', 'boolean'],
+            'pregnant' => 'required',
+            'diabetic' => 'required',
+            'heart_patient' => 'required',
+            'high_blood_pressure' => 'required',
             'note' => ['nullable', 'string'],
             'status' => ['nullable', Rule::in(['pending', 'approved', 'rejected'])],
 
-            'lines' => ['nullable', 'array'],
+            'lines' => 'nullable',
             'lines.*.medicine_id' => ['required_with:lines', 'exists:medicines,id'],
             'lines.*.quantity' => ['required_with:lines', 'integer', 'min:1'],
             'lines.*.unit' => ['required_with:lines', Rule::in(['box', 'strips', 'bottle', 'pack', 'piece', 'tablet', 'capsule', 'vial', 'ampoule'])],
@@ -123,20 +123,122 @@ class ClientRequestController extends Controller
                 'note' => $validated['note'] ?? null,
                 'status' => $validated['status'] ?? 'pending',
                 'images' => $imageNames, // store array of file names
+                'type' => 'medicine'
             ]);
 
             // Save request lines if provided
             if (!empty($validated['lines'])) {
-                $linesPayload = collect($validated['lines'])->map(fn($line) => [
-                    'medicine_id' => $line['medicine_id'],
-                    'quantity' => $line['quantity'],
-                    'unit' => $line['unit'],
-                ])->toArray();
+                // Decode the JSON string to array
+                $linesArray = json_decode($validated['lines'], true);
 
-                $requestModel->lines()->createMany($linesPayload);
+                // Check if decoding was successful
+                if (json_last_error() === JSON_ERROR_NONE && is_array($linesArray)) {
+                    $linesPayload = collect($linesArray)->map(fn($line) => [
+                        'medicine_id' => $line['medicine_id'],
+                        'quantity' => $line['quantity'],
+                        'unit' => $line['unit'],
+                    ])->toArray();
+
+                    $requestModel->lines()->createMany($linesPayload);
+                } else {
+                    // Handle JSON decode error
+                    throw new \Exception('Invalid lines format. Expected valid JSON array.');
+                }
             }
 
             return $requestModel->load(['address.city', 'address.area', 'lines.medicine', 'client']);
+        });
+
+        return (new ClientRequestResource($created))
+            ->additional([
+                'message' => 'Request created successfully.',
+            ])
+            ->response()
+            ->setStatusCode(201);
+    }
+    public function test_requests(Request $request)
+    {
+        $validated = $request->validate([
+            'client_address_id' => ['nullable', 'exists:client_addresses,id'],
+
+            'pregnant' => 'required',
+            'diabetic' => 'required',
+            'heart_patient' => 'required',
+            'high_blood_pressure' => 'required',
+            'note' => ['nullable', 'string'],
+            'status' => ['nullable', Rule::in(['pending', 'approved', 'rejected'])],
+
+            'tests' => 'nullable',
+            'tests.*.medical_test_id' => ['required_with:testLines', 'exists:medicalTests,id'],
+
+            'images' => ['nullable', 'array'],
+            'images.*' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120'], // 5MB max
+        ]);
+
+        $client = $request->user();
+        if ($request->client_address_id != null) {
+            $address = ClientAddress::where('id', $validated['client_address_id'])
+                ->where('client_id', $client->id)
+                ->first();
+
+            if (!$address) {
+                return response()->json([
+                    'message' => 'The selected address does not belong to you.',
+                ], 422);
+            }
+        }
+        // Validate that either lines or images are provided
+        if (empty($validated['tests']) && empty($validated['images'])) {
+            return response()->json([
+                'message' => 'Either tests lines or prescription images must be provided.',
+            ], 422);
+        }
+
+        $created = DB::transaction(function () use ($validated, $client, $request) {
+
+            // Handle image uploads
+            $imageNames = [];
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $file) {
+                    $filename = $file->getClientOriginalName(); // just the file name with extension
+                    $file->storeAs('requests', $filename, 'public'); // store in storage/app/public/requests
+                    $imageNames[] = $filename;
+                }
+            }
+
+            $requestModel = ClientRequest::create([
+                'client_id' => $client->id,
+                'client_address_id' => $validated['client_address_id']?? null,
+                'pregnant' => $validated['pregnant'] ?? false,
+                'diabetic' => $validated['diabetic'] ?? false,
+                'heart_patient' => $validated['heart_patient'] ?? false,
+                'high_blood_pressure' => $validated['high_blood_pressure'] ?? false,
+                'note' => $validated['note'] ?? null,
+                'status' => $validated['status'] ?? 'pending',
+                'images' => $imageNames, // store array of file names
+                'type' => 'test'
+            ]);
+
+            // Save request lines if provided
+            if (!empty($validated['tests'])) {
+                // Decode the JSON string to array
+                $linesArray = json_decode($validated['tests'], true);
+
+                // Check if decoding was successful
+                if (json_last_error() === JSON_ERROR_NONE && is_array($linesArray)) {
+                    $linesPayload = collect($linesArray)->map(fn($line) => [
+                        'medical_test_id' => $line['test_id'],
+
+                    ])->toArray();
+
+                    $requestModel->testLines()->createMany($linesPayload);
+                } else {
+                    // Handle JSON decode error
+                    throw new \Exception('Invalid lines format. Expected valid JSON array.');
+                }
+            }
+
+            return $requestModel->load(['address.city', 'address.area', 'testLines.medicalTest', 'client']);
         });
 
         return (new ClientRequestResource($created))
@@ -159,7 +261,7 @@ class ClientRequestController extends Controller
 
     public function testsList()
     {
-        $tests = MedicalTest::select('test_name_en', 'test_name_ar', 'test_description')->get();
+        $tests = MedicalTest::select('id','test_name_en', 'test_name_ar', 'test_description','conditions')->get();
 
         return response()->json([
             'status' => 'success',

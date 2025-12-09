@@ -25,7 +25,7 @@ class OfferController extends Controller
         ])->findOrFail($id);
 
         // جلب جميع الخطوط مع العلاقات المناسبة
-        $clientRequest->load(['lines.medicine', 'lines.medicalTest']);
+        $clientRequest->load(['lines.medicine', 'testLines.medicalTest']);
 
         // جلب جميع الفحوصات الطبية للاختيار منها
         $tests = MedicalTest::get()->mapWithKeys(function ($test) {

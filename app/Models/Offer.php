@@ -56,7 +56,7 @@ class Offer extends Model
     // Offer lines (for medical tests)
     public function testLines()
     {
-        return $this->hasMany(OfferTestLine::class);
+        return $this->hasMany(OfferLine::class);
     }
 
     // Dynamic relationship to get appropriate lines based on type

@@ -57,7 +57,7 @@ class ClientRequest extends Model
     // علاقة المساعدة للفحوصات (للتوافق مع الكود الحالي)
     public function testLines()
     {
-        return $this->hasMany(ClientRequestTestLine::class);
+        return $this->hasMany(ClientRequestLine::class,'client_request_id');
     }
 
     // Relationship with offers

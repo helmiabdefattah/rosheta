@@ -2,12 +2,23 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OfferController;
+use App\Http\Controllers\LocaleController;
 use App\Models\Offer;
 use App\Models\ClientRequest;
 
-Route::get('/home', function () {
+Route::get('/', function () {
     return view('welcome');
-});
+})->name('welcome');
+
+Route::get('/terms', function () {
+    return view('terms');
+})->name('terms');
+
+Route::get('/privacy', function () {
+    return view('privacy');
+})->name('privacy');
+
+Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale');
 
 // Offer routes
 Route::get('/admin/offers/create/{request}', [OfferController::class, 'create'])->name('offers.create');

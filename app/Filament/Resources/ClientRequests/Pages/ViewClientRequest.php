@@ -15,13 +15,8 @@ class ViewClientRequest extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            EditAction::make(),
-            Action::make('makeLabOffer')
-                ->label('Make Lab Offer')
-                ->icon('heroicon-o-tag')
-                ->color('primary')
-                ->url(fn () => MedicalTestOfferResource::getUrl('create', ['client_request_id' => $this->record->id])),
-        ];
+            EditAction::make()->color('success'),
+            ];
     }
 }
 
