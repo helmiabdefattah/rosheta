@@ -68,7 +68,7 @@ class OrderController extends Controller
         $order = Order::with([
             'pharmacy:id,name',
             'offer:id,total_price',
-            'lines.medicine:id,name,image',
+            'lines.medicine:id,name,img',
         ])
             ->where('id', $orderId)
             ->where('user_id', auth()->id())   // security
@@ -98,7 +98,7 @@ class OrderController extends Controller
                 return [
                     'medicine_id' => $line->medicine_id,
                     'medicine_name' => $line->medicine->name ?? null,
-                    'medicine_image' => $line->medicine->image ?? null,
+                    'medicine_img' => $line->medicine->img ?? null,
                     'quantity' => $line->quantity,
                     'unit' => $line->unit,
                     'price' => $line->price,

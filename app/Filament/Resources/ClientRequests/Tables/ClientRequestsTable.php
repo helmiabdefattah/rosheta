@@ -7,17 +7,18 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\Action;
-use App\Filament\Resources\Offers\OfferResource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class ClientRequestsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with(['client', 'address'])->orderBy('id', 'desc'))
+
             ->columns([
+
                 TextColumn::make('id')
                     ->label('ID')
                     ->sortable(),
@@ -45,15 +46,18 @@ class ClientRequestsTable
                     ->dateTime()
                     ->sortable(),
             ])
-            ->modifyQueryUsing(fn ($query) => $query->with(['client', 'address']))
+
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
+
                 Action::make('makeOffer')
                     ->label('Make Offer')
                     ->icon('heroicon-o-currency-dollar')
+                    ->color('success')
                     ->url(fn ($record) => route('offers.create', ['request' => $record->id])),
             ])
+
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
@@ -61,5 +65,3 @@ class ClientRequestsTable
             ]);
     }
 }
-
-

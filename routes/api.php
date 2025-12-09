@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\AreaController;
+use App\Http\Controllers\Api\CityController;
+use App\Http\Controllers\Api\ClientAddressController;
 use App\Http\Controllers\Api\OfferController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\AuthResetController;
@@ -14,7 +17,9 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/password/send-code', [AuthResetController::class, 'sendCode']);
 Route::post('/password/check-code', [AuthResetController::class, 'checkCode']);
 Route::post('/password/reset', [AuthResetController::class, 'resetPassword']);
-
+// Public endpoints for areas and cities
+Route::get('/areas', [AreaController::class, 'index']);
+Route::get('/cities', [CityController::class, 'index']);
 Route::get('/medicines/search', function (Request $request) {
     $search = $request->get('search');
 
@@ -47,7 +52,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/offers/list', [OfferController::class, 'offersList']);
     Route::post('/offers/action', [OrderController::class, 'handleOffer']);
     Route::get('/orders/{orderId}/track', [OrderController::class, 'trackOrder']);
+    Route::get('/client-orders', [OfferController::class, 'clientOrders']);
 
+    Route::get('/medicines', [ClientRequestController::class, 'medicineList']);
+    Route::get('/medical-tests', [ClientRequestController::class, 'testsList']);
+    Route::post('/medical-test-requests', [ClientRequestController::class, 'test_requests']);
+    Route::get('/medical-test-offers', [OfferController::class, 'medicalTestOffersList']);
 
+    Route::get('/client/addresses', [ClientAddressController::class, 'index']);
+    Route::post('/client-addresses', [ClientAddressController::class, 'store']);
+    Route::put('/client-addresses/{id}', [ClientAddressController::class, 'update']);
+    Route::delete('/client-addresses/{id}', [ClientAddressController::class, 'destroy']);
 });
 

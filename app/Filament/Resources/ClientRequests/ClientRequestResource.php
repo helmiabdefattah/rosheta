@@ -46,7 +46,8 @@ class ClientRequestResource extends Resource
     public static function getRelations(): array
     {
         return [
-//            AreasRelationManager::class,
+            \App\Filament\Resources\ClientRequests\RelationManagers\RequestLinesRelationManager::class,
+            \App\Filament\Resources\ClientRequests\RelationManagers\TestLinesRelationManager::class,
         ];
     }
 

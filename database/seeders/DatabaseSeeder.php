@@ -29,8 +29,10 @@ class DatabaseSeeder extends Seeder
             ClientSeeder::class,
             PharmacySeeder::class,
             PharmacyUsersSeeder::class,
+            LaboratorySeeder::class,
             ClientRequestSeeder::class,
             OfferSeeder::class,
+            MedicalTestOfferSeeder::class,
         ]);
     }
 }
