@@ -24,14 +24,21 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
+//            ->topbar(false)
+//            ->databaseNotifications()
+//            ->databaseNotificationsPolling('30s')
+        ->default()
             ->id('admin')
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Emerald,
             ])
+            ->brandLogo(fn () => view('filament.brand-logo'))
+
+            ->favicon(url('/images/mo-logo.png'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
+            ->brandName('Mostashfa-on')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,

@@ -35,6 +35,7 @@ class ClientRequestController extends Controller
                 'address.city',
                 'address.area',
                 'offers.pharmacy',
+                'offers.laboratory',
             ]);
         // Filter by status if provided
         if ($request->has('status')) {

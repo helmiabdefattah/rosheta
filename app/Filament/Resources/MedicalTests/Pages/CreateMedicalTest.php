@@ -21,3 +21,4 @@ class CreateMedicalTest extends CreateRecord
 
 
 
+

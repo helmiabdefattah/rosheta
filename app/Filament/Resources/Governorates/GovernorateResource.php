@@ -19,9 +19,9 @@ class GovernorateResource extends Resource
     protected static ?string $model = Governorate::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
-    
+
     protected static ?string $navigationLabel = 'Governorates';
-    
+
     protected static ?int $navigationSort = 4;
 
     protected static ?string $recordTitleAttribute = 'name';
@@ -50,5 +50,13 @@ class GovernorateResource extends Resource
             'create' => CreateGovernorate::route('/create'),
             'edit' => EditGovernorate::route('/{record}/edit'),
         ];
+    }
+    public static function getNavigationBadge(): ?string
+    {
+        // The static::getModel() method resolves the model defined in the $model property.
+        $modelClass = static::getModel();
+
+        // Use the resolved class name to call the static count method.
+        return (string) $modelClass::count();
     }
 }

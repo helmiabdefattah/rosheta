@@ -49,7 +49,16 @@ class MedicalTestResource extends Resource
             'edit' => EditMedicalTest::route('/{record}/edit'),
         ];
     }
+    public static function getNavigationBadge(): ?string
+    {
+        // The static::getModel() method resolves the model defined in the $model property.
+        $modelClass = static::getModel();
+
+        // Use the resolved class name to call the static count method.
+        return (string) $modelClass::count();
+    }
 }
+
 
 
 

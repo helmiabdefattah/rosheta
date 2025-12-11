@@ -19,9 +19,9 @@ class PharmacyResource extends Resource
     protected static ?string $model = Pharmacy::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingStorefront;
-    
+
     protected static ?string $navigationLabel = 'Pharmacies';
-    
+
     protected static ?int $navigationSort = 3;
 
     protected static ?string $recordTitleAttribute = 'name';
@@ -50,5 +50,13 @@ class PharmacyResource extends Resource
             'create' => CreatePharmacy::route('/create'),
             'edit' => EditPharmacy::route('/{record}/edit'),
         ];
+    }
+    public static function getNavigationBadge(): ?string
+    {
+        // The static::getModel() method resolves the model defined in the $model property.
+        $modelClass = static::getModel();
+
+        // Use the resolved class name to call the static count method.
+        return (string) $modelClass::count();
     }
 }

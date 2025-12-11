@@ -15,3 +15,4 @@ class ListOffers extends ListRecords
         return parent::getTableQuery()->orderBy('id', 'desc');
     }
 }
+
