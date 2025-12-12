@@ -19,7 +19,8 @@ class OrderController extends Controller
         ]);
 
         $offer = Offer::with(['lines', 'request'])->findOrFail($request->offer_id);
-
+        $clientRequest = $offer->request;
+        $clientRequest->update(['status' => 'confirmed']);
         // Security: user must own the request
         if ($offer->request->client_id !== auth()->id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -37,6 +38,7 @@ class OrderController extends Controller
         $order = Order::create([
             'client_request_id' => $offer->client_request_id,
             'pharmacy_id' => $offer->pharmacy_id,
+            'laboratory_id' => $offer->laboratory_id,
             'user_id' => auth()->id(),
             'offer_id' => $offer->id,
             'status' => 'preparing',
@@ -51,6 +53,7 @@ class OrderController extends Controller
             OrderLine::create([
                 'order_id' => $order->id,
                 'medicine_id' => $line->medicine_id,
+                'medical_test_id' => $line->medical_test_id,
                 'quantity' => $line->quantity,
                 'unit' => $line->unit,
                 'price' => $line->price,
