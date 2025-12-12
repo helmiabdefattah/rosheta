@@ -19,9 +19,9 @@ class AreaResource extends Resource
     protected static ?string $model = Area::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMapPin;
-    
+
     protected static ?string $navigationLabel = 'Areas';
-    
+
     protected static ?int $navigationSort = 6;
 
     protected static ?string $recordTitleAttribute = 'name';
@@ -50,5 +50,10 @@ class AreaResource extends Resource
             'create' => CreateArea::route('/create'),
             'edit' => EditArea::route('/{record}/edit'),
         ];
+    }
+    public static function getNavigationBadge(): ?string
+    {
+        // Get the count of your ClientRequest model
+        return (string) Area::count();
     }
 }

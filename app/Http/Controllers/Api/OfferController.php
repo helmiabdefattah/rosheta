@@ -37,11 +37,14 @@ class OfferController extends Controller
         }
         // 2️⃣ Load offers with relations
         $offers = Offer::where('client_request_id', $requestId)
-            ->select('id', 'client_request_id', 'pharmacy_id', 'status', 'total_price')
+            ->select('id', 'client_request_id', 'pharmacy_id', 'status', 'total_price','laboratory_id')
             ->with([
                 'pharmacy:id,name',
                 'lines:id,offer_id,medicine_id,quantity,unit,price',
                 'lines.medicine:id,name,arabic',
+                'laboratory:id,name',
+                'testLines:id,offer_id,medical_test_id',
+                'testLines.medicalTest:id,test_name_en,test_name_ar',
             ])
             ->get();
 //dd($offers);

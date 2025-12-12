@@ -55,7 +55,7 @@ class Laboratory extends Model
 
 	public function offers(): HasMany
 	{
-		return $this->hasMany(MedicalTestOffer::class);
+		return $this->hasMany(Offer::class,'laboratory_id');
 	}
 }
 

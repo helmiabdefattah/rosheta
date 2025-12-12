@@ -19,9 +19,9 @@ class MedicineResource extends Resource
     protected static ?string $model = Medicine::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBeaker;
-    
+
     protected static ?string $navigationLabel = 'Medicines';
-    
+
     protected static ?int $navigationSort = 2;
 
     protected static ?string $recordTitleAttribute = 'name';
@@ -50,5 +50,13 @@ class MedicineResource extends Resource
             'create' => CreateMedicine::route('/create'),
             'edit' => EditMedicine::route('/{record}/edit'),
         ];
+    }
+    public static function getNavigationBadge(): ?string
+    {
+        // The static::getModel() method resolves the model defined in the $model property.
+        $modelClass = static::getModel();
+
+        // Use the resolved class name to call the static count method.
+        return (string) $modelClass::count();
     }
 }
