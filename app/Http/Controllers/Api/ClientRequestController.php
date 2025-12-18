@@ -217,7 +217,7 @@ class ClientRequestController extends Controller
                 'note' => $validated['note'] ?? null,
                 'status' => $validated['status'] ?? 'pending',
                 'images' => $imageNames, // store array of file names
-                'type' => 'test'
+                'type' => 'test',
             ]);
 
             // Save request lines if provided
@@ -229,6 +229,7 @@ class ClientRequestController extends Controller
                 if (json_last_error() === JSON_ERROR_NONE && is_array($linesArray)) {
                     $linesPayload = collect($linesArray)->map(fn($line) => [
                         'medical_test_id' => $line['test_id'],
+                        'quantity' => 1,
 
                     ])->toArray();
 

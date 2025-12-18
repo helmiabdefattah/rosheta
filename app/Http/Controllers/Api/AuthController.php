@@ -94,6 +94,32 @@ class AuthController extends Controller
     }
 
     /**
+     * Verify authentication token
+     */
+    public function verify(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Invalid or expired token',
+            ], 401);
+        }
+
+        return response()->json([
+            'valid' => true,
+            'message' => 'Token is valid',
+            'client' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'phone_number' => $user->phone_number,
+                'email' => $user->email,
+            ],
+        ]);
+    }
+
+    /**
      * Get authenticated client
      */
     public function me(Request $request)

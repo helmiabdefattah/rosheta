@@ -13,7 +13,8 @@ class ListLaboratories extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->url(route('laboratories.create')),
         ];
     }
 }

@@ -29,24 +29,26 @@ class AdminPanelProvider extends PanelProvider
 //            ->databaseNotificationsPolling('30s')
         ->default()
             ->id('admin')
-            ->path('admin')
-            ->login()
+            ->path('filament-admin') // Changed to avoid conflict with Blade admin routes
+            ->login(false) // Disable Filament login, using custom Blade login
+            ->authGuard('web')
             ->colors([
                 'primary' => Color::Emerald,
             ])
             ->brandLogo(fn () => view('filament.brand-logo'))
 
             ->favicon(url('/images/mo-logo.png'))
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
+            // Disabled: Using Blade-based admin panel instead
+            // ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->brandName('Mostashfa-on')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            // ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Dashboard::class,
+                // Dashboard::class, // Using custom Blade dashboard
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            // ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
+                // AccountWidget::class,
+                // FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -58,9 +60,10 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                // Removed RedirectLaboratoryOwner - using Blade admin panel now
             ])
             ->authMiddleware([
-                Authenticate::class,
+                \App\Http\Middleware\AuthenticateAdmin::class,
             ]);
     }
 }

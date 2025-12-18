@@ -16,6 +16,7 @@ class EditLaboratory extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+    
 }
 
 

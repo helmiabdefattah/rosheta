@@ -45,8 +45,9 @@ class LaboratoryResource extends Resource
     {
         return [
             'index' => ListLaboratories::route('/'),
-            'create' => CreateLaboratory::route('/create'),
-            'edit' => EditLaboratory::route('/{record}/edit'),
+            // Create and Edit are now handled by Blade views
+            // 'create' => CreateLaboratory::route('/create'),
+            // 'edit' => EditLaboratory::route('/{record}/edit'),
         ];
     }
     public static function getNavigationBadge(): ?string

@@ -97,6 +97,15 @@
                     <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" class="text-slate-500 hover:text-slate-900 font-bold text-sm uppercase">
                         {{ app()->getLocale() === 'ar' ? 'EN' : 'عربي' }}
                     </a>
+                    @auth
+                        <a href="{{ url('/admin') }}" class="px-5 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-primary/20 font-medium text-sm">
+                            {{ app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard' }}
+                        </a>
+                    @else
+                        <a href="{{ url('/admin/login') }}" class="px-5 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-primary/20 font-medium text-sm">
+                            {{ app()->getLocale() === 'ar' ? 'تسجيل الدخول' : 'Login' }}
+                        </a>
+                    @endauth
                     <button class="px-5 py-2.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 font-medium text-sm">
                         {{ app()->getLocale() === 'ar' ? 'احصل على التطبيق' : 'Get the App' }}
                     </button>
@@ -111,6 +120,11 @@
         <div id="mobile-menu" class="hidden absolute top-20 left-0 w-full bg-white border-b border-gray-100 shadow-xl p-4 flex-col gap-4 md:hidden">
             <a href="{{ url('/') }}#features" class="block py-2 text-slate-600 font-medium">{{ app()->getLocale() === 'ar' ? 'المميزات' : 'Features' }}</a>
             <a href="{{ url('/') }}#about" class="block py-2 text-slate-600 font-medium">{{ app()->getLocale() === 'ar' ? 'عن التطبيق' : 'About' }}</a>
+            @auth
+                <a href="{{ url('/admin') }}" class="block py-2 text-primary font-bold">{{ app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard' }}</a>
+            @else
+                <a href="{{ url('/admin/login') }}" class="block py-2 text-primary font-bold">{{ app()->getLocale() === 'ar' ? 'تسجيل الدخول' : 'Login' }}</a>
+            @endauth
             <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" class="block py-2 text-primary font-bold">
                 {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
             </a>

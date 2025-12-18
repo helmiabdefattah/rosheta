@@ -20,6 +20,11 @@ Route::get('/privacy', function () {
 
 Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale');
 
+// Auth routes
+Route::get('/admin/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/admin/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
+Route::post('/admin/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
+
 // Offer routes
 Route::get('/admin/offers/create/{request}', [OfferController::class, 'create'])->name('offers.create');
 Route::post('/offers', [OfferController::class, 'store'])->name('offers.store');
@@ -47,6 +52,83 @@ Route::get('/api/client-requests/{id}/lines', function ($id) {
     })->toArray();
 
     return response()->json(['lines' => $lines]);
+});
+
+// Laboratory routes
+Route::get('/admin/laboratories/create', [App\Http\Controllers\LaboratoryController::class, 'create'])->name('laboratories.create');
+Route::post('/admin/laboratories', [App\Http\Controllers\LaboratoryController::class, 'store'])->name('laboratories.store');
+Route::get('/admin/laboratories/{laboratory}/edit', [App\Http\Controllers\LaboratoryController::class, 'edit'])->name('laboratories.edit');
+Route::put('/admin/laboratories/{laboratory}', [App\Http\Controllers\LaboratoryController::class, 'update'])->name('laboratories.update');
+
+// Laboratory Dashboard (for laboratory owners)
+Route::get('/admin/laboratory/dashboard', [App\Http\Controllers\LaboratoryDashboardController::class, 'index'])->name('laboratories.dashboard')->middleware('auth');
+
+// Admin routes (Blade-based admin panel)
+Route::middleware(['auth', \App\Http\Middleware\RedirectLaboratoryOwner::class])->prefix('admin')->name('admin.')->group(function () {
+    // Redirect /admin to /admin/dashboard
+    Route::get('/', function () {
+        return redirect()->route('admin.dashboard');
+    });
+    
+    // Dashboard
+    Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    
+    // Areas
+    Route::get('/areas/data', [App\Http\Controllers\Admin\AreaController::class, 'data'])->name('areas.data');
+    Route::resource('areas', App\Http\Controllers\Admin\AreaController::class);
+    
+    // Cities
+    Route::get('/cities/data', [App\Http\Controllers\Admin\CityController::class, 'data'])->name('cities.data');
+    Route::resource('cities', App\Http\Controllers\Admin\CityController::class);
+    
+    // Governorates
+    Route::get('/governorates/data', [App\Http\Controllers\Admin\GovernorateController::class, 'data'])->name('governorates.data');
+    Route::resource('governorates', App\Http\Controllers\Admin\GovernorateController::class);
+    
+    // Medical Tests
+    Route::get('/medical-tests/data', [App\Http\Controllers\Admin\MedicalTestController::class, 'data'])->name('medical-tests.data');
+    Route::resource('medical-tests', App\Http\Controllers\Admin\MedicalTestController::class);
+    
+    // Medicines
+    Route::get('/medicines/data', [App\Http\Controllers\Admin\MedicineController::class, 'data'])->name('medicines.data');
+    Route::resource('medicines', App\Http\Controllers\Admin\MedicineController::class);
+    
+    // Users
+    Route::get('/users/data', [App\Http\Controllers\Admin\UserController::class, 'data'])->name('users.data');
+    Route::resource('users', App\Http\Controllers\Admin\UserController::class);
+    
+    // Pharmacies
+    Route::get('/pharmacies/data', [App\Http\Controllers\Admin\PharmacyController::class, 'data'])->name('pharmacies.data');
+    Route::resource('pharmacies', App\Http\Controllers\Admin\PharmacyController::class);
+    
+    // Laboratories
+    Route::get('/laboratories/data', [App\Http\Controllers\Admin\LaboratoryController::class, 'data'])->name('laboratories.data');
+    Route::get('/laboratories', [App\Http\Controllers\Admin\LaboratoryController::class, 'index'])->name('laboratories.index');
+    Route::get('/laboratories/create', [App\Http\Controllers\Admin\LaboratoryController::class, 'create'])->name('laboratories.create');
+    Route::post('/laboratories', [App\Http\Controllers\Admin\LaboratoryController::class, 'store'])->name('laboratories.store');
+    Route::get('/laboratories/{laboratory}/edit', [App\Http\Controllers\Admin\LaboratoryController::class, 'edit'])->name('laboratories.edit');
+    Route::put('/laboratories/{laboratory}', [App\Http\Controllers\Admin\LaboratoryController::class, 'update'])->name('laboratories.update');
+    Route::delete('/laboratories/{laboratory}', [App\Http\Controllers\Admin\LaboratoryController::class, 'destroy'])->name('laboratories.destroy');
+    
+    // Clients
+    Route::get('/clients/data', [App\Http\Controllers\Admin\ClientController::class, 'data'])->name('clients.data');
+    Route::resource('clients', App\Http\Controllers\Admin\ClientController::class);
+    
+    // Client Requests
+    Route::get('/client-requests/data', [App\Http\Controllers\Admin\ClientRequestController::class, 'data'])->name('client-requests.data');
+    Route::resource('client-requests', App\Http\Controllers\Admin\ClientRequestController::class);
+    
+    // Orders
+    Route::get('/orders/data', [App\Http\Controllers\Admin\OrderController::class, 'data'])->name('orders.data');
+    Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
+    
+    // Offers
+    Route::get('/offers/data', [App\Http\Controllers\Admin\OfferController::class, 'data'])->name('offers.data');
+    Route::resource('offers', App\Http\Controllers\Admin\OfferController::class);
+    
+    // Medical Test Offers
+    Route::get('/medical-test-offers/data', [App\Http\Controllers\Admin\MedicalTestOfferController::class, 'data'])->name('medical-test-offers.data');
+    Route::resource('medical-test-offers', App\Http\Controllers\Admin\MedicalTestOfferController::class);
 });
 
 
