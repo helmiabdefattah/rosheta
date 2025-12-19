@@ -1172,27 +1172,27 @@
 
         function updateTotal() {
             let total = 0;
-            offerLines.forEach((line, i) => {
-                if (currentRequestType === 'test') {
-                    // For tests: only price (no quantity)
-                    const price = parseFloat($(`[name="offer_lines[${i}][price]"]`).val()) || 0;
-                    total += price;
-                } else {
-                    // For medicines: quantity * price
-                    const qty = parseFloat($(`[name="offer_lines[${i}][quantity]"]`).val()) || 0;
-                    const price = parseFloat($(`[name="offer_lines[${i}][price]"]`).val()) || 0;
-                    total += qty * price;
-                }
+            offerLines.forEach(line => {
+                const price = parseFloat(line.price) || 0;
+                const quantity = parseFloat(line.quantity) || 1;
+                total += price * quantity;
             });
             $('#total_price').val(total.toFixed(2));
         }
 
-        // Initialize with request lines if any
-        if (requestLines.length > 0) {
-            requestLines.forEach(line => addOfferLine(line));
-        }
+        // Form submission: optional validation before sending
+        $('#offerForm').on('submit', function(e) {
+            if (offerLines.length === 0) {
+                alert('Please add at least one offer line before submitting.');
+                e.preventDefault();
+            }
+        });
+
+        // Initialize with any pre-added lines
+        renderOfferLines();
     });
 </script>
+
 </body>
-@endsection
 </html>
+@endsection

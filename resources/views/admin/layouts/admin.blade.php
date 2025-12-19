@@ -40,7 +40,7 @@
         .sidebar-scroll::-webkit-scrollbar { width: 4px; }
         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
         .sidebar-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
-        
+
         /* Navigation Item Styles */
         .nav-item {
             display: flex;
@@ -88,16 +88,15 @@
 <body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-hidden">
 
     <div class="flex h-screen w-full">
-        
+
         <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden backdrop-blur-sm"></div>
 
         <aside id="sidebar" class="fixed lg:static inset-y-0 z-50 w-64 bg-sidebar text-white flex flex-col shadow-2xl sidebar-transition sidebar-closed-ltr lg:translate-x-0 h-full">
-            
+
             <div class="h-16 flex items-center px-6 border-b border-slate-800/50">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-sidebar font-bold">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                    </div>
+                    <img src="/images/full-logo.png" alt="Mostashfa-on Logo" class="h-12 w-auto object-contain">
+
                     <span class="text-lg font-bold tracking-tight text-white">
                         {{ app()->getLocale() === 'ar' ? 'مستشفى-أون' : 'Mostashfa-on' }}
                     </span>
@@ -108,9 +107,9 @@
             </div>
 
             <nav class="flex-1 overflow-y-auto p-4 sidebar-scroll">
-                
+
                 <div class="menu-header">{{ app()->getLocale() === 'ar' ? 'الرئيسية' : 'MAIN' }}</div>
-                
+
                 <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                     <svg class="w-5 h-5 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
@@ -213,7 +212,7 @@
         </aside>
 
         <div class="flex-1 flex flex-col h-full bg-gray-100 relative">
-            
+
             <header class="h-16 bg-white flex items-center justify-between px-6 border-b border-gray-200 lg:hidden">
                 <button id="open-sidebar" class="text-slate-600">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -238,7 +237,7 @@
                         <p>{{ session('success') }}</p>
                     </div>
                 @endif
-                
+
                 @yield('content')
             </main>
         </div>
