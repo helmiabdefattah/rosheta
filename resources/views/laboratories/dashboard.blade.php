@@ -63,7 +63,7 @@
                 </p>
             </div>
             <div>
-                <a href="{{ route('filament.admin.resources.laboratories.index') }}" class="btn btn-secondary">Back to Laboratories</a>
+{{--                <a href="{{ route('filament.admin.resources.laboratories.index') }}" class="btn btn-secondary">Back to Laboratories</a>--}}
             </div>
         </div>
 
@@ -85,8 +85,8 @@
         <div class="card mb-4">
             <div class="card-body">
                 <form method="GET" action="{{ route('laboratories.dashboard') }}" class="d-flex gap-2">
-                    <input type="text" name="search" class="form-control search-box" 
-                           placeholder="Search by Request ID, Client Name, or Phone..." 
+                    <input type="text" name="search" class="form-control search-box"
+                           placeholder="Search by Request ID, Client Name, or Phone..."
                            value="{{ request('search') }}">
                     <button type="submit" class="btn btn-primary">Search</button>
                     @if(request('search'))
@@ -152,13 +152,13 @@
                                         </td>
                                         <td>
                                             <div class="d-flex gap-2">
-                                                <a href="{{ route('offers.create', ['request' => $request->id]) }}" 
+                                                <a href="{{ route('offers.create', ['request' => $request->id]) }}"
                                                    class="btn btn-success btn-sm">
                                                     Make Offer
                                                 </a>
-                                                <button type="button" 
-                                                        class="btn btn-info btn-sm" 
-                                                        data-bs-toggle="modal" 
+                                                <button type="button"
+                                                        class="btn btn-info btn-sm"
+                                                        data-bs-toggle="modal"
                                                         data-bs-target="#requestModal{{ $request->id }}">
                                                     View Details
                                                 </button>
@@ -182,7 +182,7 @@
                                                             <strong>Email:</strong> {{ $request->client->email ?? 'N/A' }}
                                                         </div>
                                                         <div class="col-md-6">
-                                                            <strong>Status:</strong> 
+                                                            <strong>Status:</strong>
                                                             <span class="status-badge status-pending">{{ ucfirst($request->status) }}</span><br>
                                                             <strong>Created:</strong> {{ $request->created_at->format('Y-m-d H:i') }}
                                                         </div>
@@ -247,9 +247,9 @@
                                                             <strong>Images:</strong><br>
                                                             <div class="d-flex gap-2 flex-wrap">
                                                                 @foreach($request->images as $image)
-                                                                    <img src="{{ asset('storage/requests/' . $image) }}" 
-                                                                         alt="Request Image" 
-                                                                         class="img-thumbnail" 
+                                                                    <img src="{{ asset('storage/requests/' . $image) }}"
+                                                                         alt="Request Image"
+                                                                         class="img-thumbnail"
                                                                          style="max-width: 150px; max-height: 150px;">
                                                                 @endforeach
                                                             </div>
@@ -262,8 +262,8 @@
                                                             <ul class="list-group mt-2">
                                                                 @foreach($request->offers as $offer)
                                                                     <li class="list-group-item">
-                                                                        Offer #{{ $offer->id }} - 
-                                                                        Total: {{ number_format($offer->total_price, 2) }} EGP - 
+                                                                        Offer #{{ $offer->id }} -
+                                                                        Total: {{ number_format($offer->total_price, 2) }} EGP -
                                                                         Status: {{ ucfirst($offer->status) }}
                                                                     </li>
                                                                 @endforeach
@@ -273,7 +273,7 @@
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                    <a href="{{ route('offers.create', ['request' => $request->id]) }}" 
+                                                    <a href="{{ route('offers.create', ['request' => $request->id]) }}"
                                                        class="btn btn-success">
                                                         Make Offer
                                                     </a>

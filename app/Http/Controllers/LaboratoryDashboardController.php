@@ -11,13 +11,13 @@ class LaboratoryDashboardController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+//        $this->middleware('auth');
     }
 
     public function index(Request $request)
     {
         $user = Auth::user();
-        
+
         // Get the laboratory for the authenticated user
         $laboratory = null;
         if ($user->laboratory_id) {

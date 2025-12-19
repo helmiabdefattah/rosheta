@@ -73,7 +73,7 @@ class OfferController extends Controller
         $users = [];
         $clientRequests = [];
 
-        return view('offers.create', compact(
+        return view('admin.offers.create', compact(
             'medicines',
             'tests',
             'pharmacies',
