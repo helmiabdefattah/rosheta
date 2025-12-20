@@ -1,6 +1,6 @@
-@extends('admin.layouts.admin')
+@extends('laboratories.layouts.dashboard')
 
-@section('title', app()->getLocale() === 'ar' ? 'تعديل المعمل' : 'Edit Laboratory')
+@section('title', app()->getLocale() === 'ar' ? 'تعديل ملف المعمل' : 'Edit Laboratory Profile')
 
 @section('page-description', app()->getLocale() === 'ar' ? 'تعديل معلومات المعمل' : 'Update laboratory information')
 
@@ -44,7 +44,6 @@
             background-color: #e0f2fe;
         }
         
-        /* Custom option template styling */
         .select2-results__option {
             padding: 8px 12px;
             line-height: 1.5;
@@ -89,10 +88,40 @@
         </div>
     @endif
 
-    <form action="{{ route('admin.laboratories.update', $laboratory) }}" method="POST" id="laboratory-edit-form">
+    <form action="{{ route('laboratories.profile.update', $laboratory) }}" method="POST" id="laboratory-edit-form" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         <input type="hidden" name="is_active" value="0" id="is_active_hidden">
+
+        <!-- Logo Section -->
+        <div class="card">
+            <div class="card-header">{{ app()->getLocale() === 'ar' ? 'شعار المعمل' : 'Laboratory Logo' }}</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ app()->getLocale() === 'ar' ? 'معاينة الشعار الحالي' : 'Current Logo Preview' }}</label>
+                        <div class="mb-3">
+                            @if($laboratory->getFirstMediaUrl('logo'))
+                                <img src="{{ $laboratory->getFirstMediaUrl('logo') }}" alt="Logo" class="img-thumbnail" style="max-width: 200px; max-height: 200px; object-fit: contain;">
+                            @else
+                                <div class="border rounded p-4 text-center text-muted" style="width: 200px; height: 200px; display: flex; align-items: center; justify-content: center;">
+                                    {{ app()->getLocale() === 'ar' ? 'لا يوجد شعار' : 'No Logo' }}
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ app()->getLocale() === 'ar' ? 'رفع شعار جديد' : 'Upload New Logo' }}</label>
+                        <input type="file" name="logo" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp">
+                        <small class="form-text text-muted">{{ app()->getLocale() === 'ar' ? 'الصيغ المدعومة: JPEG, PNG, GIF, WebP. الحد الأقصى للحجم: 2MB' : 'Supported formats: JPEG, PNG, GIF, WebP. Max size: 2MB' }}</small>
+                        <div id="logoPreview" class="mt-3" style="display: none;">
+                            <label class="form-label">{{ app()->getLocale() === 'ar' ? 'معاينة الشعار الجديد' : 'New Logo Preview' }}</label>
+                            <img id="logoPreviewImg" src="" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px; object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Basic Information -->
         <div class="card">
@@ -214,7 +243,7 @@
         </div>
 
         <div class="d-flex justify-content-end gap-2 mt-4">
-            <a href="{{ route('admin.laboratories.index') }}" class="btn btn-secondary">{{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}</a>
+            <a href="{{ route('laboratories.dashboard') }}" class="btn btn-secondary">{{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}</a>
             <button type="submit" class="btn btn-primary" id="save-btn">{{ app()->getLocale() === 'ar' ? 'حفظ التغييرات' : 'Save Changes' }}</button>
         </div>
     </form>
@@ -284,6 +313,22 @@
                 $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>{{ app()->getLocale() === 'ar' ? 'جاري الحفظ...' : 'Saving...' }}');
                 // Form will submit normally
             });
+            
+            // Handle logo preview
+            $('input[name="logo"]').on('change', function(e) {
+                var file = e.target.files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#logoPreviewImg').attr('src', e.target.result);
+                        $('#logoPreview').show();
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    $('#logoPreview').hide();
+                }
+            });
         });
     </script>
 @endpush
+

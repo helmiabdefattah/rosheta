@@ -20,7 +20,7 @@ class LaboratoryController extends Controller
     {
         $users = User::all();
         $areas = Area::with('city.governorate')->where('is_active', true)->get();
-        return view('admin.laboratories.create', compact('users', 'areas'));
+        return view('laboratories.create', compact('users', 'areas'));
     }
 
     public function store(Request $request)
@@ -28,14 +28,25 @@ class LaboratoryController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'user_id' => 'nullable|exists:users,id',
-            'area_id' => 'nullable|exists:areas,id',
             'phone' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string',
+            'area_id' => 'nullable|exists:areas,id',
             'lat' => 'nullable|numeric',
             'lng' => 'nullable|numeric',
+            'license_number' => 'nullable|string|max:255',
+            'manager_name' => 'nullable|string|max:255',
+            'manager_license' => 'nullable|string|max:255',
+            'opening_time' => 'nullable|date_format:H:i',
+            'closing_time' => 'nullable|date_format:H:i',
             'is_active' => 'boolean',
+            'notes' => 'nullable|string',
         ]);
+
+        // Handle location array if provided
+        if ($request->has('location') && is_array($request->location)) {
+            $validated['location'] = $request->location;
+        }
 
         Laboratory::create($validated);
 
@@ -47,7 +58,7 @@ class LaboratoryController extends Controller
     {
         $users = User::all();
         $areas = Area::with('city.governorate')->where('is_active', true)->get();
-        return view('admin.laboratories.edit', compact('laboratory', 'users', 'areas'));
+        return view('laboratories.edit', compact('laboratory', 'users', 'areas'));
     }
 
     public function update(Request $request, Laboratory $laboratory)
@@ -55,14 +66,25 @@ class LaboratoryController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'user_id' => 'nullable|exists:users,id',
-            'area_id' => 'nullable|exists:areas,id',
             'phone' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string',
+            'area_id' => 'nullable|exists:areas,id',
             'lat' => 'nullable|numeric',
             'lng' => 'nullable|numeric',
+            'license_number' => 'nullable|string|max:255',
+            'manager_name' => 'nullable|string|max:255',
+            'manager_license' => 'nullable|string|max:255',
+            'opening_time' => 'nullable|date_format:H:i',
+            'closing_time' => 'nullable|date_format:H:i',
             'is_active' => 'boolean',
+            'notes' => 'nullable|string',
         ]);
+
+        // Handle location array if provided
+        if ($request->has('location') && is_array($request->location)) {
+            $validated['location'] = $request->location;
+        }
 
         $laboratory->update($validated);
 

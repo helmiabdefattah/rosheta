@@ -1,30 +1,17 @@
-@extends('admin.layouts.admin')
-@section('title', 'Create Offer')
-@section('page-title', 'Create Offer')
-@section('content')
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Offer</title>
+@extends(auth()->check() && auth()->user()->laboratory_id ? 'laboratories.layouts.dashboard' : 'admin.layouts.admin')
 
-    <!-- Bootstrap CSS -->
+@section('title', app()->getLocale() === 'ar' ? 'إنشاء عرض' : 'Create Offer')
+
+@section('page-description', app()->getLocale() === 'ar' ? 'إنشاء عرض جديد للطلب' : 'Create a new offer for the request')
+
+@push('styles')
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
-    <!-- Google Fonts for Filament style -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
     <style>
         :root {
-            --primary: #3f51b5;
-            --primary-dark: #303f9f;
-            --primary-light: #c5cae9;
+            --primary: #0d9488;
+            --primary-dark: #0f766e;
+            --primary-light: #ccfbf1;
             --secondary: #ff4081;
             --success: #4caf50;
             --warning: #ff9800;
@@ -46,26 +33,6 @@
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
-            color: var(--gray-800);
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1200px;
-        }
-
-        h1 {
-            font-weight: 700;
-            color: var(--gray-900);
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
         .text-muted {
             color: var(--gray-600) !important;
         }
@@ -85,7 +52,7 @@
         }
 
         .card-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            background: #0d9488;
             color: white;
             font-weight: 600;
             border: none;
@@ -111,11 +78,13 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            background: #0d9488;
+            border-color: #0d9488;
         }
 
         .btn-primary:hover {
-            background: linear-gradient(135deg, var(--primary-dark) 0%, #283593 100%);
+            background: #0f766e;
+            border-color: #0f766e;
         }
 
         .btn-success {
@@ -157,8 +126,8 @@
         }
 
         .form-control:focus, .form-select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.1);
+            border-color: #0d9488;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
         }
 
         .form-control[readonly] {
@@ -173,8 +142,8 @@
         }
 
         .table thead th {
-            background: linear-gradient(135deg, var(--primary-light) 0%, #e8eaf6 100%);
-            color: var(--primary-dark);
+            background: #ccfbf1;
+            color: #0f766e;
             font-weight: 600;
             border: none;
             padding: 0.75rem 1rem;
@@ -185,7 +154,7 @@
         }
 
         .table tbody tr:hover {
-            background-color: rgba(63, 81, 181, 0.05);
+            background-color: rgba(13, 148, 136, 0.05);
         }
 
         .table tbody td {
@@ -195,8 +164,8 @@
         }
 
         .thumbnail-selected {
-            border: 2px solid var(--primary) !important;
-            box-shadow: 0 0 0 2px var(--primary-light);
+            border: 2px solid #0d9488 !important;
+            box-shadow: 0 0 0 2px #ccfbf1;
         }
 
         .image-container {
@@ -222,7 +191,7 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(63, 81, 181, 0.8);
+            background: rgba(13, 148, 136, 0.8);
             color: #fff;
             border: none;
             padding: 0.75rem;
@@ -238,7 +207,7 @@
         }
 
         .nav-arrow:hover {
-            background: var(--primary);
+            background: #0d9488;
             transform: translateY(-50%) scale(1.1);
         }
 
@@ -252,7 +221,7 @@
         }
 
         .img-thumbnail:hover {
-            border-color: var(--primary-light);
+            border-color: #ccfbf1;
             transform: scale(1.05);
         }
 
@@ -280,8 +249,8 @@
         }
 
         .select2-container--default .select2-selection--single:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.1);
+            border-color: #0d9488;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
         }
 
         .select2-container--default .select2-selection--single .select2-selection__rendered {
@@ -302,7 +271,7 @@
         #total_price {
             font-size: 1.5rem;
             font-weight: 700;
-            color: var(--primary);
+            color: #0d9488;
             background: transparent;
             border: none;
             text-align: right;
@@ -312,7 +281,7 @@
         .offer-line-card {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: var(--border-radius);
-            border-left: 4px solid var(--primary);
+            border-left: 4px solid #0d9488;
             transition: all 0.3s ease;
         }
 
@@ -392,7 +361,7 @@
         }
 
         .table-hover .offer-line-row:hover {
-            background-color: rgba(63, 81, 181, 0.04) !important;
+            background-color: rgba(13, 148, 136, 0.04) !important;
         }
 
         /* Ensure Select2 dropdowns look good in table */
@@ -440,92 +409,133 @@
             display: flex;
             align-items: center;
         }
+
+        /* Tab styling */
+        .nav-tabs {
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #6c757d;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .nav-tabs .nav-link:hover {
+            border-color: #0d9488;
+            color: #0d9488;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #0d9488;
+            background-color: transparent;
+            border-color: #0d9488;
+            border-bottom-color: #0d9488;
+        }
     </style>
-</head>
-<body class="bg-light">
+@endpush
 
-<div class="container py-5">
-
-    <h1 class="mb-3">Create New Offer</h1>
-    <p class="text-muted mb-4">Fill in the details below to create a new offer for Request #{{ $clientRequest->id }}</p>
+@section('content')
 
     @if(session('error'))
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <form id="offerForm" action="{{ route('offers.store') }}" method="POST">
+    <!-- Tabs Navigation -->
+    <ul class="nav nav-tabs mb-4" id="offersTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="create-offer-tab" data-bs-toggle="tab" data-bs-target="#create-offer" type="button" role="tab" aria-controls="create-offer" aria-selected="true">
+                {{ app()->getLocale() === 'ar' ? 'إنشاء عرض جديد' : 'Create New Offer' }}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="existing-offers-tab" data-bs-toggle="tab" data-bs-target="#existing-offers" type="button" role="tab" aria-controls="existing-offers" aria-selected="false">
+                {{ app()->getLocale() === 'ar' ? 'العروض الموجودة' : 'Existing Offers' }}
+                @if($existingOffers->count() > 0)
+                    <span class="badge bg-primary ms-2">{{ $existingOffers->count() }}</span>
+                @endif
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tabs Content -->
+    <div class="tab-content" id="offersTabContent">
+        <!-- Create Offer Tab -->
+        <div class="tab-pane fade show active" id="create-offer" role="tabpanel" aria-labelledby="create-offer-tab">
+            <form id="offerForm" action="{{ route('offers.store') }}" method="POST">
         @csrf
         <input type="hidden" name="client_request_id" value="{{ $clientRequest->id }}">
 
         <!-- Offer Details Card -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span>Offer Details</span>
-                <span id="requestTypeBadge" class="request-type-badge {{ $clientRequest->type == 'test' ? 'request-type-test' : 'request-type-medicine' }}">
-                    {{ $clientRequest->type == 'test' ? 'TEST REQUEST' : 'MEDICINE REQUEST' }}
-                </span>
-            </div>
-            <div class="card-body row g-3">
-                <!-- Client Request Display (Readonly) -->
-                <div class="col-md-6">
-                    <label class="form-label">Client Request</label>
-                    <div class="readonly-field">
-                        <div class="d-flex justify-content-between align-items-center w-100">
-                            <span>
-                                Request #{{ $clientRequest->id }} - {{ $clientRequest->client->name ?? 'N/A' }}
-                            </span>
-                            <span class="badge {{ $clientRequest->type == 'test' ? 'bg-info' : 'bg-success' }}">
-                                {{ $clientRequest->type == 'test' ? 'Test' : 'Medicine' }}
-                            </span>
+            <div class="card mb-4 {{auth()->check() && auth()->user()->laboratory_id? 'hidden' : ''}}" >
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Offer Details</span>
+                    <span id="requestTypeBadge" class="request-type-badge {{ $clientRequest->type == 'test' ? 'request-type-test' : 'request-type-medicine' }}">
+                        {{ $clientRequest->type == 'test' ? 'TEST REQUEST' : 'MEDICINE REQUEST' }}
+                    </span>
+                </div>
+                <div class="card-body row g-3">
+                    <!-- Client Request Display (Readonly) -->
+                    <div class="col-md-6">
+                        <label class="form-label">Client Request</label>
+                        <div class="readonly-field">
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <span>
+                                    Request #{{ $clientRequest->id }} - {{ $clientRequest->client->name ?? 'N/A' }}
+                                </span>
+                                <span class="badge {{ $clientRequest->type == 'test' ? 'bg-info' : 'bg-success' }}">
+                                    {{ $clientRequest->type == 'test' ? 'Test' : 'Medicine' }}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Pharmacy/Laboratory Selection -->
-                <div class="col-md-6">
-                    @if($clientRequest->type == 'test')
-                        <!-- Laboratory Selection for Tests -->
-                        <label for="laboratory_id" class="form-label">Laboratory <span class="text-danger">*</span></label>
-                        @if(auth()->user()->laboratory_id)
-                            <input type="hidden" name="laboratory_id" value="{{ auth()->user()->laboratory_id }}">
-                            <div class="readonly-field">
-                                {{ auth()->user()->laboratory->name ?? 'N/A' }}
-                            </div>
+                    <!-- Pharmacy/Laboratory Selection -->
+                    <div class="col-md-6">
+                        @if($clientRequest->type == 'test')
+                            <!-- Laboratory Selection for Tests -->
+                            <label for="laboratory_id" class="form-label">Laboratory <span class="text-danger">*</span></label>
+                            @if(auth()->user()->laboratory_id)
+                                <input type="hidden" name="laboratory_id" value="{{ auth()->user()->laboratory_id }}">
+                                <div class="readonly-field">
+                                    {{ auth()->user()->laboratory->name ?? 'N/A' }}
+                                </div>
+                            @else
+                                <select name="laboratory_id" id="laboratory_id" class="form-select select2" required>
+                                    <option value="">Select a laboratory</option>
+                                    @foreach($laboratories as $id => $name)
+                                        <option value="{{ $id }}" {{ old('laboratory_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
+                            @error('laboratory_id')
+                            <div class="text-danger small">{{ $message }}</div>
+                            @enderror
                         @else
-                            <select name="laboratory_id" id="laboratory_id" class="form-select select2" required>
-                                <option value="">Select a laboratory</option>
-                                @foreach($laboratories as $id => $name)
-                                    <option value="{{ $id }}" {{ old('laboratory_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
-                                @endforeach
-                            </select>
+                            <!-- Pharmacy Selection for Medicines -->
+                            <label for="pharmacy_id" class="form-label">Pharmacy <span class="text-danger">*</span></label>
+                            @if(auth()->user()->pharmacy_id)
+                                <input type="hidden" name="pharmacy_id" value="{{ auth()->user()->pharmacy_id }}">
+                                <div class="readonly-field">
+                                    {{ auth()->user()->pharmacy->name ?? 'N/A' }}
+                                </div>
+                            @else
+                                <select name="pharmacy_id" id="pharmacy_id" class="form-select select2" required>
+                                    <option value="">Select a pharmacy</option>
+                                    @foreach($pharmacies as $id => $name)
+                                        <option value="{{ $id }}" {{ old('pharmacy_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
+                            @error('pharmacy_id')
+                            <div class="text-danger small">{{ $message }}</div>
+                            @enderror
                         @endif
-                        @error('laboratory_id')
-                        <div class="text-danger small">{{ $message }}</div>
-                        @enderror
-                    @else
-                        <!-- Pharmacy Selection for Medicines -->
-                        <label for="pharmacy_id" class="form-label">Pharmacy <span class="text-danger">*</span></label>
-                        @if(auth()->user()->pharmacy_id)
-                            <input type="hidden" name="pharmacy_id" value="{{ auth()->user()->pharmacy_id }}">
-                            <div class="readonly-field">
-                                {{ auth()->user()->pharmacy->name ?? 'N/A' }}
-                            </div>
-                        @else
-                            <select name="pharmacy_id" id="pharmacy_id" class="form-select select2" required>
-                                <option value="">Select a pharmacy</option>
-                                @foreach($pharmacies as $id => $name)
-                                    <option value="{{ $id }}" {{ old('pharmacy_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
-                                @endforeach
-                            </select>
-                        @endif
-                        @error('pharmacy_id')
-                        <div class="text-danger small">{{ $message }}</div>
-                        @enderror
-                    @endif
+                    </div>
                 </div>
             </div>
-        </div>
-
         <!-- Request Images Card -->
         @if(!empty($clientRequest->images))
             <div class="card mb-4">
@@ -659,24 +669,147 @@
             </div>
         </div>
 
-        <!-- Submit Buttons -->
-        <div class="d-flex justify-content-end gap-2">
-            <a href="{{ url()->previous() }}" class="btn btn-secondary">Cancel</a>
-            <button type="submit" class="btn btn-primary">Create Offer</button>
+            <!-- Submit Buttons -->
+            <div class="d-flex justify-content-end gap-2">
+                <a href="{{ url()->previous() }}" class="btn btn-secondary">{{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}</a>
+                <button type="submit" class="btn btn-primary">{{ app()->getLocale() === 'ar' ? 'إنشاء العرض' : 'Create Offer' }}</button>
+            </div>
+            </form>
         </div>
-    </form>
-</div>
 
-<!-- JS Dependencies -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <!-- Existing Offers Tab -->
+        <div class="tab-pane fade" id="existing-offers" role="tabpanel" aria-labelledby="existing-offers-tab">
+            @if($existingOffers->count() > 0)
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">{{ app()->getLocale() === 'ar' ? 'العروض الموجودة للطلب' : 'Existing Offers for Request' }} #{{ $clientRequest->id }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>{{ app()->getLocale() === 'ar' ? 'رقم العرض' : 'Offer ID' }}</th>
+                                        <th>{{ app()->getLocale() === 'ar' ? 'المزود' : 'Provider' }}</th>
+                                        <th>{{ app()->getLocale() === 'ar' ? 'السعر الإجمالي' : 'Total Price' }}</th>
+                                        <th>{{ app()->getLocale() === 'ar' ? 'الحالة' : 'Status' }}</th>
+                                        <th>{{ app()->getLocale() === 'ar' ? 'تاريخ الإنشاء' : 'Created At' }}</th>
+                                        <th>{{ app()->getLocale() === 'ar' ? 'الإجراءات' : 'Actions' }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($existingOffers as $offer)
+                                        <tr>
+                                            <td><strong>#{{ $offer->id }}</strong></td>
+                                            <td>
+                                                @if($offer->laboratory)
+                                                    <span class="badge bg-info">{{ $offer->laboratory->name }}</span>
+                                                @elseif($offer->pharmacy)
+                                                    <span class="badge bg-success">{{ $offer->pharmacy->name }}</span>
+                                                @else
+                                                    <span class="text-muted">N/A</span>
+                                                @endif
+                                            </td>
+                                            <td><strong>{{ number_format($offer->total_price, 2) }} {{ app()->getLocale() === 'ar' ? 'جنيه' : 'EGP' }}</strong></td>
+                                            <td>
+                                                @php
+                                                    $statusColors = [
+                                                        'pending' => 'bg-warning',
+                                                        'accepted' => 'bg-success',
+                                                        'rejected' => 'bg-danger',
+                                                        'draft' => 'bg-secondary',
+                                                    ];
+                                                    $statusColor = $statusColors[$offer->status] ?? 'bg-secondary';
+                                                @endphp
+                                                <span class="badge {{ $statusColor }}">{{ ucfirst($offer->status) }}</span>
+                                            </td>
+                                            <td>{{ $offer->created_at->format('Y-m-d H:i') }}</td>
+                                            <td>
+                                                @php
+                                                    $offerData = [
+                                                        'id' => $offer->id,
+                                                        'provider' => $offer->laboratory ? $offer->laboratory->name : ($offer->pharmacy ? $offer->pharmacy->name : 'N/A'),
+                                                        'status' => $offer->status,
+                                                        'total_price' => $offer->total_price,
+                                                        'created_at' => $offer->created_at->format('Y-m-d H:i'),
+                                                        'request_type' => $offer->request_type,
+                                                        'lines' => []
+                                                    ];
+                                                    
+                                                    if ($offer->request_type == 'test') {
+                                                        foreach ($offer->testLines as $line) {
+                                                            $offerData['lines'][] = [
+                                                                'test_name_en' => $line->medicalTest->test_name_en ?? 'N/A',
+                                                                'test_name_ar' => $line->medicalTest->test_name_ar ?? 'N/A',
+                                                                'price' => $line->price
+                                                            ];
+                                                        }
+                                                    } else {
+                                                        foreach ($offer->medicineLines as $line) {
+                                                            $offerData['lines'][] = [
+                                                                'medicine_name' => $line->medicine->name ?? 'N/A',
+                                                                'quantity' => $line->quantity ?? 1,
+                                                                'unit' => $line->unit ?? 'box',
+                                                                'price' => $line->price
+                                                            ];
+                                                        }
+                                                    }
+                                                @endphp
+                                                <button 
+                                                    type="button" 
+                                                    class="btn btn-sm btn-info view-offer-details" 
+                                                    data-offer='{{ json_encode($offerData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) }}'
+                                                >
+                                                    {{ app()->getLocale() === 'ar' ? 'عرض التفاصيل' : 'View Details' }}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            @else
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <p class="text-muted mb-0">{{ app()->getLocale() === 'ar' ? 'لا توجد عروض موجودة لهذا الطلب' : 'No existing offers for this request' }}</p>
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
 
-<!-- Pass data to JS -->
-<script>
+    <!-- Single Dynamic Modal for Offer Details -->
+    <div class="modal fade" id="offerDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="offerModalTitle">{{ app()->getLocale() === 'ar' ? 'تفاصيل العرض' : 'Offer Details' }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="offerModalBody">
+                    <!-- Content will be generated by JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ app()->getLocale() === 'ar' ? 'إغلاق' : 'Close' }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
     const medicines = {!! json_encode($medicines ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) !!};
 
     const tests = {!! json_encode($tests ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) !!};
+
+    const testPrices = {!! json_encode($testPrices ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) !!};
+
+    const laboratoryId = {{ auth()->user()->laboratory_id ?? 'null' }};
 
     const requestType = "{{ $clientRequest->type ?? 'medicine' }}";
 
@@ -752,11 +885,13 @@
             const type = $(this).data('type');
 
             if (type === 'test') {
+                const testId = $(this).data('id');
+                const price = (laboratoryId && testPrices[testId]) ? testPrices[testId] : '';
                 addOfferLine({
-                    medical_test_id: $(this).data('id'),
+                    medical_test_id: testId,
                     test_name_en: $(this).data('name-en'),
                     test_name_ar: $(this).data('name-ar'),
-                    price: '',
+                    price: price,
                     dosage_form: 'test'
                 });
             } else {
@@ -774,7 +909,12 @@
 
         // Add all lines button
         $('#addAllLinesBtn').click(function() {
-            requestLines.forEach(line => addOfferLine(line));
+            requestLines.forEach(line => {
+                if (line.medical_test_id && laboratoryId && testPrices[line.medical_test_id]) {
+                    line.price = testPrices[line.medical_test_id];
+                }
+                addOfferLine(line);
+            });
         });
 
         // Add empty line button
@@ -788,7 +928,7 @@
                     medical_test_id: line.medical_test_id || line.test_id || '',
                     test_name_en: line.test_name_en || line.medicine_name || '',
                     test_name_ar: line.test_name_ar || '',
-                    price: line.price || '',
+                    price: line.price || (line.medical_test_id && laboratoryId && testPrices[line.medical_test_id] ? testPrices[line.medical_test_id] : ''),
                     dosage_form: 'test'
                 } : {
                     medical_test_id: '',
@@ -875,6 +1015,13 @@
                             line.medical_test_id = testId;
                             line.test_name_en = selectedTest.test_name_en;
                             line.test_name_ar = selectedTest.test_name_ar;
+                            
+                            // Auto-populate price if available for this laboratory
+                            if (laboratoryId && testPrices[testId]) {
+                                line.price = testPrices[testId];
+                            } else {
+                                line.price = '';
+                            }
                         }
                         renderOfferLines();
                     });
@@ -1190,9 +1337,118 @@
 
         // Initialize with any pre-added lines
         renderOfferLines();
-    });
-</script>
 
-</body>
-</html>
-@endsection
+        // Function to show offer details modal
+        function showOfferDetailsModal(offerData) {
+            const isRTL = $('html').attr('dir') === 'rtl';
+            const locale = isRTL ? 'ar' : 'en';
+            
+            // Status colors mapping
+            const statusColors = {
+                'pending': 'bg-warning',
+                'accepted': 'bg-success',
+                'rejected': 'bg-danger',
+                'draft': 'bg-secondary'
+            };
+            const statusColor = statusColors[offerData.status] || 'bg-secondary';
+            
+            // Build modal title
+            const modalTitle = locale === 'ar' 
+                ? `تفاصيل العرض #${offerData.id}`
+                : `Offer Details #${offerData.id}`;
+            
+            // Build modal body HTML
+            let modalBody = `
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>${locale === 'ar' ? 'المزود' : 'Provider'}:</strong><br>
+                        ${offerData.provider}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>${locale === 'ar' ? 'الحالة' : 'Status'}:</strong><br>
+                        <span class="badge ${statusColor}">${offerData.status.charAt(0).toUpperCase() + offerData.status.slice(1)}</span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>${locale === 'ar' ? 'السعر الإجمالي' : 'Total Price'}:</strong><br>
+                        <span class="h5 text-primary">${parseFloat(offerData.total_price).toFixed(2)} ${locale === 'ar' ? 'جنيه' : 'EGP'}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>${locale === 'ar' ? 'تاريخ الإنشاء' : 'Created At'}:</strong><br>
+                        ${offerData.created_at}
+                    </div>
+                </div>
+                <hr>
+                <h6>${locale === 'ar' ? 'تفاصيل العرض' : 'Offer Items'}</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+            `;
+            
+            if (offerData.request_type === 'test') {
+                modalBody += `
+                    <th>${locale === 'ar' ? 'اسم الفحص (EN)' : 'Test Name (EN)'}</th>
+                    <th>${locale === 'ar' ? 'اسم الفحص (AR)' : 'Test Name (AR)'}</th>
+                `;
+            } else {
+                modalBody += `
+                    <th>${locale === 'ar' ? 'الدواء' : 'Medicine'}</th>
+                    <th>${locale === 'ar' ? 'الكمية' : 'Quantity'}</th>
+                    <th>${locale === 'ar' ? 'الوحدة' : 'Unit'}</th>
+                `;
+            }
+            
+            modalBody += `
+                                <th>${locale === 'ar' ? 'السعر' : 'Price'}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            // Add lines
+            offerData.lines.forEach(function(line) {
+                modalBody += '<tr>';
+                if (offerData.request_type === 'test') {
+                    modalBody += `
+                        <td>${line.test_name_en || 'N/A'}</td>
+                        <td>${line.test_name_ar || 'N/A'}</td>
+                        <td>${parseFloat(line.price).toFixed(2)} ${locale === 'ar' ? 'جنيه' : 'EGP'}</td>
+                    `;
+                } else {
+                    modalBody += `
+                        <td>${line.medicine_name || 'N/A'}</td>
+                        <td>${line.quantity || 1}</td>
+                        <td>${line.unit || 'box'}</td>
+                        <td>${parseFloat(line.price).toFixed(2)} ${locale === 'ar' ? 'جنيه' : 'EGP'}</td>
+                    `;
+                }
+                modalBody += '</tr>';
+            });
+            
+            modalBody += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            // Update modal content
+            $('#offerModalTitle').text(modalTitle);
+            $('#offerModalBody').html(modalBody);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('offerDetailsModal'));
+            modal.show();
+        }
+
+        // Handle view offer details button click
+        $(document).on('click', '.view-offer-details', function() {
+            const offerData = $(this).data('offer');
+            if (offerData) {
+                showOfferDetailsModal(offerData);
+            }
+        });
+    });
+    </script>
+@endpush

@@ -446,9 +446,6 @@
 
 <div class="container py-5">
 
-    <h1 class="mb-3">Create New Offer</h1>
-    <p class="text-muted mb-4">Fill in the details below to create a new offer for Request #{{ $clientRequest->id }}</p>
-
     @if(session('error'))
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif

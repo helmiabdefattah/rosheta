@@ -4,16 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\ClientRequest;
 use App\Models\Laboratory;
+use App\Models\Offer;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LaboratoryDashboardController extends Controller
 {
-    public function __construct()
-    {
-//        $this->middleware('auth');
-    }
-
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -21,18 +18,41 @@ class LaboratoryDashboardController extends Controller
         // Get the laboratory for the authenticated user
         $laboratory = null;
         if ($user->laboratory_id) {
-            $laboratory = Laboratory::find($user->laboratory_id);
+            $laboratory = Laboratory::with('user')->find($user->laboratory_id);
         }
 
         // If user doesn't have a laboratory, redirect or show error
         if (!$laboratory) {
-            return redirect()->route('filament.admin.resources.laboratories.index')
-                ->with('error', 'You are not associated with any laboratory.');
+            return redirect()->route('admin.dashboard')
+                ->with('error', app()->getLocale() === 'ar' ? 'أنت غير مرتبط بأي معمل.' : 'You are not associated with any laboratory.');
         }
 
-        // Get pending test requests (type = 'test' and status = 'pending')
-        $query = ClientRequest::where('type', 'test')
+        // Statistics
+        $stats = [
+            'total_requests' => ClientRequest::where('type', 'test')->count(),
+            'pending_requests' => ClientRequest::where('type', 'test')
+                ->where('status', 'pending')
+                ->count(),
+            'total_offers' => Offer::where('laboratory_id', $laboratory->id)
+                ->where('request_type', 'test')
+                ->count(),
+            'accepted_offers' => Offer::where('laboratory_id', $laboratory->id)
+                ->where('request_type', 'test')
+                ->where('status', 'accepted')
+                ->count(),
+            'pending_offers' => Offer::where('laboratory_id', $laboratory->id)
+                ->where('request_type', 'test')
+                ->where('status', 'pending')
+                ->count(),
+            'total_users' => User::where('laboratory_id', $laboratory->id)->count(),
+        ];
+
+        // Get recent pending test requests (type = 'test' and status = 'pending') that don't have offers from this laboratory
+        $recentRequests = ClientRequest::where('type', 'test')
             ->where('status', 'pending')
+            ->whereDoesntHave('offers', function($q) use ($laboratory) {
+                $q->where('laboratory_id', $laboratory->id);
+            })
             ->with([
                 'client',
                 'address.area.city.governorate',
@@ -43,22 +63,10 @@ class LaboratoryDashboardController extends Controller
                     $q->where('laboratory_id', $laboratory->id);
                 }
             ])
-            ->orderBy('created_at', 'desc');
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
 
-        // Filter by search if provided
-        if ($request->has('search') && $request->search) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('id', 'like', "%{$search}%")
-                  ->orWhereHas('client', function($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('phone_number', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        $requests = $query->paginate(15);
-
-        return view('laboratories.dashboard', compact('requests', 'laboratory'));
+        return view('laboratories.dashboard', compact('laboratory', 'stats', 'recentRequests'));
     }
 }

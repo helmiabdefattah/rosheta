@@ -61,7 +61,30 @@ Route::get('/admin/laboratories/{laboratory}/edit', [App\Http\Controllers\Labora
 Route::put('/admin/laboratories/{laboratory}', [App\Http\Controllers\LaboratoryController::class, 'update'])->name('laboratories.update');
 
 // Laboratory Dashboard (for laboratory owners)
-Route::get('/admin/laboratory/dashboard', [App\Http\Controllers\LaboratoryDashboardController::class, 'index'])->name('laboratories.dashboard')->middleware('auth');
+// Laboratory Dashboard Routes
+Route::middleware('auth')->prefix('laboratory')->name('laboratories.')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\LaboratoryDashboardController::class, 'index'])->name('dashboard');
+    
+    // Requests
+    Route::get('/requests', [App\Http\Controllers\LaboratoryRequestController::class, 'index'])->name('requests.index');
+    
+    // Offers
+    Route::get('/offers', [App\Http\Controllers\LaboratoryOfferController::class, 'index'])->name('offers.index');
+    Route::get('/offers/accepted', [App\Http\Controllers\LaboratoryOfferController::class, 'accepted'])->name('offers.accepted');
+    Route::put('/offers/{offer}/cancel', [App\Http\Controllers\LaboratoryOfferController::class, 'cancel'])->name('offers.cancel');
+    
+    // Profile
+    Route::get('/profile/edit', [App\Http\Controllers\LaboratoryProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile/{laboratory}', [App\Http\Controllers\LaboratoryProfileController::class, 'update'])->name('profile.update');
+    
+    // Users
+    Route::get('/users/data', [App\Http\Controllers\LaboratoryUserController::class, 'data'])->name('users.data');
+    Route::resource('users', App\Http\Controllers\LaboratoryUserController::class);
+    
+    // Test Prices
+    Route::get('/test-prices', [App\Http\Controllers\LaboratoryTestPriceController::class, 'index'])->name('test-prices.index');
+    Route::post('/test-prices/store-or-update', [App\Http\Controllers\LaboratoryTestPriceController::class, 'storeOrUpdate'])->name('test-prices.store-or-update');
+});
 
 // Admin routes (Blade-based admin panel)
 Route::middleware(['auth', \App\Http\Middleware\RedirectLaboratoryOwner::class])->prefix('admin')->name('admin.')->group(function () {

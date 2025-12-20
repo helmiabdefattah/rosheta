@@ -73,6 +73,34 @@ class OfferController extends Controller
         $users = [];
         $clientRequests = [];
 
+        // Get laboratory if user is a laboratory owner
+        $laboratory = null;
+        $testPrices = [];
+        if (auth()->user()->laboratory_id) {
+            $laboratory = Laboratory::find(auth()->user()->laboratory_id);
+            
+            // Get test prices for this laboratory
+            $testPrices = \App\Models\LaboratoryTestPrice::where('laboratory_id', $laboratory->id)
+                ->pluck('price', 'medical_test_id')
+                ->toArray();
+        }
+
+        // Get existing offers for this request
+        $existingOffers = Offer::where('client_request_id', $clientRequest->id)
+            ->with([
+                'pharmacy:id,name',
+                'laboratory:id,name',
+                'user:id,name',
+                'medicineLines' => function($q) {
+                    $q->with('medicine:id,name');
+                },
+                'testLines' => function($q) {
+                    $q->with('medicalTest:id,test_name_en,test_name_ar');
+                }
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('admin.offers.create', compact(
             'medicines',
             'tests',
@@ -80,7 +108,10 @@ class OfferController extends Controller
             'laboratories',
             'users',
             'clientRequest',
-            'clientRequests'
+            'clientRequests',
+            'laboratory',
+            'existingOffers',
+            'testPrices'
         ));
     }    public function store(Request $request)
     {
@@ -163,8 +194,17 @@ class OfferController extends Controller
             OfferLine::create($offerLineData);
         }
 
-        return redirect()->route('offers.show', $offer->id)
-            ->with('success', 'Offer created successfully.');
+        // Redirect based on user type
+        $user = Auth::user();
+        if ($user->laboratory_id) {
+            // Laboratory owner - redirect to laboratory dashboard
+            return redirect()->route('laboratories.dashboard')
+                ->with('success', app()->getLocale() === 'ar' ? 'تم إنشاء العرض بنجاح' : 'Offer created successfully.');
+        } else {
+            // Admin - redirect to client requests
+            return redirect()->route('admin.client-requests.index')
+                ->with('success', app()->getLocale() === 'ar' ? 'تم إنشاء العرض بنجاح' : 'Offer created successfully.');
+        }
     }
     public function show(Offer $offer)
     {
