@@ -7,6 +7,8 @@
 @push('styles')
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         .card {
             border: none;
@@ -72,6 +74,67 @@
         }
         .form-check-input {
             cursor: pointer;
+        }
+        
+        /* Leaflet Map Styling */
+        #locationMap {
+            height: 400px;
+            width: 100%;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            margin-top: 0.5rem;
+        }
+        
+        .map-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .map-search-container {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .map-search-container .form-control {
+            width: 100%;
+        }
+        
+        .btn-location {
+            white-space: nowrap;
+        }
+        
+        .search-results {
+            position: absolute;
+            z-index: 1000;
+            background: white;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            max-height: 200px;
+            overflow-y: auto;
+            width: 100%;
+            margin-top: 0.25rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        .search-results .list-group-item {
+            cursor: pointer;
+            border: none;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .search-results .list-group-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .search-results .list-group-item:last-child {
+            border-bottom: none;
+        }
+        
+        .map-search-wrapper {
+            position: relative;
         }
     </style>
 @endpush
@@ -175,13 +238,27 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">{{ app()->getLocale() === 'ar' ? 'خط العرض' : 'Latitude' }}</label>
-                        <input type="number" name="lat" id="lat" class="form-control" step="0.00000001" value="{{ old('lat', $laboratory->lat) }}">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">{{ app()->getLocale() === 'ar' ? 'خط الطول' : 'Longitude' }}</label>
-                        <input type="number" name="lng" id="lng" class="form-control" step="0.00000001" value="{{ old('lng', $laboratory->lng) }}">
+                </div>
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label class="form-label">{{ app()->getLocale() === 'ar' ? 'اختر الموقع على الخريطة' : 'Select Location on Map' }}</label>
+                        <p class="text-muted small">{{ app()->getLocale() === 'ar' ? 'ابحث عن موقع أو انقر على الخريطة لتحديد موقع المعمل أو اسحب العلامة لتغيير الموقع' : 'Search for a location, click on the map to set the laboratory location, or drag the marker to change the location' }}</p>
+                        
+                        <!-- Map Controls -->
+                        <div class="map-controls">
+                            <div class="map-search-wrapper map-search-container">
+                                <input type="text" id="locationSearch" class="form-control" placeholder="{{ app()->getLocale() === 'ar' ? 'ابحث عن موقع...' : 'Search for a location...' }}" autocomplete="off">
+                                <div id="searchResults" class="search-results list-group"></div>
+                            </div>
+                            <button type="button" id="getCurrentLocation" class="btn btn-primary btn-location">
+                                <i class="bi bi-geo-alt-fill"></i> {{ app()->getLocale() === 'ar' ? 'موقعي الحالي' : 'My Current Location' }}
+                            </button>
+                        </div>
+                        
+                        <div id="locationMap"></div>
+                        <!-- Hidden inputs for lat/lng -->
+                        <input type="hidden" name="lat" id="lat" value="{{ old('lat', $laboratory->lat) }}">
+                        <input type="hidden" name="lng" id="lng" value="{{ old('lng', $laboratory->lng) }}">
                     </div>
                 </div>
             </div>
@@ -252,6 +329,7 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         $(document).ready(function() {
             // Initialize Select2 for Owner with custom formatting
@@ -327,6 +405,151 @@
                 } else {
                     $('#logoPreview').hide();
                 }
+            });
+            
+            // Initialize Leaflet Map
+            var currentLat = parseFloat($('#lat').val()) || 30.0444; // Default to Cairo, Egypt
+            var currentLng = parseFloat($('#lng').val()) || 31.2357;
+            
+            // Initialize map
+            var map = L.map('locationMap').setView([currentLat, currentLng], 13);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            // Create a marker (draggable)
+            var marker = L.marker([currentLat, currentLng], {
+                draggable: true
+            }).addTo(map);
+            
+            // Function to update marker and hidden inputs
+            function updateLocation(lat, lng) {
+                marker.setLatLng([lat, lng]);
+                map.setView([lat, lng], 15);
+                $('#lat').val(lat.toFixed(8));
+                $('#lng').val(lng.toFixed(8));
+            }
+            
+            // Update hidden inputs when marker is dragged
+            marker.on('dragend', function(e) {
+                var position = marker.getLatLng();
+                updateLocation(position.lat, position.lng);
+            });
+            
+            // Update marker position and hidden inputs when map is clicked
+            map.on('click', function(e) {
+                updateLocation(e.latlng.lat, e.latlng.lng);
+            });
+            
+            // If coordinates exist, center map on them
+            if ($('#lat').val() && $('#lng').val()) {
+                map.setView([currentLat, currentLng], 15);
+            }
+            
+            // Search functionality using Nominatim Geocoding API
+            var searchTimeout;
+            var searchResults = $('#searchResults');
+            
+            $('#locationSearch').on('input', function() {
+                var query = $(this).val().trim();
+                
+                clearTimeout(searchTimeout);
+                
+                if (query.length < 3) {
+                    searchResults.hide().empty();
+                    return;
+                }
+                
+                searchTimeout = setTimeout(function() {
+                    // Use Nominatim API for geocoding
+                    $.ajax({
+                        url: 'https://nominatim.openstreetmap.org/search',
+                        data: {
+                            q: query,
+                            format: 'json',
+                            limit: 5,
+                            addressdetails: 1
+                        },
+                        dataType: 'json',
+                        beforeSend: function() {
+                            searchResults.html('<div class="list-group-item text-center"><small>{{ app()->getLocale() === "ar" ? "جاري البحث..." : "Searching..." }}</small></div>').show();
+                        },
+                        success: function(data) {
+                            searchResults.empty();
+                            
+                            if (data.length === 0) {
+                                searchResults.html('<div class="list-group-item text-muted text-center"><small>{{ app()->getLocale() === "ar" ? "لا توجد نتائج" : "No results found" }}</small></div>').show();
+                                return;
+                            }
+                            
+                            data.forEach(function(item) {
+                                var displayName = item.display_name;
+                                if (displayName.length > 60) {
+                                    displayName = displayName.substring(0, 60) + '...';
+                                }
+                                
+                                var listItem = $('<div class="list-group-item"></div>')
+                                    .html('<small><strong>' + displayName + '</strong></small>')
+                                    .on('click', function() {
+                                        var lat = parseFloat(item.lat);
+                                        var lng = parseFloat(item.lon);
+                                        updateLocation(lat, lng);
+                                        $('#locationSearch').val(item.display_name);
+                                        searchResults.hide();
+                                    });
+                                
+                                searchResults.append(listItem);
+                            });
+                            
+                            searchResults.show();
+                        },
+                        error: function() {
+                            searchResults.html('<div class="list-group-item text-danger text-center"><small>{{ app()->getLocale() === "ar" ? "حدث خطأ أثناء البحث" : "An error occurred while searching" }}</small></div>').show();
+                        }
+                    });
+                }, 500); // Debounce 500ms
+            });
+            
+            // Hide search results when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.map-search-wrapper').length) {
+                    searchResults.hide();
+                }
+            });
+            
+            // Get Current Location button
+            $('#getCurrentLocation').on('click', function() {
+                var $btn = $(this);
+                var originalText = $btn.html();
+                
+                if (!navigator.geolocation) {
+                    alert('{{ app()->getLocale() === "ar" ? "المتصفح الخاص بك لا يدعم تحديد الموقع الجغرافي" : "Your browser does not support geolocation" }}');
+                    return;
+                }
+                
+                $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>{{ app()->getLocale() === "ar" ? "جاري الحصول على الموقع..." : "Getting location..." }}');
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        var lat = position.coords.latitude;
+                        var lng = position.coords.longitude;
+                        updateLocation(lat, lng);
+                        $btn.prop('disabled', false).html(originalText);
+                    },
+                    function(error) {
+                        var errorMsg = '{{ app()->getLocale() === "ar" ? "فشل في الحصول على موقعك. يرجى المحاولة مرة أخرى أو تحديد الموقع يدوياً." : "Failed to get your location. Please try again or select location manually." }}';
+                        alert(errorMsg);
+                        $btn.prop('disabled', false).html(originalText);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
             });
         });
     </script>
