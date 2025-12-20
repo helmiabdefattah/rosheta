@@ -15,6 +15,7 @@ class Offer extends Model
         'laboratory_id', // إضافة لحفظ المعمل للفحوصات الطبية
         'user_id',
         'status',
+        'vendor_status',
         'total_price',
         'request_type', // 'medicine' أو 'test'
     ];
@@ -183,5 +184,11 @@ class Offer extends Model
         } else {
             $this->pharmacy_id = $id;
         }
+    }
+
+    // Attachments relationship (polymorphic)
+    public function attachments()
+    {
+        return $this->morphMany(Attachment::class, 'attachable');
     }
 }

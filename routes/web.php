@@ -72,6 +72,9 @@ Route::middleware('auth')->prefix('laboratory')->name('laboratories.')->group(fu
     Route::get('/offers', [App\Http\Controllers\LaboratoryOfferController::class, 'index'])->name('offers.index');
     Route::get('/offers/accepted', [App\Http\Controllers\LaboratoryOfferController::class, 'accepted'])->name('offers.accepted');
     Route::put('/offers/{offer}/cancel', [App\Http\Controllers\LaboratoryOfferController::class, 'cancel'])->name('offers.cancel');
+    Route::put('/offers/{offer}/vendor-status', [App\Http\Controllers\LaboratoryOfferController::class, 'updateVendorStatus'])->name('offers.update-vendor-status');
+    Route::post('/offers/{offer}/attachments', [App\Http\Controllers\LaboratoryOfferController::class, 'uploadAttachment'])->name('offers.upload-attachment');
+    Route::delete('/offers/{offer}/attachments/{attachment}', [App\Http\Controllers\LaboratoryOfferController::class, 'deleteAttachment'])->name('offers.delete-attachment');
     
     // Profile
     Route::get('/profile/edit', [App\Http\Controllers\LaboratoryProfileController::class, 'edit'])->name('profile.edit');
