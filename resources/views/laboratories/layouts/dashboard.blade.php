@@ -140,6 +140,13 @@
                     <span>{{ app()->getLocale() === 'ar' ? 'العروض المقبولة' : 'Accepted Offers' }}</span>
                 </a>
 
+                <a href="{{ route('admin.medical-test-offers.index') }}" class="nav-item {{ request()->routeIs('admin.medical-test-offers.*') ? 'active' : '' }}">
+                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2-1.343-2-3-2zM4 12a8 8 0 1016 0 8 8 0 10-16 0zm8 4a4 4 0 110-8 4 4 0 010 8z"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'عروضي على الفحوصات' : 'My Test Offers' }}</span>
+                </a>
+
                 <div class="menu-header">{{ app()->getLocale() === 'ar' ? 'الإعدادات' : 'SETTINGS' }}</div>
 
                 <a href="{{ route('laboratories.profile.edit') }}" class="nav-item {{ request()->routeIs('laboratories.profile.*') ? 'active' : '' }}">

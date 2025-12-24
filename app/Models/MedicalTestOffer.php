@@ -29,10 +29,10 @@ class MedicalTestOffer extends Model
         return $this->belongsTo(Laboratory::class);
     }
 
-    public function lines()
-    {
-        return $this->hasMany(MedicalTestOfferLine::class);
-    }
+//    public function lines()
+//    {
+//        return $this->hasMany(MedicalTestOfferLine::class);
+//    }
 
     public function clientRequest(): BelongsTo
     {
