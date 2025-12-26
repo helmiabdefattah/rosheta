@@ -126,6 +126,7 @@ class OfferController extends Controller
                     ?? ($offer->price - ($offer->price * ($offer->discount / 100)));
 
                 return [
+                    'medical_test_id' => $offer->medical_test_id,
                     'laboratory_id' => $offer->laboratory->id,
                     'laboratory_name'    => $offer->laboratory->name,
                     'laboratory_phone' => $offer->laboratory->phone,
