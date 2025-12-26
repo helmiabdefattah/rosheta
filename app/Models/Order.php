@@ -12,6 +12,8 @@ class Order extends Model
     protected $fillable = [
         'client_request_id',
         'pharmacy_id',
+        'laboratory_id', // إضافة لحفظ المعمل للفحوصات الطبية
+
         'user_id',
         'offer_id',
         'status',

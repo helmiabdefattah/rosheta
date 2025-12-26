@@ -12,6 +12,7 @@ class OrderLine extends Model
     protected $fillable = [
         'order_id',
         'medicine_id',
+        'medical_test_id',
         'quantity',
         'unit',
         'price',
