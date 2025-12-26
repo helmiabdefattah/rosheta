@@ -85,6 +85,8 @@
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'العميل' : 'Client' }}</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'الهاتف' : 'Phone' }}</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'عدد الفحوصات' : 'Tests Count' }}</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'زيارة منزلية' : 'Home Visit' }}</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'العنوان' : 'Address' }}</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'تاريخ الإنشاء' : 'Created At' }}</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'الإجراءات' : 'Actions' }}</th>
                         </tr>
@@ -105,6 +107,35 @@
                                     <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                                         {{ $request->lines->where('item_type', 'test')->count() ?? 0 }} {{ app()->getLocale() === 'ar' ? 'فحص' : 'Test(s)' }}
                                     </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @php
+                                        $isHomeVisit = !is_null($request->client_address_id);
+                                    @endphp
+                                    @if($isHomeVisit)
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">
+                                            {{ app()->getLocale() === 'ar' ? 'نعم' : 'Yes' }}
+                                        </span>
+                                    @else
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-800">
+                                            {{ app()->getLocale() === 'ar' ? 'لا' : 'No' }}
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4">
+                                    @if($request->address)
+                                        @php
+                                            $addrParts = [];
+                                            if (!empty($request->address->address)) $addrParts[] = $request->address->address;
+                                            if (!empty($request->address->area?->name)) $addrParts[] = $request->address->area?->name;
+                                            if (!empty($request->address->city?->name)) $addrParts[] = $request->address->city?->name;
+                                            if (!empty($request->address->city?->governorate?->name)) $addrParts[] = $request->address->city?->governorate?->name;
+                                            $addrString = implode(', ', $addrParts);
+                                        @endphp
+                                        <span class="text-sm text-slate-600">{{ $addrString }}</span>
+                                    @else
+                                        <span class="text-sm text-slate-400">-</span>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="text-sm text-slate-600">{{ $request->created_at->format('Y-m-d H:i') }}</span>
