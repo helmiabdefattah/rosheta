@@ -46,7 +46,7 @@ class OfferController extends Controller
                 'pharmacy:id,name',
                 'lines:id,offer_id,medicine_id,quantity,unit,price',
                 'lines.medicine:id,name,arabic',
-                'laboratory:id,name',
+                'laboratory:id,name,phone',
                 'testLines:id,offer_id,medical_test_id',
                 'testLines.medicalTest:id,test_name_en,test_name_ar',
             ])
@@ -140,6 +140,7 @@ class OfferController extends Controller
                         : null,
                     'test_name_en'       => $offer->medicalTest->test_name_en,
                     'test_name_ar'       => $offer->medicalTest->test_name_ar,
+                    'medical_test_id'       => $offer->medicalTest->id,
 
                     // Cast to int
                     'price'              => (int) round($offer->price),
@@ -269,7 +270,6 @@ class OfferController extends Controller
             'type' => 'required|in:medicine,test',
 
             // request data
-            'client_address_id' => 'required|integer',
             'note' => 'nullable|string',
 
             // provider
@@ -284,7 +284,6 @@ class OfferController extends Controller
             'lines.*.quantity' => 'nullable|integer|min:1',
             'lines.*.unit' => 'nullable|string',
             'lines.*.price' => 'required|numeric|min:0',
-            'lines.*.notes' => 'nullable|string',
         ]);
 
         \DB::beginTransaction();
@@ -308,7 +307,6 @@ class OfferController extends Controller
                     'medical_test_id' => $line['medical_test_id'] ?? null,
                     'quantity' => $line['quantity'] ?? 1,
                     'unit' => $line['unit'] ?? null,
-                    'notes' => $line['notes'] ?? null,
                 ]);
             }
 
@@ -339,7 +337,6 @@ class OfferController extends Controller
                     'quantity' => $line['quantity'] ?? 1,
                     'unit' => $line['unit'] ?? null,
                     'price' => $line['price'],
-                    'notes' => $line['notes'] ?? null,
                 ]);
             }
 
