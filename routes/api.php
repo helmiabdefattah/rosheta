@@ -51,7 +51,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/client-requests', [ClientRequestController::class, 'index']);
     Route::post('/client-requests', [ClientRequestController::class, 'store']);
     Route::get('/offers/list', [OfferController::class, 'offersList']);
+    Route::get('/offers/confirmed', [OfferController::class, 'confirmedTestOffersList']);
     Route::post('/offers/action', [OrderController::class, 'handleOffer']);
+    Route::post('/offers/direct', [OfferController::class, 'createDirectOffer']);
     Route::get('/orders/{orderId}/track', [OrderController::class, 'trackOrder']);
     Route::get('/client-orders', [OfferController::class, 'clientOrders']);
 
@@ -59,6 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/medical-tests', [ClientRequestController::class, 'testsList']);
     Route::post('/medical-test-requests', [ClientRequestController::class, 'test_requests']);
     Route::get('/medical-test-offers', [OfferController::class, 'medicalTestOffersList']);
+    Route::get('/labs', [OfferController::class, 'labList']);
 
     Route::get('/client/addresses', [ClientAddressController::class, 'index']);
     Route::post('/client-addresses', [ClientAddressController::class, 'store']);
