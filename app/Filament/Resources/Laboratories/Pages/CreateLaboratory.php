@@ -24,3 +24,4 @@ class CreateLaboratory extends CreateRecord
 
 
 
+
