@@ -90,6 +90,10 @@ class LaboratoryController extends Controller
 
         $laboratory->update($validated);
 
+        if ($request->has('user_id')){
+            User::find($request->get('user_id'))->update(['laboratory_id' => $laboratory->id]);
+        }
+
         return redirect()->route('filament.admin.resources.laboratories.index')
             ->with('success', 'Laboratory updated successfully.');
     }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Mostashfa-on</title>
+    <title>Register - Mostashfa-on</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes blob {
@@ -28,7 +28,7 @@
                 <img src="{{ url('/images/mo-logo.png') }}" alt="Mostashfa-on" class="w-24 h-24 rounded-2xl ring-2 ring-sky-200 shadow-md object-contain">
                 <div class="text-center leading-tight">
                     <div class="text-3xl font-black text-slate-900">Mostashfa-on</div>
-                    <div class="text-xs text-slate-500">Welcome back</div>
+                    <div class="text-xs text-slate-500">Create your account</div>
                 </div>
             </div>
 
@@ -41,7 +41,7 @@
                             </svg>
                         </div>
                         <div class="ml-3">
-                            <h3 class="text-sm font-medium text-red-800">Login Failed</h3>
+                            <h3 class="text-sm font-medium text-red-800">Registration Failed</h3>
                             <div class="mt-2 text-sm text-red-700">
                                 <ul class="list-disc list-inside space-y-1">
                                     @foreach ($errors->all() as $error)
@@ -54,26 +54,74 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('login') }}" class="space-y-6">
+            @if (session('success'))
+                <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-green-800">{{ session('success') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('register') }}" class="space-y-6">
                 @csrf
 
                 <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                        Email or Phone Number
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name
                     </label>
                     <input 
-                        id="email" 
+                        id="name" 
                         type="text" 
-                        name="email" 
-                        value="{{ old('email') }}" 
+                        name="name" 
+                        value="{{ old('name') }}" 
                         required 
                         autofocus
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-200 outline-none"
-                        placeholder="Enter your email or phone number"
+                        placeholder="Enter your full name"
                     >
-                    <p class="mt-1 text-xs text-gray-500">
-                        Clients can login using email or phone number
-                    </p>
+                    @error('name')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="phone_number" class="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number
+                    </label>
+                    <input 
+                        id="phone_number" 
+                        type="text" 
+                        name="phone_number" 
+                        value="{{ old('phone_number') }}" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-200 outline-none"
+                        placeholder="Enter your phone number"
+                    >
+                    @error('phone_number')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address
+                    </label>
+                    <input 
+                        id="email" 
+                        type="email" 
+                        name="email" 
+                        value="{{ old('email') }}" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-200 outline-none"
+                        placeholder="Enter your email"
+                    >
                     @error('email')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -96,18 +144,18 @@
                     @enderror
                 </div>
 
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <input 
-                            id="remember" 
-                            name="remember" 
-                            type="checkbox" 
-                            class="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
-                        >
-                        <label for="remember" class="ml-2 block text-sm text-gray-700">
-                            Remember me
-                        </label>
-                    </div>
+                <div>
+                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
+                        Confirm Password
+                    </label>
+                    <input 
+                        id="password_confirmation" 
+                        type="password" 
+                        name="password_confirmation" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-200 outline-none"
+                        placeholder="Confirm your password"
+                    >
                 </div>
 
                 <div>
@@ -115,15 +163,15 @@
                         type="submit" 
                         class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-600 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition duration-200"
                     >
-                        Sign in
+                        Create Account
                     </button>
                 </div>
 
                 <div class="text-center">
                     <p class="text-sm text-gray-600">
-                        Don't have an account? 
-                        <a href="{{ route('register') }}" class="font-medium text-sky-600 hover:text-sky-500">
-                            Register here
+                        Already have an account? 
+                        <a href="{{ route('login') }}" class="font-medium text-sky-600 hover:text-sky-500">
+                            Sign in
                         </a>
                     </p>
                 </div>
@@ -136,3 +184,4 @@
     </div>
 </body>
 </html>
+

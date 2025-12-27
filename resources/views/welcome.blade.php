@@ -38,13 +38,13 @@
                     </p>
                     
                     <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                        <button class="px-8 py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/20 hover:-translate-y-1 flex items-center justify-center gap-2">
-                            <span>{{ app()->getLocale() === 'ar' ? 'اشترك في القائمة' : 'Join Waitlist' }}</span>
+                        <a href="{{ route('register') }}" class="px-8 py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/20 hover:-translate-y-1 flex items-center justify-center gap-2">
+                            <span>{{ app()->getLocale() === 'ar' ? 'إنشاء حساب' : 'Register' }}</span>
                             <svg class="w-5 h-5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-                        </button>
-                        <button class="px-8 py-4 bg-white text-slate-700 border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-all hover:-translate-y-1">
-                            {{ app()->getLocale() === 'ar' ? 'كيف يعمل؟' : 'How it works?' }}
-                        </button>
+                        </a>
+                        <a href="{{ route('login') }}" class="px-8 py-4 bg-white text-slate-700 border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-all hover:-translate-y-1">
+                            {{ app()->getLocale() === 'ar' ? 'تسجيل الدخول' : 'Login' }}
+                        </a>
                     </div>
 
                     <div class="pt-8 border-t border-slate-200/60 flex items-center justify-center lg:justify-start gap-8">

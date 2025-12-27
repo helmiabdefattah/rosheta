@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Client;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
@@ -14,7 +17,12 @@ class LoginController extends Controller
      */
     public function showLoginForm()
     {
-        // If already authenticated, redirect based on user type
+        // If already authenticated as client, redirect to client dashboard
+        if (Auth::guard('client')->check()) {
+            return redirect()->route('client.dashboard');
+        }
+        
+        // If already authenticated as user, redirect based on user type
         if (Auth::check()) {
             $user = Auth::user();
             
@@ -36,17 +44,19 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
+            'email' => 'required|string', // Changed from 'email' to 'string' to accept phone or email
             'password' => 'required|string',
         ]);
 
-        $credentials = $request->only('email', 'password');
+        $login = $request->email; // Can be email or phone number
+        $password = $request->password;
         $remember = $request->filled('remember');
 
-        if (Auth::attempt($credentials, $remember)) {
+        // First, try to authenticate as a User (admin/lab owner) - only by email
+        $user = User::where('email', $login)->first();
+        if ($user && Hash::check($password, $user->password)) {
+            Auth::login($user, $remember);
             $request->session()->regenerate();
-            
-            $user = Auth::user();
             
             // Redirect laboratory owners to their dashboard
             if ($user->laboratory_id) {
@@ -55,6 +65,19 @@ class LoginController extends Controller
             
             // Redirect other users to admin dashboard
             return redirect()->route('admin.dashboard');
+        }
+
+        // Then, try to authenticate as a Client - by email or phone number
+        $client = Client::where(function($query) use ($login) {
+            $query->where('email', $login)
+                  ->orWhere('phone_number', $login);
+        })->first();
+        
+        if ($client && Hash::check($password, $client->password)) {
+            Auth::guard('client')->login($client, $remember);
+            $request->session()->regenerate();
+            
+            return redirect()->route('client.dashboard');
         }
 
         throw ValidationException::withMessages([
@@ -67,7 +90,12 @@ class LoginController extends Controller
      */
     public function logout(Request $request)
     {
-        Auth::logout();
+        // Logout from both guards
+        if (Auth::guard('client')->check()) {
+            Auth::guard('client')->logout();
+        } else {
+            Auth::logout();
+        }
         
         $request->session()->invalidate();
         $request->session()->regenerateToken();

@@ -25,6 +25,37 @@ Route::get('/admin/login', [App\Http\Controllers\Auth\LoginController::class, 's
 Route::post('/admin/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::post('/admin/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
+// Registration routes
+Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
+
+// Client Dashboard
+Route::middleware('auth:client')->prefix('client')->name('client.')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\ClientDashboardController::class, 'index'])->name('dashboard');
+    
+    // Test Requests
+    Route::get('/test-requests/create', [App\Http\Controllers\ClientTestRequestController::class, 'create'])->name('test-requests.create');
+    Route::post('/test-requests', [App\Http\Controllers\ClientTestRequestController::class, 'store'])->name('test-requests.store');
+    
+    // Offers
+    Route::get('/offers', [App\Http\Controllers\ClientOfferController::class, 'index'])->name('offers.index');
+    Route::get('/offers/get', [App\Http\Controllers\ClientOfferController::class, 'getOffers'])->name('offers.get');
+    Route::put('/offers/{offer}/accept', [App\Http\Controllers\ClientOfferController::class, 'accept'])->name('offers.accept');
+    Route::put('/offers/{offer}/reject', [App\Http\Controllers\ClientOfferController::class, 'reject'])->name('offers.reject');
+    
+    // Addresses
+    Route::get('/addresses', [App\Http\Controllers\ClientAddressController::class, 'index'])->name('addresses.index');
+    Route::get('/addresses/create', [App\Http\Controllers\ClientAddressController::class, 'create'])->name('addresses.create');
+    Route::post('/addresses', [App\Http\Controllers\ClientAddressController::class, 'store'])->name('addresses.store');
+    Route::get('/addresses/{address}/edit', [App\Http\Controllers\ClientAddressController::class, 'edit'])->name('addresses.edit');
+    Route::put('/addresses/{address}', [App\Http\Controllers\ClientAddressController::class, 'update'])->name('addresses.update');
+    Route::delete('/addresses/{address}', [App\Http\Controllers\ClientAddressController::class, 'destroy'])->name('addresses.destroy');
+    
+    // Profile
+    Route::get('/profile/edit', [App\Http\Controllers\ClientProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [App\Http\Controllers\ClientProfileController::class, 'update'])->name('profile.update');
+});
+
 // Offer routes
 Route::get('/admin/offers/create/{request}', [OfferController::class, 'create'])->name('offers.create');
 Route::post('/offers', [OfferController::class, 'store'])->name('offers.store');
