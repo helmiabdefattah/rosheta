@@ -18,16 +18,13 @@ class OfferController extends Controller
 {
     public function create(Request $request, $id)
     {
-        // جلب الطلب المحدد فقط مع العلاقات المناسبة
         $clientRequest = ClientRequest::with([
             'client',
             'address'
         ])->findOrFail($id);
 
-        // جلب جميع الخطوط مع العلاقات المناسبة
         $clientRequest->load(['lines.medicine', 'testLines.medicalTest']);
 
-        // جلب جميع الفحوصات الطبية للاختيار منها
         $tests = MedicalTest::get()->mapWithKeys(function ($test) {
             return [$test->id => [
                 'test_name_en' => $test->test_name_en,
@@ -37,7 +34,6 @@ class OfferController extends Controller
             ]];
         })->toArray();
 
-        // جلب جميع الأدوية للاختيار منها
         $medicines = Medicine::get()->mapWithKeys(function ($medicine) {
             return [$medicine->id => [
                 'name' => $medicine->name,
@@ -47,12 +43,10 @@ class OfferController extends Controller
             ]];
         })->toArray();
 
-        // جلب الصيدليات أو المعامل بناءً على نوع الطلب
         $pharmacies = [];
         $laboratories = [];
 
         if ($clientRequest->type == 'test') {
-            // جلب المعامل
             if (auth()->user()->laboratory_id) {
                 $laboratories = Laboratory::where('id', auth()->user()->laboratory_id)
                     ->pluck('name', 'id');
@@ -60,7 +54,6 @@ class OfferController extends Controller
                 $laboratories = Laboratory::pluck('name', 'id');
             }
         } else {
-            // جلب الصيدليات
             if (auth()->user()->pharmacy_id) {
                 $pharmacies = Pharmacy::where('id', auth()->user()->pharmacy_id)
                     ->pluck('name', 'id');
@@ -69,7 +62,6 @@ class OfferController extends Controller
             }
         }
 
-        // لا نحتاج لقائمة المستخدمين أو الطلبات الأخرى
         $users = [];
         $clientRequests = [];
 
@@ -78,7 +70,7 @@ class OfferController extends Controller
         $testPrices = [];
         if (auth()->user()->laboratory_id) {
             $laboratory = Laboratory::find(auth()->user()->laboratory_id);
-            
+
             // Get test prices for this laboratory
             $testPrices = \App\Models\LaboratoryTestPrice::where('laboratory_id', $laboratory->id)
                 ->pluck('price', 'medical_test_id')
@@ -118,6 +110,7 @@ class OfferController extends Controller
         $validated = $request->validate([
             'client_request_id' => 'required|exists:client_requests,id',
             'total_price' => 'required|numeric|min:0',
+            'visit_price' => 'nullable|numeric|min:0',
             'offer_lines' => 'required|array|min:1',
         ]);
 
@@ -153,13 +146,25 @@ class OfferController extends Controller
             }
         }
 
-        // إنشاء العرض
-        $offer = new Offer();
-        $offer->client_request_id = $validated['client_request_id'];
-        $offer->request_type = $clientRequest->type;
-        $offer->total_price = $validated['total_price'];
-        $offer->user_id = auth()->id();
-        $offer->status = 'pending';
+        $homeVisitType = $request->input('home_visit_type');
+
+        $visitPrice = null;
+
+        if ($homeVisitType === 'free_visit') {
+            $visitPrice = 0;
+        } elseif ($homeVisitType === 'price') {
+            $visitPrice = $request->input('visit_price', 0);
+        }
+
+// Create Offer
+    $offer = new Offer();
+    $offer->client_request_id = $validated['client_request_id'];
+    $offer->request_type = $clientRequest->type;
+    $offer->total_price = $validated['total_price'];
+    $offer->visit_price = $visitPrice;
+    $offer->user_id = auth()->id();
+    $offer->status = 'pending';
+    $offer->save();
 
         // تحديد الصيدلية أو المعمل بناءً على النوع
         if ($clientRequest->type == 'test') {

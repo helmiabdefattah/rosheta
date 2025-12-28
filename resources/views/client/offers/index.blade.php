@@ -52,8 +52,8 @@
                 {{ app()->getLocale() === 'ar' ? 'عروض على طلباتي' : 'Offers for My Requests' }}
             </h2>
             <p class="text-sm text-gray-600 mt-1">
-                {{ app()->getLocale() === 'ar' 
-                    ? 'سيتم تحديث القائمة تلقائياً كل 5 ثوانٍ' 
+                {{ app()->getLocale() === 'ar'
+                    ? 'سيتم تحديث القائمة تلقائياً كل 5 ثوانٍ'
                     : 'List will auto-refresh every 5 seconds' }}
             </p>
         </div>
@@ -79,19 +79,19 @@
     } else {
         (function($) {
             'use strict';
-            
+
             let refreshInterval;
             const refreshIntervalMs = 5000; // 5 seconds
-            
+
             function updateLastRefreshTime() {
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString();
                 $('#lastRefresh').text('{{ app()->getLocale() === "ar" ? "آخر تحديث:" : "Last refresh:" }} ' + timeStr);
             }
-            
+
             function refreshOffers() {
                 $('#refreshIndicator').removeClass('hidden');
-                
+
                 $.ajax({
                     url: '{{ route("client.offers.index") }}',
                     method: 'GET',
@@ -116,13 +116,13 @@
                     }
                 });
             }
-            
+
             $(document).ready(function() {
                 updateLastRefreshTime();
-                
+
                 // Start auto-refresh
                 refreshInterval = setInterval(refreshOffers, refreshIntervalMs);
-                
+
                 // Refresh on page visibility change (when user comes back to tab)
                 document.addEventListener('visibilitychange', function() {
                     if (!document.hidden) {
@@ -130,7 +130,7 @@
                     }
                 });
             });
-            
+
             // Cleanup on page unload
             $(window).on('beforeunload', function() {
                 if (refreshInterval) {

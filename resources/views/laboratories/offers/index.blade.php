@@ -14,7 +14,7 @@
             <form method="GET" action="{{ route('laboratories.offers.index') }}" class="flex gap-4 items-end" id="filterForm">
                 <div class="flex-1">
                     <label class="block text-sm font-medium text-gray-700 mb-2">{{ app()->getLocale() === 'ar' ? 'البحث' : 'Search' }}</label>
-                    <input type="text" name="search" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" 
+                    <input type="text" name="search" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                            placeholder="{{ app()->getLocale() === 'ar' ? 'ابحث برقم العرض أو اسم العميل أو الهاتف...' : 'Search by Offer ID, Client Name, or Phone...' }}"
                            value="{{ request('search') }}">
                 </div>
@@ -141,12 +141,18 @@
                                         </div>
                                     </div>
                                     <div class="row mb-3">
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
                                             <strong>{{ app()->getLocale() === 'ar' ? 'العميل' : 'Client' }}:</strong><br>
                                             {{ $offer->request->client->name ?? 'N/A' }}<br>
                                             <small class="text-muted">{{ $offer->request->client->phone_number ?? '' }}</small>
                                         </div>
-                                        <div class="col-md-6">
+                                       @if($offer->visit_price > 0)
+                                        <div class="col-md-4">
+                                            <strong>{{ app()->getLocale() === 'ar' ? 'اسعر الزيارة' : 'Visit price' }}:</strong><br>
+                                            <span class="h5 text-primary">{{ number_format($offer->visit_price, 2) }} {{ app()->getLocale() === 'ar' ? 'جنيه' : 'EGP' }}</span>
+                                        </div>
+                                        @endif
+                                        <div class="col-md-4">
                                             <strong>{{ app()->getLocale() === 'ar' ? 'السعر الإجمالي' : 'Total Price' }}:</strong><br>
                                             <span class="h5 text-primary">{{ number_format($offer->total_price, 2) }} {{ app()->getLocale() === 'ar' ? 'جنيه' : 'EGP' }}</span>
                                         </div>

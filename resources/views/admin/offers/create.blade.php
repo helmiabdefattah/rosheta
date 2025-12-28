@@ -469,7 +469,7 @@
         <input type="hidden" name="client_request_id" value="{{ $clientRequest->id }}">
 
         <!-- Offer Details Card -->
-            <div class="card mb-4 {{auth()->check() && auth()->user()->laboratory_id? 'hidden' : ''}}" >
+            <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span>Offer Details</span>
                     <span id="requestTypeBadge" class="request-type-badge {{ $clientRequest->type == 'test' ? 'request-type-test' : 'request-type-medicine' }}">
@@ -534,6 +534,91 @@
                             @enderror
                         @endif
                     </div>
+                    @if($clientRequest->client_address_id)
+                    <!-- Client Address (Readonly) -->
+                    <div class="col-md-6">
+                        <label class="form-label">{{ app()->getLocale() === 'ar' ? 'عنوان العميل' : 'Client Address' }}</label>
+                        <div class="readonly-field">
+                            <div class="d-flex flex-column w-100">
+                                <span>{{ $clientRequest->address->address ?? 'N/A' }}</span>
+                                <small class="text-muted">
+                                    {{ $clientRequest->address->city->name ?? '' }}
+                                    @if(!empty($clientRequest->address->area))
+                                        - {{ $clientRequest->address->area->name ?? '' }}
+                                    @endif
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Visit Price Input -->
+                        <!-- Home Visit Options -->
+                        <div class="col-md-6">
+                            <label class="form-label">Home Visit</label>
+
+                            <div class="form-check">
+                                <input
+                                    class="form-check-input"
+                                    type="radio"
+                                    name="home_visit_type"
+                                    id="no_home_visit"
+                                    value="no_visit"
+                                >
+                                <label class="form-check-label" for="no_home_visit">
+                                    Lab does not offer home visit
+                                </label>
+                            </div>
+
+                            <div class="form-check mt-1">
+                                <input
+                                    class="form-check-input"
+                                    type="radio"
+                                    name="home_visit_type"
+                                    id="free_home_visit"
+                                    value="free_visit"
+                                >
+                                <label class="form-check-label" for="free_home_visit">
+                                    Lab offers free home visit
+                                </label>
+                            </div>
+                            <div class="form-check mt-1">
+                                <input
+                                    class="form-check-input"
+                                    type="radio"
+                                    name="home_visit_type"
+                                    id="price"
+                                    value="price"
+                                >
+                                <label class="form-check-label" for="free_home_visit">
+                                    add price
+                                </label>
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="visit_price" class="form-label">
+                                {{ app()->getLocale() === 'ar' ? 'سعر الزيارة' : 'Visit Price' }}
+                            </label>
+
+                            <div class="input-group">
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    class="form-control text-end"
+                                    id="visit_price"
+                                    name="visit_price"
+                                    value="{{ old('visit_price', '0.00') }}"
+                                >
+                                <span class="input-group-text">EGP</span>
+                            </div>
+
+                            @error('visit_price')
+                            <div class="text-danger small">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                    @endif
                 </div>
             </div>
         <!-- Request Images Card -->
@@ -735,7 +820,25 @@
                                                         'request_type' => $offer->request_type,
                                                         'lines' => []
                                                     ];
-                                                    
+
+                                                    // Compute lines total to infer visit price if home visit exists
+                                                    $linesTotal = 0;
+                                                    if ($offer->request_type == 'test') {
+                                                        foreach ($offer->testLines as $line) {
+                                                            $linesTotal += (float) ($line->price ?? 0);
+                                                        }
+                                                    } else {
+                                                        foreach ($offer->medicineLines as $line) {
+                                                            $qty = (int) ($line->quantity ?? 1);
+                                                            $price = (float) ($line->price ?? 0);
+                                                            $linesTotal += $qty * $price;
+                                                        }
+                                                    }
+                                                    $hasHomeVisit = optional($offer->request)->client_address_id ? true : false;
+                                                    $visitPrice = $hasHomeVisit ? max((float)$offer->total_price - $linesTotal, 0) : 0;
+                                                    $offerData['visit_price'] = $visitPrice;
+                                                    $offerData['has_home_visit'] = $hasHomeVisit;
+
                                                     if ($offer->request_type == 'test') {
                                                         foreach ($offer->testLines as $line) {
                                                             $offerData['lines'][] = [
@@ -755,9 +858,9 @@
                                                         }
                                                     }
                                                 @endphp
-                                                <button 
-                                                    type="button" 
-                                                    class="btn btn-sm btn-info view-offer-details" 
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-sm btn-info view-offer-details"
                                                     data-offer='{{ json_encode($offerData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) }}'
                                                 >
                                                     {{ app()->getLocale() === 'ar' ? 'عرض التفاصيل' : 'View Details' }}
@@ -854,6 +957,8 @@
         let currentImageIndex = 0;
         let offerLines = [];
         let currentRequestType = requestType;
+        // Recalculate total when visit price changes (if present)
+        $('#visit_price').on('input', updateTotal);
 
         // Image carousel functionality
         if (requestImages.length > 0) {
@@ -1015,7 +1120,7 @@
                             line.medical_test_id = testId;
                             line.test_name_en = selectedTest.test_name_en;
                             line.test_name_ar = selectedTest.test_name_ar;
-                            
+
                             // Auto-populate price if available for this laboratory
                             if (laboratoryId && testPrices[testId]) {
                                 line.price = testPrices[testId];
@@ -1324,6 +1429,8 @@
                 const quantity = parseFloat(line.quantity) || 1;
                 total += price * quantity;
             });
+            const visitPrice = parseFloat($('#visit_price').val()) || 0;
+            total += visitPrice;
             $('#total_price').val(total.toFixed(2));
         }
 
@@ -1342,7 +1449,7 @@
         function showOfferDetailsModal(offerData) {
             const isRTL = $('html').attr('dir') === 'rtl';
             const locale = isRTL ? 'ar' : 'en';
-            
+
             // Status colors mapping
             const statusColors = {
                 'pending': 'bg-warning',
@@ -1351,12 +1458,12 @@
                 'draft': 'bg-secondary'
             };
             const statusColor = statusColors[offerData.status] || 'bg-secondary';
-            
+
             // Build modal title
-            const modalTitle = locale === 'ar' 
+            const modalTitle = locale === 'ar'
                 ? `تفاصيل العرض #${offerData.id}`
                 : `Offer Details #${offerData.id}`;
-            
+
             // Build modal body HTML
             let modalBody = `
                 <div class="row mb-3">
@@ -1379,6 +1486,21 @@
                         ${offerData.created_at}
                     </div>
                 </div>
+            `;
+
+            // Conditionally show Visit Price if present
+            if (offerData.has_home_visit && offerData.visit_price && parseFloat(offerData.visit_price) > 0) {
+                modalBody += `
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>${locale === 'ar' ? 'سعر الزيارة' : 'Visit Price'}:</strong><br>
+                        <span class="h6 text-muted">${parseFloat(offerData.visit_price).toFixed(2)} ${locale === 'ar' ? 'جنيه' : 'EGP'}</span>
+                    </div>
+                </div>
+                `;
+            }
+
+            modalBody += `
                 <hr>
                 <h6>${locale === 'ar' ? 'تفاصيل العرض' : 'Offer Items'}</h6>
                 <div class="table-responsive">
@@ -1386,7 +1508,7 @@
                         <thead>
                             <tr>
             `;
-            
+
             if (offerData.request_type === 'test') {
                 modalBody += `
                     <th>${locale === 'ar' ? 'اسم الفحص (EN)' : 'Test Name (EN)'}</th>
@@ -1399,14 +1521,14 @@
                     <th>${locale === 'ar' ? 'الوحدة' : 'Unit'}</th>
                 `;
             }
-            
+
             modalBody += `
                                 <th>${locale === 'ar' ? 'السعر' : 'Price'}</th>
                             </tr>
                         </thead>
                         <tbody>
             `;
-            
+
             // Add lines
             offerData.lines.forEach(function(line) {
                 modalBody += '<tr>';
@@ -1426,17 +1548,17 @@
                 }
                 modalBody += '</tr>';
             });
-            
+
             modalBody += `
                         </tbody>
                     </table>
                 </div>
             `;
-            
+
             // Update modal content
             $('#offerModalTitle').text(modalTitle);
             $('#offerModalBody').html(modalBody);
-            
+
             // Show modal
             const modal = new bootstrap.Modal(document.getElementById('offerDetailsModal'));
             modal.show();
@@ -1450,5 +1572,30 @@
             }
         });
     });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const visitPriceInput = document.getElementById('visit_price');
+            const noVisit = document.getElementById('no_home_visit');
+            const freeVisit = document.getElementById('free_home_visit');
+            const price = document.getElementById('price'); // paid visit
+
+            function toggleVisitPrice() {
+                if (price.checked) {
+                    // Paid visit → enable input
+                    visitPriceInput.disabled = false;
+                } else {
+                    // No visit OR free visit → disable input
+                    visitPriceInput.value = 0;
+                    visitPriceInput.disabled = true;
+                }
+            }
+
+            noVisit.addEventListener('change', toggleVisitPrice);
+            freeVisit.addEventListener('change', toggleVisitPrice);
+            price.addEventListener('change', toggleVisitPrice);
+
+            toggleVisitPrice(); // init on page load
+        });
     </script>
+
 @endpush

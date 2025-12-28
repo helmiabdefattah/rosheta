@@ -177,6 +177,7 @@ class LaboratoryOfferController extends Controller
 
     public function index(Request $request)
     {
+
         $user = Auth::user();
         $laboratory = Laboratory::find($user->laboratory_id);
 

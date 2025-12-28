@@ -17,11 +17,13 @@ class Offer extends Model
         'status',
         'vendor_status',
         'total_price',
+        'visit_price',
         'request_type', // 'medicine' أو 'test'
     ];
 
     protected $casts = [
         'total_price' => 'decimal:2',
+        'visit_price' => 'decimal:2',
     ];
 
     // Relationship with client request
