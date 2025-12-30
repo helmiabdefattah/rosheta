@@ -11,8 +11,11 @@ class MedicalTestController extends Controller
 {
     public function index()
     {
-        return view('admin.medical-tests.index');
+        $defaultType = 'test';
+
+        return view('admin.medical-tests.index', compact('defaultType'));
     }
+
 
     public function create()
     {
@@ -67,16 +70,22 @@ class MedicalTestController extends Controller
             ->with('success', app()->getLocale() === 'ar' ? 'تم حذف الفحص الطبي بنجاح' : 'Medical test deleted successfully');
     }
 
-    public function data()
+    public function data(Request $request)
     {
-        $medicalTests = MedicalTest::select('medical_tests.*');
+        $query = MedicalTest::query();
 
-        return DataTables::of($medicalTests)
-            ->addColumn('actions', function ($medicalTest) {
-                return view('admin.medical-tests.actions', compact('medicalTest'))->render();
+        // Filter by type if provided
+        if ($request->has('type') && in_array($request->type, ['test', 'radiology'])) {
+            $query->where('type', $request->type);
+        }
+
+        return DataTables::of($query)
+            ->addColumn('actions', function ($row) {
+                return view('admin.medical-tests.actions', ['medicalTest' => $row])->render();
             })
-            ->rawColumns(['actions'])
+            ->rawColumns(['actions']) // <-- Tell DataTables this column contains raw HTML
             ->make(true);
     }
-}
+
+    }
 

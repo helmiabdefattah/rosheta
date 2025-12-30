@@ -1,8 +1,23 @@
 @extends('client.layouts.dashboard')
+@php
+    $isTest = $type === 'test';
+@endphp
 
-@section('title', app()->getLocale() === 'ar' ? 'إنشاء طلب تحاليل' : 'Create Test Request')
+@section('title', app()->getLocale() === 'ar'
+    ? ($isTest ? 'إنشاء طلب تحاليل' : 'إنشاء طلب أشعة')
+    : ($isTest ? 'Create Test Request' : 'Create Radiology Request')
+)
 
-@section('page-title', app()->getLocale() === 'ar' ? 'إنشاء طلب تحاليل طبية' : 'Create Medical Test Request')
+@section('page-title', app()->getLocale() === 'ar'
+    ? ($isTest ? 'إنشاء طلب تحاليل طبية' : 'إنشاء طلب أشعة')
+    : ($isTest ? 'Create Medical Test Request' : 'Create Radiology Request')
+)
+
+@section('page-description', app()->getLocale() === 'ar'
+    ? ($isTest ? 'أضف فحوصات طبية أو ارفع صور الروشتة' : 'أضف فحوصات أشعة أو ارفع صور الطلب')
+    : ($isTest ? 'Add medical tests or upload prescription images' : 'Add radiology tests or upload request images')
+)
+
 @section('page-description', app()->getLocale() === 'ar' ? 'أضف فحوصات طبية أو ارفع صور الروشتة' : 'Add medical tests or upload prescription images')
 
 @push('styles')
@@ -58,16 +73,16 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto">
-    <form method="POST" action="{{ route('client.test-requests.store') }}" enctype="multipart/form-data" id="testRequestForm">
+    <form method="POST" action="{{ route('client.test-requests.store', $type) }}" enctype="multipart/form-data" id="testRequestForm">
         @csrf
 
         <!-- Home Visit Option -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
             <div class="flex items-center gap-3">
-                <input 
-                    type="checkbox" 
-                    id="requires_home_visit" 
-                    name="requires_home_visit" 
+                <input
+                    type="checkbox"
+                    id="requires_home_visit"
+                    name="requires_home_visit"
                     value="1"
                     class="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary"
                 >
@@ -76,8 +91,8 @@
                 </label>
             </div>
             <p class="text-sm text-gray-600 mt-2 ms-8">
-                {{ app()->getLocale() === 'ar' 
-                    ? 'سيتم طلب عنوان التوصيل في حالة اختيار زيارة منزلية' 
+                {{ app()->getLocale() === 'ar'
+                    ? 'سيتم طلب عنوان التوصيل في حالة اختيار زيارة منزلية'
                     : 'Delivery address will be required if home visit is selected' }}
             </p>
         </div>
@@ -91,8 +106,8 @@
             @if($addresses->isEmpty())
                 <div class="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
                     <p class="text-sm text-orange-800 mb-3">
-                        {{ app()->getLocale() === 'ar' 
-                            ? 'لا توجد عناوين. يرجى إضافة عنوان جديد أولاً.' 
+                        {{ app()->getLocale() === 'ar'
+                            ? 'لا توجد عناوين. يرجى إضافة عنوان جديد أولاً.'
                             : 'No addresses found. Please add a new address first.' }}
                     </p>
                     <a href="{{ route('client.addresses.create') }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-teal-700 transition duration-200 text-sm font-medium">
@@ -101,9 +116,9 @@
                     </a>
                 </div>
             @else
-                <select 
-                    id="client_address_id" 
-                    name="client_address_id" 
+                <select
+                    id="client_address_id"
+                    name="client_address_id"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary mb-3"
                 >
                     <option value="">{{ app()->getLocale() === 'ar' ? 'اختر عنوانًا' : 'Select an address' }}</option>
@@ -132,36 +147,36 @@
             </h3>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <label class="flex items-center gap-2 cursor-pointer">
-                    <input 
-                        type="checkbox" 
-                        name="pregnant" 
+                    <input
+                        type="checkbox"
+                        name="pregnant"
                         value="1"
                         class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                     >
                     <span class="text-sm text-gray-700">{{ app()->getLocale() === 'ar' ? 'حامل' : 'Pregnant' }}</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                    <input 
-                        type="checkbox" 
-                        name="diabetic" 
+                    <input
+                        type="checkbox"
+                        name="diabetic"
                         value="1"
                         class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                     >
                     <span class="text-sm text-gray-700">{{ app()->getLocale() === 'ar' ? 'مريض سكر' : 'Diabetic' }}</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                    <input 
-                        type="checkbox" 
-                        name="heart_patient" 
+                    <input
+                        type="checkbox"
+                        name="heart_patient"
                         value="1"
                         class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                     >
                     <span class="text-sm text-gray-700">{{ app()->getLocale() === 'ar' ? 'مريض قلب' : 'Heart Patient' }}</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                    <input 
-                        type="checkbox" 
-                        name="high_blood_pressure" 
+                    <input
+                        type="checkbox"
+                        name="high_blood_pressure"
                         value="1"
                         class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                     >
@@ -176,9 +191,9 @@
                 {{ app()->getLocale() === 'ar' ? 'ملاحظات إضافية' : 'Additional Notes' }}
                 <span class="text-gray-500 text-xs">({{ app()->getLocale() === 'ar' ? 'اختياري' : 'Optional' }})</span>
             </label>
-            <textarea 
-                id="note" 
-                name="note" 
+            <textarea
+                id="note"
+                name="note"
                 rows="3"
                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 placeholder="{{ app()->getLocale() === 'ar' ? 'أضف أي ملاحظات إضافية...' : 'Add any additional notes...' }}"
@@ -192,15 +207,15 @@
                 <span class="text-gray-500 text-sm font-normal">({{ app()->getLocale() === 'ar' ? 'اختياري' : 'Optional' }})</span>
             </h3>
             <p class="text-sm text-gray-600 mb-4">
-                {{ app()->getLocale() === 'ar' 
-                    ? 'رفع صور الروشتة الطبية (اختياري إذا أضفت التحاليل يدويًا)' 
+                {{ app()->getLocale() === 'ar'
+                    ? 'رفع صور الروشتة الطبية (اختياري إذا أضفت التحاليل يدويًا)'
                     : 'Upload prescription images (optional if you add tests manually)' }}
             </p>
-            <input 
-                type="file" 
-                id="images" 
-                name="images[]" 
-                multiple 
+            <input
+                type="file"
+                id="images"
+                name="images[]"
+                multiple
                 accept="image/*"
                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
             >
@@ -221,20 +236,25 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-800">
-                    {{ app()->getLocale() === 'ar' ? 'إدخال التحاليل يدويًا' : 'Add Tests Manually' }}
+                    {{ app()->getLocale() === 'ar'
+                        ? ($isTest ? 'إدخال التحاليل يدويًا' : 'إدخال الأشعة يدويًا')
+                        : ($isTest ? 'Add Tests Manually' : 'Add Radiology Manually') }}
                 </h3>
-                <button 
-                    type="button" 
+
+                <button
+                    type="button"
                     id="addTestBtn"
                     class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-teal-700 transition duration-200 text-sm font-medium"
                 >
                     <i class="bi bi-plus-circle me-1"></i>
-                    {{ app()->getLocale() === 'ar' ? 'إضافة فحص' : 'Add Test' }}
+                    {{ app()->getLocale() === 'ar'
+                        ? ($isTest ? 'إضافة فحص' : 'إضافة أشعة')
+                        : ($isTest ? 'Add Test' : 'Add Radiology') }}
                 </button>
             </div>
             <p class="text-sm text-gray-600 mb-4">
-                {{ app()->getLocale() === 'ar' 
-                    ? 'ابحث عن التحاليل بالاسم الإنجليزي أو العربي واخترها من القائمة' 
+                {{ app()->getLocale() === 'ar'
+                    ? 'ابحث عن التحاليل بالاسم الإنجليزي أو العربي واخترها من القائمة'
                     : 'Search for tests by English or Arabic name and select from the list' }}
             </p>
             <div id="testsContainer" class="space-y-4">
@@ -259,14 +279,16 @@
             <a href="{{ route('client.dashboard') }}" class="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-200">
                 {{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}
             </a>
-            <button 
-                type="submit" 
+            <button
+                type="submit"
                 class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-teal-700 transition duration-200 font-medium"
             >
                 <i class="bi bi-send me-2"></i>
                 {{ app()->getLocale() === 'ar' ? 'إرسال الطلب' : 'Submit Request' }}
             </button>
         </div>
+        <input type="hidden" name="type" value="{{ $type }}">
+
     </form>
 </div>
 @endsection
@@ -277,12 +299,13 @@
 <script>
     (function($) {
         'use strict';
-        
-        const medicalTests = @json($medicalTests);
+
+        const medicalTests = @json($items);
+        const requestType = '{{ $type }}';
         const locale = '{{ app()->getLocale() }}';
         const isArabic = locale === 'ar';
         let testCounter = 0;
-        
+
         // Wait for DOM to be ready
         $(document).ready(function() {
                     // Toggle address section based on home visit checkbox
@@ -321,11 +344,19 @@
                 testCounter++;
                 const testId = `test_${testCounter}`;
                 const testNumber = testCounter;
-                const testLabel = isArabic ? 'فحص' : 'Test';
-                const selectPlaceholder = isArabic ? 'اختر فحصًا' : 'Select a test';
-                const searchPlaceholder = isArabic ? 'ابحث واختر فحصًا' : 'Search and select a test';
+                const testLabel = isArabic
+                    ? (requestType === 'test' ? 'فحص' : 'أشعة')
+                    : (requestType === 'test' ? 'Test' : 'Radiology');
+                const selectPlaceholder = isArabic
+                    ? (requestType === 'test' ? 'اختر فحصًا' : 'اختر أشعة')
+                    : (requestType === 'test' ? 'Select a test' : 'Select radiology');
+
+                const searchPlaceholder = isArabic
+                    ? (requestType === 'test' ? 'ابحث واختر فحصًا' : 'ابحث واختر أشعة')
+                    : (requestType === 'test' ? 'Search and select a test' : 'Search and select radiology');
+
                 const noResults = isArabic ? 'لا توجد نتائج' : 'No results found';
-                
+
                 const testHtml = `
                     <div class="test-item border border-gray-200 rounded-lg p-4 mb-4" data-test-id="${testId}">
                         <div class="flex items-center justify-between mb-3">
@@ -342,21 +373,16 @@
                     </div>
                 `;
                 $('#testsContainer').append(testHtml);
-                
+
                 // Initialize Select2 for the new select
                 const $select = $(`.test-item[data-test-id="${testId}"] .test-select`);
                 $select.select2({
-                    data: medicalTests.map(test => ({
-                        id: test.id,
-                        text: `${test.test_name_en || ''}${test.test_name_ar ? ' - ' + test.test_name_ar : ''}`
+                    data: medicalTests.map(item => ({
+                        id: item.id,
+                        text: `${item.test_name_en || ''}${item.test_name_ar ? ' - ' + item.test_name_ar : ''}`
                     })),
                     placeholder: searchPlaceholder,
-                    allowClear: true,
-                    language: {
-                        noResults: function() {
-                            return noResults;
-                        }
-                    }
+                    allowClear: true
                 });
             });
 
@@ -370,7 +396,7 @@
                 const files = e.target.files;
                 const preview = $('#imagePreview');
                 preview.empty();
-                
+
                 Array.from(files).forEach((file, index) => {
                     if (file.type.startsWith('image/')) {
                         const reader = new FileReader();
@@ -393,39 +419,70 @@
                 const index = $(this).data('index');
                 const dt = new DataTransfer();
                 const files = $('#images')[0].files;
-                
+
                 Array.from(files).forEach((file, i) => {
                     if (i !== index) {
                         dt.items.add(file);
                     }
                 });
-                
+
                 $('#images')[0].files = dt.files;
                 $(this).closest('.image-preview-item').remove();
             });
 
             // Form validation
             $('#testRequestForm').on('submit', function(e) {
-                const hasTests = $('.test-select').length > 0 && $('.test-select').filter(function() {
-                    return $(this).val() !== '' && $(this).val() !== null;
-                }).length > 0;
+                $('#testRequestForm').on('submit', function (e) {
+                    const selectedTests = $('.test-select').filter(function () {
+                        return $(this).val() && $(this).val().toString().trim() !== '';
+                    });
+
+                    const hasTests = selectedTests.length > 0;
+                    const hasImages = $('#images')[0].files.length > 0;
+
+                    if (!hasTests && !hasImages) {
+                        e.preventDefault();
+
+                        alert(isArabic
+                            ? 'الرجاء إضافة فحوصات طبية أو رفع صور الروشتة'
+                            : 'Please add medical tests or upload prescription images'
+                        );
+
+                        return false;
+                    }
+
+                    if ($('#requires_home_visit').is(':checked')) {
+                        const addressSelect = $('#client_address_id');
+                        if (addressSelect.length && !addressSelect.val()) {
+                            e.preventDefault();
+
+                            alert(isArabic
+                                ? 'الرجاء اختيار عنوان التوصيل'
+                                : 'Please select a delivery address'
+                            );
+
+                            return false;
+                        }
+                    }
+                });
+
                 const hasImages = $('#images')[0].files.length > 0;
-                
+
                 if (!hasTests && !hasImages) {
                     e.preventDefault();
-                    const message = isArabic 
-                        ? 'الرجاء إضافة فحوصات طبية أو رفع صور الروشتة' 
+                    const message = isArabic
+                        ? 'الرجاء إضافة فحوصات طبية أو رفع صور الروشتة'
                         : 'Please add medical tests or upload prescription images';
                     alert(message);
                     return false;
                 }
-                
+
                 if ($('#requires_home_visit').is(':checked')) {
                     const addressSelect = $('#client_address_id');
                     if (addressSelect.length && !addressSelect.val()) {
                         e.preventDefault();
-                        const message = isArabic 
-                            ? 'الرجاء اختيار عنوان التوصيل' 
+                        const message = isArabic
+                            ? 'الرجاء اختيار عنوان التوصيل'
                             : 'Please select a delivery address';
                         alert(message);
                         return false;
@@ -434,6 +491,17 @@
             });
         });
     })(jQuery);
+    function checkFormValidity() {
+        const hasTests = $('.test-select').filter(function () {
+            return $(this).val();
+        }).length > 0;
+
+        const hasImages = $('#images')[0].files.length > 0;
+
+        $('button[type="submit"]').prop('disabled', !(hasTests || hasImages));
+    }
+
+    $(document).on('change', '.test-select, #images', checkFormValidity);
 </script>
 @endpush
 

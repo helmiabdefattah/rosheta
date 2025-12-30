@@ -30,7 +30,7 @@ class MedicalTestOfferController extends Controller
             $laboratories = Laboratory::orderBy('name')->get(['id', 'name']);
         }
 
-        $medicalTests = MedicalTest::orderBy('test_name_en')->get(['id', 'test_name_en', 'test_name_ar']);
+        $medicalTests = MedicalTest::orderBy('test_name_en')->where('type',$laboratory->type)->get(['id', 'test_name_en', 'test_name_ar']);
 
         return view('admin.medical-test-offers.create', compact('medicalTests', 'laboratory', 'laboratories', 'hasLaboratory'));
     }

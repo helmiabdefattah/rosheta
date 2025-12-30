@@ -472,9 +472,10 @@
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span>Offer Details</span>
-                    <span id="requestTypeBadge" class="request-type-badge {{ $clientRequest->type == 'test' ? 'request-type-test' : 'request-type-medicine' }}">
-                        {{ $clientRequest->type == 'test' ? 'TEST REQUEST' : 'MEDICINE REQUEST' }}
-                    </span>
+                    <span id="requestTypeBadge" class="request-type-badge {{ in_array($clientRequest->type, ['test', 'radiology']) ? 'request-type-test' : 'request-type-medicine' }}">
+    {{ in_array($clientRequest->type, ['test', 'radiology']) ? strtoupper($clientRequest->type).' REQUEST' : 'MEDICINE REQUEST' }}
+</span>
+
                 </div>
                 <div class="card-body row g-3">
                     <!-- Client Request Display (Readonly) -->
@@ -485,8 +486,8 @@
                                 <span>
                                     Request #{{ $clientRequest->id }} - {{ $clientRequest->client->name ?? 'N/A' }}
                                 </span>
-                                <span class="badge {{ $clientRequest->type == 'test' ? 'bg-info' : 'bg-success' }}">
-                                    {{ $clientRequest->type == 'test' ? 'Test' : 'Medicine' }}
+                                <span class="badge {{ in_array($clientRequest->type, ['test', 'radiology']) ? 'bg-info' : 'bg-success' }}">
+                                    {{ in_array($clientRequest->type, ['test', 'radiology']) ? ucfirst($clientRequest->type) : 'Medicine' }}
                                 </span>
                             </div>
                         </div>
@@ -494,8 +495,7 @@
 
                     <!-- Pharmacy/Laboratory Selection -->
                     <div class="col-md-6">
-                        @if($clientRequest->type == 'test')
-                            <!-- Laboratory Selection for Tests -->
+                        @if(in_array($clientRequest->type, ['test', 'radiology']))                            <!-- Laboratory Selection for Tests -->
                             <label for="laboratory_id" class="form-label">Laboratory <span class="text-danger">*</span></label>
                             @if(auth()->user()->laboratory_id)
                                 <input type="hidden" name="laboratory_id" value="{{ auth()->user()->laboratory_id }}">
@@ -645,12 +645,11 @@
         @endif
 
         <!-- Client Request Lines Card -->
-        @if(($clientRequest->type == 'test' && $clientRequest->lines->count() > 0) ||
-            ($clientRequest->type != 'test' && $clientRequest->lines->count() > 0))
+        @if($clientRequest->lines->count() > 0)
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                 <span>
-                    @if($clientRequest->type == 'test')
+                    @if(in_array($clientRequest->type, ['test', 'radiology']))
                         Client Request Tests ({{ $clientRequest->testLines->count() }})
                     @else
                         Client Request Lines ({{ $clientRequest->medicineLines->count() }})
@@ -661,7 +660,7 @@
                 <div class="card-body table-responsive">
                     <table class="table table-bordered table-hover">
                         <thead class="table-light">
-                        @if($clientRequest->type == 'test')
+                        @if(in_array($clientRequest->type, ['test', 'radiology']))
                             <tr>
                                 <th>Test Name (EN)</th>
                                 <th>Test Name (AR)</th>
@@ -681,8 +680,7 @@
                         </thead>
                         <tbody>
                         @foreach($clientRequest->lines as $line)
-                            @if($clientRequest->type == 'test')
-                                <!-- عرض بيانات الفحص -->
+                            @if(in_array($clientRequest->type, ['test', 'radiology']))
                                 <tr>
                                     <td>{{ $line->medicalTest->test_name_en ?? 'N/A' }}</td>
                                     <td>{{ $line->medicalTest->test_name_ar ?? 'N/A' }}</td>
@@ -690,7 +688,7 @@
                                     <td class="small">{{ Str::limit($line->medicalTest->conditions ?? '', 100) }}</td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-primary add-line-btn"
-                                                data-type="test"
+                                                data-type="{{ $clientRequest->type }}"
                                                 data-id="{{ $line->medical_test_id }}"
                                                 data-name-en="{{ $line->medicalTest->test_name_en ?? '' }}"
                                                 data-name-ar="{{ $line->medicalTest->test_name_ar ?? '' }}">
@@ -699,7 +697,6 @@
                                     </td>
                                 </tr>
                             @else
-                                <!-- عرض بيانات الدواء -->
                                 <tr>
                                     <td>{{ $line->medicine->name ?? 'N/A' }}</td>
                                     <td>{{ $line->medicine->dosage_form ?? 'N/A' }}</td>
@@ -730,11 +727,12 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span id="offerLinesTitle">
-                    @if($clientRequest->type == 'test')
-                        Offer Tests
+                    @if(in_array($clientRequest->type, ['test', 'radiology']))
+                        Offer {{ strtoupper($clientRequest->type) }}s
                     @else
                         Offer Lines
                     @endif
+
                 </span>
                 <button type="button" class="btn btn-primary btn-sm" id="addOfferLineBtn">Add Line</button>
             </div>
@@ -813,51 +811,51 @@
                                                 @php
                                                     $offerData = [
                                                         'id' => $offer->id,
-                                                        'provider' => $offer->laboratory ? $offer->laboratory->name : ($offer->pharmacy ? $offer->pharmacy->name : 'N/A'),
+                                                        'provider' => $offer->laboratory->name ?? $offer->pharmacy->name ?? 'N/A',
                                                         'status' => $offer->status,
-                                                        'total_price' => $offer->total_price,
+                                                        'total_price' => (float) $offer->total_price,
                                                         'created_at' => $offer->created_at->format('Y-m-d H:i'),
                                                         'request_type' => $offer->request_type,
-                                                        'lines' => []
+                                                        'lines' => [],
                                                     ];
 
-                                                    // Compute lines total to infer visit price if home visit exists
+                                                    // Compute lines total
                                                     $linesTotal = 0;
-                                                    if ($offer->request_type == 'test') {
-                                                        foreach ($offer->testLines as $line) {
-                                                            $linesTotal += (float) ($line->price ?? 0);
-                                                        }
-                                                    } else {
-                                                        foreach ($offer->medicineLines as $line) {
-                                                            $qty = (int) ($line->quantity ?? 1);
-                                                            $price = (float) ($line->price ?? 0);
-                                                            $linesTotal += $qty * $price;
-                                                        }
-                                                    }
-                                                    $hasHomeVisit = optional($offer->request)->client_address_id ? true : false;
-                                                    $visitPrice = $hasHomeVisit ? max((float)$offer->total_price - $linesTotal, 0) : 0;
-                                                    $offerData['visit_price'] = $visitPrice;
-                                                    $offerData['has_home_visit'] = $hasHomeVisit;
 
-                                                    if ($offer->request_type == 'test') {
+                                                    if (in_array($offer->request_type, ['test', 'radiology'])) {
                                                         foreach ($offer->testLines as $line) {
+                                                            $price = (float) ($line->price ?? 0);
+                                                            $linesTotal += $price;
+
                                                             $offerData['lines'][] = [
                                                                 'test_name_en' => $line->medicalTest->test_name_en ?? 'N/A',
                                                                 'test_name_ar' => $line->medicalTest->test_name_ar ?? 'N/A',
-                                                                'price' => $line->price
+                                                                'price' => $price,
                                                             ];
                                                         }
-                                                    } else {
+                                                    } else { // medicines
                                                         foreach ($offer->medicineLines as $line) {
+                                                            $quantity = (int) ($line->quantity ?? 1);
+                                                            $price = (float) ($line->price ?? 0);
+                                                            $linesTotal += $quantity * $price;
+
                                                             $offerData['lines'][] = [
                                                                 'medicine_name' => $line->medicine->name ?? 'N/A',
-                                                                'quantity' => $line->quantity ?? 1,
+                                                                'quantity' => $quantity,
                                                                 'unit' => $line->unit ?? 'box',
-                                                                'price' => $line->price
+                                                                'price' => $price,
                                                             ];
                                                         }
                                                     }
+
+                                                    // Determine if the offer includes a home visit and calculate visit price
+                                                    $hasHomeVisit = optional($offer->request)->client_address_id ? true : false;
+                                                    $visitPrice = $hasHomeVisit ? max($offerData['total_price'] - $linesTotal, 0) : 0;
+
+                                                    $offerData['has_home_visit'] = $hasHomeVisit;
+                                                    $offerData['visit_price'] = $visitPrice;
                                                 @endphp
+
                                                 <button
                                                     type="button"
                                                     class="btn btn-sm btn-info view-offer-details"
@@ -905,77 +903,67 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <script>
-    const medicines = {!! json_encode($medicines ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) !!};
+        const medicines = {!! json_encode($medicines ?? [], JSON_UNESCAPED_UNICODE) !!};
+        const tests = {!! json_encode($tests ?? [], JSON_UNESCAPED_UNICODE) !!};
+        const testPrices = {!! json_encode($testPrices ?? [], JSON_UNESCAPED_UNICODE) !!};
+        const laboratoryId = {{ auth()->user()->laboratory_id ?? 'null' }};
+        const requestType = "{{ $clientRequest->type ?? 'medicine' }}";
+        const requestImages = {!! json_encode($clientRequest->images ?? [], JSON_UNESCAPED_UNICODE) !!};
+        const requestLines = {!! json_encode($linesData ?? [], JSON_UNESCAPED_UNICODE) !!};
 
-    const tests = {!! json_encode($tests ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) !!};
-
-    const testPrices = {!! json_encode($testPrices ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) !!};
-
-    const laboratoryId = {{ auth()->user()->laboratory_id ?? 'null' }};
-
-    const requestType = "{{ $clientRequest->type ?? 'medicine' }}";
-
-    const requestImages = {!! json_encode($clientRequest->images ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) !!};
-
-    @php
-        // Prepare request lines data in PHP
-        $linesData = [];
-        foreach ($clientRequest->lines as $line) {
-            if ($clientRequest->type == 'test') {
-                if ($line->medicalTest) {
-                    $linesData[] = [
-                        'medical_test_id' => $line->medical_test_id ?? null,
-                        'test_name_en' => $line->medicalTest->test_name_en ?? null,
-                        'test_name_ar' => $line->medicalTest->test_name_ar ?? null,
-                        'test_description' => $line->medicalTest->test_description ?? null,
-                        'conditions' => $line->medicalTest->conditions ?? null,
-                    ];
-                }
-            } else {
-                if ($line->medicine) {
-                    $linesData[] = [
-                        'medicine_id' => $line->medicine_id ?? null,
-                        'medicine_name' => $line->medicine->name ?? null,
-                        'dosage_form' => $line->medicine->dosage_form ?? null,
-                        'quantity' => $line->quantity ?? 1,
-                        'unit' => $line->unit ?? 'box',
-                        'old_price' => $line->medicine->price ?? null,
-                    ];
-                }
-            }
-        }
-    @endphp
-
-    const requestLines = {!! json_encode($linesData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) !!};
-</script>
-
-<script>
-    $(document).ready(function() {
-        $('.select2').select2({ width: '100%' });
-
+        let offerLines = [...requestLines];
         let currentImageIndex = 0;
-        let offerLines = [];
-        let currentRequestType = requestType;
-        // Recalculate total when visit price changes (if present)
-        $('#visit_price').on('input', updateTotal);
 
-        // Image carousel functionality
-        if (requestImages.length > 0) {
-            $('#prevImage').click(function() {
-                currentImageIndex = (currentImageIndex - 1 + requestImages.length) % requestImages.length;
-                updateImageDisplay();
+        $(document).ready(function() {
+            $('.select2').select2({ width: '100%' });
+            initImageCarousel();
+            initOfferLines();
+            initVisitPriceToggle();
+            $('#visit_price').on('input', updateTotal);
+
+            // Add individual line
+            $('.add-line-btn').click(function() {
+                const type = $(this).data('type');
+                if (type === 'test' || type === 'radiology') {
+                    const testId = $(this).data('id');
+                    addOfferLine({
+                        medical_test_id: testId,
+                        test_name_en: $(this).data('name-en'),
+                        test_name_ar: $(this).data('name-ar'),
+                        price: (laboratoryId && testPrices[testId]) ? testPrices[testId] : '',
+                        dosage_form: 'test'
+                    });
+                } else {
+                    addOfferLine({
+                        medicine_id: $(this).data('id'),
+                        medicine_name: $(this).data('name'),
+                        dosage_form: $(this).data('dosage'),
+                        quantity: $(this).data('quantity'),
+                        unit: $(this).data('unit'),
+                        old_price: $(this).data('old-price'),
+                        price: ''
+                    });
+                }
             });
 
-            $('#nextImage').click(function() {
-                currentImageIndex = (currentImageIndex + 1) % requestImages.length;
-                updateImageDisplay();
+            // Add all pre-loaded lines
+            $('#addAllLinesBtn').click(() => requestLines.forEach(addOfferLine));
+            // Add empty line
+            $('#addOfferLineBtn').click(() => addOfferLine());
+            // Submit validation
+            $('#offerForm').on('submit', e => {
+                if (offerLines.length === 0) {
+                    alert('Please add at least one offer line before submitting.');
+                    e.preventDefault();
+                }
             });
+        });
 
-            $('.img-thumbnail').click(function() {
-                currentImageIndex = parseInt($(this).data('index'));
-                updateImageDisplay();
-            });
+        // ---------------- Image Carousel ----------------
+        function initImageCarousel() {
+            if (requestImages.length === 0) return;
 
             function updateImageDisplay() {
                 $('#currentImage').attr('src', requestImages[currentImageIndex]);
@@ -983,269 +971,127 @@
                 $(`.img-thumbnail[data-index="${currentImageIndex}"]`).addClass('thumbnail-selected');
                 $('#imageCounter').text(`${currentImageIndex + 1} / ${requestImages.length}`);
             }
+
+            $('#prevImage').click(() => {
+                currentImageIndex = (currentImageIndex - 1 + requestImages.length) % requestImages.length;
+                updateImageDisplay();
+            });
+            $('#nextImage').click(() => {
+                currentImageIndex = (currentImageIndex + 1) % requestImages.length;
+                updateImageDisplay();
+            });
+            $('.img-thumbnail').click(function() {
+                currentImageIndex = parseInt($(this).data('index'));
+                updateImageDisplay();
+            });
+
+            updateImageDisplay();
         }
 
-        // Add individual line button
-        $('.add-line-btn').click(function() {
-            const type = $(this).data('type');
-
-            if (type === 'test') {
-                const testId = $(this).data('id');
-                const price = (laboratoryId && testPrices[testId]) ? testPrices[testId] : '';
-                addOfferLine({
-                    medical_test_id: testId,
-                    test_name_en: $(this).data('name-en'),
-                    test_name_ar: $(this).data('name-ar'),
-                    price: price,
-                    dosage_form: 'test'
-                });
-            } else {
-                addOfferLine({
-                    medicine_id: $(this).data('id'),
-                    medicine_name: $(this).data('name'),
-                    dosage_form: $(this).data('dosage'),
-                    quantity: $(this).data('quantity'),
-                    unit: $(this).data('unit'),
-                    old_price: $(this).data('old-price'),
-                    price: ''
-                });
-            }
-        });
-
-        // Add all lines button
-        $('#addAllLinesBtn').click(function() {
-            requestLines.forEach(line => {
-                if (line.medical_test_id && laboratoryId && testPrices[line.medical_test_id]) {
-                    line.price = testPrices[line.medical_test_id];
-                }
-                addOfferLine(line);
-            });
-        });
-
-        // Add empty line button
-        $('#addOfferLineBtn').click(function() {
-            addOfferLine();
-        });
+        // ---------------- Offer Lines ----------------
+        function initOfferLines() {
+            renderOfferLines();
+        }
 
         function addOfferLine(line = null) {
-            if (currentRequestType === 'test') {
-                const newLine = line ? {
-                    medical_test_id: line.medical_test_id || line.test_id || '',
-                    test_name_en: line.test_name_en || line.medicine_name || '',
-                    test_name_ar: line.test_name_ar || '',
-                    price: line.price || (line.medical_test_id && laboratoryId && testPrices[line.medical_test_id] ? testPrices[line.medical_test_id] : ''),
-                    dosage_form: 'test'
-                } : {
-                    medical_test_id: '',
-                    test_name_en: '',
-                    test_name_ar: '',
-                    price: '',
-                    dosage_form: 'test'
-                };
-                offerLines.push(newLine);
-            } else {
-                const newLine = line ? {
-                    medicine_id: line.medicine_id || '',
-                    medicine_name: line.medicine_name || '',
-                    dosage_form: line.dosage_form || '',
-                    quantity: line.quantity || 1,
-                    unit: line.unit || 'box',
-                    old_price: line.old_price || '',
-                    price: line.price || ''
-                } : {
-                    medicine_id: '',
-                    medicine_name: '',
-                    dosage_form: '',
-                    quantity: 1,
-                    unit: 'box',
-                    old_price: '',
-                    price: ''
-                };
-                offerLines.push(newLine);
-            }
+            const defaultLine = (requestType === 'test' || requestType === 'radiology') ? {
+                medical_test_id: '',
+                test_name_en: '',
+                test_name_ar: '',
+                price: '',
+                dosage_form: 'test'
+            } : {
+                medicine_id: '',
+                medicine_name: '',
+                dosage_form: '',
+                quantity: 1,
+                unit: 'box',
+                old_price: '',
+                price: ''
+            };
+
+            offerLines.push(line ? {...defaultLine, ...line} : defaultLine);
             renderOfferLines();
         }
 
         function renderOfferLines() {
             const container = $('#offerLinesContainer').empty();
-
-            if (!offerLines.length) {
-                container.append($('#noOfferLinesMsg').show());
+            if (offerLines.length === 0) {
+                $('#noOfferLinesMsg').show();
                 updateTotal();
                 return;
             }
 
             $('#noOfferLinesMsg').hide();
-
-            // Create table structure
             const table = $('<table class="table table-bordered table-hover align-middle">');
             const thead = $('<thead class="table-light">');
             const tbody = $('<tbody>');
 
-            if (currentRequestType === 'test') {
-                // Tests table header
+            if (requestType === 'test' || requestType === 'radiology') {
                 thead.html(`
-                <tr>
-                    <th width="25%" class="fw-semibold">Test Name (EN)</th>
-                    <th width="25%" class="fw-semibold">Test Name (AR)</th>
-                    <th width="20%" class="text-center">Price (EGP)</th>
-                    <th width="15%" class="text-center">Actions</th>
-                </tr>
-            `);
-
-                // Test rows
+            <tr>
+                <th width="25%">Test Name (EN)</th>
+                <th width="25%">Test Name (AR)</th>
+                <th width="20%" class="text-center">Price (EGP)</th>
+                <th width="15%" class="text-center">Actions</th>
+            </tr>
+        `);
                 offerLines.forEach((line, i) => {
-                    const row = $('<tr class="offer-line-row">');
-
-                    // Test Name EN (25%)
-                    const testEnCell = $('<td>');
-                    const testSelect = $('<select class="form-select form-select-sm test-select" required>')
+                    const row = $('<tr>');
+                    // Test dropdown
+                    const testSelect = $('<select class="form-select form-select-sm">')
                         .attr('name', `offer_lines[${i}][medical_test_id]`)
                         .attr('id', `test_select_${i}`)
-                        .css('min-width', '200px');
-
-                    testSelect.append('<option value="">Select test</option>');
+                        .append('<option value="">Select test</option>');
                     Object.entries(tests).forEach(([id, test]) => {
-                        testSelect.append(`<option value="${id}"
-                        data-name-en="${test.test_name_en || ''}"
-                        data-name-ar="${test.test_name_ar || ''}"
-                        data-description="${test.test_description || ''}"
-                        data-conditions="${test.conditions || ''}">${test.test_name_en}</option>`);
+                        testSelect.append(`<option value="${id}" data-name-ar="${test.test_name_ar}">${test.test_name_en}</option>`);
                     });
-                    testSelect.val(line.medical_test_id);
-                    testSelect.on('change', function() {
+                    testSelect.val(line.medical_test_id).on('change', function() {
                         const testId = $(this).val();
                         const selectedTest = tests[testId];
                         if (selectedTest) {
                             line.medical_test_id = testId;
                             line.test_name_en = selectedTest.test_name_en;
                             line.test_name_ar = selectedTest.test_name_ar;
-
-                            // Auto-populate price if available for this laboratory
-                            if (laboratoryId && testPrices[testId]) {
-                                line.price = testPrices[testId];
-                            } else {
-                                line.price = '';
-                            }
+                            line.price = (laboratoryId && testPrices[testId]) ? testPrices[testId] : '';
                         }
                         renderOfferLines();
                     });
-                    testEnCell.append(testSelect);
-                    row.append(testEnCell);
-
-                    // Test Name AR (25%)
-                    const testArCell = $('<td>');
-                    const arNameSpan = $('<span class="small test-ar-name">').text(line.test_name_ar || '-');
-                    testArCell.append(arNameSpan);
-                    row.append(testArCell);
-
-                    // Price column (20%)
-                    const priceCell = $('<td class="text-center">');
-                    const priceInput = $('<input type="number" min="0" step="0.01" class="form-control form-control-sm">')
-                        .attr('name', `offer_lines[${i}][price]`)
-                        .val(line.price)
-                        .css('min-width', '120px')
-                        .on('input', function() {
-                            line.price = $(this).val();
-                            updateTotal();
-                        });
-                    priceCell.append(priceInput);
-                    row.append(priceCell);
-
-                    // Actions column (15%)
-                    const actionsCell = $('<td class="text-center">');
-                    const removeBtn = $('<button type="button" class="btn btn-danger btn-sm">Remove</button>')
-                        .on('click', () => {
-                            offerLines.splice(i, 1);
-                            renderOfferLines();
-                        });
-                    actionsCell.append(removeBtn);
-                    row.append(actionsCell);
+                    row.append($('<td>').append(testSelect));
+                    row.append($('<td>').text(line.test_name_ar || '-'));
+                    row.append($('<td class="text-center">').append(
+                        $('<input type="number" min="0" step="0.01" class="form-control form-control-sm">')
+                            .attr('name', `offer_lines[${i}][price]`)
+                            .val(line.price)
+                            .on('input', function() { line.price = $(this).val(); updateTotal(); })
+                    ));
+                    row.append($('<td class="text-center">').append($('<button type="button" class="btn btn-danger btn-sm">Remove</button>')
+                        .click(() => { offerLines.splice(i, 1); renderOfferLines(); })));
 
                     tbody.append(row);
 
-                    // Initialize Select2 for test dropdown with custom search
-                    $(`#test_select_${i}`).select2({
-                        width: '100%',
-                        dropdownParent: container,
-                        minimumResultsForSearch: 2,
-                        templateResult: formatTestResult,
-                        templateSelection: formatTestSelection,
-                        matcher: function(params, data) {
-                            // If there's no search term, return all results
-                            if ($.trim(params.term) === '') {
-                                return data;
-                            }
-
-                            // Normalize search term (remove diacritics, convert to lowercase)
-                            const term = params.term.toLowerCase()
-                                .normalize("NFD")
-                                .replace(/[\u0300-\u036f]/g, "");
-
-                            // Get test data
-                            const testId = data.id;
-                            const testData = tests[testId];
-
-                            if (!testData) return null;
-
-                            // Search in both English and Arabic names
-                            const nameEn = (testData.test_name_en || '').toLowerCase()
-                                .normalize("NFD")
-                                .replace(/[\u0300-\u036f]/g, "");
-                            const nameAr = (testData.test_name_ar || '').toLowerCase()
-                                .normalize("NFD")
-                                .replace(/[\u0300-\u036f]/g, "");
-
-                            // Check if search term exists in either name
-                            if (nameEn.includes(term) || nameAr.includes(term)) {
-                                return data;
-                            }
-
-                            return null;
-                        }
-                    });
-
-                    // Update Arabic name when test is selected
-                    if (line.medical_test_id && tests[line.medical_test_id]) {
-                        arNameSpan.text(tests[line.medical_test_id].test_name_ar || '-');
-                    }
+                    $(`#test_select_${i}`).select2({ width: '100%', dropdownParent: container });
                 });
             } else {
-                // Medicines table header
                 thead.html(`
-                <tr>
-                    <th width="25%" class="fw-semibold">Medicine</th>
-                    <th width="12%" class="text-center">Dosage Form</th>
-                    <th width="10%" class="text-center">Old Price</th>
-                    <th width="8%" class="text-center">Quantity</th>
-                    <th width="10%" class="text-center">Unit</th>
-                    <th width="12%" class="text-center">Price (EGP)</th>
-                    <th width="15%" class="text-center">Actions</th>
-                </tr>
-            `);
-
-                // Medicine rows
+            <tr>
+                <th width="25%">Medicine</th>
+                <th width="12%" class="text-center">Dosage Form</th>
+                <th width="10%" class="text-center">Old Price</th>
+                <th width="8%" class="text-center">Quantity</th>
+                <th width="10%" class="text-center">Unit</th>
+                <th width="12%" class="text-center">Price (EGP)</th>
+                <th width="15%" class="text-center">Actions</th>
+            </tr>
+        `);
                 offerLines.forEach((line, i) => {
-                    const row = $('<tr class="offer-line-row">');
-
-                    // Medicine column (25%)
-                    const medicineCell = $('<td>');
-                    const medSelect = $('<select class="form-select form-select-sm medicine-select" required>')
+                    const row = $('<tr>');
+                    const medSelect = $('<select class="form-select form-select-sm">')
                         .attr('name', `offer_lines[${i}][medicine_id]`)
                         .attr('id', `medicine_select_${i}`)
-                        .css('min-width', '120px');
-
-                    medSelect.append('<option value="">Select medicine</option>');
-                    Object.entries(medicines).forEach(([id, med]) => {
-                        medSelect.append(`<option value="${id}"
-                        data-name="${med.name || ''}"
-                        data-name-ar="${med.name_ar || ''}"
-                        data-dosage-form="${med.dosage_form || ''}"
-                        data-old-price="${med.old_price || ''}"
-                        data-units="${med.units || 'box'}">${med.name}</option>`);
-                    });
-                    medSelect.val(line.medicine_id);
-                    medSelect.on('change', function() {
+                        .append('<option value="">Select medicine</option>');
+                    Object.entries(medicines).forEach(([id, med]) => medSelect.append(`<option value="${id}" data-dosage-form="${med.dosage_form}" data-old-price="${med.old_price}">${med.name}</option>`));
+                    medSelect.val(line.medicine_id).on('change', function() {
                         const medId = $(this).val();
                         const selectedMed = medicines[medId];
                         if (selectedMed) {
@@ -1253,123 +1099,33 @@
                             line.medicine_name = selectedMed.name;
                             line.dosage_form = selectedMed.dosage_form;
                             line.old_price = selectedMed.old_price;
-                            line.unit = selectedMed.units || 'box';
                         }
                         renderOfferLines();
                     });
-                    medicineCell.append(medSelect);
-                    row.append(medicineCell);
-
-                    // Dosage Form column (12%)
-                    const dosageCell = $('<td class="text-center">');
-                    const dosageSpan = $('<span class="small dosage-form">').text(line.dosage_form || '-');
-                    dosageCell.append(dosageSpan);
-                    row.append(dosageCell);
-
-                    // Old Price column (10%)
-                    const oldPriceCell = $('<td class="text-center">');
-                    const oldPriceSpan = $('<span class="text-muted small old-price">').text(line.old_price || '0.00');
-                    oldPriceCell.append(oldPriceSpan);
-                    row.append(oldPriceCell);
-
-                    // Quantity column (8%)
-                    const qtyCell = $('<td class="text-center">');
-                    const qtyInput = $('<input type="number" min="1" class="form-control form-control-sm">')
-                        .attr('name', `offer_lines[${i}][quantity]`)
-                        .val(line.quantity)
-                        .css('min-width', '70px')
-                        .on('input', updateTotal);
-                    qtyCell.append(qtyInput);
-                    row.append(qtyCell);
-
-                    // Unit column (10%)
-                    const unitCell = $('<td class="text-center">');
-                    const unitSelect = $('<select class="form-select form-select-sm" required>')
-                        .attr('name', `offer_lines[${i}][unit]`)
-                        .css('min-width', '90px');
-
-                    ['box', 'strips', 'bottle', 'pack', 'piece', 'tablet', 'capsule', 'vial', 'ampoule'].forEach(u => {
-                        unitSelect.append(`<option value="${u}">${u}</option>`);
-                    });
-                    unitSelect.val(line.unit);
-                    unitSelect.on('change', function() {
-                        line.unit = $(this).val();
-                    });
-                    unitCell.append(unitSelect);
-                    row.append(unitCell);
-
-                    // Price column (12%)
-                    const priceCell = $('<td class="text-center">');
-                    const priceInput = $('<input type="number" min="0" step="0.01" class="form-control form-control-sm">')
-                        .attr('name', `offer_lines[${i}][price]`)
-                        .val(line.price)
-                        .css('min-width', '100px')
-                        .on('input', function() {
-                            line.price = $(this).val();
-                            updateTotal();
-                        });
-                    priceCell.append(priceInput);
-                    row.append(priceCell);
-
-                    // Actions column (15%)
-                    const actionsCell = $('<td class="text-center">');
-                    const removeBtn = $('<button type="button" class="btn btn-danger btn-sm">Remove</button>')
-                        .on('click', () => {
-                            offerLines.splice(i, 1);
-                            renderOfferLines();
-                        });
-                    actionsCell.append(removeBtn);
-                    row.append(actionsCell);
-
+                    row.append($('<td>').append(medSelect));
+                    row.append($('<td class="text-center">').text(line.dosage_form || '-'));
+                    row.append($('<td class="text-center">').text(line.old_price || '0.00'));
+                    row.append($('<td class="text-center">').append(
+                        $('<input type="number" min="1" class="form-control form-control-sm">')
+                            .attr('name', `offer_lines[${i}][quantity]`)
+                            .val(line.quantity)
+                            .on('input', function(e) { line.quantity = e.target.value; updateTotal(); })
+                    ));
+                    row.append($('<td class="text-center">').append(
+                        $('<select class="form-select form-select-sm"><option>box</option><option>strips</option><option>bottle</option></select>')
+                            .attr('name', `offer_lines[${i}][unit]`)
+                            .val(line.unit)
+                            .on('change', e => { line.unit = e.target.value; })
+                    ));
+                    row.append($('<td class="text-center">').append(
+                        $('<input type="number" min="0" step="0.01" class="form-control form-control-sm">')
+                            .attr('name', `offer_lines[${i}][price]`)
+                            .val(line.price)
+                            .on('input', e => { line.price = e.target.value; updateTotal(); })
+                    ));
+                    row.append($('<td class="text-center">').append($('<button type="button" class="btn btn-danger btn-sm">Remove</button>').click(() => { offerLines.splice(i, 1); renderOfferLines(); })));
                     tbody.append(row);
-
-                    // Initialize Select2 for medicine dropdown with custom search
-                    $(`#medicine_select_${i}`).select2({
-                        width: '100%',
-                        dropdownParent: container,
-                        minimumResultsForSearch: 2,
-                        templateResult: formatMedicineResult,
-                        templateSelection: formatMedicineSelection,
-                        matcher: function(params, data) {
-                            // If there's no search term, return all results
-                            if ($.trim(params.term) === '') {
-                                return data;
-                            }
-
-                            // Normalize search term (remove diacritics, convert to lowercase)
-                            const term = params.term.toLowerCase()
-                                .normalize("NFD")
-                                .replace(/[\u0300-\u036f]/g, "");
-
-                            // Get medicine data
-                            const medId = data.id;
-                            const medData = medicines[medId];
-
-                            if (!medData) return null;
-
-                            // Search in both English and Arabic names
-                            const nameEn = (medData.name || '').toLowerCase()
-                                .normalize("NFD")
-                                .replace(/[\u0300-\u036f]/g, "");
-                            const nameAr = (medData.name_ar || '').toLowerCase()
-                                .normalize("NFD")
-                                .replace(/[\u0300-\u036f]/g, "");
-
-                            // Check if search term exists in either name
-                            if (nameEn.includes(term) || nameAr.includes(term)) {
-                                return data;
-                            }
-
-                            return null;
-                        }
-                    });
-
-                    // Update related fields when medicine is selected
-                    if (line.medicine_id && medicines[line.medicine_id]) {
-                        const med = medicines[line.medicine_id];
-                        dosageSpan.text(med.dosage_form || '-');
-                        oldPriceSpan.text(med.old_price || '0.00');
-                    }
+                    $(`#medicine_select_${i}`).select2({ width: '100%', dropdownParent: container });
                 });
             }
 
@@ -1378,224 +1134,31 @@
             updateTotal();
         }
 
-        // Custom format functions for Select2
-        function formatTestResult(result) {
-            if (!result.id) return result.text;
-
-            const testData = tests[result.id];
-            if (!testData) return result.text;
-
-            const $container = $('<span class="d-flex flex-column">');
-            $container.append(`<span class="fw-semibold">${testData.test_name_en || ''}</span>`);
-            if (testData.test_name_ar) {
-                $container.append(`<span class="text-muted small text-end">${testData.test_name_ar}</span>`);
-            }
-            return $container;
-        }
-
-        function formatTestSelection(selection) {
-            const testData = tests[selection.id];
-            if (!testData) return selection.text;
-            return testData.test_name_en || selection.text;
-        }
-
-        function formatMedicineResult(result) {
-            if (!result.id) return result.text;
-
-            const medData = medicines[result.id];
-            if (!medData) return result.text;
-
-            const $container = $('<span class="d-flex flex-column">');
-            $container.append(`<span class="fw-semibold">${medData.name || ''}</span>`);
-            if (medData.name_ar) {
-                $container.append(`<span class="text-muted small text-end">${medData.name_ar}</span>`);
-            }
-            if (medData.dosage_form) {
-                $container.append(`<span class="text-info small">${medData.dosage_form}</span>`);
-            }
-            return $container;
-        }
-
-        function formatMedicineSelection(selection) {
-            const medData = medicines[selection.id];
-            if (!medData) return selection.text;
-            return medData.name || selection.text;
-        }
-
+        // ---------------- Total Calculation ----------------
         function updateTotal() {
-            let total = 0;
-            offerLines.forEach(line => {
-                const price = parseFloat(line.price) || 0;
-                const quantity = parseFloat(line.quantity) || 1;
-                total += price * quantity;
-            });
-            const visitPrice = parseFloat($('#visit_price').val()) || 0;
-            total += visitPrice;
+            let total = offerLines.reduce((sum, line) => sum + (parseFloat(line.price) || 0) * (parseFloat(line.quantity) || 1), 0);
+            total += parseFloat($('#visit_price').val()) || 0;
             $('#total_price').val(total.toFixed(2));
         }
 
-        // Form submission: optional validation before sending
-        $('#offerForm').on('submit', function(e) {
-            if (offerLines.length === 0) {
-                alert('Please add at least one offer line before submitting.');
-                e.preventDefault();
-            }
-        });
-
-        // Initialize with any pre-added lines
-        renderOfferLines();
-
-        // Function to show offer details modal
-        function showOfferDetailsModal(offerData) {
-            const isRTL = $('html').attr('dir') === 'rtl';
-            const locale = isRTL ? 'ar' : 'en';
-
-            // Status colors mapping
-            const statusColors = {
-                'pending': 'bg-warning',
-                'accepted': 'bg-success',
-                'rejected': 'bg-danger',
-                'draft': 'bg-secondary'
-            };
-            const statusColor = statusColors[offerData.status] || 'bg-secondary';
-
-            // Build modal title
-            const modalTitle = locale === 'ar'
-                ? `تفاصيل العرض #${offerData.id}`
-                : `Offer Details #${offerData.id}`;
-
-            // Build modal body HTML
-            let modalBody = `
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <strong>${locale === 'ar' ? 'المزود' : 'Provider'}:</strong><br>
-                        ${offerData.provider}
-                    </div>
-                    <div class="col-md-6">
-                        <strong>${locale === 'ar' ? 'الحالة' : 'Status'}:</strong><br>
-                        <span class="badge ${statusColor}">${offerData.status.charAt(0).toUpperCase() + offerData.status.slice(1)}</span>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <strong>${locale === 'ar' ? 'السعر الإجمالي' : 'Total Price'}:</strong><br>
-                        <span class="h5 text-primary">${parseFloat(offerData.total_price).toFixed(2)} ${locale === 'ar' ? 'جنيه' : 'EGP'}</span>
-                    </div>
-                    <div class="col-md-6">
-                        <strong>${locale === 'ar' ? 'تاريخ الإنشاء' : 'Created At'}:</strong><br>
-                        ${offerData.created_at}
-                    </div>
-                </div>
-            `;
-
-            // Conditionally show Visit Price if present
-            if (offerData.has_home_visit && offerData.visit_price && parseFloat(offerData.visit_price) > 0) {
-                modalBody += `
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <strong>${locale === 'ar' ? 'سعر الزيارة' : 'Visit Price'}:</strong><br>
-                        <span class="h6 text-muted">${parseFloat(offerData.visit_price).toFixed(2)} ${locale === 'ar' ? 'جنيه' : 'EGP'}</span>
-                    </div>
-                </div>
-                `;
-            }
-
-            modalBody += `
-                <hr>
-                <h6>${locale === 'ar' ? 'تفاصيل العرض' : 'Offer Items'}</h6>
-                <div class="table-responsive">
-                    <table class="table table-sm table-bordered">
-                        <thead>
-                            <tr>
-            `;
-
-            if (offerData.request_type === 'test') {
-                modalBody += `
-                    <th>${locale === 'ar' ? 'اسم الفحص (EN)' : 'Test Name (EN)'}</th>
-                    <th>${locale === 'ar' ? 'اسم الفحص (AR)' : 'Test Name (AR)'}</th>
-                `;
-            } else {
-                modalBody += `
-                    <th>${locale === 'ar' ? 'الدواء' : 'Medicine'}</th>
-                    <th>${locale === 'ar' ? 'الكمية' : 'Quantity'}</th>
-                    <th>${locale === 'ar' ? 'الوحدة' : 'Unit'}</th>
-                `;
-            }
-
-            modalBody += `
-                                <th>${locale === 'ar' ? 'السعر' : 'Price'}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-
-            // Add lines
-            offerData.lines.forEach(function(line) {
-                modalBody += '<tr>';
-                if (offerData.request_type === 'test') {
-                    modalBody += `
-                        <td>${line.test_name_en || 'N/A'}</td>
-                        <td>${line.test_name_ar || 'N/A'}</td>
-                        <td>${parseFloat(line.price).toFixed(2)} ${locale === 'ar' ? 'جنيه' : 'EGP'}</td>
-                    `;
-                } else {
-                    modalBody += `
-                        <td>${line.medicine_name || 'N/A'}</td>
-                        <td>${line.quantity || 1}</td>
-                        <td>${line.unit || 'box'}</td>
-                        <td>${parseFloat(line.price).toFixed(2)} ${locale === 'ar' ? 'جنيه' : 'EGP'}</td>
-                    `;
-                }
-                modalBody += '</tr>';
-            });
-
-            modalBody += `
-                        </tbody>
-                    </table>
-                </div>
-            `;
-
-            // Update modal content
-            $('#offerModalTitle').text(modalTitle);
-            $('#offerModalBody').html(modalBody);
-
-            // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('offerDetailsModal'));
-            modal.show();
-        }
-
-        // Handle view offer details button click
-        $(document).on('click', '.view-offer-details', function() {
-            const offerData = $(this).data('offer');
-            if (offerData) {
-                showOfferDetailsModal(offerData);
-            }
-        });
-    });
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const visitPriceInput = document.getElementById('visit_price');
-            const noVisit = document.getElementById('no_home_visit');
-            const freeVisit = document.getElementById('free_home_visit');
-            const price = document.getElementById('price'); // paid visit
+        // ---------------- Visit Price Toggle ----------------
+        function initVisitPriceToggle() {
+            const visitPriceInput = $('#visit_price');
+            const noVisit = $('#no_home_visit');
+            const freeVisit = $('#free_home_visit');
+            const paidVisit = $('#price');
 
             function toggleVisitPrice() {
-                if (price.checked) {
-                    // Paid visit → enable input
-                    visitPriceInput.disabled = false;
+                if (paidVisit.is(':checked')) {
+                    visitPriceInput.prop('disabled', false);
                 } else {
-                    // No visit OR free visit → disable input
-                    visitPriceInput.value = 0;
-                    visitPriceInput.disabled = true;
+                    visitPriceInput.val(0).prop('disabled', true);
                 }
+                updateTotal();
             }
 
-            noVisit.addEventListener('change', toggleVisitPrice);
-            freeVisit.addEventListener('change', toggleVisitPrice);
-            price.addEventListener('change', toggleVisitPrice);
-
-            toggleVisitPrice(); // init on page load
-        });
+            noVisit.add(freeVisit).add(paidVisit).change(toggleVisitPrice);
+            toggleVisitPrice();
+        }
     </script>
-
 @endpush

@@ -77,7 +77,7 @@
                                         <p class="font-medium text-slate-900">#{{ $request->id }}</p>
                                         <p class="text-sm text-gray-600">{{ $request->created_at->format('M d, Y') }}</p>
                                     </div>
-                                    <span class="px-3 py-1 text-xs font-medium rounded-full 
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full
                                         {{ $request->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
                                         {{ $request->status === 'accepted' ? 'bg-green-100 text-green-800' : '' }}
                                         {{ $request->status === 'rejected' ? 'bg-red-100 text-red-800' : '' }}">
@@ -112,7 +112,7 @@
                                             {{ $order->pharmacy->name ?? 'N/A' }}
                                         </p>
                                     </div>
-                                    <span class="px-3 py-1 text-xs font-medium rounded-full 
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full
                                         {{ $order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
                                         {{ $order->status === 'completed' ? 'bg-green-100 text-green-800' : '' }}">
                                         {{ ucfirst($order->status) }}

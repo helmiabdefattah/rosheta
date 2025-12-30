@@ -104,6 +104,17 @@
                         <input type="text" name="name" class="form-control" value="{{ old('name', $laboratory->name) }}" required>
                     </div>
                     <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ app()->getLocale() === 'ar' ? 'النوع' : 'Type' }} <span class="text-danger">*</span></label>
+                        <select name="type" class="form-control">
+                            <option value="test" {{ old('type', $laboratory->type) === 'test' ? 'selected' : '' }}>
+                                {{ app()->getLocale() === 'ar' ? 'تحاليل' : 'Test Laboratory' }}
+                            </option>
+                            <option value="radiology" {{ old('type', $laboratory->type) === 'radiology' ? 'selected' : '' }}>
+                                {{ app()->getLocale() === 'ar' ? 'أشعة' : 'Radiology Laboratory' }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
                         <label class="form-label">{{ app()->getLocale() === 'ar' ? 'المالك' : 'Owner' }}</label>
                         <select name="user_id" id="user_id" class="form-control select2-owner">
                             <option value="">{{ app()->getLocale() === 'ar' ? 'اختر المالك' : 'Select Owner' }}</option>

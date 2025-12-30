@@ -23,7 +23,7 @@ class LaboratoryOfferController extends Controller
 
         // Get accepted offers for this laboratory
         $query = Offer::where('laboratory_id', $laboratory->id)
-            ->where('request_type', 'test')
+            ->where('request_type', $laboratory->type)
             ->where('status', 'accepted')
             ->with([
                 'request.client',
@@ -188,7 +188,7 @@ class LaboratoryOfferController extends Controller
 
         // Get all sent offers for this laboratory (all statuses)
         $query = Offer::where('laboratory_id', $laboratory->id)
-            ->where('request_type', 'test')
+            ->where('request_type', $laboratory->type)
             ->with([
                 'request.client',
                 'request.address.area.city.governorate',

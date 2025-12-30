@@ -18,6 +18,19 @@
                      <x-admin.ui.input name="name" :value="old('name', $laboratory->name)" required />
                 </div>
 
+                <!-- Type -->
+                <div>
+                    <x-admin.ui.label for="type" required>{{ app()->getLocale() === 'ar' ? 'النوع' : 'Type' }}</x-admin.ui.label>
+                    <x-admin.ui.select name="type" :selected="old('type', $laboratory->type)" placeholder="{{ app()->getLocale() === 'ar' ? 'اختر النوع' : 'Select Type' }}">
+                        <option value="test" {{ old('type', $laboratory->type) === 'test' ? 'selected' : '' }}>
+                            {{ app()->getLocale() === 'ar' ? 'تحاليل' : 'Test Laboratory' }}
+                        </option>
+                        <option value="radiology" {{ old('type', $laboratory->type) === 'radiology' ? 'selected' : '' }}>
+                            {{ app()->getLocale() === 'ar' ? 'أشعة' : 'Radiology Laboratory' }}
+                        </option>
+                    </x-admin.ui.select>
+                </div>
+
                 <!-- Owner User -->
                 <div>
                     <x-admin.ui.label for="user_id">{{ app()->getLocale() === 'ar' ? 'المالك' : 'Owner' }}</x-admin.ui.label>

@@ -20,6 +20,7 @@ class Laboratory extends Model implements HasMedia
 		'name',
 		'phone',
 		'email',
+		'type',
 		'logo',
 		'address',
 		'location',

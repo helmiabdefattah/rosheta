@@ -27,6 +27,7 @@ class LaboratoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'type' => 'required|in:radiology,test',
             'user_id' => 'nullable|exists:users,id',
             'phone' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
@@ -65,6 +66,7 @@ class LaboratoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'type' => 'required|in:radiology,test',
             'user_id' => 'nullable|exists:users,id',
             'phone' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
@@ -100,32 +102,26 @@ class LaboratoryController extends Controller
             ->with('success', app()->getLocale() === 'ar' ? 'تم حذف المعمل بنجاح' : 'Laboratory deleted successfully');
     }
 
-    public function data()
-    {
-        $laboratories = Laboratory::with(['user', 'area.city.governorate'])->select('laboratories.*');
 
-        return DataTables::of($laboratories)
-            ->addColumn('user_name', function ($laboratory) {
-                return $laboratory->user->name ?? '-';
-            })
-            ->addColumn('area_name', function ($laboratory) {
-                return $laboratory->area->name ?? '-';
-            })
-            ->addColumn('city_name', function ($laboratory) {
-                return $laboratory->area->city->name ?? '-';
-            })
-            ->addColumn('governorate_name', function ($laboratory) {
-                return $laboratory->area->city->governorate->name ?? '-';
-            })
-            ->addColumn('is_active', function ($laboratory) {
-                return $laboratory->is_active 
-                    ? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">' . (app()->getLocale() === 'ar' ? 'نشط' : 'Active') . '</span>'
-                    : '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">' . (app()->getLocale() === 'ar' ? 'غير نشط' : 'Inactive') . '</span>';
-            })
-            ->addColumn('actions', function ($laboratory) {
-                return view('admin.laboratories.actions', compact('laboratory'))->render();
-            })
-            ->rawColumns(['is_active', 'actions'])
+    public function data(Request $request)
+    {
+        $query = Laboratory::query();
+
+        if ($request->type === 'test') {
+            $query->where('type', 'test');
+        } elseif ($request->type === 'radiology') {
+            $query->where('type', 'radiology');
+        }
+
+
+        return DataTables::of($query)
+            ->addColumn('user_name', fn($lab) => $lab->user->name ?? '-')
+            ->addColumn('area_name', fn($lab) => $lab->area->name ?? '-')
+            ->addColumn('city_name', fn($lab) => $lab->area->city->name ?? '-')
+            ->addColumn('governorate_name', fn($lab) => $lab->area->city->governorate->name ?? '-')
+            ->addColumn('actions', fn($lab) => view('admin.laboratories.actions', ['laboratory' => $lab])->render())
+            ->rawColumns(['actions', 'is_active'])
             ->make(true);
     }
+
 }
