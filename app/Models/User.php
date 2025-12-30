@@ -71,4 +71,9 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->email === 'test@example.com';
     }
+
+    public function getIsAdminAttribute(): bool
+    {
+        return $this->laboratory_id === null && $this->pharmacy_id === null;
+    }
 }

@@ -172,19 +172,30 @@
             </nav>
 
             <div class="border-t border-slate-800 p-4 bg-black/10">
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 mb-3">
                     <img src="https://ui-avatars.com/api/?name={{ auth()->user()->name }}&background=0d9488&color=fff" class="w-10 h-10 rounded-full border-2 border-slate-700">
                     <div class="flex-1 overflow-hidden">
                         <p class="text-sm font-semibold text-white truncate">{{ auth()->user()->name }}</p>
                         <p class="text-xs text-slate-400 truncate">{{ auth()->user()->email }}</p>
                     </div>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button class="text-slate-400 hover:text-red-400 transition-colors" title="Logout">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                        </button>
-                    </form>
                 </div>
+                
+                <!-- Language Toggle -->
+                <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" 
+                   class="flex items-center justify-center gap-2 px-3 py-2 mb-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
+                </a>
+                
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors" title="Logout">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                        <span>{{ app()->getLocale() === 'ar' ? 'تسجيل الخروج' : 'Logout' }}</span>
+                    </button>
+                </form>
             </div>
         </aside>
 
@@ -209,6 +220,14 @@
                             <p class="text-xs text-slate-500">{{ app()->getLocale() === 'ar' ? 'المعمل' : 'Laboratory' }}</p>
                         </div>
                     @endif
+                    <!-- Language Toggle -->
+                    <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" 
+                       class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:text-primary hover:bg-slate-100 rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                        </svg>
+                        <span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
+                    </a>
                 </div>
             </header>
 

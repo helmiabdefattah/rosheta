@@ -450,6 +450,7 @@
                 {{ app()->getLocale() === 'ar' ? 'إنشاء عرض جديد' : 'Create New Offer' }}
             </button>
         </li>
+        @if(auth()->user()->is_admin)
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="existing-offers-tab" data-bs-toggle="tab" data-bs-target="#existing-offers" type="button" role="tab" aria-controls="existing-offers" aria-selected="false">
                 {{ app()->getLocale() === 'ar' ? 'العروض الموجودة' : 'Existing Offers' }}
@@ -458,6 +459,7 @@
                 @endif
             </button>
         </li>
+        @endif
     </ul>
 
     <!-- Tabs Content -->
@@ -469,17 +471,15 @@
         <input type="hidden" name="client_request_id" value="{{ $clientRequest->id }}">
 
         <!-- Offer Details Card -->
-            <div class="card mb-4">
+            <div class="card mb-4 {{ auth()->user()->is_admin || $clientRequest->client_address_id != null ? '' : 'd-none' }}">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span>Offer Details</span>
-                    <span id="requestTypeBadge" class="request-type-badge {{ in_array($clientRequest->type, ['test', 'radiology']) ? 'request-type-test' : 'request-type-medicine' }}">
-    {{ in_array($clientRequest->type, ['test', 'radiology']) ? strtoupper($clientRequest->type).' REQUEST' : 'MEDICINE REQUEST' }}
-</span>
+                    <span id="requestTypeBadge" class="request-type-badge {{ in_array($clientRequest->type, ['test', 'radiology']) ? 'request-type-test' : 'request-type-medicine' }}">{{ in_array($clientRequest->type, ['test', 'radiology']) ? strtoupper($clientRequest->type).' REQUEST' : 'MEDICINE REQUEST' }}</span>
 
                 </div>
                 <div class="card-body row g-3">
                     <!-- Client Request Display (Readonly) -->
-                    <div class="col-md-6">
+                    <div class="col-md-6 {{ auth()->user()->is_admin ? '' : 'd-none' }}">
                         <label class="form-label">Client Request</label>
                         <div class="readonly-field">
                             <div class="d-flex justify-content-between align-items-center w-100">
@@ -492,9 +492,9 @@
                             </div>
                         </div>
                     </div>
-
+                    
                     <!-- Pharmacy/Laboratory Selection -->
-                    <div class="col-md-6">
+                    <div class="col-md-6 {{ auth()->user()->is_admin ? '' : 'd-none' }}">
                         @if(in_array($clientRequest->type, ['test', 'radiology']))                            <!-- Laboratory Selection for Tests -->
                             <label for="laboratory_id" class="form-label">Laboratory <span class="text-danger">*</span></label>
                             @if(auth()->user()->laboratory_id)
@@ -562,13 +562,14 @@
                                     name="home_visit_type"
                                     id="no_home_visit"
                                     value="no_visit"
+                                    checked="{{ $clientRequest->client_address_id == null ? 'checked' : '' }}"
                                 >
                                 <label class="form-check-label" for="no_home_visit">
                                     Lab does not offer home visit
                                 </label>
                             </div>
 
-                            <div class="form-check mt-1">
+                            <!-- <div class="form-check mt-1">
                                 <input
                                     class="form-check-input"
                                     type="radio"
@@ -579,7 +580,7 @@
                                 <label class="form-check-label" for="free_home_visit">
                                     Lab offers free home visit
                                 </label>
-                            </div>
+                            </div> -->
                             <div class="form-check mt-1">
                                 <input
                                     class="form-check-input"

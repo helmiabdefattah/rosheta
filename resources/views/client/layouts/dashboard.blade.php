@@ -160,6 +160,18 @@
                         <p class="text-xs text-slate-400 truncate">{{ Auth::guard('client')->user()->email ?? Auth::guard('client')->user()->phone_number }}</p>
                     </div>
                 </div>
+                
+                <!-- Language Toggle -->
+                <div class="mb-3">
+                    <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" 
+                       class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                        </svg>
+                        <span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
+                    </a>
+                </div>
+                
                 <form method="POST" action="{{ route('logout') }}" class="w-full">
                     @csrf
                     <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors">
@@ -185,6 +197,16 @@
                             <p class="text-sm text-slate-500">@yield('page-description')</p>
                         @endif
                     </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <!-- Language Toggle -->
+                    <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" 
+                       class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:text-primary hover:bg-slate-100 rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                        </svg>
+                        <span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
+                    </a>
                 </div>
             </header>
 
