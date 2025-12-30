@@ -77,6 +77,7 @@
         @csrf
 
         <!-- Home Visit Option -->
+        @if($type == 'test')
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
             <div class="flex items-center gap-3">
                 <input
@@ -96,7 +97,7 @@
                     : 'Delivery address will be required if home visit is selected' }}
             </p>
         </div>
-
+        @endif
         <!-- Address Selection (conditional) -->
         <div id="addressSection" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6" style="display: none;">
             <label for="client_address_id" class="block text-sm font-medium text-gray-700 mb-2">
