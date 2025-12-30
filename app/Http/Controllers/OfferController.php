@@ -18,16 +18,11 @@ class OfferController extends Controller
 {
     public function create(Request $request, $id)
     {
-        // جلب الطلب المحدد فقط مع العلاقات المناسبة
-        $clientRequest = ClientRequest::with([
-            'client',
-            'address'
-        ])->findOrFail($id);
+        $clientRequest = ClientRequest::with(['client', 'address'])->findOrFail($id);
 
-        // جلب جميع الخطوط مع العلاقات المناسبة
-        $clientRequest->load(['lines.medicine', 'testLines.medicalTest']);
+        $clientRequest->load(['lines.medicine', 'lines.medicalTest']);
 
-        // جلب جميع الفحوصات الطبية للاختيار منها
+        // Prepare tests array
         $tests = MedicalTest::get()->mapWithKeys(function ($test) {
             return [$test->id => [
                 'test_name_en' => $test->test_name_en,
@@ -37,7 +32,7 @@ class OfferController extends Controller
             ]];
         })->toArray();
 
-        // جلب جميع الأدوية للاختيار منها
+        // Prepare medicines array
         $medicines = Medicine::get()->mapWithKeys(function ($medicine) {
             return [$medicine->id => [
                 'name' => $medicine->name,
@@ -47,20 +42,18 @@ class OfferController extends Controller
             ]];
         })->toArray();
 
-        // جلب الصيدليات أو المعامل بناءً على نوع الطلب
         $pharmacies = [];
         $laboratories = [];
 
-        if ($clientRequest->type == 'test') {
-            // جلب المعامل
+        if ($clientRequest->type === 'test' || $clientRequest->type === 'radiology') {
+            // User-specific or all laboratories
             if (auth()->user()->laboratory_id) {
                 $laboratories = Laboratory::where('id', auth()->user()->laboratory_id)
                     ->pluck('name', 'id');
             } else {
                 $laboratories = Laboratory::pluck('name', 'id');
             }
-        } else {
-            // جلب الصيدليات
+        } elseif ($clientRequest->type === 'medicine') {
             if (auth()->user()->pharmacy_id) {
                 $pharmacies = Pharmacy::where('id', auth()->user()->pharmacy_id)
                     ->pluck('name', 'id');
@@ -69,7 +62,6 @@ class OfferController extends Controller
             }
         }
 
-        // لا نحتاج لقائمة المستخدمين أو الطلبات الأخرى
         $users = [];
         $clientRequests = [];
 
@@ -78,7 +70,7 @@ class OfferController extends Controller
         $testPrices = [];
         if (auth()->user()->laboratory_id) {
             $laboratory = Laboratory::find(auth()->user()->laboratory_id);
-            
+
             // Get test prices for this laboratory
             $testPrices = \App\Models\LaboratoryTestPrice::where('laboratory_id', $laboratory->id)
                 ->pluck('price', 'medical_test_id')
@@ -91,12 +83,8 @@ class OfferController extends Controller
                 'pharmacy:id,name',
                 'laboratory:id,name',
                 'user:id,name',
-                'medicineLines' => function($q) {
-                    $q->with('medicine:id,name');
-                },
-                'testLines' => function($q) {
-                    $q->with('medicalTest:id,test_name_en,test_name_ar');
-                }
+                'lines.medicine:id,name',
+                'lines.medicalTest:id,test_name_en,test_name_ar',
             ])
             ->orderBy('created_at', 'desc')
             ->get();
@@ -113,102 +101,93 @@ class OfferController extends Controller
             'existingOffers',
             'testPrices'
         ));
-    }    public function store(Request $request)
+    }
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'client_request_id' => 'required|exists:client_requests,id',
             'total_price' => 'required|numeric|min:0',
+            'visit_price' => 'nullable|numeric|min:0',
             'offer_lines' => 'required|array|min:1',
         ]);
 
-        // جلب الطلب لمعرفة نوعه
         $clientRequest = ClientRequest::findOrFail($validated['client_request_id']);
 
-        // التحقق من النوع وتحديد الحقول المطلوبة
-        if ($clientRequest->type == 'test') {
-            $request->validate([
-                'laboratory_id' => 'required|exists:laboratories,id',
-            ]);
-
-            // تحقق من أن كل سطر يحتوي على medical_test_id
+        // Validate type-specific fields
+        if ($clientRequest->type === 'test' || $clientRequest->type === 'radiology') {
+            $request->validate(['laboratory_id' => 'required|exists:laboratories,id']);
             foreach ($request->offer_lines as $index => $line) {
                 if (!isset($line['medical_test_id']) || empty($line['medical_test_id'])) {
                     return back()->withErrors([
-                        'offer_lines.' . $index . '.medical_test_id' => 'Test is required for test offer lines'
+                        'offer_lines.' . $index . '.medical_test_id' => 'Test is required for offer lines'
                     ])->withInput();
                 }
             }
-        } else {
-            $request->validate([
-                'pharmacy_id' => 'required|exists:pharmacies,id',
-            ]);
-
-            // تحقق من أن كل سطر يحتوي على medicine_id
+        } elseif ($clientRequest->type === 'medicine') {
+            $request->validate(['pharmacy_id' => 'required|exists:pharmacies,id']);
             foreach ($request->offer_lines as $index => $line) {
                 if (!isset($line['medicine_id']) || empty($line['medicine_id'])) {
                     return back()->withErrors([
-                        'offer_lines.' . $index . '.medicine_id' => 'Medicine is required for medicine offer lines'
+                        'offer_lines.' . $index . '.medicine_id' => 'Medicine is required for offer lines'
                     ])->withInput();
                 }
             }
         }
 
-        // إنشاء العرض
-        $offer = new Offer();
-        $offer->client_request_id = $validated['client_request_id'];
-        $offer->request_type = $clientRequest->type;
-        $offer->total_price = $validated['total_price'];
-        $offer->user_id = auth()->id();
-        $offer->status = 'pending';
+        // Determine visit price
+        $homeVisitType = $request->input('home_visit_type');
+        $visitPrice = match ($homeVisitType) {
+            'free_visit' => 0,
+            'price' => $request->input('visit_price', 0),
+            default => null,
+        };
 
-        // تحديد الصيدلية أو المعمل بناءً على النوع
-        if ($clientRequest->type == 'test') {
-            $offer->laboratory_id = $request->laboratory_id;
-            $offer->pharmacy_id = null;
-        } else {
-            $offer->pharmacy_id = $request->pharmacy_id;
-            $offer->laboratory_id = null;
-        }
-
-        $offer->save();
+        // Create Offer
+        $offer = Offer::create([
+            'client_request_id' => $validated['client_request_id'],
+            'request_type' => $clientRequest->type,
+            'total_price' => $validated['total_price'],
+            'visit_price' => $visitPrice,
+            'user_id' => auth()->id(),
+            'status' => 'pending',
+            'laboratory_id' => in_array($clientRequest->type, ['test', 'radiology']) ? $request->laboratory_id : null,
+            'pharmacy_id' => $clientRequest->type === 'medicine' ? $request->pharmacy_id : null,
+        ]);
 
         foreach ($request->offer_lines as $line) {
-            $offerLineData = [
+            OfferLine::create([
                 'offer_id' => $offer->id,
-                'item_type' => $clientRequest->type == 'test' ? 'test' : 'medicine',
+                'item_type' => $clientRequest->type === 'medicine' ? 'medicine' : 'test',
                 'price' => $line['price'],
-            ];
-
-            if ($clientRequest->type == 'test') {
-                $offerLineData['medical_test_id'] = $line['medical_test_id'];
-                $offerLineData['medicine_id'] = null;
-                $offerLineData['quantity'] = 1; // الفحوصات عادة تكون كمية = 1
-                $offerLineData['unit'] = 'test';
-            } else {
-                $offerLineData['medicine_id'] = $line['medicine_id'];
-                $offerLineData['medical_test_id'] = null;
-                $offerLineData['quantity'] = $line['quantity'] ?? 1;
-                $offerLineData['unit'] = $line['unit'] ?? 'box';
-            }
-
-            OfferLine::create($offerLineData);
+                'medical_test_id' => $clientRequest->type === 'medicine' ? null : $line['medical_test_id'] ?? null,
+                'medicine_id' => $clientRequest->type === 'medicine' ? $line['medicine_id'] : null,
+                'quantity' => $clientRequest->type === 'medicine' ? ($line['quantity'] ?? 1) : 1,
+                'unit' => $clientRequest->type === 'medicine' ? ($line['unit'] ?? 'box') : 'test',
+            ]);
         }
 
-        // Redirect based on user type
+        // Redirect
         $user = Auth::user();
         if ($user->laboratory_id) {
-            // Laboratory owner - redirect to laboratory dashboard
             return redirect()->route('laboratories.dashboard')
                 ->with('success', app()->getLocale() === 'ar' ? 'تم إنشاء العرض بنجاح' : 'Offer created successfully.');
-        } else {
-            // Admin - redirect to client requests
-            return redirect()->route('admin.client-requests.index')
-                ->with('success', app()->getLocale() === 'ar' ? 'تم إنشاء العرض بنجاح' : 'Offer created successfully.');
         }
+
+        return redirect()->route('admin.client-requests.index')
+            ->with('success', app()->getLocale() === 'ar' ? 'تم إنشاء العرض بنجاح' : 'Offer created successfully.');
     }
     public function show(Offer $offer)
     {
-        $offer->load(['request.client', 'request.lines.medicine', 'pharmacy', 'user', 'lines.medicine']);
+        $offer->load([
+            'request.client',
+            'request.lines.medicine',
+            'request.lines.test', // unified relation for test & radiology
+            'pharmacy',
+            'laboratory',
+            'user'
+        ]);
+
         return view('offers.show', compact('offer'));
     }
+
 }

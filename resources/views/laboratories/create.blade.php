@@ -48,7 +48,7 @@
             </div>
         @endif
 
-        <form action="{{ route('laboratories.store') }}" method="POST">
+        <form action="{{ route('admin.laboratories.store') }}" method="POST">
             @csrf
 
             <!-- Basic Information -->
@@ -59,6 +59,13 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Laboratory Name <span class="text-danger">*</span></label>
                             <input type="text" name="name" class="form-control" value="{{ old('name') }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Type <span class="text-danger">*</span></label>
+                            <select name="type" class="form-control">
+                                <option value="test" {{ old('type', 'test') === 'test' ? 'selected' : '' }}>Test Laboratory</option>
+                                <option value="radiology" {{ old('type') === 'radiology' ? 'selected' : '' }}>Radiology Laboratory</option>
+                            </select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Owner</label>
@@ -169,8 +176,7 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2">
-                <a href="{{ route('filament.admin.resources.laboratories.index') }}" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary" onclick="console.log('Save button clicked!')">Create Laboratory</button>
+                <button type="submit" class="btn btn-primary">Create Laboratory</button>
             </div>
         </form>
     </div>

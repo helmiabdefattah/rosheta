@@ -38,6 +38,12 @@
                         <label class="block text-sm font-medium text-gray-500">Pharmacy</label>
                         <p class="mt-1 text-sm text-gray-900">{{ $offer->pharmacy->name ?? 'N/A' }}</p>
                     </div>
+                    @if($offer->visit_price)
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500">visit price</label>
+                        <p class="mt-1 text-sm text-gray-900">{{ $offer->visit_price }}</p>
+                    </div>
+                    @endif
                     <div>
                         <label class="block text-sm font-medium text-gray-500">User</label>
                         <p class="mt-1 text-sm text-gray-900">{{ $offer->user->name ?? 'N/A' }}</p>

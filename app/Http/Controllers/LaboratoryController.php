@@ -26,6 +26,7 @@ class LaboratoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'type' => 'required|in:radiology,test',
             'user_id' => 'nullable|exists:users,id',
             'phone' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
@@ -67,6 +68,7 @@ class LaboratoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'type' => 'required|in:radiology,test',
             'user_id' => 'nullable|exists:users,id',
             'phone' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',

@@ -32,17 +32,17 @@ Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, '
 // Client Dashboard
 Route::middleware('auth:client')->prefix('client')->name('client.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\ClientDashboardController::class, 'index'])->name('dashboard');
-    
+
     // Test Requests
-    Route::get('/test-requests/create', [App\Http\Controllers\ClientTestRequestController::class, 'create'])->name('test-requests.create');
-    Route::post('/test-requests', [App\Http\Controllers\ClientTestRequestController::class, 'store'])->name('test-requests.store');
-    
+    Route::get('/test-requests/create/{type}', [App\Http\Controllers\ClientTestRequestController::class, 'create'])->name('test-requests.create');
+    Route::post('/test-requests/{type}', [App\Http\Controllers\ClientTestRequestController::class, 'store'])->name('test-requests.store');
+
     // Offers
     Route::get('/offers', [App\Http\Controllers\ClientOfferController::class, 'index'])->name('offers.index');
     Route::get('/offers/get', [App\Http\Controllers\ClientOfferController::class, 'getOffers'])->name('offers.get');
     Route::put('/offers/{offer}/accept', [App\Http\Controllers\ClientOfferController::class, 'accept'])->name('offers.accept');
     Route::put('/offers/{offer}/reject', [App\Http\Controllers\ClientOfferController::class, 'reject'])->name('offers.reject');
-    
+
     // Addresses
     Route::get('/addresses', [App\Http\Controllers\ClientAddressController::class, 'index'])->name('addresses.index');
     Route::get('/addresses/create', [App\Http\Controllers\ClientAddressController::class, 'create'])->name('addresses.create');
@@ -50,7 +50,7 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     Route::get('/addresses/{address}/edit', [App\Http\Controllers\ClientAddressController::class, 'edit'])->name('addresses.edit');
     Route::put('/addresses/{address}', [App\Http\Controllers\ClientAddressController::class, 'update'])->name('addresses.update');
     Route::delete('/addresses/{address}', [App\Http\Controllers\ClientAddressController::class, 'destroy'])->name('addresses.destroy');
-    
+
     // Profile
     Route::get('/profile/edit', [App\Http\Controllers\ClientProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [App\Http\Controllers\ClientProfileController::class, 'update'])->name('profile.update');
@@ -87,7 +87,6 @@ Route::get('/api/client-requests/{id}/lines', function ($id) {
 
 // Laboratory routes
 Route::get('/admin/laboratories/create', [App\Http\Controllers\LaboratoryController::class, 'create'])->name('laboratories.create');
-Route::post('/admin/laboratories', [App\Http\Controllers\LaboratoryController::class, 'store'])->name('laboratories.store');
 Route::get('/admin/laboratories/{laboratory}/edit', [App\Http\Controllers\LaboratoryController::class, 'edit'])->name('laboratories.edit');
 Route::put('/admin/laboratories/{laboratory}', [App\Http\Controllers\LaboratoryController::class, 'update'])->name('laboratories.update');
 
@@ -95,10 +94,10 @@ Route::put('/admin/laboratories/{laboratory}', [App\Http\Controllers\LaboratoryC
 // Laboratory Dashboard Routes
 Route::middleware('auth')->prefix('laboratory')->name('laboratories.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\LaboratoryDashboardController::class, 'index'])->name('dashboard');
-    
+
     // Requests
     Route::get('/requests', [App\Http\Controllers\LaboratoryRequestController::class, 'index'])->name('requests.index');
-    
+
     // Offers
     Route::get('/offers', [App\Http\Controllers\LaboratoryOfferController::class, 'index'])->name('offers.index');
     Route::get('/offers/accepted', [App\Http\Controllers\LaboratoryOfferController::class, 'accepted'])->name('offers.accepted');
@@ -106,15 +105,15 @@ Route::middleware('auth')->prefix('laboratory')->name('laboratories.')->group(fu
     Route::put('/offers/{offer}/vendor-status', [App\Http\Controllers\LaboratoryOfferController::class, 'updateVendorStatus'])->name('offers.update-vendor-status');
     Route::post('/offers/{offer}/attachments', [App\Http\Controllers\LaboratoryOfferController::class, 'uploadAttachment'])->name('offers.upload-attachment');
     Route::delete('/offers/{offer}/attachments/{attachment}', [App\Http\Controllers\LaboratoryOfferController::class, 'deleteAttachment'])->name('offers.delete-attachment');
-    
+
     // Profile
     Route::get('/profile/edit', [App\Http\Controllers\LaboratoryProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile/{laboratory}', [App\Http\Controllers\LaboratoryProfileController::class, 'update'])->name('profile.update');
-    
+
     // Users
     Route::get('/users/data', [App\Http\Controllers\LaboratoryUserController::class, 'data'])->name('users.data');
     Route::resource('users', App\Http\Controllers\LaboratoryUserController::class);
-    
+
     // Test Prices
     Route::get('/test-prices', [App\Http\Controllers\LaboratoryTestPriceController::class, 'index'])->name('test-prices.index');
     Route::post('/test-prices/store-or-update', [App\Http\Controllers\LaboratoryTestPriceController::class, 'storeOrUpdate'])->name('test-prices.store-or-update');
@@ -126,38 +125,38 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectLaboratoryOwner::class])
     Route::get('/', function () {
         return redirect()->route('admin.dashboard');
     });
-    
+
     // Dashboard
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
-    
+
     // Areas
     Route::get('/areas/data', [App\Http\Controllers\Admin\AreaController::class, 'data'])->name('areas.data');
     Route::resource('areas', App\Http\Controllers\Admin\AreaController::class);
-    
+
     // Cities
     Route::get('/cities/data', [App\Http\Controllers\Admin\CityController::class, 'data'])->name('cities.data');
     Route::resource('cities', App\Http\Controllers\Admin\CityController::class);
-    
+
     // Governorates
     Route::get('/governorates/data', [App\Http\Controllers\Admin\GovernorateController::class, 'data'])->name('governorates.data');
     Route::resource('governorates', App\Http\Controllers\Admin\GovernorateController::class);
-    
+
     // Medical Tests
     Route::get('/medical-tests/data', [App\Http\Controllers\Admin\MedicalTestController::class, 'data'])->name('medical-tests.data');
     Route::resource('medical-tests', App\Http\Controllers\Admin\MedicalTestController::class);
-    
+
     // Medicines
     Route::get('/medicines/data', [App\Http\Controllers\Admin\MedicineController::class, 'data'])->name('medicines.data');
     Route::resource('medicines', App\Http\Controllers\Admin\MedicineController::class);
-    
+
     // Users
     Route::get('/users/data', [App\Http\Controllers\Admin\UserController::class, 'data'])->name('users.data');
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
-    
+
     // Pharmacies
     Route::get('/pharmacies/data', [App\Http\Controllers\Admin\PharmacyController::class, 'data'])->name('pharmacies.data');
     Route::resource('pharmacies', App\Http\Controllers\Admin\PharmacyController::class);
-    
+
     // Laboratories
     Route::get('/laboratories/data', [App\Http\Controllers\Admin\LaboratoryController::class, 'data'])->name('laboratories.data');
     Route::get('/laboratories', [App\Http\Controllers\Admin\LaboratoryController::class, 'index'])->name('laboratories.index');
@@ -166,23 +165,23 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectLaboratoryOwner::class])
     Route::get('/laboratories/{laboratory}/edit', [App\Http\Controllers\Admin\LaboratoryController::class, 'edit'])->name('laboratories.edit');
     Route::put('/laboratories/{laboratory}', [App\Http\Controllers\Admin\LaboratoryController::class, 'update'])->name('laboratories.update');
     Route::delete('/laboratories/{laboratory}', [App\Http\Controllers\Admin\LaboratoryController::class, 'destroy'])->name('laboratories.destroy');
-    
+
     // Clients
     Route::get('/clients/data', [App\Http\Controllers\Admin\ClientController::class, 'data'])->name('clients.data');
     Route::resource('clients', App\Http\Controllers\Admin\ClientController::class);
-    
+
     // Client Requests
     Route::get('/client-requests/data', [App\Http\Controllers\Admin\ClientRequestController::class, 'data'])->name('client-requests.data');
     Route::resource('client-requests', App\Http\Controllers\Admin\ClientRequestController::class);
-    
+
     // Orders
     Route::get('/orders/data', [App\Http\Controllers\Admin\OrderController::class, 'data'])->name('orders.data');
     Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
-    
+
     // Offers
     Route::get('/offers/data', [App\Http\Controllers\Admin\OfferController::class, 'data'])->name('offers.data');
     Route::resource('offers', App\Http\Controllers\Admin\OfferController::class);
-    
+
     // Medical Test Offers
     Route::get('/medical-test-offers/data', [App\Http\Controllers\Admin\MedicalTestOfferController::class, 'data'])->name('medical-test-offers.data');
     Route::resource('medical-test-offers', App\Http\Controllers\Admin\MedicalTestOfferController::class);

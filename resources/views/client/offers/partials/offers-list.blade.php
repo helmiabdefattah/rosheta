@@ -5,7 +5,7 @@
                 $request = $item['request'];
                 $offers = $item['offers'];
             @endphp
-            
+
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <!-- Request Header -->
                 <div class="mb-4 pb-4 border-b border-gray-200">
@@ -17,7 +17,7 @@
                             <p class="text-sm text-gray-600 mt-1">
                                 {{ app()->getLocale() === 'ar' ? 'نوع الطلب:' : 'Request Type:' }}
                                 <span class="font-medium">
-                                    {{ $request->type === 'test' 
+                                    {{ $request->type === 'test'
                                         ? (app()->getLocale() === 'ar' ? 'تحاليل طبية' : 'Medical Tests')
                                         : (app()->getLocale() === 'ar' ? 'أدوية' : 'Medicines') }}
                                 </span>
@@ -31,7 +31,7 @@
                         </span>
                     </div>
                 </div>
-                
+
                 <!-- Offers List -->
                 <div class="space-y-4">
                     @foreach($offers as $offer)
@@ -51,13 +51,13 @@
                                             </span>
                                         @endif
                                     </div>
-                                    
+
                                     <div class="text-sm text-gray-700 mb-2">
                                         <p>
                                             <span class="font-medium">
                                                 {{ app()->getLocale() === 'ar' ? 'المزود:' : 'Provider:' }}
                                             </span>
-                                            {{ $offer->request_type === 'test' 
+                                            {{ $offer->request_type === 'test'
                                                 ? ($offer->laboratory->name ?? 'N/A')
                                                 : ($offer->pharmacy->name ?? 'N/A') }}
                                         </p>
@@ -72,8 +72,31 @@
                                                 {{ $offer->pharmacy->phone }}
                                             </p>
                                         @endif
+                                        @if($request->client_address_id)
+                                            <div class="mt-2">
+                                                @if(is_null($offer->visit_price))
+                                                    <span class="status-badge status-rejected">
+                {{ app()->getLocale() === 'ar'
+                    ? 'المعمل لا يوفّر زيارة منزلية'
+                    : 'Home visit not available' }}
+            </span>
+                                                @elseif($offer->visit_price == 0)
+                                                    <span class="status-badge status-accepted">
+                {{ app()->getLocale() === 'ar'
+                    ? 'زيارة منزلية مجانية'
+                    : 'Free home visit' }}
+            </span>
+                                                @else
+                                                    <span class="status-badge status-pending">
+                {{ app()->getLocale() === 'ar'
+                    ? 'زيارة منزلية بسعر ' . $offer->visit_price . ' ج.م'
+                    : 'Home visit: ' . $offer->visit_price . ' EGP' }}
+            </span>
+                                                @endif
+                                            </div>
+                                        @endif
                                     </div>
-                                    
+
                                     <!-- Offer Lines -->
                                     @if($offer->lines && $offer->lines->count() > 0)
                                         <div class="mt-3 p-3 bg-gray-50 rounded-lg">
@@ -88,12 +111,12 @@
                                                             @if($line->medicalTest && $line->medicalTest->test_name_ar)
                                                                 ({{ $line->medicalTest->test_name_ar }})
                                                             @endif
-                                                            - 
+                                                            -
                                                             <span class="font-medium">{{ number_format($line->price ?? 0, 2) }} {{ app()->getLocale() === 'ar' ? 'ج.م' : 'EGP' }}</span>
                                                         @else
                                                             • {{ $line->medicine->name ?? 'N/A' }}
                                                             ({{ $line->quantity }} {{ $line->unit ?? '' }})
-                                                            - 
+                                                            -
                                                             <span class="font-medium">{{ number_format($line->price ?? 0, 2) }} {{ app()->getLocale() === 'ar' ? 'ج.م' : 'EGP' }}</span>
                                                         @endif
                                                     </li>
@@ -102,7 +125,7 @@
                                         </div>
                                     @endif
                                 </div>
-                                
+
                                 <div class="text-right ml-4">
                                     <div class="text-2xl font-bold text-primary mb-1">
                                         {{ number_format($offer->total_price ?? 0, 2) }}
@@ -112,7 +135,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Offer Actions -->
                             @if($offer->status === 'pending')
                                 <div class="flex items-center gap-3 pt-3 border-t border-gray-200 mt-3">
@@ -147,8 +170,8 @@
             {{ app()->getLocale() === 'ar' ? 'لا توجد عروض' : 'No Offers' }}
         </h3>
         <p class="text-gray-500">
-            {{ app()->getLocale() === 'ar' 
-                ? 'لم تتلق أي عروض على طلباتك بعد.' 
+            {{ app()->getLocale() === 'ar'
+                ? 'لم تتلق أي عروض على طلباتك بعد.'
                 : 'You haven\'t received any offers on your requests yet.' }}
         </p>
     </div>

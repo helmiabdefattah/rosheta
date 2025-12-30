@@ -9,6 +9,7 @@ class MedicalTest extends Model
     protected $table = 'medical_tests';
 
     protected $fillable = [
+        'type',
         'test_name_en',
         'test_name_ar',
         'test_description',

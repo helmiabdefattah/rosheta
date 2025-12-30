@@ -80,7 +80,7 @@
         .sidebar-closed-ltr { transform: translateX(-100%); }
         .sidebar-closed-rtl { transform: translateX(100%); }
     </style>
-    
+
     @stack('styles')
 </head>
 <body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-hidden">
@@ -115,12 +115,15 @@
 
                 <div class="menu-header">{{ app()->getLocale() === 'ar' ? 'الطلبات' : 'REQUESTS' }}</div>
 
-                <a href="{{ route('client.test-requests.create') }}" class="nav-item {{ request()->routeIs('client.test-requests.*') ? 'active' : '' }}">
-                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
+                <a href="{{ route('client.test-requests.create', 'test') }}"
+                   class="nav-item {{ request()->is('client/test-requests/create/test') ? 'active' : '' }}">
                     <span>{{ app()->getLocale() === 'ar' ? 'طلب تحاليل طبية' : 'Request Medical Tests' }}</span>
                 </a>
+                <a href="{{ route('client.test-requests.create', 'radiology') }}"
+                   class="nav-item {{ request()->is('client/test-requests/create/radiology') ? 'active' : '' }}">
+                    <span>{{ app()->getLocale() === 'ar' ? 'طلب أشعة' : 'Request Radiology Tests' }}</span>
+                </a>
+
 
                 <a href="{{ route('client.offers.index') }}" class="nav-item {{ request()->routeIs('client.offers.*') ? 'active' : '' }}">
                     <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -229,7 +232,7 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    
+
     <script>
         // Mobile sidebar toggle
         const sidebar = document.getElementById('sidebar');
