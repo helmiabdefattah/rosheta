@@ -157,17 +157,30 @@ class OfferController extends Controller
             ]);
 
             foreach ($request->offer_lines as $line) {
-                OfferLine::create([
-                    'offer_id' => $offer->id,
-                    'item_type' => $clientRequest->type === 'medicine' ? 'medicine' : 'test',
-                    'price' => $line['price'],
-                    'medical_test_id' => $clientRequest->type === 'medicine' ? null : $line['medical_test_id'] ?? null,
-                    'medicine_id' => $clientRequest->type === 'medicine' ? $line['medicine_id'] : null,
-                    'quantity' => $clientRequest->type === 'medicine' ? ($line['quantity'] ?? 1) : 1,
-                    'unit' => $clientRequest->type === 'medicine' ? ($line['unit'] ?? 'box') : 'test',
-                ]);
+                if ($clientRequest->type === 'radiology') {
+                    // For radiology, use medical_test_id column but store radiology_id
+                    OfferLine::create([
+                        'offer_id' => $offer->id,
+                        'item_type' => 'radiology', // Store as radiology
+                        'price' => $line['price'],
+                        'medical_test_id' => $line['radiology_id'] ?? null, // Store radiology ID here
+                        'medicine_id' => null,
+                        'quantity' => 1,
+                        'unit' => 'test',
+                    ]);
+                } else {
+                    // Original code for medicine and test
+                    OfferLine::create([
+                        'offer_id' => $offer->id,
+                        'item_type' => $clientRequest->type === 'medicine' ? 'medicine' : 'test',
+                        'price' => $line['price'],
+                        'medical_test_id' => $clientRequest->type === 'medicine' ? null : $line['medical_test_id'] ?? null,
+                        'medicine_id' => $clientRequest->type === 'medicine' ? $line['medicine_id'] : null,
+                        'quantity' => $clientRequest->type === 'medicine' ? ($line['quantity'] ?? 1) : 1,
+                        'unit' => $clientRequest->type === 'medicine' ? ($line['unit'] ?? 'box') : 'test',
+                    ]);
+                }
             }
-            // Redirect
             $user = Auth::user();
             DB::commit();
 
@@ -187,7 +200,7 @@ class OfferController extends Controller
                 'error' => $e->getMessage()
             ])->withInput();
         }
-        
+
     }
     public function show(Offer $offer)
     {

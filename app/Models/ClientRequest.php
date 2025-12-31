@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ClientRequest extends Model
 {
@@ -36,6 +37,8 @@ class ClientRequest extends Model
     {
         return $this->belongsTo(Client::class);
     }
+
+
 
     public function address()
     {
@@ -77,10 +80,24 @@ class ClientRequest extends Model
     {
         $images = json_decode($value, true) ?? [];
 
-        return array_map(function($image) {
+        return collect($images)->map(function ($image) {
+
+            // If already full URL → return as is
+            if (Str::startsWith($image, ['http://', 'https://'])) {
+                return $image;
+            }
+
+            // If already contains storage path
+            if (Str::contains($image, 'storage/')) {
+                return url($image);
+            }
+
+            // Otherwise assume it's a filename
             return Storage::disk('public')->url("requests/{$image}");
-        }, $images);
+
+        })->toArray();
     }
+
 
     public function setImagesAttribute($value)
     {
@@ -109,14 +126,14 @@ class ClientRequest extends Model
     // Get request type label
     public function getTypeLabelAttribute()
     {
-        return $this->type == 'test' ? 'Medical Tests' : 'Medicines';
+        return $this->type == 'medicine' ?   'Medicines':'Medical Tests' ;
     }
 
     // Get request lines for API
     public function getRequestLinesForApi()
     {
         return $this->lines->map(function($line) {
-            if ($line->item_type == 'test') {
+            if ($line->item_type == 'test'||$line->item_type == 'radiology') {
                 return [
                     'medical_test_id' => $line->medical_test_id,
                     'test_name_en' => $line->medicalTest->test_name_en ?? null,
@@ -142,7 +159,7 @@ class ClientRequest extends Model
     // Get lines based on request type (for backward compatibility)
     public function getLinesByType()
     {
-        if ($this->type == 'test') {
+        if ($this->type == 'test'||$this->type == 'radiology') {
             return $this->lines()->testItems()->with('medicalTest')->get();
         } else {
             return $this->lines()->medicineItems()->with('medicine')->get();

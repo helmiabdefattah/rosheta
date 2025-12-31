@@ -14,7 +14,7 @@
             <form method="GET" action="{{ route('laboratories.requests.index') }}" class="flex gap-4 items-end">
                 <div class="flex-1">
                     <label class="block text-sm font-medium text-gray-700 mb-2">{{ app()->getLocale() === 'ar' ? 'البحث' : 'Search' }}</label>
-                    <input type="text" name="search" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" 
+                    <input type="text" name="search" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                            placeholder="{{ app()->getLocale() === 'ar' ? 'ابحث برقم الطلب أو اسم العميل أو الهاتف...' : 'Search by Request ID, Client Name, or Phone...' }}"
                            value="{{ request('search') }}">
                 </div>
@@ -67,7 +67,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                        {{ $request->lines->where('item_type', 'test')->count() ?? 0 }} {{ app()->getLocale() === 'ar' ? 'فحص' : 'Test(s)' }}
+                                        {{ $request->lines->where('item_type', $laboratory->type)->count() ?? 0 }} {{ app()->getLocale() === 'ar' ? 'فحص' : 'Test(s)' }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">

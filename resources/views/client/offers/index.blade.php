@@ -64,7 +64,20 @@
             </span>
         </div>
     </div>
-
+    <div class="flex gap-2 mb-4">
+        <button class="filter-btn px-4 py-2 rounded {{ $defaultType === 'all' ? 'bg-primary text-white' : 'bg-gray-100' }}" data-type="all">
+            {{ __('All') }}
+        </button>
+        <button class="filter-btn px-4 py-2 rounded {{ $defaultType === 'test' ? 'bg-primary text-white' : 'bg-gray-100' }}" data-type="test">
+            {{ __('Tests') }}
+        </button>
+        <button class="filter-btn px-4 py-2 rounded {{ $defaultType === 'radiology' ? 'bg-primary text-white' : 'bg-gray-100' }}" data-type="radiology">
+            {{ __('Radiology') }}
+        </button>
+        <button class="filter-btn px-4 py-2 rounded {{ $defaultType === 'medicine' ? 'bg-primary text-white' : 'bg-gray-100' }}" data-type="medicine">
+            {{ __('Medicine') }}
+        </button>
+    </div>
     <div id="offersContainer">
         @include('client.offers.partials.offers-list', ['offersByRequest' => $offersByRequest])
     </div>
@@ -72,73 +85,126 @@
 @endsection
 
 @push('scripts')
-<script>
-    // Wait for jQuery to be available
-    if (typeof jQuery === 'undefined') {
-        console.error('jQuery is not loaded');
-    } else {
-        (function($) {
-            'use strict';
+    <script>
+        // Wait for jQuery to be available
+        if (typeof jQuery === 'undefined') {
+            console.error('jQuery is not loaded');
+        } else {
+            (function($) {
+                'use strict';
 
-            let refreshInterval;
-            const refreshIntervalMs = 5000; // 5 seconds
+                let refreshInterval;
+                const refreshIntervalMs = 5000; // 5 seconds
+                let currentFilterType = '{{ $defaultType }}';
 
-            function updateLastRefreshTime() {
-                const now = new Date();
-                const timeStr = now.toLocaleTimeString();
-                $('#lastRefresh').text('{{ app()->getLocale() === "ar" ? "آخر تحديث:" : "Last refresh:" }} ' + timeStr);
-            }
-
-            function refreshOffers() {
-                $('#refreshIndicator').removeClass('hidden');
-
-                $.ajax({
-                    url: '{{ route("client.offers.index") }}',
-                    method: 'GET',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'text/html'
-                    },
-                    success: function(html) {
-                        // Extract just the offers container content
-                        const $temp = $('<div>').html(html);
-                        const $newContent = $temp.find('#offersContainer').html();
-                        if ($newContent) {
-                            $('#offersContainer').html($newContent);
-                        }
-                        updateLastRefreshTime();
-                    },
-                    error: function() {
-                        console.error('Failed to refresh offers');
-                    },
-                    complete: function() {
-                        $('#refreshIndicator').addClass('hidden');
-                    }
-                });
-            }
-
-            $(document).ready(function() {
-                updateLastRefreshTime();
-
-                // Start auto-refresh
-                refreshInterval = setInterval(refreshOffers, refreshIntervalMs);
-
-                // Refresh on page visibility change (when user comes back to tab)
-                document.addEventListener('visibilitychange', function() {
-                    if (!document.hidden) {
-                        refreshOffers();
-                    }
-                });
-            });
-
-            // Cleanup on page unload
-            $(window).on('beforeunload', function() {
-                if (refreshInterval) {
-                    clearInterval(refreshInterval);
+                function updateLastRefreshTime() {
+                    const now = new Date();
+                    const timeStr = now.toLocaleTimeString();
+                    $('#lastRefresh').text('{{ app()->getLocale() === "ar" ? "آخر تحديث:" : "Last refresh:" }} ' + timeStr);
                 }
-            });
-        })(jQuery);
-    }
-</script>
+
+                function refreshOffers() {
+                    $('#refreshIndicator').removeClass('hidden');
+
+                    // Pass current filter type in AJAX request
+                    $.ajax({
+                        url: '{{ route("client.offers.index") }}',
+                        method: 'GET',
+                        data: {
+                            filter_type: currentFilterType
+                        },
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'text/html'
+                        },
+                        success: function(html) {
+                            // If it's an AJAX request from filter, we'll get the partial
+                            // If it's a full page, we need to extract the container
+                            if (html.includes('offersContainer')) {
+                                // Full page HTML response
+                                const $temp = $('<div>').html(html);
+                                const $newContent = $temp.find('#offersContainer').html();
+                                if ($newContent) {
+                                    $('#offersContainer').html($newContent);
+                                }
+                            } else {
+                                // Partial HTML response
+                                $('#offersContainer').html(html);
+                            }
+                            updateLastRefreshTime();
+
+                            // Reinitialize filters after content is loaded
+                            initializeFilters();
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Failed to refresh offers:', error);
+                        },
+                        complete: function() {
+                            $('#refreshIndicator').addClass('hidden');
+                        }
+                    });
+                }
+
+                function initializeFilters() {
+                    // Remove existing event listeners to prevent duplicates
+                    $('.filter-btn').off('click');
+
+                    // Add new event listeners
+                    $('.filter-btn').on('click', function() {
+                        const type = $(this).data('type');
+                        filterOffers(type);
+                    });
+                }
+
+                function filterOffers(type) {
+                    currentFilterType = type; // Store current filter type
+
+                    // Update active filter button
+                    $('.filter-btn').removeClass('bg-primary text-white').addClass('bg-gray-100');
+                    $('.filter-btn[data-type="'+type+'"]').removeClass('bg-gray-100').addClass('bg-primary text-white');
+
+                    // For immediate UI feedback, filter client-side
+                    $('.offer-card').each(function() {
+                        const offerType = $(this).data('type');
+                        if (type === 'all' || offerType === type) {
+                            $(this).show();
+                        } else {
+                            $(this).hide();
+                        }
+                    });
+
+                    // Then refresh from server with the new filter
+                    refreshOffers();
+                }
+
+                $(document).ready(function() {
+                    // Initial setup
+                    updateLastRefreshTime();
+                    initializeFilters();
+
+                    // Apply initial filter (client-side only on first load)
+                    const defaultType = '{{ $defaultType }}';
+                    filterOffers(defaultType);
+
+                    // Start auto-refresh
+                    refreshInterval = setInterval(refreshOffers, refreshIntervalMs);
+
+                    // Refresh on page visibility change (when user comes back to tab)
+                    document.addEventListener('visibilitychange', function() {
+                        if (!document.hidden) {
+                            refreshOffers();
+                        }
+                    });
+                });
+
+                // Cleanup on page unload
+                $(window).on('beforeunload', function() {
+                    if (refreshInterval) {
+                        clearInterval(refreshInterval);
+                    }
+                });
+            })(jQuery);
+        }
+    </script>
 @endpush
 

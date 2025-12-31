@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <script>
         tailwind.config = {
             theme: {
@@ -43,7 +43,7 @@
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        
+
         /* Animations */
         .blob {
             position: absolute;
@@ -52,7 +52,7 @@
             opacity: 0.6;
             animation: float 10s infinite ease-in-out;
         }
-        
+
         @keyframes float {
             0%, 100% { transform: translate(0, 0) scale(1); }
             33% { transform: translate(30px, -50px) scale(1.1); }
@@ -70,7 +70,7 @@
             transform: translateY(0);
         }
     </style>
-    
+
     @stack('styles')
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased overflow-x-hidden selection:bg-primary selection:text-white">
@@ -102,7 +102,7 @@
                             {{ app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard' }}
                         </a>
                     @else
-                        <a href="{{ url('/admin/login') }}" class="px-5 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-primary/20 font-medium text-sm">
+                        <a href="{{ url('/login') }}" class="px-5 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-primary/20 font-medium text-sm">
                             {{ app()->getLocale() === 'ar' ? 'تسجيل الدخول' : 'Login' }}
                         </a>
                     @endauth
@@ -123,7 +123,7 @@
             @auth
                 <a href="{{ url('/admin') }}" class="block py-2 text-primary font-bold">{{ app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard' }}</a>
             @else
-                <a href="{{ url('/admin/login') }}" class="block py-2 text-primary font-bold">{{ app()->getLocale() === 'ar' ? 'تسجيل الدخول' : 'Login' }}</a>
+                <a href="{{ url('/login') }}" class="block py-2 text-primary font-bold">{{ app()->getLocale() === 'ar' ? 'تسجيل الدخول' : 'Login' }}</a>
             @endauth
             <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" class="block py-2 text-primary font-bold">
                 {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
@@ -144,7 +144,7 @@
                         {{ app()->getLocale() === 'ar' ? 'نغير مفهوم الرعاية الصحية في مصر عبر التكنولوجيا.' : 'Redefining healthcare in Egypt through technology.' }}
                     </p>
                 </div>
-                
+
                 <div>
                     <h4 class="font-bold text-slate-900 mb-4">{{ app()->getLocale() === 'ar' ? 'الشركة' : 'Company' }}</h4>
                     <ul class="space-y-2 text-sm text-slate-500">
@@ -153,7 +153,7 @@
                         <li><a href="#" class="hover:text-primary">{{ app()->getLocale() === 'ar' ? 'الأخبار' : 'News' }}</a></li>
                     </ul>
                 </div>
-                
+
                 <div>
                     <h4 class="font-bold text-slate-900 mb-4">{{ app()->getLocale() === 'ar' ? 'قانوني' : 'Legal' }}</h4>
                     <ul class="space-y-2 text-sm text-slate-500">
@@ -171,7 +171,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="border-t border-slate-100 pt-8 text-center text-sm text-slate-400">
                 &copy; {{ date('Y') }} {{ app()->getLocale() === 'ar' ? 'مستشفي اون. جميع الحقوق محفوظة.' : 'Mostashfa-on. All rights reserved.' }}
             </div>
@@ -183,7 +183,7 @@
         const navbar = document.getElementById('navbar');
         const logoText = document.getElementById('logo-text');
         const isWelcomePage = navbar.dataset.page === 'welcome';
-        
+
         function updateNavbar() {
             if (window.scrollY > 10) {
                 navbar.classList.add('glass', 'shadow-sm');
@@ -201,10 +201,10 @@
                 }
             }
         }
-        
+
         // Initial check
         updateNavbar();
-        
+
         window.addEventListener('scroll', updateNavbar);
 
         // Mobile Menu Toggle

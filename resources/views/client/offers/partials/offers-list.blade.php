@@ -16,11 +16,19 @@
                             </h3>
                             <p class="text-sm text-gray-600 mt-1">
                                 {{ app()->getLocale() === 'ar' ? 'نوع الطلب:' : 'Request Type:' }}
+                              @if($request->type != "radiology")
                                 <span class="font-medium">
                                     {{ $request->type === 'test'
                                         ? (app()->getLocale() === 'ar' ? 'تحاليل طبية' : 'Medical Tests')
                                         : (app()->getLocale() === 'ar' ? 'أدوية' : 'Medicines') }}
                                 </span>
+                                @else
+                                <span class="font-medium">
+                                    {{ $request->type === 'radiology'
+                                        ? (app()->getLocale() === 'ar' ? 'أشعة' : 'radiology')
+                                        : (app()->getLocale() === 'ar' ? 'أدوية' : 'Medicines') }}
+                                </span>
+                                @endif
                             </p>
                             <p class="text-xs text-gray-500 mt-1">
                                 {{ $request->created_at->format('Y-m-d H:i') }}
@@ -106,7 +114,7 @@
                                             <ul class="space-y-1">
                                                 @foreach($offer->lines as $line)
                                                     <li class="text-sm text-gray-600">
-                                                        @if($line->item_type === 'test')
+                                                        @if($line->item_type === 'test' ||$line->item_type === 'radiology')
                                                             • {{ $line->medicalTest->test_name_en ?? 'N/A' }}
                                                             @if($line->medicalTest && $line->medicalTest->test_name_ar)
                                                                 ({{ $line->medicalTest->test_name_ar }})

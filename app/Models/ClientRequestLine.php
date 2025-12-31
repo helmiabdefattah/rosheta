@@ -11,7 +11,7 @@ class ClientRequestLine extends Model
 
     protected $fillable = [
         'client_request_id',
-        'item_type', // 'medicine' أو 'test'
+        'item_type', // 'medicine', 'test', or 'radiology'
         'medicine_id',
         'medical_test_id',
         'quantity',
@@ -37,15 +37,17 @@ class ClientRequestLine extends Model
     // Dynamic relationship based on item_type
     public function item()
     {
-        return $this->item_type == 'test'
-            ? $this->medicalTest()
-            : $this->medicine();
+        return match($this->item_type) {
+            'medicine' => $this->medicine(),
+            'test', 'radiology' => $this->medicalTest(), // Both use medical_test relationship
+            default => $this->medicine(),
+        };
     }
 
     // Accessor to get the actual item
     public function getItemAttribute()
     {
-        if ($this->item_type == 'test') {
+        if (in_array($this->item_type, ['test', 'radiology'])) {
             return $this->medicalTest;
         }
         return $this->medicine;
@@ -54,8 +56,10 @@ class ClientRequestLine extends Model
     // Accessor to get item name
     public function getItemNameAttribute()
     {
-        if ($this->item_type == 'test') {
-            return $this->medicalTest ? ($this->medicalTest->test_name_en . ' / ' . $this->medicalTest->test_name_ar) : 'N/A';
+        if (in_array($this->item_type, ['test', 'radiology'])) {
+            return $this->medicalTest
+                ? ($this->medicalTest->test_name_en . ' / ' . $this->medicalTest->test_name_ar)
+                : 'N/A';
         }
         return $this->medicine->name ?? 'N/A';
     }
@@ -63,7 +67,7 @@ class ClientRequestLine extends Model
     // Accessor to get item name in English
     public function getItemNameEnAttribute()
     {
-        if ($this->item_type == 'test') {
+        if (in_array($this->item_type, ['test', 'radiology'])) {
             return $this->medicalTest->test_name_en ?? 'N/A';
         }
         return $this->medicine->name ?? 'N/A';
@@ -72,10 +76,10 @@ class ClientRequestLine extends Model
     // Accessor to get item name in Arabic
     public function getItemNameArAttribute()
     {
-        if ($this->item_type == 'test') {
+        if (in_array($this->item_type, ['test', 'radiology'])) {
             return $this->medicalTest->test_name_ar ?? 'N/A';
         }
-        return $this->medicine->name_ar ?? 'N/A';
+        return $this->medicine->name_ar ?? $this->medicine->name ?? 'N/A';
     }
 
     // Scope for medicine items
@@ -90,11 +94,71 @@ class ClientRequestLine extends Model
         return $query->where('item_type', 'test');
     }
 
+    // Scope for radiology items
+    public function scopeRadiologyItems($query)
+    {
+        return $query->where('item_type', 'radiology');
+    }
+
+    // Scope for medical test items (both test and radiology)
+    public function scopeMedicalTestItems($query)
+    {
+        return $query->whereIn('item_type', ['test', 'radiology']);
+    }
+
     // Get appropriate item ID based on type
     public function getItemIdAttribute()
     {
-        return $this->item_type == 'test'
-            ? $this->medical_test_id
-            : $this->medicine_id;
+        if (in_array($this->item_type, ['test', 'radiology'])) {
+            return $this->medical_test_id;
+        }
+        return $this->medicine_id;
+    }
+
+    // Helper to check if item is a test
+    public function getIsTestAttribute()
+    {
+        return $this->item_type === 'test';
+    }
+
+    // Helper to check if item is radiology
+    public function getIsRadiologyAttribute()
+    {
+        return $this->item_type === 'radiology';
+    }
+
+    // Helper to check if item is medicine
+    public function getIsMedicineAttribute()
+    {
+        return $this->item_type === 'medicine';
+    }
+
+    // Get the actual type from medical test if applicable
+    public function getDetailedItemTypeAttribute()
+    {
+        if (in_array($this->item_type, ['test', 'radiology'])) {
+            return $this->medicalTest->type ?? $this->item_type;
+        }
+        return $this->item_type;
+    }
+
+    // Cast quantity based on item type
+    public function getDisplayQuantityAttribute()
+    {
+        if ($this->item_type == 'medicine') {
+            return $this->quantity . ' ' . ($this->unit ?? 'box');
+        }
+        return '1 ' . $this->item_type; // For test and radiology items
+    }
+
+    // Get the appropriate label for the item type
+    public function getTypeLabelAttribute()
+    {
+        return match($this->item_type) {
+            'test' => __('Test'),
+            'radiology' => __('Radiology'),
+            'medicine' => __('Medicine'),
+            default => ucfirst($this->item_type),
+        };
     }
 }

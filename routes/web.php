@@ -21,8 +21,8 @@ Route::get('/privacy', function () {
 Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale');
 
 // Auth routes
-Route::get('/admin/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/admin/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
+Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::post('/admin/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
 // Registration routes

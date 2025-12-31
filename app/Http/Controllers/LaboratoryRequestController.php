@@ -19,16 +19,20 @@ class LaboratoryRequestController extends Controller
                 ->with('error', app()->getLocale() === 'ar' ? 'أنت غير مرتبط بأي معمل.' : 'You are not associated with any laboratory.');
         }
 
-        // Get all test requests (not just pending) that don't have offers from this laboratory
-        $query = ClientRequest::where('type', 'test')
+
+        $requestTypes = $laboratory->type === 'test' ? ['test'] :
+            ($laboratory->type === 'radiology' ? ['radiology'] : ['test', 'radiology']);
+
+        // Get all requests that match laboratory's type(s) and don't have offers from this laboratory
+        $query = ClientRequest::whereIn('type', $requestTypes)
             ->whereDoesntHave('offers', function($q) use ($laboratory) {
                 $q->where('laboratory_id', $laboratory->id);
             })
             ->with([
                 'client',
                 'address.area.city.governorate',
-                'lines' => function($q) {
-                    $q->where('item_type', 'test')->with('medicalTest');
+                'lines' => function($q) use ($requestTypes) {
+                    $q->whereIn('item_type', $requestTypes)->with('medicalTest');
                 },
                 'offers' => function($q) use ($laboratory) {
                     $q->where('laboratory_id', $laboratory->id);
@@ -46,16 +50,19 @@ class LaboratoryRequestController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('id', 'like', "%{$search}%")
-                  ->orWhereHas('client', function($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('phone_number', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('client', function($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('phone_number', 'like', "%{$search}%");
+                    });
             });
         }
 
+        if ($request->has('request_type') && $request->request_type && in_array($request->request_type, $requestTypes)) {
+            $query->where('type', $request->request_type);
+        }
         $requests = $query->paginate(15);
+//        dd($requests);
 
         return view('laboratories.requests.index', compact('requests', 'laboratory'));
-    }
-}
+    }}
 

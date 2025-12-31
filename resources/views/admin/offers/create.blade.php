@@ -492,7 +492,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Pharmacy/Laboratory Selection -->
                     <div class="col-md-6 {{ auth()->user()->is_admin ? '' : 'd-none' }}">
                         @if(in_array($clientRequest->type, ['test', 'radiology']))                            <!-- Laboratory Selection for Tests -->
@@ -629,16 +629,23 @@
                 <div class="card-body">
                     <div class="image-container mb-3">
                         <button type="button" class="nav-arrow nav-left" id="prevImage">&lt;</button>
-                        <img id="currentImage" src="{{ $clientRequest->images[0] ?? '' }}" alt="Request Image">
+                        <img id="currentImage"
+                             src="{{ Str::startsWith($clientRequest->images[0] ?? '', ['http://','https://'])
+            ? $clientRequest->images[0]
+            : 'http://' . $clientRequest->images[0] }}"
+                             alt="Request Image">
                         <button type="button" class="nav-arrow nav-right" id="nextImage">&gt;</button>
                     </div>
                     <div class="d-flex gap-2 overflow-auto" id="thumbnails">
                         @foreach($clientRequest->images as $index => $image)
-                            <img src="{{ $image }}" class="img-thumbnail {{ $index == 0 ? 'thumbnail-selected' : '' }}"
-                                 style="width: 75px; cursor: pointer;"
-                                 data-index="{{ $index }}"
-                                 alt="Thumbnail {{ $index + 1 }}">
+                            <img
+                                src="{{ Str::startsWith($image, ['http://','https://']) ? $image : 'http://' . $image }}"
+                                class="img-thumbnail {{ $index == 0 ? 'thumbnail-selected' : '' }}"
+                                data-index="{{ $index }}"
+                                style="width:75px; cursor:pointer"
+                            >
                         @endforeach
+
                     </div>
                     <div class="text-center mt-2" id="imageCounter">1 / {{ count($clientRequest->images) }}</div>
                 </div>
@@ -911,7 +918,13 @@
         const testPrices = {!! json_encode($testPrices ?? [], JSON_UNESCAPED_UNICODE) !!};
         const laboratoryId = {{ auth()->user()->laboratory_id ?? 'null' }};
         const requestType = "{{ $clientRequest->type ?? 'medicine' }}";
-        const requestImages = {!! json_encode($clientRequest->images ?? [], JSON_UNESCAPED_UNICODE) !!};
+        const requestImages = {!! json_encode(
+    collect($clientRequest->images ?? [])->map(function ($img) {
+        return \Illuminate\Support\Str::startsWith($img, ['http://','https://'])
+            ? $img
+            : 'http://' . $img;
+    })
+) !!};
         const requestLines = {!! json_encode($linesData ?? [], JSON_UNESCAPED_UNICODE) !!};
 
         let offerLines = [...requestLines];
