@@ -82,6 +82,11 @@ class Laboratory extends Model implements HasMedia
 			->sharpen(10)
 			->performOnCollections('logo');
 	}
+
+	public function reviews()
+	{
+		return $this->morphMany(Review::class, 'reviewable');
+	}
 }
 
 

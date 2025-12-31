@@ -37,6 +37,9 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     Route::get('/test-requests/create/{type}', [App\Http\Controllers\ClientTestRequestController::class, 'create'])->name('test-requests.create');
     Route::post('/test-requests/{type}', [App\Http\Controllers\ClientTestRequestController::class, 'store'])->name('test-requests.store');
 
+    // Reviews
+    Route::post('/reviews', [App\Http\Controllers\ClientReviewController::class, 'store'])->name('reviews.store');
+
     // Offers
     Route::get('/offers', [App\Http\Controllers\ClientOfferController::class, 'index'])->name('offers.index');
     Route::get('/offers/get', [App\Http\Controllers\ClientOfferController::class, 'getOffers'])->name('offers.get');
@@ -165,6 +168,9 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectLaboratoryOwner::class])
     Route::get('/laboratories/{laboratory}/edit', [App\Http\Controllers\Admin\LaboratoryController::class, 'edit'])->name('laboratories.edit');
     Route::put('/laboratories/{laboratory}', [App\Http\Controllers\Admin\LaboratoryController::class, 'update'])->name('laboratories.update');
     Route::delete('/laboratories/{laboratory}', [App\Http\Controllers\Admin\LaboratoryController::class, 'destroy'])->name('laboratories.destroy');
+
+    // Nurses
+    Route::resource('nurses', App\Http\Controllers\Admin\NurseController::class);
 
     // Clients
     Route::get('/clients/data', [App\Http\Controllers\Admin\ClientController::class, 'data'])->name('clients.data');

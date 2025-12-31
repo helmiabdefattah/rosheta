@@ -143,6 +143,86 @@
                                     </div>
                                 </div>
                             </div>
+                            @php
+                                $existingReview = \App\Models\Review::where('offer_id', $offer->id)
+                                    ->where('client_id', auth()->id())
+                                    ->first();
+                            @endphp
+                            @if($existingReview)
+
+                                {{-- Existing Review --}}
+                                <div class="pt-3 mt-3 border-t border-gray-200 bg-gray-50 rounded-lg p-3">
+                                    <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium text-gray-700">
+                {{ app()->getLocale() === 'ar' ? 'تقييمك:' : 'Your Review:' }}
+            </span>
+
+                                        <div class="flex items-center gap-1 text-yellow-400 text-lg">
+                                            @for($i = 1; $i <= 5; $i++)
+                                                <span>{{ $i <= $existingReview->rating ? '★' : '☆' }}</span>
+                                            @endfor
+                                        </div>
+                                    </div>
+
+                                    @if($existingReview->comment)
+                                        <p class="text-sm text-gray-600">
+                                            {{ $existingReview->comment }}
+                                        </p>
+                                    @else
+                                        <p class="text-sm text-gray-400 italic">
+                                            {{ app()->getLocale() === 'ar' ? 'لا يوجد تعليق' : 'No comment provided' }}
+                                        </p>
+                                    @endif
+                                </div>
+
+                            @else
+
+                                {{-- Review Form --}}
+                                @if(in_array($offer->request_type, ['test','radiology']) && $offer->vendor_status === 'test_completed')
+                                    <div class="pt-3 mt-3 border-t border-gray-200">
+                                        <form action="{{ route('client.reviews.store') }}" method="POST" class="flex flex-col gap-3">
+                                            @csrf
+
+                                            <input type="hidden" name="model_type" value="laboratory">
+                                            <input type="hidden" name="model_id" value="{{ $offer->laboratory_id }}">
+                                            <input type="hidden" name="offer_id" value="{{ $offer->id }}">
+
+                                            <div class="flex items-center justify-between gap-3">
+                                                <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-700">
+                            {{ app()->getLocale() === 'ar' ? 'تقييم الخدمة:' : 'Rate service:' }}
+                        </span>
+
+                                                    <div class="star-rating">
+                                                        @for($i = 5; $i >= 1; $i--)
+                                                            <input
+                                                                type="radio"
+                                                                id="star{{ $i }}-{{ $offer->id }}"
+                                                                name="rating"
+                                                                value="{{ $i }}"
+                                                                {{ $i == 1 ? 'checked' : '' }}
+                                                            >
+                                                            <label for="star{{ $i }}-{{ $offer->id }}">★</label>
+                                                        @endfor
+                                                    </div>
+                                                </div>
+
+                                                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 text-sm">
+                                                    {{ app()->getLocale() === 'ar' ? 'إرسال التقييم' : 'Submit Review' }}
+                                                </button>
+                                            </div>
+
+                                            <textarea
+                                                name="comment"
+                                                rows="2"
+                                                class="w-full border border-gray-300 rounded-lg p-2 text-sm"
+                                                placeholder="{{ app()->getLocale() === 'ar' ? 'اترك تعليقاً (اختياري)' : 'Leave a comment (optional)' }}"
+                                            ></textarea>
+                                        </form>
+                                    </div>
+                                @endif
+
+                            @endif
 
                             <!-- Offer Actions -->
                             @if($offer->status === 'pending')
@@ -185,3 +265,44 @@
     </div>
 @endif
 
+
+@push('styles')
+    <style>
+        .star-rating {
+            display: inline-flex;
+            direction: ltr;
+        }
+        .star-rating input[type="radio"] {
+            display: none;
+        }
+        .star-rating label {
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: #cbd5e1; /* slate-300 */
+            margin-inline: 2px;
+        }
+        .star-rating input[type="radio"]:checked ~ label {
+            color: #fbbf24; /* amber-400 */
+        }
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #facc15; /* amber-300 */
+        }
+    </style>
+@endpush
+
+@push('scripts')
+    <script>
+        // Optional: ensure correct star fill on load when radios are preselected
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.star-rating').forEach(function(group) {
+                const radios = group.querySelectorAll('input[type="radio"]');
+                radios.forEach(function(radio) {
+                    radio.addEventListener('change', function() {
+                        // No-op, CSS sibling selector handles color
+                    });
+                });
+            });
+        });
+    </script>
+@endpush

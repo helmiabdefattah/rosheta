@@ -156,6 +156,13 @@
                     <span>{{ app()->getLocale() === 'ar' ? 'عروض الفحوصات' : 'Medical Test Offers' }}</span>
                 </a>
 
+                <a href="{{ route('admin.nurses.index') }}" class="nav-item {{ request()->routeIs('admin.nurses.*') ? 'active' : '' }}">
+                    <svg class="w-5 h-5 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6m0-6l-9-5m9 5l9-5"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'التمريض' : 'Nurses' }}</span>
+                </a>
+
                 <div class="menu-header">{{ app()->getLocale() === 'ar' ? 'إدارة' : 'BUSINESS' }}</div>
 
                 <a href="{{ route('admin.orders.index') }}" class="nav-item {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
