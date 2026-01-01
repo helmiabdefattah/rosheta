@@ -123,6 +123,10 @@
                    class="nav-item {{ request()->is('client/test-requests/create/radiology') ? 'active' : '' }}">
                     <span>{{ app()->getLocale() === 'ar' ? 'طلب أشعة' : 'Request Radiology Tests' }}</span>
                 </a>
+                <a href="{{ route('client.nurse-requests.create') }}"
+                   class="line-clamp nav-hover {{ request()->routeIs('client.nurse-requests.*') ? 'active' : '' }}">
+                    <span>{{ app()->getLocale() === 'ar' ? 'طلب تمريض منزلي' : 'Request Home Nursing' }}</span>
+                </a>
 
 
                 <a href="{{ route('client.offers.index') }}" class="nav-item {{ request()->routeIs('client.offers.*') ? 'active' : '' }}">

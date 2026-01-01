@@ -40,6 +40,11 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     // Reviews
     Route::post('/reviews', [App\Http\Controllers\ClientReviewController::class, 'store'])->name('reviews.store');
 
+    // Home nurse requests
+    Route::get('/nurse-requests', [App\Http\Controllers\ClientNurseRequestController::class, 'index'])->name('nurse-requests.index');
+    Route::get('/nurse-requests/create', [App\Http\Controllers\ClientNurseRequestController::class, 'create'])->name('nurse-requests.create');
+    Route::post('/nurse-requests', [App\Http\Controllers\ClientNurseRequestController::class, 'store'])->name('nurse-requests.store');
+    Route::get('/nurse-requests/{home_nurse_request}', [App\Http\Controllers\ClientNurseRequestController::class, 'show'])->name('nurse-requests.show');
     // Offers
     Route::get('/offers', [App\Http\Controllers\ClientOfferController::class, 'index'])->name('offers.index');
     Route::get('/offers/get', [App\Http\Controllers\ClientOfferController::class, 'getOffers'])->name('offers.get');
