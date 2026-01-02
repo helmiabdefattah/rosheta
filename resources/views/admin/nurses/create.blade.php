@@ -45,12 +45,32 @@
 				</select>
 			</div>
 			<div>
+				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'الحالة' : 'Status' }}</label>
+				<select name="status" class="w-full border border-gray-300 rounded-lg p-2" required>
+					<option value="active" {{ old('status','active')=='active' ? 'selected' : '' }}>{{ app()->getLocale() === 'ar' ? 'نشط' : 'Active' }}</option>
+					<option value="inactive" {{ old('status')=='inactive' ? 'selected' : '' }}>{{ app()->getLocale() === 'ar' ? 'غير نشط' : 'Inactive' }}</option>
+				</select>
+			</div>
+			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'تاريخ الميلاد' : 'Date of Birth' }}</label>
 				<input type="date" name="date_of_birth" value="{{ old('date_of_birth') }}" class="w-full border border-gray-300 rounded-lg p-2">
 			</div>
 			<div class="md:col-span-2">
 				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'العنوان' : 'Address' }}</label>
 				<input name="address" value="{{ old('address') }}" class="w-full border border-gray-300 rounded-lg p-2">
+			</div>
+			<div class="md:col-span-2">
+				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'المناطق المغطاة' : 'Covered Areas' }}</label>
+				<div class="relative">
+					<select name="area_ids[]" multiple class="w-full border border-gray-300 rounded-lg p-2 tags-multiselect" data-placeholder="{{ app()->getLocale() === 'ar' ? 'اختر منطقة/مناطق' : 'Select area(s)' }}">
+						@foreach($areas as $area)
+							<option value="{{ $area->id }}" {{ (collect(old('area_ids', []))->contains($area->id)) ? 'selected' : '' }}>
+								{{ $area->name }} - {{ $area->city->name ?? '' }} @if($area->city?->governorate) ({{ $area->city->governorate->name }}) @endif
+							</option>
+						@endforeach
+					</select>
+				</div>
+				<p class="text-xs text-gray-500 mt-1">{{ app()->getLocale() === 'ar' ? 'يمكن اختيار أكثر من منطقة' : 'You can select multiple areas' }}</p>
 			</div>
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'المؤهل' : 'Qualification' }}</label>
@@ -95,4 +115,112 @@
 </form>
 @endsection
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+/* Custom tag styles */
+.select2-container--default .select2-selection--multiple {
+    min-height: 42px;
+    border: 1px solid #d1d5db !important;
+    border-radius: 0.5rem !important;
+    padding: 0.25rem;
+}
 
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: #3b82f6 !important;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    padding: 0;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: #3b82f6 !important;
+    border: 1px solid #2563eb !important;
+    border-radius: 0.375rem;
+    color: white;
+    padding: 0.125rem 0.5rem 0.125rem 1.75rem;
+    position: relative;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    margin: 0;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: white !important;
+    position: absolute;
+    left: 0.375rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.9;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    opacity: 1;
+    background-color: transparent !important;
+}
+
+.select2-container--default .select2-search--inline .select2-search__field {
+    margin-top: 0 !important;
+    padding: 0.375rem !important;
+    min-width: 150px !important;
+}
+
+.select2-container--default .select2-search--inline .select2-search__field::placeholder {
+    color: #9ca3af;
+}
+
+/* RTL support */
+[dir="rtl"] .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    padding: 0.125rem 1.75rem 0.125rem 0.5rem;
+}
+
+[dir="rtl"] .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    left: auto;
+    right: 0.375rem;
+}
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+@if(app()->getLocale() === 'ar')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/i18n/ar.min.js"></script>
+@endif
+<script>
+	$(function () {
+		const isRTL = @json(app()->getLocale() === 'ar');
+		
+		$('.tags-multiselect').select2({
+			width: '100%',
+			placeholder: @json(app()->getLocale() === 'ar' ? 'اختر منطقة/مناطق' : 'Select area(s)'),
+			closeOnSelect: false,
+			tags: false,
+			multiple: true,
+			language: isRTL ? 'ar' : 'en',
+			dir: isRTL ? 'rtl' : 'ltr',
+			allowClear: true,
+			theme: 'default',
+			templateSelection: function(data) {
+				// Show only the area name in the tag, not the full location string
+				const text = data.text.split(' - ')[0];
+				return $('<span class="selected-tag">' + text + '</span>');
+			}
+		});
+		
+		// Initialize with previously selected values (from old input)
+		@if(old('area_ids'))
+			const oldAreaIds = @json(old('area_ids', []));
+			$('.tags-multiselect').val(oldAreaIds).trigger('change');
+		@endif
+	});
+</script>
+@endpush

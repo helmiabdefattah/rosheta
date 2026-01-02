@@ -4,7 +4,7 @@
 @section('page-title', app()->getLocale() === 'ar' ? 'تعديل ممرض/ة' : 'Edit Nurse')
 
 @section('content')
-<form action="{{ route('admin.nurses.update', $nurse) }}" method="POST" enctype="multipart/form-data" class="max-w-4xl mx-auto space-y-6">
+<form action="{{ route('client.nurses.update', $nurse) }}" method="POST" enctype="multipart/form-data" class="max-w-4xl mx-auto space-y-6">
 	@csrf
 	@method('PUT')
 
@@ -48,13 +48,7 @@
 					<option value="female" {{ old('gender', $nurse->gender)=='female' ? 'selected' : '' }}>{{ app()->getLocale() === 'ar' ? 'أنثى' : 'Female' }}</option>
 				</select>
 			</div>
-			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'الحالة' : 'Status' }}</label>
-				<select name="status" class="w-full border border-gray-300 rounded-lg p-2" required>
-					<option value="active" {{ old('status', $nurse->status)=='active' ? 'selected' : '' }}>{{ app()->getLocale() === 'ar' ? 'نشط' : 'Active' }}</option>
-					<option value="inactive" {{ old('status', $nurse->status)=='inactive' ? 'selected' : '' }}>{{ app()->getLocale() === 'ar' ? 'غير نشط' : 'Inactive' }}</option>
-				</select>
-			</div>
+
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'تاريخ الميلاد' : 'Date of Birth' }}</label>
 				<input type="date" name="date_of_birth" value="{{ old('date_of_birth', optional($nurse->date_of_birth)->format('Y-m-d')) }}" class="w-full border border-gray-300 rounded-lg p-2">
@@ -68,7 +62,7 @@
 				<div class="relative">
 					<select name="area_ids[]" multiple class="w-full border border-gray-300 rounded-lg p-2 tags-multiselect" data-placeholder="{{ app()->getLocale() === 'ar' ? 'اختر منطقة/مناطق' : 'Select area(s)' }}">
 						@foreach($areas as $area)
-							@php 
+							@php
 								// Get selected areas from old input or from nurse's area_ids
 								$selected = in_array($area->id, (array) old('area_ids', $nurse->area_ids ?? []));
 							@endphp
@@ -206,7 +200,7 @@
 <script>
 	$(function () {
 		const isRTL = @json(app()->getLocale() === 'ar');
-		
+
 		$('.tags-multiselect').select2({
 			width: '100%',
 			placeholder: @json(app()->getLocale() === 'ar' ? 'اختر منطقة/مناطق' : 'Select area(s)'),
@@ -223,7 +217,7 @@
 				return $('<span class="selected-tag">' + text + '</span>');
 			}
 		});
-		
+
 		// Initialize with previously selected values
 		@php
 			// Get selected area IDs from old input or from nurse
@@ -232,7 +226,7 @@
 				$selectedAreaIds = (array) $selectedAreaIds;
 			}
 		@endphp
-		
+
 		const selectedAreaIds = @json($selectedAreaIds);
 		$('.tags-multiselect').val(selectedAreaIds).trigger('change');
 	});

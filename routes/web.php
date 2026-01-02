@@ -29,9 +29,12 @@ Route::post('/admin/logout', [App\Http\Controllers\Auth\LoginController::class, 
 Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
 
+//nurse routes
 // Client Dashboard
 Route::middleware('auth:client')->prefix('client')->name('client.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\ClientDashboardController::class, 'index'])->name('dashboard');
+    Route::get('nurse/dashboard', [\App\Http\Controllers\NurseDashboardController::class, 'index'])->name('nurse.dashboard');
+    Route::resource('nurses', App\Http\Controllers\NurseController::class);
 
     // Test Requests
     Route::get('/test-requests/create/{type}', [App\Http\Controllers\ClientTestRequestController::class, 'create'])->name('test-requests.create');
@@ -45,6 +48,12 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     Route::get('/nurse-requests/create', [App\Http\Controllers\ClientNurseRequestController::class, 'create'])->name('nurse-requests.create');
     Route::post('/nurse-requests', [App\Http\Controllers\ClientNurseRequestController::class, 'store'])->name('nurse-requests.store');
     Route::get('/nurse-requests/{home_nurse_request}', [App\Http\Controllers\ClientNurseRequestController::class, 'show'])->name('nurse-requests.show');
+    Route::get('/nurse-requests/{home_nurse_request}/edit', [App\Http\Controllers\ClientNurseRequestController::class, 'edit'])->name('nurse-requests.edit');
+    Route::put('/nurse-requests/{home_nurse_request}', [App\Http\Controllers\ClientNurseRequestController::class, 'update'])->name('nurse-requests.update');
+
+    // Nurse offers actions
+    Route::put('/nurse-offers/{nurse_offer}/accept', [App\Http\Controllers\ClientNurseRequestController::class, 'acceptOffer'])->name('nurse-offers.accept');
+    Route::put('/nurse-offers/{nurse_offer}/reject', [App\Http\Controllers\ClientNurseRequestController::class, 'rejectOffer'])->name('nurse-offers.reject');
     // Offers
     Route::get('/offers', [App\Http\Controllers\ClientOfferController::class, 'index'])->name('offers.index');
     Route::get('/offers/get', [App\Http\Controllers\ClientOfferController::class, 'getOffers'])->name('offers.get');

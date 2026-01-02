@@ -40,6 +40,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'nurse' => [
+            'driver' => 'session',
+            'provider' => 'nurses',
+        ],
         'client' => [
             'driver' => 'session',
             'provider' => 'clients',
@@ -84,11 +88,11 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\Client::class,
         ],
+        'nurses' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Nurse::class,
+        ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
     ],
 
     /*

@@ -73,6 +73,11 @@ class HomeNurseRequest extends Model
 		return $this->morphOne(Review::class, 'reviewable');
 	}
 
+	public function offers(): HasMany
+	{
+		return $this->hasMany(NurseOffer::class, 'home_nurse_request_id');
+	}
+
 	public function scheduleVisits(): void
 	{
 		$count = (int) $this->visits_count;

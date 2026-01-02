@@ -218,16 +218,16 @@
                         <p class="text-xs text-slate-400 truncate">{{ auth()->user()->email }}</p>
                     </div>
                 </div>
-                
+
                 <!-- Language Toggle -->
-                <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" 
+                <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                    class="flex items-center justify-center gap-2 px-3 py-2 mb-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
                     </svg>
                     <span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
                 </a>
-                
+
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors" title="Logout">
@@ -245,7 +245,7 @@
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
                 <span class="font-bold text-slate-800">Mostashfa-on</span>
-                <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" 
+                <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                    class="flex items-center gap-1 px-2 py-1 text-sm text-slate-600 hover:text-primary">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>

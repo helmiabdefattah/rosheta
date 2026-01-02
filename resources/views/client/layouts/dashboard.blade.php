@@ -105,8 +105,11 @@
 
             <nav class="flex-1 overflow-y-auto p-4 sidebar-scroll">
                 <div class="menu-header">{{ app()->getLocale() === 'ar' ? 'الرئيسية' : 'MAIN' }}</div>
-
+                @if(Auth::guard('client')->user()->nurse_id != null)
+                <a href="{{ route('client.nurse.dashboard') }}" class="nav-item {{ request()->routeIs('client.dashboard') ? 'active' : '' }}">
+               @else
                 <a href="{{ route('client.dashboard') }}" class="nav-item {{ request()->routeIs('client.dashboard') ? 'active' : '' }}">
+                    @endif
                     <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
                     </svg>
@@ -123,11 +126,13 @@
                    class="nav-item {{ request()->is('client/test-requests/create/radiology') ? 'active' : '' }}">
                     <span>{{ app()->getLocale() === 'ar' ? 'طلب أشعة' : 'Request Radiology Tests' }}</span>
                 </a>
-                <a href="{{ route('client.nurse-requests.create') }}"
-                   class="line-clamp nav-hover {{ request()->routeIs('client.nurse-requests.*') ? 'active' : '' }}">
-                    <span>{{ app()->getLocale() === 'ar' ? 'طلب تمريض منزلي' : 'Request Home Nursing' }}</span>
-                </a>
+                        @if(Auth::guard('client')->user()->nurse_id == null)
 
+                        <a href="{{ route('client.nurse-requests.index') }}"
+                   class="nav-item {{ request()->routeIs('client.nurse-requests.*') ? 'active' : '' }}">
+                    <span>{{ app()->getLocale() === 'ar' ? 'طلبات التمريض' : 'Nursing Requests' }}</span>
+                </a>
+                        @endif
 
                 <a href="{{ route('client.offers.index') }}" class="nav-item {{ request()->routeIs('client.offers.*') ? 'active' : '' }}">
                     <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -145,13 +150,26 @@
                 </a>
 
                 <div class="menu-header">{{ app()->getLocale() === 'ar' ? 'الإعدادات' : 'SETTINGS' }}</div>
+                        @if(Auth::guard('client')->user()->nurse_id == null)
 
                 <a href="{{ route('client.profile.edit') }}" class="nav-item {{ request()->routeIs('client.profile.*') ? 'active' : '' }}">
                     <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                     </svg>
-                    <span>{{ app()->getLocale() === 'ar' ? 'الملف الشخصي' : 'My Profile' }}</span>
+                    <span>{{ app()->getLocale() === 'ar' ? 'تعديل الملف الشخصي' : 'Edit my Profile' }}</span>
                 </a>
+                        @else
+                            <a href="{{ route('client.nurses.edit', auth('client')->user()->nurse_id) }}"
+                               class="nav-item {{ request()->routeIs('nurses.edit') ? 'active' : '' }}">
+
+                                <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+
+                                <span>{{ app()->getLocale() === 'ar' ? 'تعديل الملف الشخصي' : 'Edit my Profile' }}</span>
+                            </a>
+                @endif
             </nav>
 
             <div class="p-4 border-t border-slate-800/50">
@@ -160,14 +178,15 @@
                         <i class="bi bi-person text-primary"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-semibold text-white truncate">{{ Auth::guard('client')->user()->name }}</p>
-                        <p class="text-xs text-slate-400 truncate">{{ Auth::guard('client')->user()->email ?? Auth::guard('client')->user()->phone_number }}</p>
+
+                    <p class="text-sm font-semibold text-white truncate">{{ Auth::guard('client')->user()->name }}</p>
+                    <p class="text-xs text-slate-400 truncate">{{ Auth::guard('client')->user()->email ?? Auth::guard('client')->user()->phone_number }}</p>
                     </div>
                 </div>
-                
+
                 <!-- Language Toggle -->
                 <div class="mb-3">
-                    <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" 
+                    <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                        class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
@@ -175,7 +194,7 @@
                         <span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
                     </a>
                 </div>
-                
+
                 <form method="POST" action="{{ route('logout') }}" class="w-full">
                     @csrf
                     <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors">
@@ -204,7 +223,7 @@
                 </div>
                 <div class="flex items-center gap-3">
                     <!-- Language Toggle -->
-                    <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" 
+                    <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                        class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:text-primary hover:bg-slate-100 rounded-lg transition-colors">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>

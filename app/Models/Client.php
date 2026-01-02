@@ -31,4 +31,9 @@ class Client extends Authenticatable
     {
         return $this->hasMany(ClientRequest::class);
     }
+    public function nurse()
+    {
+        return $this->hasOne(Nurse::class);
+    }
+
 }

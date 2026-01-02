@@ -59,6 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/medicines', [ClientRequestController::class, 'medicineList']);
     Route::get('/medical-tests', [ClientRequestController::class, 'testsList']);
+    Route::get('/radiology-tests', [ClientRequestController::class, 'radiologyList']);
     Route::post('/medical-test-requests', [ClientRequestController::class, 'test_requests']);
     Route::get('/medical-test-offers', [OfferController::class, 'medicalTestOffersList']);
     Route::get('/labs', [OfferController::class, 'labList']);

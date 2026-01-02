@@ -5,35 +5,56 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany; // Add this
 
 class Nurse extends Model
 {
-	use HasFactory;
+    use HasFactory;
 
-	protected $fillable = [
-		'client_id',
-		'gender',
-		'date_of_birth',
-		'address',
-		'qualification',
-		'education_place',
-		'graduation_year',
-		'years_of_experience',
-		'current_workplace',
-		'certifications',
-		'skills',
-	];
+    protected $table = 'nurses';
 
-	protected $casts = [
-		'date_of_birth' => 'date',
-		'certifications' => 'array',
-		'skills' => 'array',
-	];
+    protected $fillable = [
+        'client_id',
+        'gender',
+        'date_of_birth',
+        'address',
+        'status',
+        'area_ids',
+        'qualification',
+        'education_place',
+        'graduation_year',
+        'years_of_experience',
+        'current_workplace',
+        'certifications',
+        'skills',
+    ];
 
-	public function client(): BelongsTo
-	{
-		return $this->belongsTo(Client::class);
-	}
+    protected $casts = [
+        'date_of_birth' => 'date',
+        'area_ids' => 'array',
+        'certifications' => 'array',
+        'skills' => 'array',
+    ];
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
+    }
+
+    // Add these relationships
+    public function offers(): HasMany
+    {
+        return $this->hasMany(NurseOffer::class);
+    }
+
+    public function visits(): HasMany
+    {
+        return $this->hasMany(NurseVisit::class);
+    }
+
+    // Optional: Add a scope for active nurses
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
 }
-
-

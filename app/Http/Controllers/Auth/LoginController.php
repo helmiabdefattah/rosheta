@@ -21,20 +21,20 @@ class LoginController extends Controller
         if (Auth::guard('client')->check()) {
             return redirect()->route('client.dashboard');
         }
-        
+
         // If already authenticated as user, redirect based on user type
         if (Auth::check()) {
             $user = Auth::user();
-            
+
             // Redirect laboratory owners to their dashboard
             if ($user->laboratory_id) {
                 return redirect()->route('laboratories.dashboard');
             }
-            
+
             // Redirect other users to admin dashboard
             return redirect()->route('admin.dashboard');
         }
-        
+
         return view('auth.login');
     }
 
@@ -43,6 +43,7 @@ class LoginController extends Controller
      */
     public function login(Request $request)
     {
+//        dd($request);
         $request->validate([
             'email' => 'required|string', // Changed from 'email' to 'string' to accept phone or email
             'password' => 'required|string',
@@ -57,12 +58,13 @@ class LoginController extends Controller
         if ($user && Hash::check($password, $user->password)) {
             Auth::login($user, $remember);
             $request->session()->regenerate();
-            
+
             // Redirect laboratory owners to their dashboard
             if ($user->laboratory_id) {
                 return redirect()->route('laboratories.dashboard');
             }
-            
+
+
             // Redirect other users to admin dashboard
             return redirect()->route('admin.dashboard');
         }
@@ -72,11 +74,16 @@ class LoginController extends Controller
             $query->where('email', $login)
                   ->orWhere('phone_number', $login);
         })->first();
-        
+
         if ($client && Hash::check($password, $client->password)) {
+
             Auth::guard('client')->login($client, $remember);
             $request->session()->regenerate();
-            
+
+            if ($client->nurse_id) {
+                return redirect()->route('client.nurse.dashboard');
+            }
+
             return redirect()->route('client.dashboard');
         }
 
@@ -96,10 +103,10 @@ class LoginController extends Controller
         } else {
             Auth::logout();
         }
-        
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        
+
         return redirect()->route('login');
     }
 }

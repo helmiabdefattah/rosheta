@@ -20,39 +20,36 @@ class ClientRequestController extends Controller
      */
     public function index(Request $request)
     {
-        // Validate that client_id is provided
         $request->validate([
             'client_id' => 'required|exists:clients,id',
-            'type' => 'sometimes|in:medicine,test' // Add type validation
+            'type' => 'sometimes|in:medicine,test,radiology',
         ]);
 
         $clientId = $request->get('client_id');
 
         $query = ClientRequest::where('client_id', $clientId)
             ->with([
-                'lines.medicine', // Load medicine for medicine lines
-                'lines.medicalTest', // Load medicalTest for test lines
+                'lines.medicine',
+                'lines.medicalTest',
                 'address.city',
                 'address.area',
                 'offers.pharmacy',
                 'offers.laboratory',
             ]);
-        // Filter by status if provided
-        if ($request->has('status')) {
+
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter by type if provided
-        if ($request->has('type')) {
+        if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
 
-        // Sort by created_at descending (newest first)
         $query->orderBy('created_at', 'desc');
 
-        // Paginate results
         $perPage = $request->get('per_page', 15);
         $requests = $query->paginate($perPage);
+//dd($requests);
         return ClientRequestResource::collection($requests)
             ->additional([
                 'message' => 'Client requests retrieved successfully',
@@ -170,6 +167,7 @@ class ClientRequestController extends Controller
             'status' => ['nullable', Rule::in(['pending', 'approved', 'rejected'])],
 
             'tests' => 'nullable',
+            'type' => 'required|in:test,radiology',
             'tests.*.medical_test_id' => ['required_with:testLines', 'exists:medicalTests,id'],
 
             'images' => ['nullable', 'array'],
@@ -216,8 +214,8 @@ class ClientRequestController extends Controller
                 'high_blood_pressure' => $validated['high_blood_pressure'] ?? false,
                 'note' => $validated['note'] ?? null,
                 'status' => $validated['status'] ?? 'pending',
+                'type' => $validated['type'] ,
                 'images' => $imageNames, // store array of file names
-                'type' => 'test',
             ]);
 
             // Save request lines if provided
@@ -230,6 +228,7 @@ class ClientRequestController extends Controller
                     $linesPayload = collect($linesArray)->map(fn($line) => [
                         'medical_test_id' => $line['test_id'],
                         'quantity' => 1,
+                        'item_type'=>$validated['type']
 
                     ])->toArray();
 
@@ -263,13 +262,39 @@ class ClientRequestController extends Controller
 
     public function testsList()
     {
-        $tests = MedicalTest::select('id','test_name_en', 'test_name_ar', 'test_description','conditions')->get();
+        $tests = MedicalTest::select(
+            'id',
+            'test_name_en',
+            'test_name_ar',
+            'test_description',
+            'conditions'
+        )
+            ->where('type', 'test')
+            ->get();
 
         return response()->json([
             'status' => 'success',
             'data' => $tests
         ]);
     }
+    public function radiologyList()
+    {
+        $radiologyTests = MedicalTest::select(
+            'id',
+            'test_name_en',
+            'test_name_ar',
+            'test_description',
+            'conditions'
+        )
+            ->where('type', 'radiology')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $radiologyTests
+        ]);
+    }
+
 
 }
 

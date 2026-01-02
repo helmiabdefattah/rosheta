@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\Nurse;
+use App\Models\Area;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -15,12 +16,27 @@ class NurseController extends Controller
 	public function index()
 	{
 		$nurses = Nurse::with('client')->orderByDesc('id')->paginate(15);
-		return view('admin.nurses.index', compact('nurses'));
+
+		// Build a map of area_id => Area (with city/governorate) for display
+		$allAreaIds = collect($nurses->items())
+			->flatMap(function ($n) {
+				return is_array($n->area_ids) ? $n->area_ids : [];
+			})
+			->filter()
+			->unique()
+			->values();
+
+		$areaMap = $allAreaIds->isNotEmpty()
+			? Area::with('city.governorate')->whereIn('id', $allAreaIds)->get()->keyBy('id')
+			: collect();
+
+		return view('admin.nurses.index', compact('nurses', 'areaMap'));
 	}
 
 	public function create()
 	{
-		return view('admin.nurses.create');
+		$areas = Area::with('city.governorate')->where('is_active', true)->get();
+		return view('admin.nurses.create', compact('areas'));
 	}
 
 	public function store(Request $request)
@@ -36,6 +52,9 @@ class NurseController extends Controller
 			'gender' => 'nullable|in:male,female',
 			'date_of_birth' => 'nullable|date',
 			'address' => 'nullable|string',
+			'status' => 'required|in:active,inactive',
+			'area_ids' => 'nullable|array',
+			'area_ids.*' => 'integer|exists:areas,id',
 			'qualification' => 'nullable|in:bachelor,diploma,technical_institute',
 			'education_place' => 'nullable|string|max:255',
 			'graduation_year' => 'nullable|integer|min:1950|max:' . (date('Y') + 1),
@@ -57,14 +76,17 @@ class NurseController extends Controller
 				'email' => $validatedClient['email'] ?? null,
 				'avatar' => $avatarPath,
 				// generate random password; can be reset later
-				'password' => Hash::make(str()->random(12)),
-			]);
+				'password' => Hash::make('password'),
 
-			Nurse::create([
+            ]);
+
+			$nurse = Nurse::create([
 				'client_id' => $client->id,
 				'gender' => $validatedNurse['gender'] ?? null,
 				'date_of_birth' => $validatedNurse['date_of_birth'] ?? null,
 				'address' => $validatedNurse['address'] ?? null,
+				'status' => $validatedNurse['status'],
+				'area_ids' => $validatedNurse['area_ids'] ?? null,
 				'qualification' => $validatedNurse['qualification'] ?? null,
 				'education_place' => $validatedNurse['education_place'] ?? null,
 				'graduation_year' => $validatedNurse['graduation_year'] ?? null,
@@ -73,6 +95,10 @@ class NurseController extends Controller
 				'certifications' => $this->stringToArray($validatedNurse['certifications'] ?? null),
 				'skills' => $this->stringToArray($validatedNurse['skills'] ?? null),
 			]);
+
+			// link client to nurse
+			$client->nurse_id = $nurse->id;
+			$client->save();
 		});
 
 		return redirect()->route('admin.nurses.index')
@@ -88,7 +114,8 @@ class NurseController extends Controller
 	public function edit(Nurse $nurse)
 	{
 		$nurse->load('client');
-		return view('admin.nurses.edit', compact('nurse'));
+		$areas = Area::with('city.governorate')->where('is_active', true)->get();
+		return view('admin.nurses.edit', compact('nurse', 'areas'));
 	}
 
 	public function update(Request $request, Nurse $nurse)
@@ -106,6 +133,9 @@ class NurseController extends Controller
 			'gender' => 'nullable|in:male,female',
 			'date_of_birth' => 'nullable|date',
 			'address' => 'nullable|string',
+			'status' => 'required|in:active,inactive',
+			'area_ids' => 'nullable|array',
+			'area_ids.*' => 'integer|exists:areas,id',
 			'qualification' => 'nullable|in:bachelor,diploma,technical_institute',
 			'education_place' => 'nullable|string|max:255',
 			'graduation_year' => 'nullable|integer|min:1950|max:' . (date('Y') + 1),
@@ -131,6 +161,8 @@ class NurseController extends Controller
 				'gender' => $validatedNurse['gender'] ?? null,
 				'date_of_birth' => $validatedNurse['date_of_birth'] ?? null,
 				'address' => $validatedNurse['address'] ?? null,
+				'status' => $validatedNurse['status'],
+				'area_ids' => $validatedNurse['area_ids'] ?? null,
 				'qualification' => $validatedNurse['qualification'] ?? null,
 				'education_place' => $validatedNurse['education_place'] ?? null,
 				'graduation_year' => $validatedNurse['graduation_year'] ?? null,
