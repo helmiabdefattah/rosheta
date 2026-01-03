@@ -471,16 +471,15 @@
         <input type="hidden" name="client_request_id" value="{{ $clientRequest->id }}">
 
         <!-- Offer Details Card -->
-            <div class="card mb-4 {{ auth()->user()->is_admin || $clientRequest->client_address_id != null ? '' : 'd-none' }}">
+            <div class="card mb-4 {{ auth()->user()->is_admin || ($clientRequest->client_address_id != null || $clientRequest->insuranceCompany) ? '' : 'd-none' }}">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <span>Offer Details</span>
-                    <span id="requestTypeBadge" class="request-type-badge {{ in_array($clientRequest->type, ['test', 'radiology']) ? 'request-type-test' : 'request-type-medicine' }}">{{ in_array($clientRequest->type, ['test', 'radiology']) ? strtoupper($clientRequest->type).' REQUEST' : 'MEDICINE REQUEST' }}</span>
+                    <span>{{ app()->getLocale() === 'ar' ? 'تفاصيل العرض' : 'Offer Details' }}</span>
 
                 </div>
                 <div class="card-body row g-3">
                     <!-- Client Request Display (Readonly) -->
                     <div class="col-md-6 {{ auth()->user()->is_admin ? '' : 'd-none' }}">
-                        <label class="form-label">Client Request</label>
+                        <label class="form-label">{{ app()->getLocale() === 'ar' ? 'طلب العميل' : 'Client Request' }}</label>
                         <div class="readonly-field">
                             <div class="d-flex justify-content-between align-items-center w-100">
                                 <span>
@@ -496,7 +495,7 @@
                     <!-- Pharmacy/Laboratory Selection -->
                     <div class="col-md-6 {{ auth()->user()->is_admin ? '' : 'd-none' }}">
                         @if(in_array($clientRequest->type, ['test', 'radiology']))                            <!-- Laboratory Selection for Tests -->
-                            <label for="laboratory_id" class="form-label">Laboratory <span class="text-danger">*</span></label>
+                            <label for="laboratory_id" class="form-label">{{ app()->getLocale() === 'ar' ? 'المعمل' : 'Laboratory' }} <span class="text-danger">*</span></label>
                             @if(auth()->user()->laboratory_id)
                                 <input type="hidden" name="laboratory_id" value="{{ auth()->user()->laboratory_id }}">
                                 <div class="readonly-field">
@@ -504,7 +503,7 @@
                                 </div>
                             @else
                                 <select name="laboratory_id" id="laboratory_id" class="form-select select2" required>
-                                    <option value="">Select a laboratory</option>
+                                    <option value="">{{ app()->getLocale() === 'ar' ? 'اختر معمل' : 'Select a laboratory' }}</option>
                                     @foreach($laboratories as $id => $name)
                                         <option value="{{ $id }}" {{ old('laboratory_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
                                     @endforeach
@@ -515,7 +514,7 @@
                             @enderror
                         @else
                             <!-- Pharmacy Selection for Medicines -->
-                            <label for="pharmacy_id" class="form-label">Pharmacy <span class="text-danger">*</span></label>
+                            <label for="pharmacy_id" class="form-label">{{ app()->getLocale() === 'ar' ? 'الصيدلية' : 'Pharmacy' }} <span class="text-danger">*</span></label>
                             @if(auth()->user()->pharmacy_id)
                                 <input type="hidden" name="pharmacy_id" value="{{ auth()->user()->pharmacy_id }}">
                                 <div class="readonly-field">
@@ -523,7 +522,7 @@
                                 </div>
                             @else
                                 <select name="pharmacy_id" id="pharmacy_id" class="form-select select2" required>
-                                    <option value="">Select a pharmacy</option>
+                                    <option value="">{{ app()->getLocale() === 'ar' ? 'اختر صيدلية' : 'Select a pharmacy' }}</option>
                                     @foreach($pharmacies as $id => $name)
                                         <option value="{{ $id }}" {{ old('pharmacy_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
                                     @endforeach
@@ -534,6 +533,43 @@
                             @enderror
                         @endif
                     </div>
+                    
+                    <!-- Client Insurance Company (Readonly) - Always show for test/radiology requests -->
+                    @if(in_array($clientRequest->type, ['test', 'radiology']))
+                        @php
+                            $insuranceCompany = $clientRequest->insuranceCompany ?? $clientRequest->client->insuranceCompany ?? null;
+                        @endphp
+                        @if($insuranceCompany)
+                            <div class="col-md-6">
+                                <label class="form-label">{{ app()->getLocale() === 'ar' ? 'شركة التأمين' : 'Insurance Company' }}</label>
+                                <div class="readonly-field">
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <span>
+                                            {{ app()->getLocale() === 'ar' ? ($insuranceCompany->name_ar ?? $insuranceCompany->name) : $insuranceCompany->name }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Insurance Supported Checkbox -->
+                            <div class="col-md-6">
+                                <label class="form-label">{{ app()->getLocale() === 'ar' ? 'دعم التأمين' : 'Insurance Support' }}</label>
+                                <div class="form-check mt-2">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        name="insurance_supported" 
+                                        id="insurance_supported" 
+                                        value="1"
+                                        {{ old('insurance_supported') ? 'checked' : '' }}
+                                    >
+                                    <label class="form-check-label" for="insurance_supported">
+                                        {{ app()->getLocale() === 'ar' ? 'نعم، نحن ندعم هذه الشركة' : 'Yes, we support this insurance company' }}
+                                    </label>
+                                </div>
+                            </div>
+                        @endif
+                    @endif
+
                     @if($clientRequest->client_address_id)
                     <!-- Client Address (Readonly) -->
                     <div class="col-md-6">
@@ -553,7 +589,7 @@
                     <!-- Visit Price Input -->
                         <!-- Home Visit Options -->
                         <div class="col-md-6">
-                            <label class="form-label">Home Visit</label>
+                            <label class="form-label">{{ app()->getLocale() === 'ar' ? 'زيارة منزلية' : 'Home Visit' }}</label>
 
                             <div class="form-check">
                                 <input
@@ -565,7 +601,7 @@
                                     checked="{{ $clientRequest->client_address_id == null ? 'checked' : '' }}"
                                 >
                                 <label class="form-check-label" for="no_home_visit">
-                                    Lab does not offer home visit
+                                    {{ app()->getLocale() === 'ar' ? 'المعمل لا يقدم زيارة منزلية' : 'Lab does not offer home visit' }}
                                 </label>
                             </div>
 
@@ -578,7 +614,7 @@
                                     value="free_visit"
                                 >
                                 <label class="form-check-label" for="free_home_visit">
-                                    Lab offers free home visit
+                                    {{ app()->getLocale() === 'ar' ? 'المعمل يقدم زيارة منزلية مجانية' : 'Lab offers free home visit' }}
                                 </label>
                             </div> -->
                             <div class="form-check mt-1">
@@ -590,7 +626,7 @@
                                     value="price"
                                 >
                                 <label class="form-check-label" for="free_home_visit">
-                                    add price
+                                    {{ app()->getLocale() === 'ar' ? 'إضافة سعر' : 'Add price' }}
                                 </label>
                             </div>
 
@@ -656,14 +692,9 @@
         @if($clientRequest->lines->count() > 0)
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                <span>
-                    @if(in_array($clientRequest->type, ['test', 'radiology']))
-                        Client Request Tests ({{ $clientRequest->testLines->count() }})
-                    @else
-                        Client Request Lines ({{ $clientRequest->medicineLines->count() }})
-                    @endif
+                <span>{{ app()->getLocale() === 'ar' ? 'طلب العميل' : 'Client Request' }} ({{ $clientRequest->lines->count() }})
                 </span>
-                    <button type="button" class="btn btn-success btn-sm" id="addAllLinesBtn">Add All to Offer</button>
+                    <button type="button" class="btn btn-success btn-sm" id="addAllLinesBtn">{{ app()->getLocale() === 'ar' ? 'إضافة جميع العناصر إلى العرض' : 'Add All to Offer' }}</button>
                 </div>
                 <div class="card-body table-responsive">
                     <table class="table table-bordered table-hover">
@@ -700,7 +731,7 @@
                                                 data-id="{{ $line->medical_test_id }}"
                                                 data-name-en="{{ $line->medicalTest->test_name_en ?? '' }}"
                                                 data-name-ar="{{ $line->medicalTest->test_name_ar ?? '' }}">
-                                            Add to Offer
+                                            {{ app()->getLocale() === 'ar' ? 'إضافة إلى العرض' : 'Add to Offer' }}
                                         </button>
                                     </td>
                                 </tr>
@@ -735,27 +766,23 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span id="offerLinesTitle">
-                    @if(in_array($clientRequest->type, ['test', 'radiology']))
-                        Offer {{ strtoupper($clientRequest->type) }}s
-                    @else
-                        Offer Lines
-                    @endif
+                   {{ app()->getLocale() === 'ar' ? 'عناصر العرض' : 'Offer Items' }}
 
                 </span>
-                <button type="button" class="btn btn-primary btn-sm" id="addOfferLineBtn">Add Line</button>
+                <button type="button" class="btn btn-primary btn-sm" id="addOfferLineBtn">{{ app()->getLocale() === 'ar' ? 'إضافة عنصر' : 'Add Line' }}</button>
             </div>
             <div class="card-body" id="offerLinesContainer">
-                <div class="text-center text-muted" id="noOfferLinesMsg">No offer lines added yet.</div>
+                <div class="text-center text-muted" id="noOfferLinesMsg">{{ app()->getLocale() === 'ar' ? 'لا يوجد عناصر في العرض' : 'No offer lines added yet.' }}</div>
             </div>
         </div>
 
         <!-- Total Price -->
         <div class="card mb-4">
             <div class="card-body total-price-container d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Total Price</h5>
+                <h5 class="mb-0">{{ app()->getLocale() === 'ar' ? 'السعر الإجمالي' : 'Total Price' }}</h5>
                 <div class="d-flex align-items-center gap-2">
                     <input type="text" id="total_price" name="total_price" class="form-control text-end fw-bold" value="0.00" readonly>
-                    <span class="fw-bold">EGP</span>
+                    <span class="fw-bold">{{ app()->getLocale() === 'ar' ? 'جنيه' : 'EGP' }}</span>
                 </div>
             </div>
         </div>
@@ -1079,7 +1106,7 @@
                             .val(line.price)
                             .on('input', function() { line.price = $(this).val(); updateTotal(); })
                     ));
-                    row.append($('<td class="text-center">').append($('<button type="button" class="btn btn-danger btn-sm">Remove</button>')
+                    row.append($('<td class="text-center">').append($('<button type="button" class="btn btn-danger btn-sm">{{ app()->getLocale() === 'ar' ? 'إزالة' : 'Remove' }}</button>')
                         .click(() => { offerLines.splice(i, 1); renderOfferLines(); })));
 
                     tbody.append(row);
@@ -1089,13 +1116,13 @@
             } else {
                 thead.html(`
             <tr>
-                <th width="25%">Medicine</th>
-                <th width="12%" class="text-center">Dosage Form</th>
-                <th width="10%" class="text-center">Old Price</th>
-                <th width="8%" class="text-center">Quantity</th>
-                <th width="10%" class="text-center">Unit</th>
-                <th width="12%" class="text-center">Price (EGP)</th>
-                <th width="15%" class="text-center">Actions</th>
+                <th width="25%">{{ app()->getLocale() === 'ar' ? 'الدواء' : 'Medicine' }}</th>
+                <th width="12%" class="text-center">{{ app()->getLocale() === 'ar' ? 'صيغة الدواء' : 'Dosage Form' }}</th>
+                <th width="10%" class="text-center">{{ app()->getLocale() === 'ar' ? 'السعر القديم' : 'Old Price' }}</th>
+                <th width="8%" class="text-center">{{ app()->getLocale() === 'ar' ? 'الكمية' : 'Quantity' }}</th>
+                <th width="10%" class="text-center">{{ app()->getLocale() === 'ar' ? 'الوحدة' : 'Unit' }}</th>
+                <th width="12%" class="text-center">{{ app()->getLocale() === 'ar' ? 'السعر' : 'Price' }} ({{ app()->getLocale() === 'ar' ? 'جنيه' : 'EGP' }})</th>
+                <th width="15%" class="text-center">{{ app()->getLocale() === 'ar' ? 'الإجراءات' : 'Actions' }}</th>
             </tr>
         `);
                 offerLines.forEach((line, i) => {
@@ -1103,7 +1130,7 @@
                     const medSelect = $('<select class="form-select form-select-sm">')
                         .attr('name', `offer_lines[${i}][medicine_id]`)
                         .attr('id', `medicine_select_${i}`)
-                        .append('<option value="">Select medicine</option>');
+                        .append('<option value="">{{ app()->getLocale() === 'ar' ? 'اختر الدواء' : 'Select medicine' }} ({{ $clientRequest->medicineLines->count() }})</option>');
                     Object.entries(medicines).forEach(([id, med]) => medSelect.append(`<option value="${id}" data-dosage-form="${med.dosage_form}" data-old-price="${med.old_price}">${med.name}</option>`));
                     medSelect.val(line.medicine_id).on('change', function() {
                         const medId = $(this).val();
@@ -1126,7 +1153,7 @@
                             .on('input', function(e) { line.quantity = e.target.value; updateTotal(); })
                     ));
                     row.append($('<td class="text-center">').append(
-                        $('<select class="form-select form-select-sm"><option>box</option><option>strips</option><option>bottle</option></select>')
+                        $('<select class="form-select form-select-sm"><option>{{ app()->getLocale() === 'ar' ? 'العلبة' : 'box' }}</option><option>{{ app()->getLocale() === 'ar' ? 'العلب' : 'strips' }}</option><option>{{ app()->getLocale() === 'ar' ? 'الزجاجة' : 'bottle' }}</option><option>{{ app()->getLocale() === 'ar' ? 'العلب' : 'pack' }}</option><option>{{ app()->getLocale() === 'ar' ? 'القطعة' : 'piece' }}</option><option>{{ app()->getLocale() === 'ar' ? 'الجرة' : 'tablet' }}</option><option>{{ app()->getLocale() === 'ar' ? 'الحبة' : 'capsule' }}</option><option>{{ app()->getLocale() === 'ar' ? 'العلبة' : 'vial' }}</option><option>{{ app()->getLocale() === 'ar' ? 'العلبة' : 'ampoule' }}</option></select>')
                             .attr('name', `offer_lines[${i}][unit]`)
                             .val(line.unit)
                             .on('change', e => { line.unit = e.target.value; })
@@ -1137,7 +1164,7 @@
                             .val(line.price)
                             .on('input', e => { line.price = e.target.value; updateTotal(); })
                     ));
-                    row.append($('<td class="text-center">').append($('<button type="button" class="btn btn-danger btn-sm">Remove</button>').click(() => { offerLines.splice(i, 1); renderOfferLines(); })));
+                    row.append($('<td class="text-center">').append($('<button type="button" class="btn btn-danger btn-sm">{{ app()->getLocale() === 'ar' ? 'إزالة' : 'Remove' }}</button>').click(() => { offerLines.splice(i, 1); renderOfferLines(); })));
                     tbody.append(row);
                     $(`#medicine_select_${i}`).select2({ width: '100%', dropdownParent: container });
                 });

@@ -11,7 +11,7 @@ class Client extends Authenticatable
 {
     use HasFactory, HasApiTokens, Notifiable;
 
-    protected $fillable = ['name', 'phone_number', 'email', 'password', 'avatar'];
+    protected $fillable = ['name', 'phone_number', 'email', 'password', 'avatar', 'governorate_id', 'city_id', 'insurance_company_id'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -31,9 +31,18 @@ class Client extends Authenticatable
     {
         return $this->hasMany(ClientRequest::class);
     }
-    public function nurse()
+    public function governorate()
     {
-        return $this->hasOne(Nurse::class);
+        return $this->belongsTo(Governorate::class);
     }
 
+    public function city()
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    public function insuranceCompany()
+    {
+        return $this->belongsTo(InsuranceCompany::class);
+    }
 }

@@ -150,7 +150,7 @@ class LaboratoryController extends Controller
             'longitude' => $laboratory->lng ? (float) $laboratory->lng : null,
             'license_number' => $laboratory->license_number,
             'manager_name' => $laboratory->manager_name,
-            'manager_license' => $laboratory->manager_license,
+            'manager_license' => $laboratory->getFirstMediaUrl('manager_license'),
             'opening_time' => $laboratory->opening_time,
             'closing_time' => $laboratory->closing_time,
             'is_active' => $laboratory->is_active,

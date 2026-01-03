@@ -14,6 +14,7 @@ class ClientRequest extends Model
     protected $fillable = [
         'client_id',
         'client_address_id',
+        'insurance_company_id',
         'pregnant',
         'diabetic',
         'heart_patient',
@@ -43,6 +44,11 @@ class ClientRequest extends Model
     public function address()
     {
         return $this->belongsTo(ClientAddress::class, 'client_address_id');
+    }
+
+    public function insuranceCompany()
+    {
+        return $this->belongsTo(InsuranceCompany::class);
     }
 
     // العلاقة مع جميع الخطوط (استخدام جدول واحد)

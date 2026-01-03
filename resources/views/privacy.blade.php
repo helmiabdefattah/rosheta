@@ -55,6 +55,83 @@
 
                 <section>
                     <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-primary text-sm font-bold">1.1</span>
+                        {{ app()->getLocale() === 'ar' ? 'صلاحيات الكاميرا والصور' : 'Camera and Photo Permissions' }}
+                    </h2>
+                    <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 mb-4">
+                        <h4 class="font-bold text-slate-900 mb-3">{{ app()->getLocale() === 'ar' ? 'استخدام الكاميرا والصور' : 'Camera and Photo Usage' }}</h4>
+                        <p class="text-sm text-slate-700 mb-3">
+                            {{ app()->getLocale() === 'ar' 
+                                ? 'قد يطلب التطبيق الوصول إلى الكاميرا ومعرض الصور على جهازك. نستخدم هذه الصلاحيات حصرياً للأغراض التالية:' 
+                                : 'The app may request access to your device\'s camera and photo gallery. We use these permissions exclusively for the following purposes:' }}
+                        </p>
+                        <ul class="list-disc ps-6 space-y-2 text-sm text-slate-700 marker:text-primary">
+                            <li>
+                                {{ app()->getLocale() === 'ar' 
+                                    ? 'التقاط صور للروشتات الطبية والوصفات لتقديمها لمقدمي الخدمات الطبية (المعامل، الصيدليات)' 
+                                    : 'Capturing photos of medical prescriptions and documents to submit to healthcare providers (laboratories, pharmacies)' }}
+                            </li>
+                            <li>
+                                {{ app()->getLocale() === 'ar' 
+                                    ? 'رفع صور من معرض الصور الخاص بك للروشتات الطبية الموجودة مسبقاً' 
+                                    : 'Uploading existing photos from your gallery for medical prescriptions' }}
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg border border-slate-100 shadow-sm mb-4">
+                        <h4 class="font-bold text-slate-900 mb-2">{{ app()->getLocale() === 'ar' ? 'ما لا نفعله' : 'What We Do NOT Do' }}</h4>
+                        <ul class="list-disc ps-6 space-y-2 text-sm text-slate-700 marker:text-red-500">
+                            <li>
+                                {{ app()->getLocale() === 'ar' 
+                                    ? 'لا نصل إلى جميع الصور في معرض الصور - فقط الصور التي تختارها أنت' 
+                                    : 'We do NOT access all photos in your gallery - only the photos you specifically select' }}
+                            </li>
+                            <li>
+                                {{ app()->getLocale() === 'ar' 
+                                    ? 'لا نستخدم الكاميرا لأي غرض آخر غير التقاط صور الروشتات الطبية' 
+                                    : 'We do NOT use the camera for any purpose other than capturing prescription photos' }}
+                            </li>
+                            <li>
+                                {{ app()->getLocale() === 'ar' 
+                                    ? 'لا نشارك الصور مع أي أطراف ثالثة لأغراض تسويقية أو إعلانية' 
+                                    : 'We do NOT share photos with any third parties for marketing or advertising purposes' }}
+                            </li>
+                            <li>
+                                {{ app()->getLocale() === 'ar' 
+                                    ? 'لا نستخدم الصور لإنشاء ملفات تعريف أو محتوى إعلاني' 
+                                    : 'We do NOT use photos to create profiles or advertising content' }}
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg border border-slate-100 shadow-sm">
+                        <h4 class="font-bold text-slate-900 mb-2">{{ app()->getLocale() === 'ar' ? 'تخزين الصور' : 'Photo Storage' }}</h4>
+                        <p class="text-sm text-slate-700 mb-2">
+                            {{ app()->getLocale() === 'ar' 
+                                ? 'الصور التي ترفعها يتم تخزينها بشكل آمن على خوادمنا المشفرة ويتم الوصول إليها فقط من قبل:' 
+                                : 'Photos you upload are stored securely on our encrypted servers and are only accessible by:' }}
+                        </p>
+                        <ul class="list-disc ps-6 space-y-1 text-sm text-slate-700 marker:text-primary">
+                            <li>{{ app()->getLocale() === 'ar' ? 'مقدمي الخدمات الطبية المعتمدين الذين تختار التعامل معهم' : 'Authorized healthcare providers you choose to interact with' }}</li>
+                            <li>{{ app()->getLocale() === 'ar' ? 'فريق الدعم الفني لدينا عند الحاجة لحل مشكلة تقنية' : 'Our technical support team when needed to resolve technical issues' }}</li>
+                        </ul>
+                        <p class="text-sm text-slate-700 mt-3">
+                            {{ app()->getLocale() === 'ar' 
+                                ? 'يمكنك حذف الصور المرفوعة في أي وقت من خلال حذف الطلب المرتبط بها أو التواصل معنا.' 
+                                : 'You can delete uploaded photos at any time by deleting the associated request or contacting us.' }}
+                        </p>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mt-4">
+                        <p class="text-sm text-yellow-800">
+                            <strong>{{ app()->getLocale() === 'ar' ? 'ملاحظة مهمة:' : 'Important Note:' }}</strong>
+                            {{ app()->getLocale() === 'ar' 
+                                ? 'يمكنك رفض منح صلاحيات الكاميرا أو الصور في أي وقت من إعدادات جهازك. في هذه الحالة، يمكنك إدخال معلومات الروشتة يدوياً بدلاً من رفع الصور.' 
+                                : 'You can deny camera or photo permissions at any time from your device settings. In this case, you can manually enter prescription information instead of uploading photos.' }}
+                        </p>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-3">
                         <span class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-primary text-sm font-bold">2</span>
                         {{ app()->getLocale() === 'ar' ? 'كيف نستخدم بياناتك' : 'How We Use Your Data' }}
                     </h2>
@@ -99,11 +176,19 @@
                         <span class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-primary text-sm font-bold">4</span>
                         {{ app()->getLocale() === 'ar' ? 'أمان البيانات' : 'Data Security' }}
                     </h2>
-                    <p>
+                    <p class="mb-4">
                         {{ app()->getLocale() === 'ar' 
                             ? 'نستخدم تقنيات تشفير متقدمة (End-to-End Encryption) لحماية المحادثات والملفات الطبية. يتم تخزين البيانات على خوادم مؤمنة ومراقبة على مدار الساعة.' 
                             : 'We use advanced End-to-End Encryption to protect chats and medical files. Data is stored on secure servers monitored 24/7.' }}
                     </p>
+                    <div class="bg-white p-4 rounded-lg border border-slate-100 shadow-sm">
+                        <h4 class="font-bold text-slate-900 mb-2">{{ app()->getLocale() === 'ar' ? 'حماية الصور والملفات' : 'Photo and File Protection' }}</h4>
+                        <p class="text-sm text-slate-700">
+                            {{ app()->getLocale() === 'ar' 
+                                ? 'جميع الصور والملفات الطبية المرفوعة يتم تشفيرها أثناء النقل والتخزين. نستخدم بروتوكولات SSL/TLS لتأمين نقل البيانات ونقوم بتخزين الملفات على خوادم آمنة مع وصول محدود.' 
+                                : 'All uploaded photos and medical files are encrypted during transmission and storage. We use SSL/TLS protocols to secure data transfer and store files on secure servers with restricted access.' }}
+                        </p>
+                    </div>
                 </section>
 
                  <section>
@@ -111,11 +196,36 @@
                         <span class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-primary text-sm font-bold">5</span>
                         {{ app()->getLocale() === 'ar' ? 'حقوقك' : 'Your Rights' }}
                     </h2>
-                    <p>
+                    <p class="mb-4">
                         {{ app()->getLocale() === 'ar' 
                             ? 'لديك الحق في طلب نسخة من بياناتك، أو تصحيح أي أخطاء، أو طلب حذف حسابك وبياناتك بالكامل في أي وقت عبر إعدادات التطبيق أو التواصل معنا.' 
                             : 'You have the right to request a copy of your data, correct any errors, or request the complete deletion of your account and data at any time via app settings or by contacting us.' }}
                     </p>
+                    <div class="bg-white p-4 rounded-lg border border-slate-100 shadow-sm">
+                        <h4 class="font-bold text-slate-900 mb-2">{{ app()->getLocale() === 'ar' ? 'حقوقك المتعلقة بالصور' : 'Your Rights Regarding Photos' }}</h4>
+                        <ul class="list-disc ps-6 space-y-2 text-sm text-slate-700 marker:text-primary">
+                            <li>
+                                {{ app()->getLocale() === 'ar' 
+                                    ? 'الحق في رفض منح صلاحيات الكاميرا أو الصور في أي وقت' 
+                                    : 'The right to deny camera or photo permissions at any time' }}
+                            </li>
+                            <li>
+                                {{ app()->getLocale() === 'ar' 
+                                    ? 'الحق في حذف أي صور قمت برفعها من خلال حذف الطلب المرتبط بها' 
+                                    : 'The right to delete any photos you uploaded by deleting the associated request' }}
+                            </li>
+                            <li>
+                                {{ app()->getLocale() === 'ar' 
+                                    ? 'الحق في طلب حذف جميع صورك المخزنة على خوادمنا' 
+                                    : 'The right to request deletion of all your stored photos from our servers' }}
+                            </li>
+                            <li>
+                                {{ app()->getLocale() === 'ar' 
+                                    ? 'الحق في معرفة من يصل إلى صورك ومتى' 
+                                    : 'The right to know who accesses your photos and when' }}
+                            </li>
+                        </ul>
+                    </div>
                 </section>
 
             </div>

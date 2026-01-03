@@ -279,7 +279,54 @@
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">{{ app()->getLocale() === 'ar' ? 'ترخيص المدير' : 'Manager License' }}</label>
-                        <input type="text" name="manager_license" class="form-control" value="{{ old('manager_license', $laboratory->manager_license) }}">
+                        
+                        @if($laboratory->getFirstMediaUrl('manager_license'))
+                            <div class="mb-2">
+                                @php
+                                    $licenseMedia = $laboratory->getFirstMedia('manager_license');
+                                    $isPdf = $licenseMedia && $licenseMedia->mime_type === 'application/pdf';
+                                    $isImage = $licenseMedia && str_starts_with($licenseMedia->mime_type, 'image/');
+                                @endphp
+                                
+                                @if($isImage)
+                                    <div class="mb-2">
+                                        <img src="{{ $laboratory->getFirstMediaUrl('manager_license') }}" 
+                                             alt="Manager License" 
+                                             class="img-thumbnail" 
+                                             style="max-width: 200px; max-height: 200px; object-fit: contain; cursor: pointer;"
+                                             onclick="window.open('{{ $laboratory->getFirstMediaUrl('manager_license') }}', '_blank')">
+                                    </div>
+                                @elseif($isPdf)
+                                    <div class="mb-2">
+                                        <a href="{{ $laboratory->getFirstMediaUrl('manager_license') }}" 
+                                           target="_blank" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-file-pdf me-1"></i>
+                                            {{ app()->getLocale() === 'ar' ? 'عرض ملف PDF' : 'View PDF' }}
+                                        </a>
+                                    </div>
+                                @endif
+                                
+                                <div class="text-muted small mb-2">
+                                    {{ app()->getLocale() === 'ar' ? 'الملف الحالي' : 'Current file' }}: 
+                                    {{ $licenseMedia->name ?? 'N/A' }}
+                                    ({{ $licenseMedia ? number_format($licenseMedia->size / 1024, 2) : '0' }} KB)
+                                </div>
+                            </div>
+                        @endif
+                        
+                        <input type="file" 
+                               name="manager_license" 
+                               class="form-control" 
+                               accept="image/jpeg,image/png,image/gif,image/webp,application/pdf">
+                        <small class="form-text text-muted">
+                            {{ app()->getLocale() === 'ar' 
+                                ? 'الصيغ المدعومة: JPEG, PNG, GIF, WebP, PDF. الحد الأقصى للحجم: 5MB' 
+                                : 'Supported formats: JPEG, PNG, GIF, WebP, PDF. Max size: 5MB' }}
+                        </small>
+                        @error('manager_license')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
             </div>
@@ -289,16 +336,7 @@
         <div class="card">
             <div class="card-header">{{ app()->getLocale() === 'ar' ? 'ساعات العمل' : 'Operating Hours' }}</div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">{{ app()->getLocale() === 'ar' ? 'وقت الفتح' : 'Opening Time' }}</label>
-                        <input type="time" name="opening_time" class="form-control" value="{{ old('opening_time', $laboratory->opening_time ? \Carbon\Carbon::parse($laboratory->opening_time)->format('H:i') : '') }}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">{{ app()->getLocale() === 'ar' ? 'وقت الإغلاق' : 'Closing Time' }}</label>
-                        <input type="time" name="closing_time" class="form-control" value="{{ old('closing_time', $laboratory->closing_time ? \Carbon\Carbon::parse($laboratory->closing_time)->format('H:i') : '') }}">
-                    </div>
-                </div>
+                @include('components.working-hours-form', ['workingHours' => $workingHours, 'namePrefix' => 'working_hours'])
             </div>
         </div>
 

@@ -18,7 +18,7 @@ class OfferController extends Controller
 {
     public function create(Request $request, $id)
     {
-        $clientRequest = ClientRequest::with(['client', 'address'])->findOrFail($id);
+        $clientRequest = ClientRequest::with(['client', 'address', 'client.insuranceCompany', 'insuranceCompany'])->findOrFail($id);
 
         $clientRequest->load(['lines.medicine', 'lines.medicalTest']);
 
@@ -108,6 +108,7 @@ class OfferController extends Controller
             'client_request_id' => 'required|exists:client_requests,id',
             'total_price' => 'required|numeric|min:0',
             'visit_price' => 'nullable|numeric|min:0',
+            'insurance_supported' => 'nullable|boolean',
             'offer_lines' => 'required|array|min:1',
         ]);
 
@@ -150,6 +151,7 @@ class OfferController extends Controller
                 'request_type' => $clientRequest->type,
                 'total_price' => $validated['total_price'],
                 'visit_price' => $visitPrice,
+                'insurance_supported' => $request->has('insurance_supported') ? (bool)$request->insurance_supported : false,
                 'user_id' => auth()->id(),
                 'status' => 'pending',
                 'laboratory_id' => in_array($clientRequest->type, ['test', 'radiology']) ? $request->laboratory_id : null,

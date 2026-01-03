@@ -6,6 +6,7 @@ use App\Models\ClientAddress;
 use App\Models\ClientRequest;
 use App\Models\ClientRequestLine;
 use App\Models\MedicalTest;
+use App\Models\InsuranceCompany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +22,7 @@ class ClientTestRequestController extends Controller
 
         abort_unless(in_array($type, ['test', 'radiology']), 404);
 
-        $client = Auth::guard('client')->user();
+        $client = Auth::guard('client')->user()->load('insuranceCompany');
 
         // Load items based on type
         if ($type === 'test') {
@@ -46,9 +47,14 @@ class ClientTestRequestController extends Controller
             ->with(['city', 'area'])
             ->get();
 
+        $insuranceCompanies = InsuranceCompany::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
         return view('client.test-requests.create', [
             'items' => $items,
             'addresses' => $addresses,
+            'insuranceCompanies' => $insuranceCompanies,
             'type' => $type,
         ]);
     }
@@ -66,6 +72,8 @@ class ClientTestRequestController extends Controller
             'heart_patient' => ['nullable', 'boolean'],
             'high_blood_pressure' => ['nullable', 'boolean'],
             'note' => ['nullable', 'string', 'max:1000'],
+            'insurance_company_id' => ['nullable', 'exists:insurance_companies,id'],
+            'insurance_company_name' => ['nullable', 'string', 'max:255'],
             'tests' => ['nullable', 'array'],
             'tests.*.test_id' => ['required', 'integer'],
             'images' => ['nullable', 'array'],
@@ -89,9 +97,22 @@ class ClientTestRequestController extends Controller
                 }
             }
 
+            // Handle insurance company - create new if name provided, otherwise use selected ID or client's current
+            $insuranceCompanyId = $client->insurance_company_id; // Default to client's current insurance
+            if ($request->filled('insurance_company_name')) {
+                $insuranceCompany = InsuranceCompany::firstOrCreate(
+                    ['name' => $request->insurance_company_name],
+                    ['is_active' => true]
+                );
+                $insuranceCompanyId = $insuranceCompany->id;
+            } elseif ($request->filled('insurance_company_id')) {
+                $insuranceCompanyId = $request->insurance_company_id;
+            }
+
             $clientRequest = ClientRequest::create([
                 'client_id' => $client->id,
                 'client_address_id' => $validated['client_address_id'] ?? null,
+                'insurance_company_id' => $insuranceCompanyId, // Store insurance company at request time
                 'pregnant' => $validated['pregnant'] ?? false,
                 'diabetic' => $validated['diabetic'] ?? false,
                 'heart_patient' => $validated['heart_patient'] ?? false,

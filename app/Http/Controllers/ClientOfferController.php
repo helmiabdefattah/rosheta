@@ -18,6 +18,7 @@ class ClientOfferController extends Controller
 
         // Start with base query
         $query = ClientRequest::where('client_id', $client->id)
+            ->with(['insuranceCompany'])
             ->with([
                 'offers' => function($query) use ($filterType) {
                     $query->whereIn('status', ['pending', 'accepted'])

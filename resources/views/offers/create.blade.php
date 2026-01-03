@@ -632,16 +632,12 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span id="offerLinesTitle">
-                    @if($clientRequest->type == 'test')
-                        Offer Tests
-                    @else
-                        Offer Lines
-                    @endif
+                    {{ app()->getLocale() === 'ar' ? 'عناصر العرض' : 'Offer Items' }}
                 </span>
-                <button type="button" class="btn btn-primary btn-sm" id="addOfferLineBtn">Add Line</button>
+                <button type="button" class="btn btn-primary btn-sm" id="addOfferLineBtn">{{ app()->getLocale() === 'ar' ? 'إضافة عنصر' : 'Add Line' }}</button>
             </div>
             <div class="card-body" id="offerLinesContainer">
-                <div class="text-center text-muted" id="noOfferLinesMsg">No offer lines added yet.</div>
+                <div class="text-center text-muted" id="noOfferLinesMsg">{{ app()->getLocale() === 'ar' ? 'لا يوجد عناصر في العرض' : 'No offer lines added yet.' }}</div>
             </div>
         </div>
 

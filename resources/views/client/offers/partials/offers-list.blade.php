@@ -69,6 +69,22 @@
                                                 ? ($offer->laboratory->name ?? 'N/A')
                                                 : ($offer->pharmacy->name ?? 'N/A') }}
                                         </p>
+                                        @if($request->insuranceCompany)
+                                            <p class="mt-1">
+                                                <span class="font-medium">
+                                                    {{ app()->getLocale() === 'ar' ? 'شركة التأمين:' : 'Insurance Company:' }}
+                                                </span>
+                                                {{ app()->getLocale() === 'ar' 
+                                                    ? ($request->insuranceCompany->name_ar ?? $request->insuranceCompany->name) 
+                                                    : $request->insuranceCompany->name }}
+                                            </p>
+                                            @if($offer->insurance_supported)
+                                                <span class="inline-flex items-center gap-1 px-2 py-1 mt-1 text-xs font-medium text-green-700 bg-green-100 rounded">
+                                                    <i class="bi bi-check-circle"></i>
+                                                    {{ app()->getLocale() === 'ar' ? 'مدعوم بالتأمين' : 'Insurance Supported' }}
+                                                </span>
+                                            @endif
+                                        @endif
                                         @if($offer->request_type === 'test' && $offer->laboratory && $offer->laboratory->phone)
                                             <p class="text-xs text-gray-500">
                                                 <i class="bi bi-telephone me-1"></i>

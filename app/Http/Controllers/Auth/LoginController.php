@@ -53,7 +53,7 @@ class LoginController extends Controller
         $password = $request->password;
         $remember = $request->filled('remember');
 
-        // First, try to authenticate as a User (admin/lab owner) - only by email
+        // First, try to authenticate as a User (admin/lab owner/nurse) - only by email
         $user = User::where('email', $login)->first();
         if ($user && Hash::check($password, $user->password)) {
             Auth::login($user, $remember);
@@ -64,6 +64,15 @@ class LoginController extends Controller
                 return redirect()->route('laboratories.dashboard');
             }
 
+            // Redirect pharmacy owners to admin dashboard (or pharmacy dashboard if exists)
+            if ($user->pharmacy_id) {
+                return redirect()->route('admin.dashboard');
+            }
+
+            // Redirect nurses to admin dashboard (or nurse dashboard if exists)
+            if ($user->nurse_id) {
+                return redirect()->route('admin.dashboard');
+            }
 
             // Redirect other users to admin dashboard
             return redirect()->route('admin.dashboard');
@@ -76,13 +85,8 @@ class LoginController extends Controller
         })->first();
 
         if ($client && Hash::check($password, $client->password)) {
-
             Auth::guard('client')->login($client, $remember);
             $request->session()->regenerate();
-
-            if ($client->nurse_id) {
-                return redirect()->route('client.nurse.dashboard');
-            }
 
             return redirect()->route('client.dashboard');
         }

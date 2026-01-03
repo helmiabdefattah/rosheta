@@ -28,7 +28,6 @@ class Laboratory extends Model implements HasMedia
 		'lng',
 		'license_number',
 		'manager_name',
-		'manager_license',
 		'opening_time',
 		'closing_time',
 		'is_active',
@@ -72,6 +71,10 @@ class Laboratory extends Model implements HasMedia
 		$this->addMediaCollection('logo')
 			->singleFile()
 			->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+		
+		$this->addMediaCollection('manager_license')
+			->singleFile()
+			->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf']);
 	}
 
 	public function registerMediaConversions(?Media $media = null): void
@@ -86,6 +89,11 @@ class Laboratory extends Model implements HasMedia
 	public function reviews()
 	{
 		return $this->morphMany(Review::class, 'reviewable');
+	}
+
+	public function workingHours()
+	{
+		return $this->morphOne(WorkingHours::class, 'workable');
 	}
 }
 

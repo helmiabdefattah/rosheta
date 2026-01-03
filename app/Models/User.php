@@ -26,6 +26,7 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'pharmacy_id',
         'laboratory_id',
+        'nurse_id',
     ];
 
     /**
@@ -67,6 +68,14 @@ class User extends Authenticatable implements FilamentUser
         return $this->belongsTo(Laboratory::class);
     }
 
+    /**
+     * The nurse this user belongs to.
+     */
+    public function nurse(): BelongsTo
+    {
+        return $this->belongsTo(Nurse::class);
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->email === 'test@example.com';
@@ -74,6 +83,6 @@ class User extends Authenticatable implements FilamentUser
 
     public function getIsAdminAttribute(): bool
     {
-        return $this->laboratory_id === null && $this->pharmacy_id === null;
+        return $this->laboratory_id === null && $this->pharmacy_id === null && $this->nurse_id === null;
     }
 }

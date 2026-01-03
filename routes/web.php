@@ -71,6 +71,7 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     // Profile
     Route::get('/profile/edit', [App\Http\Controllers\ClientProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [App\Http\Controllers\ClientProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [App\Http\Controllers\ClientProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // Offer routes

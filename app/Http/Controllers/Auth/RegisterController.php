@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\User;
+use App\Models\InsuranceCompany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -34,7 +35,15 @@ class RegisterController extends Controller
             return redirect()->route('admin.dashboard');
         }
         
-        return view('auth.register');
+        $governorates = \App\Models\Governorate::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+        
+        $insuranceCompanies = InsuranceCompany::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+        
+        return view('auth.register', compact('governorates', 'insuranceCompanies'));
     }
 
     /**
@@ -59,16 +68,37 @@ class RegisterController extends Controller
                 },
             ],
             'password' => ['required', 'confirmed', Password::defaults()],
+            'governorate_id' => 'required|exists:governorates,id',
+            'city_id' => 'required|exists:cities,id',
+            'insurance_company_id' => 'nullable|exists:insurance_companies,id',
+            'insurance_company_name' => 'nullable|string|max:255',
         ], [
             'email.unique' => 'The email has already been taken.',
             'phone_number.unique' => 'The phone number has already been taken.',
+            'governorate_id.required' => 'Please select a governorate.',
+            'city_id.required' => 'Please select a city.',
         ]);
+
+        // Handle insurance company - create new if name provided, otherwise use selected ID
+        $insuranceCompanyId = null;
+        if ($request->filled('insurance_company_name')) {
+            $insuranceCompany = InsuranceCompany::firstOrCreate(
+                ['name' => $request->insurance_company_name],
+                ['is_active' => true]
+            );
+            $insuranceCompanyId = $insuranceCompany->id;
+        } elseif ($request->filled('insurance_company_id')) {
+            $insuranceCompanyId = $request->insurance_company_id;
+        }
 
         $client = Client::create([
             'name' => $validated['name'],
             'phone_number' => $validated['phone_number'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'governorate_id' => $validated['governorate_id'],
+            'city_id' => $validated['city_id'],
+            'insurance_company_id' => $insuranceCompanyId,
         ]);
 
         // Log the client in
