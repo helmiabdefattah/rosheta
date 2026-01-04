@@ -22,14 +22,17 @@ class LoginController extends Controller
             return redirect()->route('client.dashboard');
         }
 
-        // If already authenticated as user, redirect based on user type
+                // If already authenticated as user, redirect based on user type
         if (Auth::check()) {
             $user = Auth::user();
-
             // Redirect laboratory owners to their dashboard
             if ($user->laboratory_id) {
                 return redirect()->route('laboratories.dashboard');
             }
+            if ($user->nurse_id) {
+                return redirect()->route('nurse.dashboard');
+            }
+
 
             // Redirect other users to admin dashboard
             return redirect()->route('admin.dashboard');
@@ -43,7 +46,6 @@ class LoginController extends Controller
      */
     public function login(Request $request)
     {
-//        dd($request);
         $request->validate([
             'email' => 'required|string', // Changed from 'email' to 'string' to accept phone or email
             'password' => 'required|string',
@@ -53,7 +55,7 @@ class LoginController extends Controller
         $password = $request->password;
         $remember = $request->filled('remember');
 
-        // First, try to authenticate as a User (admin/lab owner/nurse) - only by email
+        // First, try to authenticate as a User (admin/lab owner) - only by email
         $user = User::where('email', $login)->first();
         if ($user && Hash::check($password, $user->password)) {
             Auth::login($user, $remember);
@@ -63,17 +65,9 @@ class LoginController extends Controller
             if ($user->laboratory_id) {
                 return redirect()->route('laboratories.dashboard');
             }
-
-            // Redirect pharmacy owners to admin dashboard (or pharmacy dashboard if exists)
-            if ($user->pharmacy_id) {
-                return redirect()->route('admin.dashboard');
-            }
-
-            // Redirect nurses to admin dashboard (or nurse dashboard if exists)
             if ($user->nurse_id) {
-                return redirect()->route('admin.dashboard');
+                return redirect()->route('nurse.dashboard');
             }
-
             // Redirect other users to admin dashboard
             return redirect()->route('admin.dashboard');
         }
@@ -81,7 +75,7 @@ class LoginController extends Controller
         // Then, try to authenticate as a Client - by email or phone number
         $client = Client::where(function($query) use ($login) {
             $query->where('email', $login)
-                  ->orWhere('phone_number', $login);
+                ->orWhere('phone_number', $login);
         })->first();
 
         if ($client && Hash::check($password, $client->password)) {

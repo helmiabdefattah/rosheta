@@ -1,4 +1,4 @@
-@extends('client.layouts.dashboard')
+@extends('nurse.layouts.dashboard')
 
 @section('title', app()->getLocale() === 'ar' ? 'لوحة تحكم الممرض' : 'Nurse Dashboard')
 @section('page-title', app()->getLocale() === 'ar' ? 'لوحة تحكم الممرض' : 'Nurse Dashboard')

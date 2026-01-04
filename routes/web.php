@@ -29,11 +29,12 @@ Route::post('/admin/logout', [App\Http\Controllers\Auth\LoginController::class, 
 Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
 
+Route::get('nurse/dashboard', [\App\Http\Controllers\NurseDashboardController::class, 'index'])->name('nurse.dashboard');
+
 //nurse routes
 // Client Dashboard
 Route::middleware('auth:client')->prefix('client')->name('client.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\ClientDashboardController::class, 'index'])->name('dashboard');
-    Route::get('nurse/dashboard', [\App\Http\Controllers\NurseDashboardController::class, 'index'])->name('nurse.dashboard');
     Route::resource('nurses', App\Http\Controllers\NurseController::class);
 
     // Test Requests

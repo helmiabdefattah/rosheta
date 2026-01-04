@@ -61,12 +61,12 @@
                     <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
                         Email or Phone Number
                     </label>
-                    <input 
-                        id="email" 
-                        type="text" 
-                        name="email" 
-                        value="{{ old('email') }}" 
-                        required 
+                    <input
+                        id="email"
+                        type="text"
+                        name="email"
+                        value="{{ old('email') }}"
+                        required
                         autofocus
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-200 outline-none"
                         placeholder="Enter your email or phone number"
@@ -83,10 +83,10 @@
                     <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
                         Password
                     </label>
-                    <input 
-                        id="password" 
-                        type="password" 
-                        name="password" 
+                    <input
+                        id="password"
+                        type="password"
+                        name="password"
                         required
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-200 outline-none"
                         placeholder="Enter your password"
@@ -98,10 +98,10 @@
 
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
-                        <input 
-                            id="remember" 
-                            name="remember" 
-                            type="checkbox" 
+                        <input
+                            id="remember"
+                            name="remember"
+                            type="checkbox"
                             class="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
                         >
                         <label for="remember" class="ml-2 block text-sm text-gray-700">
@@ -111,8 +111,8 @@
                 </div>
 
                 <div>
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-600 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition duration-200"
                     >
                         Sign in
@@ -121,7 +121,7 @@
 
                 <div class="text-center">
                     <p class="text-sm text-gray-600">
-                        Don't have an account? 
+                        Don't have an account?
                         <a href="{{ route('register') }}" class="font-medium text-sky-600 hover:text-sky-500">
                             Register here
                         </a>
