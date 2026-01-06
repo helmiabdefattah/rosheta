@@ -27,6 +27,26 @@ class NurseVisit extends Model
 			'paid' => 'boolean',
     ];
 
+	protected static function booted(): void
+	{
+		static::updated(function (self $visit) {
+			// When a visit becomes paid, award points based on offer.visit_price
+			if ($visit->isDirty('paid') && (bool)$visit->paid === true) {
+				$clientId = (int) ($visit->request?->client_id ?? 0);
+				$visitPrice = (float) ($visit->offer?->visit_price ?? 0);
+				$points = (int) round($visitPrice);
+				if ($clientId > 0 && $points > 0) {
+					\App\Models\BonusPoint::awardUnique(
+						clientId: $clientId,
+						sourceType: 'nurse_visit',
+						sourceId: (int) $visit->id,
+						points: $points
+					);
+				}
+			}
+		});
+	}
+
     public function request(): BelongsTo
     {
         return $this->belongsTo(HomeNurseRequest::class, 'home_nurse_request_id');

@@ -52,7 +52,13 @@ class ClientDashboardController extends Controller
             ->orderByDesc('visit_datetime')
             ->paginate(10); // pagination optional
 
-        return view('client.dashboard', compact('stats', 'recentRequests', 'recentOrders', 'visits'));
+        // Available bonus points (not used and active)
+        $availableBonusPoints = \App\Models\BonusPoint::where('client_id', $client->id)
+            ->where('used', false)
+            ->where('status', 'active')
+            ->sum('points');
+
+        return view('client.dashboard', compact('stats', 'recentRequests', 'recentOrders', 'visits', 'availableBonusPoints'));
     }
 }
 

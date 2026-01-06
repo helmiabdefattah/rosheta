@@ -48,4 +48,16 @@ class Client extends Authenticatable
     }
 
    
+    protected static function booted(): void
+    {
+        static::created(function (self $client) {
+            // Award welcome points (once)
+            \App\Models\BonusPoint::awardUnique(
+                clientId: (int) $client->id,
+                sourceType: 'welcome',
+                sourceId: 0,
+                points: 50
+            );
+        });
+    }
 }

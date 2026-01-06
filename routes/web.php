@@ -227,6 +227,9 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectLaboratoryOwner::class])
     // Medical Test Offers
     Route::get('/medical-test-offers/data', [App\Http\Controllers\Admin\MedicalTestOfferController::class, 'data'])->name('medical-test-offers.data');
     Route::resource('medical-test-offers', App\Http\Controllers\Admin\MedicalTestOfferController::class);
+
+    // Bonus Points
+    Route::get('/bonus-points', [App\Http\Controllers\Admin\BonusPointController::class, 'index'])->name('bonus-points.index');
 });
 // Add this after your admin routes or create a separate nurse group
 

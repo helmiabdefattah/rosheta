@@ -162,6 +162,28 @@
                 </div>
             </div>
         </div>
+
+        <!-- Bonus Points -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow duration-300 relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110 duration-500"></div>
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-yellow-100/80 rounded-xl flex items-center justify-center text-yellow-600 shadow-sm group-hover:bg-yellow-600 group-hover:text-white transition-colors duration-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0L15 6l3.951.573c.97.141 1.36 1.333.657 2.01l-2.857 2.786.674 3.936c.166.968-.852 1.705-1.722 1.249L12 15.347l-3.703 1.207c-.87.456-1.888-.281-1.722-1.249l.674-3.936L4.392 8.583c-.703-.677-.313-1.869.657-2.01L9 6l2.049-3.073z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <h3 class="text-sm font-medium text-slate-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'نقاط المكافآت' : 'Bonus Points' }}</h3>
+                <div class="flex items-end justify-between mt-1">
+                    <p class="text-3xl font-black text-slate-800 tracking-tight">—</p>
+                    <a href="{{ route('admin.bonus-points.index') }}" class="text-sm font-semibold text-yellow-600 hover:text-yellow-700 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                         {{ app()->getLocale() === 'ar' ? 'عرض' : 'View' }}
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
         
          <!-- Clients -->
         <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow duration-300 relative overflow-hidden group">
