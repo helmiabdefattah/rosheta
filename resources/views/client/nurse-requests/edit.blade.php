@@ -63,6 +63,24 @@
 					</div>
 				</div>
 
+				<div>
+					<label class="block text-sm font-medium text-slate-700 mb-1">
+						{{ app()->getLocale() === 'ar' ? 'تفضيل نوع الممرض/ـة (اختياري)' : 'Preferred nurse gender (optional)' }}
+					</label>
+					@php $pg = old('preferred_gender', $request->preferred_gender); @endphp
+					<select name="preferred_gender" class="mt-1 block w-full border rounded-md p-2">
+						<option value="">
+							{{ app()->getLocale() === 'ar' ? 'بدون تفضيل' : 'No preference' }}
+						</option>
+						<option value="male" @selected($pg==='male')>
+							{{ app()->getLocale() === 'ar' ? 'ذكر' : 'Male' }}
+						</option>
+						<option value="female" @selected($pg==='female')>
+							{{ app()->getLocale() === 'ar' ? 'أنثى' : 'Female' }}
+						</option>
+					</select>
+				</div>
+
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 					<div>
 						<label class="block text-sm font-medium text-slate-700 mb-1">

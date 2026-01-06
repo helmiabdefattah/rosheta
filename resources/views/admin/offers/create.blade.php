@@ -658,6 +658,75 @@
                     @endif
                 </div>
             </div>
+            <!-- New visit scheduling fields -->
+            @if($clientRequest->client_address_id)
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>{{ app()->getLocale() === 'ar' ? 'جدولة الزيارة المنزلية' : 'Home Visit Scheduling' }}</span>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-md-4">
+                        <label for="visit_period" class="form-label">
+                            {{ app()->getLocale() === 'ar' ? 'دورية الزيارة' : 'Visit Period' }}
+                        </label>
+                        <select name="visit_period" id="visit_period" class="form-select">
+                            <option value="">{{ app()->getLocale() === 'ar' ? 'اختر الدورية' : 'Select period' }}</option>
+                            <option value="daily" {{ old('visit_period') === 'daily' ? 'selected' : '' }}>
+                                {{ app()->getLocale() === 'ar' ? 'يوميًا' : 'Daily' }}
+                            </option>
+                            <option value="every_two_days" {{ old('visit_period') === 'every_two_days' ? 'selected' : '' }}>
+                                {{ app()->getLocale() === 'ar' ? 'كل يومين' : 'Every two days' }}
+                            </option>
+                            <option value="once_weekly" {{ old('visit_period') === 'once_weekly' ? 'selected' : '' }}>
+                                {{ app()->getLocale() === 'ar' ? 'مرة أسبوعيًا' : 'Once weekly' }}
+                            </option>
+                            <option value="twice_weekly" {{ old('visit_period') === 'twice_weekly' ? 'selected' : '' }}>
+                                {{ app()->getLocale() === 'ar' ? 'مرتان أسبوعيًا' : 'Twice weekly' }}
+                            </option>
+                        </select>
+                        @error('visit_period')
+                        <div class="text-danger small">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-md-4">
+                        <label for="visit_start_time" class="form-label">
+                            {{ app()->getLocale() === 'ar' ? 'وقت بدء الزيارة' : 'Visit Start Time' }}
+                        </label>
+                        <input
+                            type="time"
+                            id="visit_start_time"
+                            name="visit_start_time"
+                            class="form-control"
+                            value="{{ old('visit_start_time') }}"
+                        >
+                        @error('visit_start_time')
+                        <div class="text-danger small">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-md-4">
+                        <label for="visit_duration" class="form-label">
+                            {{ app()->getLocale() === 'ar' ? 'مدة الزيارة (ساعات)' : 'Visit Duration (hours)' }}
+                        </label>
+                        <div class="input-group">
+                            <input
+                                type="number"
+                                min="1"
+                                max="24"
+                                step="1"
+                                id="visit_duration"
+                                name="visit_duration"
+                                class="form-control text-end"
+                                value="{{ old('visit_duration') }}"
+                            >
+                            <span class="input-group-text">{{ app()->getLocale() === 'ar' ? 'ساعة' : 'hrs' }}</span>
+                        </div>
+                        @error('visit_duration')
+                        <div class="text-danger small">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+            @endif
         <!-- Request Images Card -->
         @if(!empty($clientRequest->images))
             <div class="card mb-4">

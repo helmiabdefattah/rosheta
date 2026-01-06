@@ -5,6 +5,9 @@
 
 @section('content')
     <!-- Tabs Navigation -->
+    @php
+        $nurse = auth()->user()->nurse;
+    @endphp
     <div class="mb-6 border-b border-gray-200">
         <nav class="-mb-px flex space-x-8">
             <button id="profile-tab" data-tab="profile" class="tab-button py-2 px-1 border-b-2 border-primary text-sm font-medium text-primary">
@@ -26,19 +29,23 @@
             <div class="px-6 py-4 bg-gray-50 border-b">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
-                        @if($nurse->client?->avatar)
-                            <img src="{{ Storage::url($nurse->client->avatar) }}" alt="avatar" class="h-16 w-16 rounded-full object-cover border-2 border-white shadow">
+                        @if($nurse->user && $nurse->user->hasMedia('avatar'))
+                            <img
+                                src="{{ $nurse->user->getFirstMediaUrl('avatar', 'thumb') ?: $nurse->user->getFirstMediaUrl('avatar') }}"
+                                alt="avatar"
+                                class="h-16 w-16 rounded-full object-cover border-2 border-white shadow">
                         @else
                             <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 border-2 border-white shadow">
-                                {{ strtoupper(mb_substr($nurse->client->name ?? 'N', 0, 1)) }}
+                                {{ strtoupper(mb_substr($nurse->user->name ?? 'N', 0, 1)) }}
                             </div>
                         @endif
+
                         <div>
-                            <h2 class="text-xl font-semibold text-gray-800">{{ $nurse->client->name ?? '-' }}</h2>
+                            <h2 class="text-xl font-semibold text-gray-800">{{ $nurse->user->name ?? '-' }}</h2>
                             <div class="flex items-center space-x-3 mt-1">
-                                <span class="text-sm text-gray-600">{{ $nurse->client->phone_number ?? '-' }}</span>
+                                <span class="text-sm text-gray-600">{{ $nurse->user->phone_number ?? '-' }}</span>
                                 <span class="text-sm text-gray-600">•</span>
-                                <span class="text-sm text-gray-600">{{ $nurse->client->email ?? '-' }}</span>
+                                <span class="text-sm text-gray-600">{{ $nurse->user->email ?? '-' }}</span>
                             </div>
                         </div>
                     </div>
@@ -52,7 +59,7 @@
                                 {{ app()->getLocale() === 'ar' ? 'غير نشط' : 'Inactive' }}
                             </span>
                         @endif
-                        <a href="{{ route('admin.nurses.edit', $nurse) }}" class="px-3 py-1 bg-blue-600 text-white rounded-md text-sm">
+                        <a href="{{ route('nurses.edit', $nurse) }}" class="px-3 py-1 bg-blue-600 text-white rounded-md text-sm">
                             {{ app()->getLocale() === 'ar' ? 'تعديل' : 'Edit' }}
                         </a>
                     </div>
@@ -188,8 +195,9 @@
     <!-- Offers Tab Content -->
     <div id="offers-content" class="tab-content hidden">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
-            @if($offers->count() > 0)
-                <table class="min-w-full divide-y divide-gray-200">
+            @if(!empty($offers) && $offers->count())
+
+            <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
@@ -209,8 +217,8 @@
 {{--                                <a href="{{ route('admin.home-nurse-requests.show', $offer->home_nurse_request_id) }}" class="text-blue-600 hover:underline">--}}
 {{--                                    {{ app()->getLocale() === 'ar' ? 'طلب' : 'Request' }} #{{ $offer->home_nurse_request_id }}--}}
 {{--                                </a>--}}
-                                @if($offer->request && $offer->request->client)
-                                    <p class="text-xs text-gray-500 mt-1">{{ $offer->request->client->name }}</p>
+                                @if($offer->request && $offer->request->user)
+                                    <p class="text-xs text-gray-500 mt-1">{{ $offer->request->user->name }}</p>
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-700">{{ number_format($offer->price, 2) }}</td>
@@ -271,7 +279,8 @@
     <!-- Visits Tab Content -->
     <div id="visits-content" class="tab-content hidden">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
-            @if($visits->count() > 0)
+                @if(!empty($visits) && $visits->count())
+
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                     <tr>
@@ -280,7 +289,7 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'تاريخ الزيارة' : 'Visit Date' }}</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'ملاحظات الزيارة' : 'Visit Notes' }}</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'حالة الزيارة' : 'Visit Status' }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'تاريخ الإنشاء' : 'Created At' }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'المدفوع' : 'Paid' }}</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'إجراءات' : 'Actions' }}</th>
                     </tr>
                     </thead>
@@ -289,19 +298,27 @@
                         <tr>
                             <td class="px-4 py-3 text-sm text-gray-700">{{ $visit->id }}</td>
                             <td class="px-4 py-3 text-sm text-gray-700">
-{{--                                <a href="{{ route('admin.home-nurse-requests.show', $visit->home_nurse_request_id) }}" class="text-blue-600 hover:underline">--}}
-{{--                                    {{ app()->getLocale() === 'ar' ? 'طلب' : 'Request' }} #{{ $visit->home_nurse_request_id }}--}}
-{{--                                </a>--}}
-                                @if($visit->request && $visit->request->client)
-                                    <p class="text-xs text-gray-500 mt-1">{{ $visit->request->client->name }}</p>
-                                @endif
+                                <span class="text-xs text-gray-500 ml-1">
+                                    {{ app()->getLocale() === 'ar' ? 'طلب' : 'Request' }} #{{ $visit->home_nurse_request_id }}
+                                </span>
+                                <span class="text-s text-dark-1000 ml-1">- {{ $visit->request?->client?->name ?? $visit->request?->user?->name ?? '-' }}</span>
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-700">
                                 @if($visit->visit_datetime)
                                     <div class="font-medium">{{ $visit->visit_datetime->format('Y-m-d') }}</div>
-                                    <div class="text-xs text-gray-500">{{ $visit->visit_datetime->format('H:i') }}</div>
+                                    <div class="text-xs text-gray-500">
+                                        {{ $visit->offer?->visit_start_time ? \Illuminate\Support\Str::limit($visit->offer->visit_start_time, 5, '') : $visit->visit_datetime->format('H:i') }}
+                                        @if(!empty($visit->offer?->visit_duration))
+                                            ({{ $visit->offer->visit_duration }}h)
+                                        @endif
+                                    </div>
                                 @else
-                                    <span class="text-gray-400">-</span>
+                                    <span class="text-gray-400">
+                                        {{ $visit->offer?->visit_start_time ?? $visit->request?->visit_time ?? '-' }}
+                                        @if(!empty($visit->offer?->visit_duration))
+                                            ({{ $visit->offer->visit_duration }}h)
+                                        @endif
+                                    </span>
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-700">
@@ -326,11 +343,36 @@
                                     <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">{{ ucfirst($visit->status) }}</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 text-sm text-gray-700">{{ $visit->created_at->format('Y-m-d H:i') }}</td>
-                            <td class="px-4 py-3 text-sm">
-{{--                                <a href="{{ route('admin.nurse-visits.show', $visit) }}" class="px-3 py-1 bg-gray-200 text-slate-800 rounded-md text-xs">--}}
-{{--                                    {{ app()->getLocale() === 'ar' ? 'عرض' : 'View' }}--}}
-{{--                                </a>--}}
+                            <td class="px-4 py-3 text-sm text-gray-700">
+                                @if($visit->paid)
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">{{ app()->getLocale() === 'ar' ? 'مدفوع' : 'Paid' }}</span>
+                                @else
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">{{ app()->getLocale() === 'ar' ? 'غير مدفوع' : 'Unpaid' }}</span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-3 text-sm space-x-2">
+                                <!-- Update Status -->
+                                <form method="POST" action="{{ route('nurse.visits.update-status', $visit) }}" class="inline-block">
+                                    @csrf
+                                    @method('PUT')
+                                    <select name="status" class="border rounded px-2 py-1 text-xs">
+                                        <option value="scheduled" @selected($visit->status==='scheduled')>{{ app()->getLocale() === 'ar' ? 'مجدول' : 'Scheduled' }}</option>
+                                        <option value="completed" @selected($visit->status==='completed')>{{ app()->getLocale() === 'ar' ? 'مكتمل' : 'Completed' }}</option>
+                                        <option value="missed" @selected($visit->status==='missed')>{{ app()->getLocale() === 'ar' ? 'فاتت' : 'Missed' }}</option>
+                                        <option value="cancelled" @selected($visit->status==='cancelled')>{{ app()->getLocale() === 'ar' ? 'ملغى' : 'Cancelled' }}</option>
+                                    </select>
+                                    <button type="submit" class="ml-1 px-2 py-1 bg-blue-600 text-white rounded text-xs">{{ app()->getLocale() === 'ar' ? 'تحديث' : 'Update' }}</button>
+                                </form>
+
+                                <!-- Toggle Paid -->
+                                <form method="POST" action="{{ route('nurse.visits.toggle-paid', $visit) }}" class="inline-block">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="hidden" name="paid" value="{{ $visit->paid ? 0 : 1 }}">
+                                    <button type="submit" class="px-2 py-1 {{ $visit->paid ? 'bg-gray-600' : 'bg-green-600' }} text-white rounded text-xs">
+                                        {{ $visit->paid ? (app()->getLocale() === 'ar' ? 'تحديد كغير مدفوع' : 'Mark Unpaid') : (app()->getLocale() === 'ar' ? 'تحديد كمدفوع' : 'Mark Paid') }}
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     @endforeach
@@ -389,8 +431,8 @@
                     });
                 }
 
-                // Initialize from URL hash or default to profile
-                const initialTab = window.location.hash.substring(1) || 'Offers';
+                // Initialize from URL hash or default to controller-provided tab (profile by default)
+                const initialTab = window.location.hash.substring(1) || '{{ $initialTab ?? 'profile' }}';
                 activateTab(initialTab);
 
                 // Add click event listeners

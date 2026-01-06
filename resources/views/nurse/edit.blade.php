@@ -1,36 +1,36 @@
-@extends('admin.layouts.admin')
+@extends('nurse.layouts.dashboard')
 
 @section('title', app()->getLocale() === 'ar' ? 'تعديل ممرض/ة' : 'Edit Nurse')
 @section('page-title', app()->getLocale() === 'ar' ? 'تعديل ممرض/ة' : 'Edit Nurse')
 
 @section('content')
-<form action="{{ route('client.nurses.update', $nurse) }}" method="POST" enctype="multipart/form-data" class="max-w-4xl mx-auto space-y-6">
+<form action="{{ route('nurses.update', $nurse) }}" method="POST" enctype="multipart/form-data" class="max-w-4xl mx-auto space-y-6">
 	@csrf
 	@method('PUT')
 
 	<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-		<h3 class="text-base font-semibold mb-4">{{ app()->getLocale() === 'ar' ? 'بيانات الحساب' : 'Account Info (Client)' }}</h3>
+		<h3 class="text-base font-semibold mb-4">{{ app()->getLocale() === 'ar' ? 'بيانات الحساب' : 'Account Info (user)' }}</h3>
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'الاسم' : 'Name' }}</label>
-				<input name="name" value="{{ old('name', $nurse->client->name) }}" class="w-full border border-gray-300 rounded-lg p-2" required>
+				<input name="name" value="{{ old('name', $nurse->user->name) }}" class="w-full border border-gray-300 rounded-lg p-2" required>
 				@error('name') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
 			</div>
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'الهاتف' : 'Phone Number' }}</label>
-				<input name="phone_number" value="{{ old('phone_number', $nurse->client->phone_number) }}" class="w-full border border-gray-300 rounded-lg p-2" required>
+				<input name="phone_number" value="{{ old('phone_number', $nurse->user->phone_number) }}" class="w-full border border-gray-300 rounded-lg p-2" required>
 				@error('phone_number') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
 			</div>
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'البريد الإلكتروني (اختياري)' : 'Email (optional)' }}</label>
-				<input type="email" name="email" value="{{ old('email', $nurse->client->email) }}" class="w-full border border-gray-300 rounded-lg p-2">
+				<input type="email" name="email" value="{{ old('email', $nurse->user->email) }}" class="w-full border border-gray-300 rounded-lg p-2">
 				@error('email') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
 			</div>
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'الصورة' : 'Avatar' }}</label>
 				<input type="file" name="avatar" accept="image/*" class="w-full border border-gray-300 rounded-lg p-2">
-				@if($nurse->client->avatar)
-					<img src="{{ Storage::url($nurse->client->avatar) }}" alt="avatar" class="h-12 w-12 rounded-full mt-2 object-cover">
+				@if($nurse->user->avatar)
+					<img src="{{ Storage::url($nurse->user->avatar) }}" alt="avatar" class="h-12 w-12 rounded-full mt-2 object-cover">
 				@endif
 				@error('avatar') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
 			</div>

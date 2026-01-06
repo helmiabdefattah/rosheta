@@ -11,6 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    @php
+        $nurse = auth()->user()->nurse;
+    @endphp
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -129,28 +132,58 @@
 
             <div class="menu-header">{{ app()->getLocale() === 'ar' ? 'العمليات' : 'OPERATIONS' }}</div>
 
-{{--            <a href="{{ route('nurse.offers.index') }}" class="nav-item {{ request()->routeIs('nurse.offers.*') ? 'active' : '' }}">--}}
-                <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <span>{{ app()->getLocale() === 'ar' ? 'عروضي' : 'My Offers' }}</span>
-            </a>
+            <!-- Nurse Offers Link -->
+            @if(Route::has('nurse.offers.index'))
+                <a href="{{ route('nurse.offers.index') }}" class="nav-item {{ request()->routeIs('nurse.offers.*') ? 'active' : '' }}">
+                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'عروضي' : 'My Offers' }}</span>
+                </a>
+                <a href="{{ route('nurse.requests.index') }}" class="nav-item {{ request()->routeIs('nurse.requests.*') ? 'active' : '' }}">
+                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'إنشاء عروض' : 'create  Offers' }}</span>
+                </a>
+            @else
+                <!-- Temporary link until route is defined -->
+                <a href="#" class="nav-item">
+                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'عروضي' : 'My Offers' }}</span>
+                </a>
+            @endif
 
-{{--            <a href="{{ route('nurse.visits.index') }}" class="nav-item {{ request()->routeIs('nurse.visits.*') ? 'active' : '' }}">--}}
-                <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <span>{{ app()->getLocale() === 'ar' ? 'زياراتي' : 'My Visits' }}</span>
-            </a>
+            <!-- Nurse Visits Link (optional) -->
+            @if(Route::has('nurse.visits.index'))
+                <a href="{{ route('nurse.visits.index') }}" class="nav-item {{ request()->routeIs('nurse.visits.*') ? 'active' : '' }}">
+                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'زياراتي' : 'My Visits' }}</span>
+                </a>
+            @endif
 
             <div class="menu-header">{{ app()->getLocale() === 'ar' ? 'الإعدادات' : 'SETTINGS' }}</div>
 
-{{--            <a href="{{ route('client.nurses.edit', auth('client')->user()->nurse_id) }}" class="nav-item {{ request()->routeIs('client.nurses.edit') ? 'active' : '' }}">--}}
-                <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                </svg>
-                <span>{{ app()->getLocale() === 'ar' ? 'تعديل الملف الشخصي' : 'Edit my Profile' }}</span>
-            </a>
+                <!-- Edit Profile Link -->
+            @if(auth()->check() && auth()->user()->nurse_id)
+                <a href="{{ route('nurses.edit', auth()->user()->nurse_id) }}" class="nav-item {{ request()->routeIs('nurses.edit') ? 'active' : '' }}">
+                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'تعديل الملف الشخصي' : 'Edit my Profile' }}</span>
+                </a>
+            @elseif(Route::has('nurse.profile.edit'))
+                <a href="{{ route('nurse.edit', $nurse) }}" class="nav-item {{ request()->routeIs('nurse.profile.edit') ? 'active' : '' }}">
+                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'تعديل الملف الشخصي' : 'Edit my Profile' }}</span>
+                </a>
+            @endif
         </nav>
 
         <div class="p-4 border-t border-slate-800/50">

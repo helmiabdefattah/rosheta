@@ -19,6 +19,7 @@ class HomeNurseRequest extends Model
 		'address_id',
 		'nurse_id',
 		'service_type',
+		'preferred_gender',
 		'medical_notes',
 		'visits_count',
 		'visit_frequency',
@@ -36,12 +37,12 @@ class HomeNurseRequest extends Model
 		'visit_start_date' => 'date',
 	];
 
-	protected static function booted(): void
-	{
-		static::created(function (self $request) {
-			$request->scheduleVisits();
-		});
-	}
+//	protected static function booted(): void
+//	{
+//		static::created(function (self $request) {
+//			$request->scheduleVisits();
+//		});
+//	}
 
 	public function client(): BelongsTo
 	{
@@ -113,8 +114,28 @@ class HomeNurseRequest extends Model
 			}
 		}
 
-		$this->forceFill(['status' => 'scheduled'])->save();
+		$this->forceFill(['status' => 'pending'])->save();
 	}
+    public function scopeRequestsList($query, Nurse $nurse = null)
+    {
+        return $query
+            ->with(['client', 'address', 'offers'])
+            ->where('status', 'pending')
+            ->when($nurse, function ($q) use ($nurse) {
+                // Exclude requests already offered by this nurse
+                $q->whereDoesntHave('offers', function ($offerQuery) use ($nurse) {
+                    $offerQuery->where('nurse_id', $nurse->id);
+                });
+                // Gender preference filter
+                $q->where(function ($genderQuery) use ($nurse) {
+                    $genderQuery
+                        ->whereNull('preferred_gender')
+                        ->orWhere('preferred_gender', $nurse->gender);
+                });
+            })
+            ->latest();
+    }
+
 }
 
 

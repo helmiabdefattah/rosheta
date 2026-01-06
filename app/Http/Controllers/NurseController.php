@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\HomeNurseRequest;
 use App\Models\Nurse;
 use App\Models\Area;
 use Illuminate\Http\Request;
@@ -9,28 +10,28 @@ use Illuminate\Support\Facades\DB;
 
 class NurseController extends Controller
 {
-    public function index()
-    {
-        $nurses = Nurse::with('user')->orderByDesc('id')->paginate(15);
+//    public function index()
+//    {
+//        $nurses = Nurse::with('user')->orderByDesc('id')->paginate(15);
+//
+//        $allAreaIds = collect($nurses->items())
+//            ->flatMap(fn ($n) => is_array($n->area_ids) ? $n->area_ids : [])
+//            ->filter()
+//            ->unique()
+//            ->values();
+//
+//        $areaMap = $allAreaIds->isNotEmpty()
+//            ? Area::with('city.governorate')->whereIn('id', $allAreaIds)->get()->keyBy('id')
+//            : collect();
+//
+//        return view('admin.nurses.index', compact('nurses', 'areaMap'));
+//    }
 
-        $allAreaIds = collect($nurses->items())
-            ->flatMap(fn ($n) => is_array($n->area_ids) ? $n->area_ids : [])
-            ->filter()
-            ->unique()
-            ->values();
-
-        $areaMap = $allAreaIds->isNotEmpty()
-            ? Area::with('city.governorate')->whereIn('id', $allAreaIds)->get()->keyBy('id')
-            : collect();
-
-        return view('admin.nurses.index', compact('nurses', 'areaMap'));
-    }
-
-    public function show(Nurse $nurse)
-    {
-        $nurse->load('user');
-        return view('admin.nurses.show', compact('nurse'));
-    }
+//    public function show(Nurse $nurse)
+//    {
+//        $nurse->load('user');
+//        return view('admin.nurses.show', compact('nurse'));
+//    }
 
     public function edit(Nurse $nurse)
     {
@@ -104,7 +105,7 @@ class NurseController extends Controller
         });
 
         return redirect()
-            ->route('client.nurse.dashboard')
+            ->route('nurse.dashboard')
             ->with(
                 'success',
                 app()->getLocale() === 'ar'
@@ -143,5 +144,16 @@ class NurseController extends Controller
                 array_map('trim', preg_split('/[,\\n]+/', $value))
             )
         );
+    }
+    public function requestsList()
+    {
+        $user = auth()->user();
+        abort_unless($user && $user->nurse, 403);
+
+        $nurse = $user->nurse;
+
+        $requests = HomeNurseRequest::requestsList($nurse)
+            ->paginate(10);
+        return view('nurse.requests.index', compact('requests', 'nurse'));
     }
 }
