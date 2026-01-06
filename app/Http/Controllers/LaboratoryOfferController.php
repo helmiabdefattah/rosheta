@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Offer;
 use App\Models\Laboratory;
 use App\Models\Attachment;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class LaboratoryOfferController extends Controller
@@ -251,6 +253,66 @@ class LaboratoryOfferController extends Controller
 
         return redirect()->route('laboratories.offers.index')
             ->with('success', app()->getLocale() === 'ar' ? 'تم إلغاء العرض بنجاح' : 'Offer cancelled successfully');
+    }
+    public function markAsPaid(Offer $offer)
+    {
+        try {
+            // Check if this offer belongs to the logged-in laboratory
+            if (auth()->user()->laboratory_id != $offer->laboratory_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 403);
+            }
+
+            // Check if offer is already paid
+            if ($offer->paid) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Offer is already marked as paid'
+                ]);
+            }
+
+            DB::transaction(function () use ($offer) {
+                // Update offer as paid
+                $offer->update([
+                    'payed' => true,
+                ]);
+
+                // Find or create order record
+                $order = Order::firstOrCreate(
+                    ['offer_id' => $offer->id],
+                    [
+                        'client_id' => $offer->client_request->client_id ?? null,
+                        'laboratory_id' => $offer->laboratory_id,
+                        'total_amount' => $offer->total_price ?? 0,
+                        'status' => 'delivered',
+                        'type' => 'medical_test',
+                        'payed' => true,
+                    ]
+                );
+
+                // Update order as paid if it already exists
+                if ($order->exists) {
+                    $order->update([
+                        'payed' => true,
+                        'status' => 'delivered',
+                    ]);
+                }
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Offer marked as paid successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error marking offer as paid: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating payment status: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
 

@@ -132,6 +132,8 @@ Route::put('/admin/laboratories/{laboratory}', [App\Http\Controllers\LaboratoryC
 Route::middleware('auth')->prefix('laboratory')->name('laboratories.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\LaboratoryDashboardController::class, 'index'])->name('dashboard');
 
+    Route::post('/offers/{offer}/mark-paid', [App\Http\Controllers\LaboratoryOfferController::class, 'markAsPaid'])->name('offers.mark-paid');
+
     // Requests
     Route::get('/requests', [App\Http\Controllers\LaboratoryRequestController::class, 'index'])->name('requests.index');
 

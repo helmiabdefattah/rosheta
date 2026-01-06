@@ -26,7 +26,7 @@
             <form method="GET" action="{{ route('laboratories.offers.accepted') }}" class="flex gap-4 items-end">
                 <div class="flex-1">
                     <label class="block text-sm font-medium text-gray-700 mb-2">{{ app()->getLocale() === 'ar' ? 'البحث' : 'Search' }}</label>
-                    <input type="text" name="search" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" 
+                    <input type="text" name="search" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                            placeholder="{{ app()->getLocale() === 'ar' ? 'ابحث برقم العرض أو اسم العميل أو الهاتف...' : 'Search by Offer ID, Client Name, or Phone...' }}"
                            value="{{ request('search') }}">
                 </div>
@@ -114,28 +114,37 @@
                                             <!-- Vendor Status Section -->
                                             <div class="mb-4">
                                                 <label class="form-label fw-bold">{{ app()->getLocale() === 'ar' ? 'حالة المزود' : 'Vendor Status' }}</label>
-                                                <div class="d-flex gap-2 mb-3">
-                                                    <button type="button" class="btn btn-warning btn-sm update-status-btn" 
-                                                            data-offer-id="{{ $offer->id }}" 
+                                                <div class="d-flex gap-2 mb-3 flex-wrap">
+                                                    <button type="button" class="btn btn-warning btn-sm update-status-btn"
+                                                            data-offer-id="{{ $offer->id }}"
                                                             data-status="sample_collected"
-                                                            {{ $offer->vendor_status == 'sample_collected' || $offer->vendor_status == 'test_completed' ? 'disabled' : '' }}>
+                                                        {{ $offer->vendor_status == 'sample_collected' || $offer->vendor_status == 'test_completed' ? 'disabled' : '' }}>
                                                         {{ app()->getLocale() === 'ar' ? 'تم جمع العينة' : 'Sample Collected' }}
                                                     </button>
-                                                    <button type="button" class="btn btn-success btn-sm update-status-btn" 
-                                                            data-offer-id="{{ $offer->id }}" 
+                                                    <button type="button" class="btn btn-success btn-sm update-status-btn"
+                                                            data-offer-id="{{ $offer->id }}"
                                                             data-status="test_completed"
-                                                            {{ $offer->vendor_status != 'sample_collected' ? 'disabled' : '' }}>
+                                                        {{ $offer->vendor_status != 'sample_collected' ? 'disabled' : '' }}>
                                                         {{ app()->getLocale() === 'ar' ? 'تم إكمال الفحص' : 'Test Completed' }}
+                                                    </button>
+
+                                                    <!-- Add Paid Button -->
+                                                    <button type="button" class="btn btn-primary btn-sm mark-paid-btn"
+                                                            data-offer-id="{{ $offer->id }}"
+                                                        {{ $offer->paid ? 'disabled' : '' }}>
+                                                        {{ app()->getLocale() === 'ar' ? 'تم الدفع' : 'Mark as Paid' }}
+                                                        @if($offer->paid)
+                                                            <i class="fas fa-check-circle ms-1"></i>
+                                                        @endif
                                                     </button>
                                                 </div>
                                             </div>
-
                                             <hr>
 
                                             <!-- Attachments Section -->
                                             <div class="mb-4">
                                                 <label class="form-label fw-bold">{{ app()->getLocale() === 'ar' ? 'مرفقات نتائج الفحص' : 'Test Result Attachments' }}</label>
-                                                
+
                                                 <!-- Upload Form -->
                                                 <form class="mb-3 upload-attachment-form" data-offer-id="{{ $offer->id }}">
                                                     <div class="input-group">
@@ -161,14 +170,14 @@
                                                                             <i class="bi bi-file text-secondary"></i>
                                                                         @endif
                                                                         <span>{{ $attachment->file_name }}</span>
-                                                                        <button type="button" class="btn btn-sm btn-link text-primary preview-attachment" 
-                                                                                data-url="{{ $attachment->url }}" 
+                                                                        <button type="button" class="btn btn-sm btn-link text-primary preview-attachment"
+                                                                                data-url="{{ $attachment->url }}"
                                                                                 data-mime="{{ $attachment->mime_type }}">
                                                                             {{ app()->getLocale() === 'ar' ? 'معاينة' : 'Preview' }}
                                                                         </button>
                                                                     </div>
-                                                                    <button type="button" class="btn btn-sm btn-danger delete-attachment" 
-                                                                            data-offer-id="{{ $offer->id }}" 
+                                                                    <button type="button" class="btn btn-sm btn-danger delete-attachment"
+                                                                            data-offer-id="{{ $offer->id }}"
                                                                             data-attachment-id="{{ $attachment->id }}">
                                                                         {{ app()->getLocale() === 'ar' ? 'حذف' : 'Delete' }}
                                                                     </button>
@@ -257,7 +266,7 @@
                                 $badge.removeClass('status-empty status-sample-collected').addClass('status-test-completed')
                                     .text('{{ app()->getLocale() === "ar" ? "تم إكمال الفحص" : "Test Completed" }}');
                             }
-                            
+
                             // Disable sample collected button
                             $btn.siblings('[data-status="sample_collected"]').prop('disabled', true);
                         }
@@ -286,29 +295,29 @@
                         if (response.success) {
                             // Add attachment to list
                             const attachment = response.attachment;
-                            const icon = attachment.is_image ? '<i class="bi bi-image text-primary"></i>' : 
-                                        attachment.is_pdf ? '<i class="bi bi-file-pdf text-danger"></i>' : 
+                            const icon = attachment.is_image ? '<i class="bi bi-image text-primary"></i>' :
+                                        attachment.is_pdf ? '<i class="bi bi-file-pdf text-danger"></i>' :
                                         '<i class="bi bi-file text-secondary"></i>';
-                            
+
                             const attachmentHtml = `
                                 <div class="list-group-item d-flex justify-content-between align-items-center" data-attachment-id="${attachment.id}">
                                     <div class="d-flex align-items-center gap-2">
                                         ${icon}
                                         <span>${attachment.file_name}</span>
-                                        <button type="button" class="btn btn-sm btn-link text-primary preview-attachment" 
-                                                data-url="${attachment.url}" 
+                                        <button type="button" class="btn btn-sm btn-link text-primary preview-attachment"
+                                                data-url="${attachment.url}"
                                                 data-mime="${attachment.mime_type}">
                                             {{ app()->getLocale() === 'ar' ? 'معاينة' : 'Preview' }}
                                         </button>
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-danger delete-attachment" 
-                                            data-offer-id="${offerId}" 
+                                    <button type="button" class="btn btn-sm btn-danger delete-attachment"
+                                            data-offer-id="${offerId}"
                                             data-attachment-id="${attachment.id}">
                                         {{ app()->getLocale() === 'ar' ? 'حذف' : 'Delete' }}
                                     </button>
                                 </div>
                             `;
-                            
+
                             const $list = $('#attachments-list-' + offerId);
                             if ($list.find('.list-group').length === 0) {
                                 $list.html('<div class="list-group"></div>');
@@ -371,6 +380,42 @@
                 const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
                 previewModal.show();
             });
+        });
+        // Add this to your existing JavaScript
+        $(document).on('click', '.mark-paid-btn', function() {
+            const offerId = $(this).data('offer-id');
+            const button = $(this);
+
+            if (confirm('{{ app()->getLocale() === "ar" ? "هل أنت متأكد من تأكيد الدفع؟" : "Are you sure you want to mark this offer as paid?" }}')) {
+                $.ajax({
+                    url: `/laboratory/offers/${offerId}/mark-paid`,
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    beforeSend: function() {
+                        button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> {{ app()->getLocale() === "ar" ? "جاري التحديث..." : "Updating..." }}');
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Update button state
+                            button.prop('disabled', true);
+                            button.html('{{ app()->getLocale() === "ar" ? "تم الدفع" : "Paid" }} <i class="fas fa-check-circle ms-1"></i>');
+
+                            // Show success message
+                            alert('{{ app()->getLocale() === "ar" ? "تم تحديث حالة الدفع بنجاح" : "Payment status updated successfully" }}');
+
+                            // If you have a paid status indicator elsewhere on the page, update it
+                            $('.paid-status-' + offerId).text('{{ app()->getLocale() === "ar" ? "مدفوع" : "Paid" }}');
+                            $('.paid-status-' + offerId).removeClass('text-danger').addClass('text-success');
+                        }
+                    },
+                    error: function(xhr) {
+                        button.prop('disabled', false).html('{{ app()->getLocale() === "ar" ? "تم الدفع" : "Mark as Paid" }}');
+                        alert('{{ app()->getLocale() === "ar" ? "حدث خطأ أثناء تحديث حالة الدفع" : "Error updating payment status" }}');
+                    }
+                });
+            }
         });
     </script>
 @endpush
