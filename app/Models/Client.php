@@ -45,4 +45,9 @@ class Client extends Authenticatable
     {
         return $this->belongsTo(InsuranceCompany::class);
     }
+
+    public function feedbacks()
+    {
+        return $this->hasMany(Feedback::class);
+    }
 }

@@ -158,6 +158,13 @@
                     </svg>
                     <span>{{ app()->getLocale() === 'ar' ? 'تعديل الملف الشخصي' : 'Edit my Profile' }}</span>
                 </a>
+
+                <a href="{{ route('client.feedback.create') }}" class="nav-item {{ request()->routeIs('client.feedback.*') ? 'active' : '' }}">
+                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'إرسال ملاحظة' : 'Submit Feedback' }}</span>
+                </a>
                         @else
                             <a href="{{ route('client.nurses.edit', auth('client')->user()->nurse_id) }}"
                                class="nav-item {{ request()->routeIs('nurses.edit') ? 'active' : '' }}">

@@ -18,6 +18,15 @@ Route::get('/privacy', function () {
     return view('privacy');
 })->name('privacy');
 
+Route::get('/feedback', function () {
+    if (Auth::guard('client')->check()) {
+        return redirect()->route('client.feedback.create');
+    }
+    return redirect()->route('login')->with('info', app()->getLocale() === 'ar' 
+        ? 'يرجى تسجيل الدخول لإرسال ملاحظة' 
+        : 'Please login to submit feedback');
+})->name('feedback');
+
 Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale');
 
 // Auth routes
@@ -72,6 +81,11 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     Route::get('/profile/edit', [App\Http\Controllers\ClientProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [App\Http\Controllers\ClientProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [App\Http\Controllers\ClientProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Feedback
+    Route::get('/feedback', [App\Http\Controllers\ClientFeedbackController::class, 'create'])->name('feedback.create');
+    Route::post('/feedback', [App\Http\Controllers\ClientFeedbackController::class, 'store'])->name('feedback.store');
+    Route::get('/feedback/history', [App\Http\Controllers\ClientFeedbackController::class, 'index'])->name('feedback.index');
 });
 
 // Offer routes
