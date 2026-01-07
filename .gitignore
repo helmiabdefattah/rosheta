@@ -67,5 +67,5 @@ coverage/
 /.phpunit.cache
 
 # Firebase Service Account (sensitive credentials)
-/storage/app/firebase-service-account.json
-/storage/app/*firebase*.json
+# /storage/app/firebase-service-account.json
+# /storage/app/*firebase*.json

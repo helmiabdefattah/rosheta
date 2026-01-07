@@ -35,7 +35,7 @@ class NotificationManager {
                     message: payload.notification.body || '',
                     data: payload.data || {},
                 });
-                
+
                 // Update unread count after receiving FCM notification
                 this.updateUnreadCountFromServer();
             }
@@ -53,7 +53,7 @@ class NotificationManager {
      */
     async checkNotifications() {
         if (this.isChecking) return;
-        
+
         this.isChecking = true;
 
         try {
@@ -71,29 +71,29 @@ class NotificationManager {
             }
 
             const data = await response.json();
-            
+
             // Show new notifications (only on initial load, FCM handles real-time)
-            if (data.notifications && data.notifications.length > 0) {
-                data.notifications.forEach(notification => {
-                    // Only show if it's a new notification (not shown before)
-                    if (!this.shownNotificationIds.has(notification.id)) {
-                        this.showNotification(notification);
-                        this.shownNotificationIds.add(notification.id);
-                        
-                        // Keep only last 50 IDs to prevent memory issues
-                        if (this.shownNotificationIds.size > 50) {
-                            const firstId = Array.from(this.shownNotificationIds)[0];
-                            this.shownNotificationIds.delete(firstId);
-                        }
-                    }
-                });
-            }
+            // if (data.notifications && data.notifications.length > 0) {
+            //     data.notifications.forEach(notification => {
+            //         // Only show if it's a new notification (not shown before)
+            //         if (!this.shownNotificationIds.has(notification.id)) {
+            //             this.showNotification(notification);
+            //             this.shownNotificationIds.add(notification.id);
+
+            //             // Keep only last 50 IDs to prevent memory issues
+            //             if (this.shownNotificationIds.size > 50) {
+            //                 const firstId = Array.from(this.shownNotificationIds)[0];
+            //                 this.shownNotificationIds.delete(firstId);
+            //             }
+            //         }
+            //     });
+            // }
 
             // Update unread count badge if exists
             this.updateUnreadCount(data.unread_count || 0);
-            
+
             // Trigger custom event for dropdown to update
-            window.dispatchEvent(new CustomEvent('notifications-updated', { 
+            window.dispatchEvent(new CustomEvent('notifications-updated', {
                 detail: { unreadCount: data.unread_count || 0, notifications: data.notifications || [] }
             }));
 
@@ -159,7 +159,7 @@ class NotificationManager {
             extendedTimeOut: 10000,
             progressBar: true,
             closeButton: true,
-            onclick: function() {
+            onclick: function () {
                 // Handle click - could navigate to relevant page
                 if (data.action && data.url) {
                     window.location.href = data.url;
@@ -232,7 +232,7 @@ class NotificationManager {
 // Initialize on page load
 let notificationManager = null;
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Wait for toastr to be loaded
     if (typeof toastr !== 'undefined') {
         notificationManager = new NotificationManager();
