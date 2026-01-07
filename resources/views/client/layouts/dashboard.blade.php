@@ -126,6 +126,10 @@
                    class="nav-item {{ request()->is('client/test-requests/create/radiology') ? 'active' : '' }}">
                     <span>{{ app()->getLocale() === 'ar' ? 'طلب أشعة' : 'Request Radiology Tests' }}</span>
                 </a>
+                <a href="{{ route('client.medicine-requests.create') }}"
+                   class="nav-item {{ request()->routeIs('client.medicine-requests.*') ? 'active' : '' }}">
+                    <span>{{ app()->getLocale() === 'ar' ? 'طلب أدوية' : 'Request Medicines' }}</span>
+                </a>
                         @if(Auth::guard('client')->user()->nurse_id == null)
 
                         <a href="{{ route('client.nurse-requests.index') }}"

@@ -71,6 +71,11 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     Route::get('/test-requests/create/{type}', [App\Http\Controllers\ClientTestRequestController::class, 'create'])->name('test-requests.create');
     Route::post('/test-requests/{type}', [App\Http\Controllers\ClientTestRequestController::class, 'store'])->name('test-requests.store');
 
+    // Medicine Requests (simple create page that posts to test-requests.store with type=medicine)
+    Route::get('/medicine-requests/create', function () {
+        return view('client.medicine-requests.create');
+    })->name('medicine-requests.create');
+
     // Reviews
     Route::post('/reviews', [App\Http\Controllers\ClientReviewController::class, 'store'])->name('reviews.store');
 
@@ -180,6 +185,16 @@ Route::middleware('auth')->prefix('laboratory')->name('laboratories.')->group(fu
     Route::get('/support-tickets', [App\Http\Controllers\LaboratorySupportTicketController::class, 'create'])->name('support-tickets.create');
     Route::post('/support-tickets', [App\Http\Controllers\LaboratorySupportTicketController::class, 'store'])->name('support-tickets.store');
     Route::get('/support-tickets/history', [App\Http\Controllers\LaboratorySupportTicketController::class, 'index'])->name('support-tickets.index');
+});
+
+// Pharmacy Dashboard Routes
+Route::middleware('auth')->prefix('pharmacy')->name('pharmacies.')->group(function () {
+	Route::get('/dashboard', [App\Http\Controllers\PharmacyDashboardController::class, 'index'])->name('dashboard');
+	// Requests
+	Route::get('/requests', [App\Http\Controllers\PharmacyRequestController::class, 'index'])->name('requests.index');
+	// Offers
+	Route::get('/offers', [App\Http\Controllers\PharmacyOfferController::class, 'index'])->name('offers.index');
+	Route::get('/offers/accepted', [App\Http\Controllers\PharmacyOfferController::class, 'accepted'])->name('offers.accepted');
 });
 
 // Admin routes (Blade-based admin panel)

@@ -186,9 +186,7 @@
 }
 
 /* RTL support */
-[dir="rtl"] .select2-container--default .select2-selection--multiple .select2-selection__choice {
-    padding: 0.125rem 1.75rem 0.125rem 0.5rem;
-}
+
 
 [dir="rtl"] .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
     left: auto;

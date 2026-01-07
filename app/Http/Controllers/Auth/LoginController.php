@@ -29,6 +29,9 @@ class LoginController extends Controller
             if ($user->laboratory_id) {
                 return redirect()->route('laboratories.dashboard');
             }
+            if ($user->pharmacy_id) {
+                return redirect()->route('pharmacies.dashboard');
+            }
             if ($user->nurse_id) {
                 return redirect()->route('nurse.dashboard');
             }
@@ -64,6 +67,9 @@ class LoginController extends Controller
             // Redirect laboratory owners to their dashboard
             if ($user->laboratory_id) {
                 return redirect()->route('laboratories.dashboard');
+            }
+            if ($user->pharmacy_id) {
+                return redirect()->route('pharmacies.dashboard');
             }
             if ($user->nurse_id) {
                 return redirect()->route('nurse.dashboard');
