@@ -68,5 +68,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/client-addresses', [ClientAddressController::class, 'store']);
     Route::put('/client-addresses/{id}', [ClientAddressController::class, 'update']);
     Route::delete('/client-addresses/{id}', [ClientAddressController::class, 'destroy']);
+
+    // FCM Token Management
+    Route::post('/fcm-token', [\App\Http\Controllers\Api\FcmTokenController::class, 'update']);
+    Route::delete('/fcm-token', [\App\Http\Controllers\Api\FcmTokenController::class, 'remove']);
 });
 

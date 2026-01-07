@@ -34,6 +34,13 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    
+    <!-- Alpine.js for interactive components -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Toastr Notifications -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     @stack('styles')
 
@@ -259,13 +266,16 @@
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
                 <span class="font-bold text-slate-800">Mostashfa-on</span>
-                <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
-                   class="flex items-center gap-1 px-2 py-1 text-sm text-slate-600 hover:text-primary">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
-                    </svg>
-                    <span class="text-xs">{{ app()->getLocale() === 'ar' ? 'EN' : 'AR' }}</span>
-                </a>
+                <div class="flex items-center gap-2">
+                    <x-notification-dropdown />
+                    <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
+                       class="flex items-center gap-1 px-2 py-1 text-sm text-slate-600 hover:text-primary">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                        </svg>
+                        <span class="text-xs">{{ app()->getLocale() === 'ar' ? 'EN' : 'AR' }}</span>
+                    </a>
+                </div>
             </header>
 
             <main class="flex-1 overflow-y-auto p-4 lg:p-8">
@@ -321,6 +331,75 @@
             });
         });
     </script>
+    <!-- Firebase SDK -->
+    @if(config('services.fcm.api_key'))
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "{{ config('services.fcm.api_key', '') }}",
+            authDomain: "{{ config('services.fcm.auth_domain', '') }}",
+            projectId: "{{ config('services.fcm.project_id', '') }}",
+            storageBucket: "{{ config('services.fcm.storage_bucket', '') }}",
+            messagingSenderId: "{{ config('services.fcm.messaging_sender_id', '') }}",
+            appId: "{{ config('services.fcm.app_id', '') }}"
+        };
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            window.firebase = firebase;
+            window.firebaseConfig = firebaseConfig;
+            window.FCM_VAPID_KEY = "{{ config('services.fcm.vapid_key', '') }}";
+            console.log('FCM: Firebase SDK loaded successfully');
+            
+            // Send config to service worker if it's registered
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.active?.postMessage({
+                        type: 'FIREBASE_CONFIG',
+                        config: firebaseConfig
+                    });
+                });
+            }
+            
+            // Set refresh flag if coming from login
+            @if(session('fcm_token_refresh'))
+            sessionStorage.setItem('fcm_token_refresh', 'true');
+            @endif
+        } catch (error) {
+            console.error('FCM: Error initializing Firebase SDK:', error);
+        }
+    </script>
+    <script src="{{ asset('js/fcm-token-manager.js') }}"></script>
+    @endif
+    
+    <!-- Notification Manager -->
+    <script src="{{ asset('js/notification-manager.js') }}"></script>
+    <script>
+        // Configure Toastr
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+        
+        @if(app()->getLocale() === 'ar')
+        toastr.options.rtl = true;
+        @endif
+    </script>
+    
     @stack('scripts')
 
 </body>

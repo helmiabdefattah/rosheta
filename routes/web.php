@@ -30,6 +30,15 @@ Route::get('/feedback', function () {
 
 Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale');
 
+// FCM Token Management (for authenticated users - works for both web auth and client auth)
+Route::post('/fcm-token', [App\Http\Controllers\FcmTokenController::class, 'update'])->name('fcm-token.update');
+Route::delete('/fcm-token', [App\Http\Controllers\FcmTokenController::class, 'remove'])->name('fcm-token.remove');
+
+// Notifications (for authenticated users)
+Route::get('/notifications/unread', [App\Http\Controllers\NotificationController::class, 'unread'])->name('notifications.unread');
+Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+Route::post('/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+
 // Auth routes
 Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);

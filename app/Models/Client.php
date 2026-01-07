@@ -12,7 +12,7 @@ class Client extends Authenticatable
 {
     use HasFactory, HasApiTokens, Notifiable;
 
-    protected $fillable = ['name', 'phone_number', 'email', 'password', 'avatar', 'governorate_id', 'city_id', 'insurance_company_id'];
+    protected $fillable = ['name', 'phone_number', 'email', 'password', 'avatar', 'governorate_id', 'city_id', 'insurance_company_id', 'fcm_token_web', 'fcm_token_mobile'];
 
     protected $hidden = ['password', 'remember_token'];
 

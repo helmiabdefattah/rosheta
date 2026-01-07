@@ -229,6 +229,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
+                    <x-notification-dropdown />
                     <!-- Language Toggle -->
                     <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                        class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:text-primary hover:bg-slate-100 rounded-lg transition-colors">
@@ -284,6 +285,13 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- Alpine.js for interactive components -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Toastr Notifications -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     <script>
         // Mobile sidebar toggle
@@ -314,6 +322,75 @@
         }
     </script>
 
+    <!-- Firebase SDK -->
+    @if(config('services.fcm.api_key'))
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "{{ config('services.fcm.api_key', '') }}",
+            authDomain: "{{ config('services.fcm.auth_domain', '') }}",
+            projectId: "{{ config('services.fcm.project_id', '') }}",
+            storageBucket: "{{ config('services.fcm.storage_bucket', '') }}",
+            messagingSenderId: "{{ config('services.fcm.messaging_sender_id', '') }}",
+            appId: "{{ config('services.fcm.app_id', '') }}"
+        };
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            window.firebase = firebase;
+            window.firebaseConfig = firebaseConfig;
+            window.FCM_VAPID_KEY = "{{ config('services.fcm.vapid_key', '') }}";
+            console.log('FCM: Firebase SDK loaded successfully');
+            
+            // Send config to service worker if it's registered
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.active?.postMessage({
+                        type: 'FIREBASE_CONFIG',
+                        config: firebaseConfig
+                    });
+                });
+            }
+            
+            // Set refresh flag if coming from login
+            @if(session('fcm_token_refresh'))
+            sessionStorage.setItem('fcm_token_refresh', 'true');
+            @endif
+        } catch (error) {
+            console.error('FCM: Error initializing Firebase SDK:', error);
+        }
+    </script>
+    <script src="{{ asset('js/fcm-token-manager.js') }}"></script>
+    @endif
+    
+    <!-- Notification Manager -->
+    <script src="{{ asset('js/notification-manager.js') }}"></script>
+    <script>
+        // Configure Toastr
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+        
+        @if(app()->getLocale() === 'ar')
+        toastr.options.rtl = true;
+        @endif
+    </script>
+    
     @stack('scripts')
 </body>
 </html>

@@ -35,4 +35,18 @@ return [
         ],
     ],
 
+    'fcm' => [
+        // Service account JSON file path (for FCM HTTP v1 API)
+        'service_account_path' => env('FCM_SERVICE_ACCOUNT_PATH', storage_path('app/firebase-service-account.json')),
+        
+        // Web app configuration (for client-side Firebase SDK)
+        'api_key' => env('FCM_API_KEY'),
+        'auth_domain' => env('FCM_AUTH_DOMAIN'),
+        'project_id' => env('FCM_PROJECT_ID'),
+        'storage_bucket' => env('FCM_STORAGE_BUCKET'),
+        'messaging_sender_id' => env('FCM_MESSAGING_SENDER_ID'),
+        'app_id' => env('FCM_APP_ID'),
+        'vapid_key' => env('FCM_VAPID_KEY'),
+    ],
+
 ];

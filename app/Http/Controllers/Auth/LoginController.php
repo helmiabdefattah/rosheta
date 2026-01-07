@@ -61,6 +61,9 @@ class LoginController extends Controller
             Auth::login($user, $remember);
             $request->session()->regenerate();
 
+            // Trigger FCM token refresh after login
+            $request->session()->put('fcm_token_refresh', true);
+
             // Redirect laboratory owners to their dashboard
             if ($user->laboratory_id) {
                 return redirect()->route('laboratories.dashboard');
@@ -81,6 +84,9 @@ class LoginController extends Controller
         if ($client && Hash::check($password, $client->password)) {
             Auth::guard('client')->login($client, $remember);
             $request->session()->regenerate();
+
+            // Trigger FCM token refresh after login
+            $request->session()->put('fcm_token_refresh', true);
 
             return redirect()->route('client.dashboard');
         }

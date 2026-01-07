@@ -158,6 +158,14 @@ class OfferController extends Controller
                 'pharmacy_id' => $clientRequest->type === 'medicine' ? $request->pharmacy_id : null,
             ]);
 
+            // Load relationships for notification
+            $offer->load(['request.client', 'pharmacy', 'laboratory', 'user']);
+            
+            // Notify the client about the new offer
+            if ($offer->request->client) {
+                $offer->request->client->notify(new \App\Notifications\OfferCreatedNotification($offer));
+            }
+
             foreach ($request->offer_lines as $line) {
                 if ($clientRequest->type === 'radiology') {
                     // For radiology, use medical_test_id column but store radiology_id

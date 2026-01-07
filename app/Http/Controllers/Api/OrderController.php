@@ -59,6 +59,15 @@ class OrderController extends Controller
                 'price' => $line->price,
             ]);
         }
+
+        // 5️⃣ Reload offer with relationships for notification
+        $offer->refresh();
+        $offer->load(['request.client', 'pharmacy', 'laboratory', 'user']);
+        
+        // Notify the offer creator (pharmacy/lab owner) about acceptance
+        if ($offer->user) {
+            $offer->user->notify(new \App\Notifications\OfferAcceptedNotification($offer));
+        }
 //        dd($order);
 
         return response()->json([

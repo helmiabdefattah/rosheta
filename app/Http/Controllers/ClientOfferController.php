@@ -197,6 +197,15 @@ class ClientOfferController extends Controller
                     'payed' => false,
                     'total_price' => $offer->total_price,
                 ]);
+
+                // Reload offer with relationships for notification
+                $offer->refresh();
+                $offer->load(['request.client', 'pharmacy', 'laboratory', 'user']);
+                
+                // Notify the offer creator (pharmacy/lab owner) about acceptance
+                if ($offer->user) {
+                    $offer->user->notify(new \App\Notifications\OfferAcceptedNotification($offer));
+                }
             });
 
             return redirect()->route('client.offers.index')

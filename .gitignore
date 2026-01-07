@@ -65,3 +65,7 @@ Homestead.yaml
 .phpunit.result.cache
 coverage/
 /.phpunit.cache
+
+# Firebase Service Account (sensitive credentials)
+/storage/app/firebase-service-account.json
+/storage/app/*firebase*.json

@@ -53,6 +53,8 @@ class AuthController extends Controller
         $request->validate([
             'phone_number' => 'required|string',
             'password' => 'required|string',
+            'fcm_token' => 'nullable|string',
+            'platform' => 'nullable|in:web,mobile',
         ]);
 
         $client = Client::where('phone_number', $request->phone_number)->first();
@@ -61,6 +63,16 @@ class AuthController extends Controller
             throw ValidationException::withMessages([
                 'phone_number' => ['The provided credentials are incorrect.'],
             ]);
+        }
+
+        // Update FCM token if provided
+        if ($request->filled('fcm_token') && $request->filled('platform')) {
+            if ($request->platform === 'web') {
+                $client->fcm_token_web = $request->fcm_token;
+            } else {
+                $client->fcm_token_mobile = $request->fcm_token;
+            }
+            $client->save();
         }
 
         // Revoke all existing tokens (optional - for single device login)
