@@ -51,6 +51,11 @@ Route::prefix('nurse')->name('nurse.')->middleware(['auth'])->group(function () 
     // Nurse visits actions
     Route::put('visits/{visit}/status', [\App\Http\Controllers\NurseVisitController::class, 'updateStatus'])->name('visits.update-status');
     Route::put('visits/{visit}/toggle-paid', [\App\Http\Controllers\NurseVisitController::class, 'togglePaid'])->name('visits.toggle-paid');
+    
+    // Support Tickets
+    Route::get('support-tickets', [App\Http\Controllers\NurseSupportTicketController::class, 'create'])->name('support-tickets.create');
+    Route::post('support-tickets', [App\Http\Controllers\NurseSupportTicketController::class, 'store'])->name('support-tickets.store');
+    Route::get('support-tickets/history', [App\Http\Controllers\NurseSupportTicketController::class, 'index'])->name('support-tickets.index');
     });
 Route::resource('nurses', App\Http\Controllers\NurseController::class);
 
@@ -170,6 +175,11 @@ Route::middleware('auth')->prefix('laboratory')->name('laboratories.')->group(fu
     // Test Prices
     Route::get('/test-prices', [App\Http\Controllers\LaboratoryTestPriceController::class, 'index'])->name('test-prices.index');
     Route::post('/test-prices/store-or-update', [App\Http\Controllers\LaboratoryTestPriceController::class, 'storeOrUpdate'])->name('test-prices.store-or-update');
+
+    // Support Tickets
+    Route::get('/support-tickets', [App\Http\Controllers\LaboratorySupportTicketController::class, 'create'])->name('support-tickets.create');
+    Route::post('/support-tickets', [App\Http\Controllers\LaboratorySupportTicketController::class, 'store'])->name('support-tickets.store');
+    Route::get('/support-tickets/history', [App\Http\Controllers\LaboratorySupportTicketController::class, 'index'])->name('support-tickets.index');
 });
 
 // Admin routes (Blade-based admin panel)
@@ -225,6 +235,18 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectLaboratoryOwner::class])
     // Clients
     Route::get('/clients/data', [App\Http\Controllers\Admin\ClientController::class, 'data'])->name('clients.data');
     Route::resource('clients', App\Http\Controllers\Admin\ClientController::class);
+
+    // Feedback
+    Route::get('/feedback', [App\Http\Controllers\Admin\FeedbackController::class, 'index'])->name('feedback.index');
+    Route::get('/feedback/{feedback}', [App\Http\Controllers\Admin\FeedbackController::class, 'show'])->name('feedback.show');
+    Route::put('/feedback/{feedback}', [App\Http\Controllers\Admin\FeedbackController::class, 'update'])->name('feedback.update');
+    Route::delete('/feedback/{feedback}', [App\Http\Controllers\Admin\FeedbackController::class, 'destroy'])->name('feedback.destroy');
+
+    // Support Tickets
+    Route::get('/support-tickets', [App\Http\Controllers\Admin\SupportTicketController::class, 'index'])->name('support-tickets.index');
+    Route::get('/support-tickets/{supportTicket}', [App\Http\Controllers\Admin\SupportTicketController::class, 'show'])->name('support-tickets.show');
+    Route::put('/support-tickets/{supportTicket}', [App\Http\Controllers\Admin\SupportTicketController::class, 'update'])->name('support-tickets.update');
+    Route::delete('/support-tickets/{supportTicket}', [App\Http\Controllers\Admin\SupportTicketController::class, 'destroy'])->name('support-tickets.destroy');
 
     // Client Requests
     Route::get('/client-requests/data', [App\Http\Controllers\Admin\ClientRequestController::class, 'data'])->name('client-requests.data');

@@ -56,6 +56,17 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     protected function gate(): void
     {
         Gate::define('viewTelescope', function ($user) {
+            // Allow user ID 1 in production
+            if ($user->id === 1) {
+                return true;
+            }
+            
+            // Allow all users in local environment
+            if ($this->app->environment('local')) {
+                return true;
+            }
+            
+            // For other environments, check email whitelist
             return in_array($user->email, [
                 //
             ]);

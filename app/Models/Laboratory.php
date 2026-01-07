@@ -95,6 +95,11 @@ class Laboratory extends Model implements HasMedia
 	{
 		return $this->morphOne(WorkingHours::class, 'workable');
 	}
+
+	public function supportTickets()
+	{
+		return $this->morphMany(SupportTicket::class, 'ticketable');
+	}
 }
 
 

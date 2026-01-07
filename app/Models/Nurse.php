@@ -57,4 +57,9 @@ class Nurse extends Model
     {
         return $query->where('status', 'active');
     }
+
+    public function supportTickets()
+    {
+        return $this->morphMany(SupportTicket::class, 'ticketable');
+    }
 }
