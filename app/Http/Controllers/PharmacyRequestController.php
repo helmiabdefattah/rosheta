@@ -18,15 +18,14 @@ class PharmacyRequestController extends Controller
 		}
 		$q = ClientRequest::query()
 			->where('type', 'medicine')
+			->where('status', 'pending')
 			->with(['client', 'address.area.city.governorate', 'lines.medicine'])
 			->whereDoesntHave('offers', function ($qb) use ($pharmacy) {
 				$qb->where('pharmacy_id', $pharmacy->id);
 			})
 			->orderByDesc('created_at');
 
-		if ($request->filled('status')) {
-			$q->where('status', $request->string('status'));
-		}
+		// Always show pending requests only for pharmacy view
 		if ($request->filled('search')) {
 			$term = $request->string('search');
 			$q->where(function ($qb) use ($term) {

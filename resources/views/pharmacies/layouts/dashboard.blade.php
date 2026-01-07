@@ -62,7 +62,7 @@
 					{{ app()->getLocale() === 'ar' ? 'مستشفى-أون' : 'Mostashfa-on' }}
 				</span>
 			</a>
-			<button id="close-sidebar" class="lg:hidden ms-auto text-slate-400 hover_text-white">
+			<button id="close-sidebar" class="lg:hidden ms-auto text-slate-400 hover:text-white">
 				<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></path></svg>
 			</button>
 		</div>
@@ -92,6 +92,13 @@
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
 				</svg>
 				<span>{{ app()->getLocale() === 'ar' ? 'العروض المقبولة' : 'Accepted Offers' }}</span>
+			</a>
+			<div class="menu-header">{{ app()->getLocale() === 'ar' ? 'الطلبات' : 'ORDERS' }}</div>
+			<a href="{{ route('pharmacies.orders.index') }}" class="nav-item {{ request()->routeIs('pharmacies.orders.*') ? 'active' : '' }}">
+				<svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+				</svg>
+				<span>{{ app()->getLocale() === 'ar' ? 'إدارة الطلبات' : 'Manage Orders' }}</span>
 			</a>
 			<div class="menu-header">{{ app()->getLocale() === 'ar' ? 'الإعدادات' : 'SETTINGS' }}</div>
 			{{-- Placeholder for pharmacy profile routes if exist --}}
@@ -143,11 +150,11 @@
 			@if(session('success'))
 				<div class="mb-6 bg-emerald-100 border-l-4 border-emerald-500 text-emerald-700 p-4 rounded shadow-sm" role="alert">
 					<p class="font-bold">{{ app()->getLocale() === 'ar' ? 'نجح' : 'Success' }}</p>
-					<p>{{ session->get('success') }}</p>
+					<p>{{ session('success') }}</p>
 				</div>
 			@endif
 			@if(session('error'))
-				<div class="mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow_sm" role="alert">
+				<div class="mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-sm" role="alert">
 					<p class="font-bold">{{ app()->getLocale() === 'ar' ? 'خطأ' : 'Error' }}</p>
 					<p>{{ session('error') }}</p>
 				</div>

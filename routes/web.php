@@ -115,6 +115,10 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     Route::get('/feedback', [App\Http\Controllers\ClientFeedbackController::class, 'create'])->name('feedback.create');
     Route::post('/feedback', [App\Http\Controllers\ClientFeedbackController::class, 'store'])->name('feedback.store');
     Route::get('/feedback/history', [App\Http\Controllers\ClientFeedbackController::class, 'index'])->name('feedback.index');
+
+    // Orders
+    Route::get('/orders', [App\Http\Controllers\ClientOrderController::class, 'index'])->name('orders.index');
+    Route::post('/orders/{order}/review', [App\Http\Controllers\ClientOrderController::class, 'storeReview'])->name('orders.review');
 });
 
 // Offer routes
@@ -195,6 +199,10 @@ Route::middleware('auth')->prefix('pharmacy')->name('pharmacies.')->group(functi
 	// Offers
 	Route::get('/offers', [App\Http\Controllers\PharmacyOfferController::class, 'index'])->name('offers.index');
 	Route::get('/offers/accepted', [App\Http\Controllers\PharmacyOfferController::class, 'accepted'])->name('offers.accepted');
+	// Orders
+	Route::get('/orders', [App\Http\Controllers\PharmacyOrderController::class, 'index'])->name('orders.index');
+	Route::put('/orders/{order}/status', [App\Http\Controllers\PharmacyOrderController::class, 'updateStatus'])->name('orders.update-status');
+	Route::put('/orders/{order}/mark-paid', [App\Http\Controllers\PharmacyOrderController::class, 'markPaid'])->name('orders.mark-paid');
 });
 
 // Admin routes (Blade-based admin panel)
