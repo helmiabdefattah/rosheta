@@ -6,7 +6,7 @@
 @section('content')
     <div class="flex items-center justify-between mb-4">
         <a href="{{ route('admin.nurses.create') }}" class="px-4 py-2 bg-primary text-white rounded-lg text-sm">
-            {{ app()->getLocale() === 'ar' ? 'إضافة ممرض/ة' : 'Add Nurse' }}
+            {{ app()->getLocale() === 'ar' ? 'إضافة تمريض' : 'Add Nurse' }}
         </a>
     </div>
 

@@ -1,8 +1,8 @@
 @extends('admin.layouts.admin')
 
-@section('title', app()->getLocale() === 'ar' ? 'تفاصيل الممرض/ة' : 'Nurse Details')
-@section('page-title', app()->getLocale() === 'ar' ? 'تفاصيل الممرض/ة' : 'Nurse Details')
-@section('page-description', app()->getLocale() === 'ar' ? 'معلومات كاملة عن الممرض/ة' : 'Full information about the nurse')
+@section('title', app()->getLocale() === 'ar' ? 'تفاصيل التمريض' : 'Nurse Details')
+@section('page-title', app()->getLocale() === 'ar' ? 'تفاصيل التمريض' : 'Nurse Details')
+@section('page-description', app()->getLocale() === 'ar' ? 'معلومات كاملة عن التمريض' : 'Full information about the nurse')
 
 @section('content')
 <div class="space-y-6">

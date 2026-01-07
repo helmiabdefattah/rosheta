@@ -192,15 +192,6 @@
                 </div>
 
                 <!-- Language Toggle -->
-                <div class="mb-3">
-                    <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
-                       class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
-                        </svg>
-                        <span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
-                    </a>
-                </div>
 
                 <form method="POST" action="{{ route('logout') }}" class="w-full">
                     @csrf
@@ -216,7 +207,8 @@
 
         <div class="flex-1 flex flex-col h-full bg-gray-100 relative">
 
-            <header class="h-16 bg-white flex items-center justify-between px-6 border-b border-gray-200 shadow-sm">
+            <!-- Replace the entire header points section with this: -->
+            <header class="h-16 bg-white flex items-center justify-between px-4 lg:px-6 border-b border-gray-200 shadow-sm">
                 <div class="flex items-center gap-4">
                     <button id="open-sidebar" class="lg:hidden text-slate-600">
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -228,7 +220,41 @@
                         @endif
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
+                @php
+                    $client = Auth::guard('client')->user();
+                    $availableBonusPoints = \App\Models\BonusPoint::where('client_id', $client->id)
+                                                                   ->sum('points') ?? 0;
+                @endphp
+                <div class="flex items-center gap-4">
+                    <!-- Compact Points Display -->
+                    <div class="relative hidden md:block">
+                        <div class="flex items-center bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-1 rounded-xl border border-amber-200 shadow-sm">
+                            <div class="text-right me-3">
+                                <p class="text-xs font-semibold text-amber-800 mb-0.5">
+                                    {{ app()->getLocale() === 'ar' ? 'النقاط' : 'Points' }}
+                                </p>
+                                <span class="text-2xl font-bold text-amber-600">
+                        {{ number_format($availableBonusPoints ?? 0) }}
+                    </span>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Points Display -->
+                    <div class="md:hidden">
+                        <div class="flex items-center bg-gradient-to-r from-amber-50 to-yellow-50 px-3 py-1.5 rounded-lg border border-amber-200">
+                            <svg class="w-4 h-4 text-amber-600 me-1.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                            <span class="text-lg font-bold text-amber-600">{{ number_format($availableBonusPoints ?? 0) }}</span>
+                        </div>
+                    </div>
+
                     <!-- Language Toggle -->
                     <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                        class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:text-primary hover:bg-slate-100 rounded-lg transition-colors">
@@ -239,7 +265,6 @@
                     </a>
                 </div>
             </header>
-
             <main class="flex-1 overflow-y-auto p-4 lg:p-8">
                 @if(session('success'))
                     <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">

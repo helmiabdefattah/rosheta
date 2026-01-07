@@ -1,7 +1,7 @@
 @extends('admin.layouts.admin')
 
-@section('title', app()->getLocale() === 'ar' ? 'إضافة ممرض/ة' : 'Create Nurse')
-@section('page-title', app()->getLocale() === 'ar' ? 'إضافة ممرض/ة' : 'Create Nurse')
+@section('title', app()->getLocale() === 'ar' ? 'إضافة تمريض' : 'Create Nurse')
+@section('page-title', app()->getLocale() === 'ar' ? 'إضافة تمريض' : 'Create Nurse')
 
 @section('content')
 <form action="{{ route('admin.nurses.store') }}" method="POST" enctype="multipart/form-data" class="max-w-4xl mx-auto space-y-6">
@@ -34,7 +34,7 @@
 	</div>
 
 	<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-		<h3 class="text-base font-semibold mb-4">{{ app()->getLocale() === 'ar' ? 'بيانات الممرض/ة' : 'Nurse Details' }}</h3>
+		<h3 class="text-base font-semibold mb-4">{{ app()->getLocale() === 'ar' ? 'بيانات التمريض' : 'Nurse Details' }}</h3>
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'النوع' : 'Gender' }}</label>
@@ -198,7 +198,7 @@
 <script>
 	$(function () {
 		const isRTL = @json(app()->getLocale() === 'ar');
-		
+
 		$('.tags-multiselect').select2({
 			width: '100%',
 			placeholder: @json(app()->getLocale() === 'ar' ? 'اختر منطقة/مناطق' : 'Select area(s)'),
@@ -215,7 +215,7 @@
 				return $('<span class="selected-tag">' + text + '</span>');
 			}
 		});
-		
+
 		// Initialize with previously selected values (from old input)
 		@if(old('area_ids'))
 			const oldAreaIds = @json(old('area_ids', []));

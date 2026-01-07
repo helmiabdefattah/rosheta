@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', app()->getLocale() === 'ar' ? 'لوحة تحكم الممرض/ة' : 'Nurse Dashboard')</title>
+    <title>@yield('title', app()->getLocale() === 'ar' ? 'لوحة تحكم التمريض' : 'Nurse Dashboard')</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -112,7 +112,7 @@
             <a href="{{ route('nurse.dashboard') }}" class="flex items-center gap-3">
                 <img src="/images/mo-logo.png" alt="Mostashfa-on Logo" class="h-10 w-auto object-contain">
                 <span class="text-lg font-bold tracking-tight text-white">
-                        {{ app()->getLocale() === 'ar' ? 'ممرض/ة' : 'Nurse' }}
+                        {{ app()->getLocale() === 'ar' ? 'تمريض' : 'Nurse' }}
                     </span>
             </a>
             <button id="close-sidebar" class="lg:hidden ms-auto text-slate-400 hover:text-white">
@@ -243,7 +243,7 @@
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-800">@yield('page-title', app()->getLocale() === 'ar' ? 'لوحة تحكم الممرض/ة' : 'Nurse Dashboard')</h1>
+                    <h1 class="text-xl font-bold text-slate-800">@yield('page-title', app()->getLocale() === 'ar' ? 'لوحة تحكم التمريض' : 'Nurse Dashboard')</h1>
                     @hasSection('page-description')
                         <p class="text-sm text-slate-500">@yield('page-description')</p>
                     @endif
@@ -253,7 +253,7 @@
                 <!-- Nurse Status Badge -->
                 <span class="nurse-badge">
                         <i class="bi bi-heart-pulse text-xs"></i>
-                        {{ app()->getLocale() === 'ar' ? 'ممرض/ة معتمد' : 'Certified Nurse' }}
+                        {{ app()->getLocale() === 'ar' ? 'تمريض معتمد' : 'Certified Nurse' }}
                     </span>
 
                 <!-- Language Toggle -->
