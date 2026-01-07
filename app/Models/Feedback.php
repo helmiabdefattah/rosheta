@@ -23,6 +23,8 @@ class Feedback extends Model
         'reviewed_at' => 'datetime',
     ];
 
+    protected $table = 'feedbacks';
+
     /**
      * Get the client that submitted the feedback.
      */
