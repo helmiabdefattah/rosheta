@@ -29,6 +29,11 @@ class OfferAcceptedNotification extends BaseNotification
 
     protected function getMessage(): string
     {
+        // Ensure relationships are loaded
+        if (!$this->offer->relationLoaded('request')) {
+            $this->offer->load('request.client');
+        }
+        
         $clientName = $this->offer->request->client->name ?? 'Client';
         $price = number_format($this->offer->total_price ?? 0, 2);
         $currency = config('app.currency', 'EGP');
@@ -49,6 +54,11 @@ class OfferAcceptedNotification extends BaseNotification
 
     protected function getFcmData(): array
     {
+        // Ensure relationships are loaded
+        if (!$this->offer->relationLoaded('request')) {
+            $this->offer->load('request.client');
+        }
+        
         return [
             'type' => 'offer_accepted',
             'offer_id' => $this->offer->id,

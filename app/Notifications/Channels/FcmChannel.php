@@ -22,32 +22,58 @@ class FcmChannel
     public function send($notifiable, Notification $notification)
     {
         if (!method_exists($notification, 'toFcm')) {
-            return;
-        }
-
-        $fcmData = $notification->toFcm($notifiable);
-        
-        // Get FCM tokens (web and mobile)
-        $tokens = [];
-        
-        if ($notifiable->fcm_token_web) {
-            $tokens[] = $notifiable->fcm_token_web;
-        }
-        
-        if ($notifiable->fcm_token_mobile) {
-            $tokens[] = $notifiable->fcm_token_mobile;
-        }
-
-        if (empty($tokens)) {
-            Log::info('No FCM tokens found for notifiable: ' . get_class($notifiable) . ' ID: ' . $notifiable->id);
+            Log::info('Notification does not have toFcm method', [
+                'notification' => get_class($notification),
+            ]);
             return;
         }
 
         try {
+            $fcmData = $notification->toFcm($notifiable);
+            
+            // Validate FCM data structure
+            if (!isset($fcmData['title']) || !isset($fcmData['body'])) {
+                Log::warning('FCM data missing title or body', [
+                    'notification' => get_class($notification),
+                    'notifiable' => get_class($notifiable) . ' ID: ' . $notifiable->id,
+                    'fcm_data' => $fcmData,
+                ]);
+            }
+            
+            // Get FCM tokens (web and mobile)
+            $tokens = [];
+            
+            if ($notifiable->fcm_token_web) {
+                $tokens[] = $notifiable->fcm_token_web;
+            }
+            
+            if ($notifiable->fcm_token_mobile) {
+                $tokens[] = $notifiable->fcm_token_mobile;
+            }
+
+            if (empty($tokens)) {
+                Log::info('No FCM tokens found for notifiable', [
+                    'notifiable_type' => get_class($notifiable),
+                    'notifiable_id' => $notifiable->id,
+                    'notification' => get_class($notification),
+                ]);
+                return;
+            }
+
+            Log::info('Attempting to send FCM notification', [
+                'notification' => get_class($notification),
+                'notifiable' => get_class($notifiable) . ' ID: ' . $notifiable->id,
+                'token_count' => count($tokens),
+                'title' => $fcmData['title'] ?? 'N/A',
+            ]);
+
             $messaging = $this->getMessaging();
             
             if (!$messaging) {
-                Log::error('Failed to initialize Firebase Messaging. Check service account credentials.');
+                Log::error('Failed to initialize Firebase Messaging. Check service account credentials.', [
+                    'notification' => get_class($notification),
+                    'notifiable' => get_class($notifiable) . ' ID: ' . $notifiable->id,
+                ]);
                 return;
             }
 
@@ -56,8 +82,10 @@ class FcmChannel
                 $this->sendToToken($messaging, $token, $fcmData);
             }
         } catch (\Exception $e) {
-            Log::error('FCM notification exception: ' . $e->getMessage(), [
+            Log::error('FCM notification exception', [
+                'notification' => get_class($notification),
                 'notifiable' => get_class($notifiable) . ' ID: ' . $notifiable->id,
+                'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
         }
@@ -73,8 +101,26 @@ class FcmChannel
         try {
             $serviceAccountPath = config('services.fcm.service_account_path');
             
-            if (!$serviceAccountPath || !file_exists($serviceAccountPath)) {
-                Log::error('Firebase service account file not found: ' . $serviceAccountPath);
+            // Ensure we have an absolute path
+            if ($serviceAccountPath) {
+                // If path is relative (doesn't start with / or drive letter), make it absolute
+                if (!str_starts_with($serviceAccountPath, '/') && !preg_match('/^[A-Za-z]:/', $serviceAccountPath)) {
+                    // Remove 'storage/' prefix if present and use storage_path()
+                    $serviceAccountPath = str_replace('storage/', '', $serviceAccountPath);
+                    $serviceAccountPath = storage_path($serviceAccountPath);
+                }
+            } else {
+                // Fallback to default path
+                $serviceAccountPath = storage_path('app/firebase-service-account.json');
+            }
+            
+            if (!file_exists($serviceAccountPath)) {
+                Log::error('Firebase service account file not found', [
+                    'configured_path' => config('services.fcm.service_account_path'),
+                    'resolved_path' => $serviceAccountPath,
+                    'storage_path' => storage_path('app/firebase-service-account.json'),
+                    'file_exists_default' => file_exists(storage_path('app/firebase-service-account.json')),
+                ]);
                 return null;
             }
 
@@ -82,7 +128,11 @@ class FcmChannel
             
             return $factory->createMessaging();
         } catch (\Exception $e) {
-            Log::error('Failed to initialize Firebase: ' . $e->getMessage());
+            Log::error('Failed to initialize Firebase', [
+                'error' => $e->getMessage(),
+                'path' => $serviceAccountPath ?? 'not set',
+                'trace' => $e->getTraceAsString(),
+            ]);
             return null;
         }
     }

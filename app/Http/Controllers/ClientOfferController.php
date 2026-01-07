@@ -204,7 +204,21 @@ class ClientOfferController extends Controller
                 
                 // Notify the offer creator (pharmacy/lab owner) about acceptance
                 if ($offer->user) {
-                    $offer->user->notify(new \App\Notifications\OfferAcceptedNotification($offer));
+                    try {
+                        $offer->user->notify(new \App\Notifications\OfferAcceptedNotification($offer));
+                        \Log::info('OfferAcceptedNotification dispatched', [
+                            'offer_id' => $offer->id,
+                            'user_id' => $offer->user->id,
+                            'user_fcm_web' => !empty($offer->user->fcm_token_web),
+                            'user_fcm_mobile' => !empty($offer->user->fcm_token_mobile),
+                        ]);
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to dispatch OfferAcceptedNotification', [
+                            'offer_id' => $offer->id,
+                            'user_id' => $offer->user->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
                 }
             });
 

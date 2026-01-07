@@ -163,7 +163,21 @@ class OfferController extends Controller
             
             // Notify the client about the new offer
             if ($offer->request->client) {
-                $offer->request->client->notify(new \App\Notifications\OfferCreatedNotification($offer));
+                try {
+                    $offer->request->client->notify(new \App\Notifications\OfferCreatedNotification($offer));
+                    \Log::info('OfferCreatedNotification dispatched', [
+                        'offer_id' => $offer->id,
+                        'client_id' => $offer->request->client->id,
+                        'client_fcm_web' => !empty($offer->request->client->fcm_token_web),
+                        'client_fcm_mobile' => !empty($offer->request->client->fcm_token_mobile),
+                    ]);
+                } catch (\Exception $e) {
+                    \Log::error('Failed to dispatch OfferCreatedNotification', [
+                        'offer_id' => $offer->id,
+                        'client_id' => $offer->request->client->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
 
             foreach ($request->offer_lines as $line) {

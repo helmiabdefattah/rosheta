@@ -25,6 +25,11 @@ class OfferCreatedNotification extends BaseNotification
 
     protected function getMessage(): string
     {
+        // Ensure relationships are loaded
+        if (!$this->offer->relationLoaded('pharmacy') && !$this->offer->relationLoaded('laboratory')) {
+            $this->offer->load(['pharmacy', 'laboratory']);
+        }
+        
         $providerName = $this->offer->provider_name ?? 'Provider';
         $price = number_format($this->offer->total_price ?? 0, 2);
         
@@ -44,11 +49,16 @@ class OfferCreatedNotification extends BaseNotification
 
     protected function getFcmData(): array
     {
+        // Ensure relationships are loaded
+        if (!$this->offer->relationLoaded('pharmacy') && !$this->offer->relationLoaded('laboratory')) {
+            $this->offer->load(['pharmacy', 'laboratory']);
+        }
+        
         return [
             'type' => 'offer_created',
             'offer_id' => $this->offer->id,
             'request_id' => $this->offer->client_request_id,
-            'provider_name' => $this->offer->provider_name,
+            'provider_name' => $this->offer->provider_name ?? 'Provider',
             'total_price' => $this->offer->total_price,
             'action' => 'view_offer',
         ];
@@ -69,6 +79,11 @@ class OfferCreatedNotification extends BaseNotification
 
     public function toMail($notifiable): MailMessage
     {
+        // Ensure relationships are loaded
+        if (!$this->offer->relationLoaded('pharmacy') && !$this->offer->relationLoaded('laboratory')) {
+            $this->offer->load(['pharmacy', 'laboratory']);
+        }
+        
         $providerName = $this->offer->provider_name ?? 'Provider';
         $price = number_format($this->offer->total_price ?? 0, 2);
         $currency = config('app.currency', 'EGP');
