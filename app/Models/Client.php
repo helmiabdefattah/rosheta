@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Client extends Authenticatable
 {
@@ -46,8 +47,23 @@ class Client extends Authenticatable
         return $this->belongsTo(InsuranceCompany::class);
     }
 
+<<<<<<< HEAD
     public function feedbacks()
     {
         return $this->hasMany(Feedback::class);
+=======
+   
+    protected static function booted(): void
+    {
+        static::created(function (self $client) {
+            // Award welcome points (once)
+            \App\Models\BonusPoint::awardUnique(
+                clientId: (int) $client->id,
+                sourceType: 'welcome',
+                sourceId: 0,
+                points: 50
+            );
+        });
+>>>>>>> 0f3f74b14eefece7dd2cbf192f679aca4d9b0f6d
     }
 }

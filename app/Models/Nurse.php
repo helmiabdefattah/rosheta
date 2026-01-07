@@ -14,7 +14,7 @@ class Nurse extends Model
     protected $table = 'nurses';
 
     protected $fillable = [
-        'client_id',
+        'user_id',
         'gender',
         'date_of_birth',
         'address',
@@ -36,9 +36,9 @@ class Nurse extends Model
         'skills' => 'array',
     ];
 
-    public function client(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(User::class);
     }
 
     // Add these relationships

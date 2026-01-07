@@ -27,6 +27,25 @@ class Order extends Model
         'total_price' => 'decimal:2',
     ];
 
+    protected static function booted(): void
+    {
+        static::updated(function (self $order) {
+            // When an order becomes paid, award points equal to total_price (integer points)
+            if ($order->isDirty('payed') && (bool)$order->payed === true) {
+                $clientId = (int) ($order->request?->client_id ?? 0);
+                $points = (int) round((float) $order->total_price);
+                if ($clientId > 0 && $points > 0) {
+                    \App\Models\BonusPoint::awardUnique(
+                        clientId: $clientId,
+                        sourceType: 'order',
+                        sourceId: (int) $order->id,
+                        points: $points
+                    );
+                }
+            }
+        });
+    }
+
     public function request()
     {
         return $this->belongsTo(ClientRequest::class, 'client_request_id');

@@ -24,6 +24,16 @@
 						<div class="mb-1">
 							<strong>{{ __('Visits') }}:</strong> {{ $r->visits_count }} / {{ $r->visit_frequency }}
 						</div>
+						@if(!empty($r->preferred_gender))
+							<div class="mb-1">
+								<strong>{{ app()->getLocale() === 'ar' ? 'تفضيل النوع' : 'Preferred gender' }}:</strong>
+								@switch($r->preferred_gender)
+									@case('male') {{ app()->getLocale() === 'ar' ? 'ذكر' : 'Male' }} @break
+									@case('female') {{ app()->getLocale() === 'ar' ? 'أنثى' : 'Female' }} @break
+									@default -
+								@endswitch
+							</div>
+						@endif
 						@if($r->address)
 							<div class="mb-1">
 								<strong>{{ __('Address') }}:</strong> {{ $r->address->address }}
@@ -54,11 +64,31 @@
 								<div class="flex items-start justify-between">
 									<div>
 										<div class="font-medium">
-											{{ $offer->nurse?->client?->name ?? (app()->getLocale() === 'ar' ? 'ممرض/ـة' : 'Nurse') }}
+											{{ $offer->nurse?->user?->name ?? (app()->getLocale() === 'ar' ? 'ممرض/ـة' : 'Nurse') }}
 										</div>
 										<div class="text-sm text-slate-600">
 											<strong>{{ app()->getLocale() === 'ar' ? 'السعر' : 'Price' }}:</strong>
 											{{ number_format($offer->price, 2) }} {{ app()->getLocale() === 'ar' ? 'ج.م' : 'EGP' }}
+										</div>
+										@php
+											$periodMap = [
+												'daily' => app()->getLocale() === 'ar' ? 'يوميًا' : 'Daily',
+												'every_two_days' => app()->getLocale() === 'ar' ? 'كل يومين' : 'Every two days',
+												'once_weekly' => app()->getLocale() === 'ar' ? 'مرة أسبوعيًا' : 'Once weekly',
+												'twice_weekly' => app()->getLocale() === 'ar' ? 'مرتان أسبوعيًا' : 'Twice weekly',
+											];
+										@endphp
+										<div class="text-sm text-slate-600 mt-1">
+											<strong>{{ app()->getLocale() === 'ar' ? 'الزيارة' : 'Visit' }}:</strong>
+											<span class="inline-block">
+												{{ $periodMap[$offer->visit_period] ?? '-' }}
+											</span>
+											<span class="inline-block">
+												@ {{ $offer->visit_start_time ? substr($offer->visit_start_time, 0, 5) : '-' }}
+											</span>
+											<span class="inline-block">
+												( {{ $offer->visit_duration ? $offer->visit_duration . ' ' . (app()->getLocale() === 'ar' ? 'ساعة' : 'hrs') : '-' }} )
+											</span>
 										</div>
 									</div>
 									<div class="flex items-center gap-2">
@@ -90,21 +120,21 @@
 											<button type="button" class="text-slate-500 hover:text-slate-700" data-modal-close="{{ $modalId }}">&times;</button>
 										</div>
 										<div class="p-4 space-y-3">
-											<div class="flex items-center gap-3">
-												@if($offer->nurse?->client?->avatar)
-													<img src="{{ Storage::url($offer->nurse->client->avatar) }}" class="w-12 h-12 rounded-full object-cover border" alt="avatar">
-												@else
-													<div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg text-gray-600">
-														{{ strtoupper(mb_substr($offer->nurse?->client?->name ?? 'N',0,1)) }}
-													</div>
-												@endif
-												<div>
-													<div class="font-medium">{{ $offer->nurse?->client?->name ?? '-' }}</div>
-													<div class="text-sm text-slate-600">
-														{{ $offer->nurse?->client?->email ?? $offer->nurse?->client?->phone_number }}
-													</div>
-												</div>
-											</div>
+                                            <div class="flex items-center gap-3">
+                                                @if($offer->nurse?->user?->hasMedia('avatar'))
+                                                    <img src="{{ $offer->nurse->user->getFirstMediaUrl('avatar') }}" class="w-12 h-12 rounded-full object-cover border" alt="avatar">
+                                                @else
+                                                    <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg text-gray-600">
+                                                        {{ strtoupper(mb_substr($offer->nurse?->user?->name ?? 'N', 0, 1)) }}
+                                                    </div>
+                                                @endif
+                                                <div>
+                                                    <div class="font-medium">{{ $offer->nurse?->user?->name ?? '-' }}</div>
+                                                    <div class="text-sm text-slate-600">
+                                                        {{ $offer->nurse?->user?->email ?? $offer->nurse?->user?->phone_number }}
+                                                    </div>
+                                                </div>
+                                            </div>
 											<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
 												<div>
 													<div class="text-slate-500">{{ app()->getLocale() === 'ar' ? 'النوع' : 'Gender' }}</div>
@@ -166,6 +196,26 @@
 													<div class="font-medium">
 														@php $skills = (array)($offer->nurse?->skills ?? []); @endphp
 														{{ empty($skills) ? '-' : implode('، ', $skills) }}
+													</div>
+												</div>
+											</div>
+											<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+												<div>
+													<div class="text-slate-500">{{ app()->getLocale() === 'ar' ? 'دورية الزيارة' : 'Visit Period' }}</div>
+													<div class="font-medium">
+														{{ $periodMap[$offer->visit_period] ?? '-' }}
+													</div>
+												</div>
+												<div>
+													<div class="text-slate-500">{{ app()->getLocale() === 'ar' ? 'وقت البدء' : 'Start Time' }}</div>
+													<div class="font-medium">
+														{{ $offer->visit_start_time ? substr($offer->visit_start_time, 0, 5) : '-' }}
+													</div>
+												</div>
+												<div>
+													<div class="text-slate-500">{{ app()->getLocale() === 'ar' ? 'مدة الزيارة' : 'Visit Duration' }}</div>
+													<div class="font-medium">
+														{{ $offer->visit_duration ? $offer->visit_duration . ' ' . (app()->getLocale() === 'ar' ? 'ساعة' : 'hrs') : '-' }}
 													</div>
 												</div>
 											</div>

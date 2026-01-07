@@ -9,11 +9,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasMedia
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, InteractsWithMedia;
 
     /**
      * The attributes that are mass assignable.
@@ -23,6 +25,7 @@ class User extends Authenticatable implements FilamentUser
     protected $fillable = [
         'name',
         'email',
+        'phone_number',
         'password',
         'pharmacy_id',
         'laboratory_id',
@@ -69,11 +72,11 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
-     * The nurse this user belongs to.
+     * The nurse profile associated with this user.
      */
-    public function nurse(): BelongsTo
+    public function nurse(): HasOne
     {
-        return $this->belongsTo(Nurse::class);
+        return $this->hasOne(Nurse::class, 'user_id');
     }
 
     public function canAccessPanel(Panel $panel): bool
@@ -83,6 +86,8 @@ class User extends Authenticatable implements FilamentUser
 
     public function getIsAdminAttribute(): bool
     {
-        return $this->laboratory_id === null && $this->pharmacy_id === null && $this->nurse_id === null;
+        return $this->laboratory_id === null
+            && $this->pharmacy_id === null
+            && !$this->nurse()->exists();
     }
 }

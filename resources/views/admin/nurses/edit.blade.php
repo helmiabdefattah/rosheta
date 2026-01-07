@@ -9,29 +9,31 @@
 	@method('PUT')
 
 	<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-		<h3 class="text-base font-semibold mb-4">{{ app()->getLocale() === 'ar' ? 'بيانات الحساب' : 'Account Info (Client)' }}</h3>
+		<h3 class="text-base font-semibold mb-4">{{ app()->getLocale() === 'ar' ? 'بيانات الحساب' : 'Account Info (user)' }}</h3>
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'الاسم' : 'Name' }}</label>
-				<input name="name" value="{{ old('name', $nurse->client->name) }}" class="w-full border border-gray-300 rounded-lg p-2" required>
+				<input name="name" value="{{ old('name', $nurse->user->name) }}" class="w-full border border-gray-300 rounded-lg p-2" required>
 				@error('name') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
 			</div>
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'الهاتف' : 'Phone Number' }}</label>
-				<input name="phone_number" value="{{ old('phone_number', $nurse->client->phone_number) }}" class="w-full border border-gray-300 rounded-lg p-2" required>
+				<input name="phone_number" value="{{ old('phone_number', $nurse->user->phone_number) }}" class="w-full border border-gray-300 rounded-lg p-2" required>
 				@error('phone_number') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
 			</div>
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'البريد الإلكتروني (اختياري)' : 'Email (optional)' }}</label>
-				<input type="email" name="email" value="{{ old('email', $nurse->client->email) }}" class="w-full border border-gray-300 rounded-lg p-2">
+				<input type="email" name="email" value="{{ old('email', $nurse->user->email) }}" class="w-full border border-gray-300 rounded-lg p-2">
 				@error('email') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
 			</div>
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'الصورة' : 'Avatar' }}</label>
 				<input type="file" name="avatar" accept="image/*" class="w-full border border-gray-300 rounded-lg p-2">
-				@if($nurse->client->avatar)
-					<img src="{{ Storage::url($nurse->client->avatar) }}" alt="avatar" class="h-12 w-12 rounded-full mt-2 object-cover">
-				@endif
+                @if($nurse->user->hasMedia('avatar'))
+                    <img src="{{ $nurse->user->getFirstMediaUrl('avatar') }}"
+                         alt="avatar"
+                         class="h-12 w-12 rounded-full mt-2 object-cover">
+                @endif
 				@error('avatar') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
 			</div>
 		</div>
@@ -68,7 +70,7 @@
 				<div class="relative">
 					<select name="area_ids[]" multiple class="w-full border border-gray-300 rounded-lg p-2 tags-multiselect" data-placeholder="{{ app()->getLocale() === 'ar' ? 'اختر منطقة/مناطق' : 'Select area(s)' }}">
 						@foreach($areas as $area)
-							@php 
+							@php
 								// Get selected areas from old input or from nurse's area_ids
 								$selected = in_array($area->id, (array) old('area_ids', $nurse->area_ids ?? []));
 							@endphp
@@ -206,7 +208,7 @@
 <script>
 	$(function () {
 		const isRTL = @json(app()->getLocale() === 'ar');
-		
+
 		$('.tags-multiselect').select2({
 			width: '100%',
 			placeholder: @json(app()->getLocale() === 'ar' ? 'اختر منطقة/مناطق' : 'Select area(s)'),
@@ -223,7 +225,7 @@
 				return $('<span class="selected-tag">' + text + '</span>');
 			}
 		});
-		
+
 		// Initialize with previously selected values
 		@php
 			// Get selected area IDs from old input or from nurse
@@ -232,7 +234,7 @@
 				$selectedAreaIds = (array) $selectedAreaIds;
 			}
 		@endphp
-		
+
 		const selectedAreaIds = @json($selectedAreaIds);
 		$('.tags-multiselect').val(selectedAreaIds).trigger('change');
 	});

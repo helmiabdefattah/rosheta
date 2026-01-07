@@ -18,26 +18,30 @@
 	<div class="bg-white rounded-lg shadow p-6">
 		<div class="flex items-start gap-6">
 			<div class="shrink-0">
-				@if($nurse->client && $nurse->client->avatar)
-					<img src="{{ Storage::url($nurse->client->avatar) }}" alt="Avatar" class="w-28 h-28 rounded-full object-cover border">
-				@else
-					<div class="w-28 h-28 rounded-full bg-gray-200 flex items-center justify-center text-3xl text-gray-500">
-						<span>{{ strtoupper(mb_substr($nurse->client->name ?? 'N', 0, 1)) }}</span>
-					</div>
-				@endif
-			</div>
+                @if($nurse->user && $nurse->user->hasMedia('avatar'))
+                    <img src="{{ $nurse->user->getFirstMediaUrl('avatar') }}" class="h-10 w-10 rounded-full object-cover border">
+                @else
+                    <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                        {{ strtoupper(mb_substr($nurse->user->name ?? 'N', 0, 1)) }}
+                    </div>
+                @endif
+
+                <td>{{ $nurse->user->name ?? '-' }}</td>
+                <td>{{ $nurse->user->phone_number ?? '-' }}</td>
+
+            </div>
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
 				<div>
 					<div class="text-xs uppercase text-gray-500">{{ app()->getLocale() === 'ar' ? 'الاسم' : 'Name' }}</div>
-					<div class="font-semibold">{{ $nurse->client->name ?? '-' }}</div>
+					<div class="font-semibold">{{ $nurse->user->name ?? '-' }}</div>
 				</div>
 				<div>
 					<div class="text-xs uppercase text-gray-500">{{ app()->getLocale() === 'ar' ? 'الهاتف' : 'Phone' }}</div>
-					<div class="font-semibold">{{ $nurse->client->phone_number ?? '-' }}</div>
+					<div class="font-semibold">{{ $nurse->user->phone_number ?? '-' }}</div>
 				</div>
 				<div>
 					<div class="text-xs uppercase text-gray-500">{{ app()->getLocale() === 'ar' ? 'البريد الإلكتروني' : 'Email' }}</div>
-					<div class="font-semibold">{{ $nurse->client->email ?? '-' }}</div>
+					<div class="font-semibold">{{ $nurse->user->email ?? '-' }}</div>
 				</div>
 				<div>
 					<div class="text-xs uppercase text-gray-500">{{ app()->getLocale() === 'ar' ? 'النوع' : 'Gender' }}</div>

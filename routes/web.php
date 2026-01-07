@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\NurseOfferController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\LocaleController;
@@ -38,12 +39,28 @@ Route::post('/admin/logout', [App\Http\Controllers\Auth\LoginController::class, 
 Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
 
-//nurse routes
+Route::prefix('nurse')->name('nurse.')->middleware(['auth'])->group(function () {
+
+    Route::get('offers', [NurseOfferController::class, 'index'])->name('offers.index');
+    Route::get('offers/create', [NurseOfferController::class, 'create'])->name('offers.create');
+    Route::post('offers', [NurseOfferController::class, 'store'])->name('offers.store');
+    Route::get('dashboard', [\App\Http\Controllers\NurseDashboardController::class, 'index'])->name('dashboard');
+    Route::get('offers', [\App\Http\Controllers\NurseOfferController::class, 'index'])->name('offers.index');
+    Route::get('requests', [\App\Http\Controllers\NurseController::class, 'requestsList'])->name('requests.index');
+    Route::get('visits', [\App\Http\Controllers\NurseDashboardController::class, 'index'])->name('visits.index');
+    // Nurse visits actions
+    Route::put('visits/{visit}/status', [\App\Http\Controllers\NurseVisitController::class, 'updateStatus'])->name('visits.update-status');
+    Route::put('visits/{visit}/toggle-paid', [\App\Http\Controllers\NurseVisitController::class, 'togglePaid'])->name('visits.toggle-paid');
+    });
+Route::resource('nurses', App\Http\Controllers\NurseController::class);
+
+// Nurse routes
+Route::middleware('auth')->prefix('nurse')->name('nurse.')->group(function () {
+	Route::resource('offers', \App\Http\Controllers\NurseOfferController::class)->except(['show']);
+});
 // Client Dashboard
 Route::middleware('auth:client')->prefix('client')->name('client.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\ClientDashboardController::class, 'index'])->name('dashboard');
-    Route::get('nurse/dashboard', [\App\Http\Controllers\NurseDashboardController::class, 'index'])->name('nurse.dashboard');
-    Route::resource('nurses', App\Http\Controllers\NurseController::class);
 
     // Test Requests
     Route::get('/test-requests/create/{type}', [App\Http\Controllers\ClientTestRequestController::class, 'create'])->name('test-requests.create');
@@ -54,6 +71,8 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
 
     // Home nurse requests
     Route::get('/nurse-requests', [App\Http\Controllers\ClientNurseRequestController::class, 'index'])->name('nurse-requests.index');
+    Route::get('/nurse-visits', [App\Http\Controllers\ClientNurseRequestController::class, 'visitsList'])->name('nurse-visits.index');
+    Route::post('visits/{visit}/rate', [App\Http\Controllers\ClientNurseRequestController::class, 'rateVisit'])->name('visits.rate');
     Route::get('/nurse-requests/create', [App\Http\Controllers\ClientNurseRequestController::class, 'create'])->name('nurse-requests.create');
     Route::post('/nurse-requests', [App\Http\Controllers\ClientNurseRequestController::class, 'store'])->name('nurse-requests.store');
     Route::get('/nurse-requests/{home_nurse_request}', [App\Http\Controllers\ClientNurseRequestController::class, 'show'])->name('nurse-requests.show');
@@ -126,6 +145,8 @@ Route::put('/admin/laboratories/{laboratory}', [App\Http\Controllers\LaboratoryC
 // Laboratory Dashboard Routes
 Route::middleware('auth')->prefix('laboratory')->name('laboratories.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\LaboratoryDashboardController::class, 'index'])->name('dashboard');
+
+    Route::post('/offers/{offer}/mark-paid', [App\Http\Controllers\LaboratoryOfferController::class, 'markAsPaid'])->name('offers.mark-paid');
 
     // Requests
     Route::get('/requests', [App\Http\Controllers\LaboratoryRequestController::class, 'index'])->name('requests.index');
@@ -220,6 +241,10 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectLaboratoryOwner::class])
     // Medical Test Offers
     Route::get('/medical-test-offers/data', [App\Http\Controllers\Admin\MedicalTestOfferController::class, 'data'])->name('medical-test-offers.data');
     Route::resource('medical-test-offers', App\Http\Controllers\Admin\MedicalTestOfferController::class);
+
+    // Bonus Points
+    Route::get('/bonus-points', [App\Http\Controllers\Admin\BonusPointController::class, 'index'])->name('bonus-points.index');
 });
+// Add this after your admin routes or create a separate nurse group
 
 

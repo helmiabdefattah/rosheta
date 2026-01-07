@@ -6,6 +6,8 @@ use App\Models\ClientAddress;
 use App\Models\HomeNurseRequest;
 use App\Models\NurseOffer;
 use App\Models\Area;
+use App\Models\NurseVisit;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,36 +17,34 @@ class ClientNurseRequestController extends Controller
 	/**
 	 * List client's home nurse requests.
 	 */
-	public function index()
-	{
-		$client = Auth::guard('client')->user();
-		abort_unless($client, 403);
+    public function index()
+    {
+        $client = Auth::guard('client')->user();
+        abort_unless($client, 403);
 
-		$requests = HomeNurseRequest::with(['address', 'nurse', 'offers.nurse.client'])
-			->where('client_id', $client->id)
-			->orderByDesc('created_at')
-			->paginate(10);
+        $requests = HomeNurseRequest::with([
+            'address.area.city.governorate',
+            'offers.nurse.user'  // <--- this gives you the nurse data and user info
+        ])
+            ->where('client_id', $client->id)
+            ->orderByDesc('created_at')
+            ->paginate(10);
 
-		$allAreaIds = collect($requests->items())
-			->flatMap(function ($req) {
-				return $req->offers->flatMap(function ($offer) {
-					$ids = $offer->nurse?->area_ids ?? [];
-					return is_array($ids) ? $ids : [];
-				});
-			})
-			->filter()
-			->unique()
-			->values();
+        $allAreaIds = collect($requests->items())
+            ->flatMap(fn($req) => $req->offers->flatMap(fn($offer) => $offer->nurse?->area_ids ?? []))
+            ->filter()
+            ->unique()
+            ->values();
 
-		$areaMap = $allAreaIds->isNotEmpty()
-			? Area::with('city.governorate')->whereIn('id', $allAreaIds)->get()->keyBy('id')
-			: collect();
+        $areaMap = $allAreaIds->isNotEmpty()
+            ? Area::with('city.governorate')->whereIn('id', $allAreaIds)->get()->keyBy('id')
+            : collect();
 
-		return view('client.nurse-requests.index', [
-			'requests' => $requests,
-			'areaMap' => $areaMap,
-		]);
-	}
+        return view('client.nurse-requests.index', [
+            'requests' => $requests,
+            'areaMap' => $areaMap,
+        ]);
+    }
 
 	/**
 	 * Show create form.
@@ -70,6 +70,7 @@ class ClientNurseRequestController extends Controller
 
 		$validated = $request->validate([
 			'service_type' => 'required|string|max:255',
+			'preferred_gender' => 'nullable|in:male,female',
 			'medical_notes' => 'nullable|string|max:2000',
 			'address_id' => 'nullable|exists:client_addresses,id',
 			'visits_count' => 'required|integer|min:1|max:60',
@@ -85,6 +86,7 @@ class ClientNurseRequestController extends Controller
 			'client_id' => $client->id,
 			'address_id' => $validated['address_id'] ?? null,
 			'service_type' => $validated['service_type'],
+			'preferred_gender' => $validated['preferred_gender'] ?? null,
 			'medical_notes' => $validated['medical_notes'] ?? null,
 			'visits_count' => $validated['visits_count'],
             'visit_frequency' => $validated['visit_frequency'],
@@ -143,6 +145,7 @@ class ClientNurseRequestController extends Controller
 
 		$validated = $request->validate([
 			'service_type' => 'required|string|max:255',
+			'preferred_gender' => 'nullable|in:male,female',
 			'medical_notes' => 'nullable|string|max:2000',
 			'address_id' => 'nullable|exists:client_addresses,id',
 			'visits_count' => 'required|integer|min:1|max:60',
@@ -166,6 +169,7 @@ class ClientNurseRequestController extends Controller
 		$home_nurse_request->update([
 			'address_id' => $validated['address_id'] ?? null,
 			'service_type' => $validated['service_type'],
+			'preferred_gender' => $validated['preferred_gender'] ?? null,
 			'medical_notes' => $validated['medical_notes'] ?? null,
 			'visits_count' => $validated['visits_count'],
 			'visit_frequency' => $validated['visit_frequency'],
@@ -189,33 +193,44 @@ class ClientNurseRequestController extends Controller
 	/**
 	 * Accept a nurse offer.
 	 */
-	public function acceptOffer(NurseOffer $nurse_offer)
-	{
-		$client = Auth::guard('client')->user();
-		abort_unless($client && $nurse_offer->request && $nurse_offer->request->client_id === $client->id, 403);
+    public function acceptOffer(NurseOffer $nurse_offer)
+    {
+        $client = Auth::guard('client')->user();
+        abort_unless($client && $nurse_offer->request && $nurse_offer->request->client_id === $client->id, 403);
 
-		if ($nurse_offer->status === 'accepted') {
-			return back()->with('success', __('Offer already accepted.'));
-		}
+        if ($nurse_offer->status === 'accepted') {
+            return back()->with('success', __('Offer already accepted.'));
+        }
 
-		DB::transaction(function () use ($nurse_offer) {
-			// Reject other offers for the same request
-			NurseOffer::where('home_nurse_request_id', $nurse_offer->home_nurse_request_id)
-				->where('id', '!=', $nurse_offer->id)
-				->update(['status' => 'rejected']);
+        DB::transaction(function () use ($nurse_offer) {
+            // Reject other offers for the same request
+            NurseOffer::where('home_nurse_request_id', $nurse_offer->home_nurse_request_id)
+                ->where('id', '!=', $nurse_offer->id)
+                ->update(['status' => 'rejected']);
 
-			// Accept this one
-			$nurse_offer->update(['status' => 'accepted']);
+            // Accept this one
+            $nurse_offer->update(['status' => 'accepted']);
 
-			// Link nurse to request and update scheduled visits
-			$req = $nurse_offer->request()->with('visits')->first();
-			$req->update(['nurse_id' => $nurse_offer->nurse_id, 'status' => 'scheduled']);
-			$req->visits()->where('status', 'scheduled')->whereNull('nurse_id')->update(['nurse_id' => $nurse_offer->nurse_id]);
-		});
+            // Link nurse to request
+            $req = $nurse_offer->request()->with('visits')->first();
+            $req->update([
+                'nurse_id' => $nurse_offer->nurse_id,
+                'status' => 'scheduled',
+            ]);
 
-		return back()->with('success', __('Offer accepted successfully.'));
-	}
+            // Assign nurse to any unassigned scheduled visits
+            $req->visits()->where('status', 'scheduled')->whereNull('nurse_id')
+                ->update([
+                    'nurse_id' => $nurse_offer->nurse_id,
+                    'nurse_offer_id' => $nurse_offer->id,
+                ]);
 
+            // Finally: schedule visits for this offer if not already created
+            $nurse_offer->scheduleVisits();
+        });
+
+        return back()->with('success', __('Offer accepted successfully.'));
+    }
 	/**
 	 * Reject a nurse offer.
 	 */
@@ -232,6 +247,50 @@ class ClientNurseRequestController extends Controller
 
 		return back()->with('success', __('Offer rejected.'));
 	}
+    public function visitsList()
+    {
+        // Get the currently logged-in client
+        $client = Auth::guard('client')->user();
+        abort_unless($client, 403);
+
+        // Fetch visits related to this client's requests
+        $visits = NurseVisit::with(['request', 'request.client', 'nurse.user','review','offer'])
+            ->whereHas('request', function ($q) use ($client) {
+                $q->where('client_id', $client->id);
+            })
+            ->orderByDesc('visit_datetime')
+            ->paginate(10); // You can adjust pagination as needed
+
+        return view('client.visits.index', [
+            'visits' => $visits,
+        ]);
+    }
+    public function rateVisit(Request $request, NurseVisit $visit)
+    {
+        $client = Auth::guard('client')->user();
+        abort_unless($client && $visit->request && $visit->request->client_id === $client->id, 403);
+
+        $data = $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:500',
+        ]);
+
+        // Create review for this visit (or update if already exists)
+        $review = Review::updateOrCreate(
+            [
+                'reviewable_type' => NurseVisit::class,
+                'reviewable_id' => $visit->id,
+                'client_id' => $client->id,
+            ],
+            [
+                'offer_id' => $visit->offer_id,
+                'rating' => $data['rating'],
+                'comment' => $data['comment'] ?? null,
+            ]
+        );
+
+        return back()->with('success', __('Rating submitted successfully.'));
+    }
 }
 
 
