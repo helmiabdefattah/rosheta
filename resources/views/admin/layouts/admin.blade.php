@@ -92,6 +92,7 @@
         .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-closed-ltr { transform: translateX(-100%); }
         .sidebar-closed-rtl { transform: translateX(100%); }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
 <body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-hidden">
@@ -231,24 +232,18 @@
                 </a>
             </nav>
 
-            <div class="border-t border-slate-800 p-4 bg-black/10">
-                <div class="flex items-center gap-3 mb-3">
-                    <img src="https://ui-avatars.com/api/?name={{ auth()->user()->name }}&background=2dd4bf&color=fff" class="w-10 h-10 rounded-full border-2 border-slate-700">
+            <a href="{{ route('admin.users.edit', auth()->id()) }}" class="border-t border-slate-800 p-4 bg-black/10 block hover:bg-black/20 transition-colors">
+                <div class="flex items-center gap-3">
+                    <img src="{{ auth()->user()->getFirstMediaUrl('profile_image') ?: 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&background=2dd4bf&color=fff' }}" 
+                         class="w-10 h-10 rounded-full border-2 border-slate-700 object-cover">
                     <div class="flex-1 overflow-hidden">
                         <p class="text-sm font-semibold text-white truncate">{{ auth()->user()->name }}</p>
                         <p class="text-xs text-slate-400 truncate">{{ auth()->user()->email }}</p>
                     </div>
                 </div>
+            </a>
 
-                <!-- Language Toggle -->
-                <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
-                   class="flex items-center justify-center gap-2 px-3 py-2 mb-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
-                    </svg>
-                    <span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
-                </a>
-
+            <div class="p-4 bg-black/5">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors" title="Logout">
@@ -261,20 +256,80 @@
 
         <div class="flex-1 flex flex-col h-full bg-gray-100 relative">
 
-            <header class="h-16 bg-white flex items-center justify-between px-6 border-b border-gray-200 lg:hidden">
-                <button id="open-sidebar" class="text-slate-600">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                </button>
-                <span class="font-bold text-slate-800">Mostashfa-on</span>
-                <div class="flex items-center gap-2">
-                    <x-notification-dropdown />
+            <header class="h-16 bg-white flex items-center justify-between px-6 border-b border-gray-200">
+                <div class="flex items-center gap-4">
+                    <button id="open-sidebar" class="lg:hidden text-slate-600">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    <span class="font-bold text-slate-800 hidden lg:block">Mostashfa-on</span>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <!-- Language Toggle -->
                     <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
-                       class="flex items-center gap-1 px-2 py-1 text-sm text-slate-600 hover:text-primary">
+                       class="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
                         </svg>
-                        <span class="text-xs">{{ app()->getLocale() === 'ar' ? 'EN' : 'AR' }}</span>
+                        <span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
                     </a>
+
+                    <x-notification-dropdown />
+                    
+                    <!-- Profile Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="flex items-center gap-3 focus:outline-none group">
+                            <div class="text-right hidden sm:block">
+                                <p class="text-sm font-bold text-slate-800 leading-none">{{ auth()->user()->name }}</p>
+                                <p class="text-[11px] text-slate-500 mt-1 leading-none uppercase tracking-wider font-semibold">Admin</p>
+                            </div>
+                            <img src="{{ auth()->user()->getFirstMediaUrl('profile_image') ?: 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&background=2dd4bf&color=fff' }}" 
+                                 class="w-10 h-10 rounded-full border-2 border-gray-100 shadow-sm object-cover group-hover:border-primary transition-colors" 
+                                 alt="{{ auth()->user()->name }}">
+                            <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        
+                        <div x-show="open" 
+                             @click.away="open = false" 
+                             x-cloak
+                             class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 origin-top-right transition-all"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 scale-95 translate-y-[-10px]"
+                             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                             x-transition:leave-end="opacity-0 scale-95 translate-y-[-10px]">
+                            
+                            <div class="px-4 py-2 border-b border-gray-50 mb-1">
+                                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Account</p>
+                            </div>
+
+                            <a href="{{ route('admin.users.edit', auth()->id()) }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-primary/5 hover:text-primary transition-colors">
+                                <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                    </svg>
+                                </div>
+                                {{ app()->getLocale() === 'ar' ? 'الملف الشخصي' : 'Profile Settings' }}
+                            </a>
+                            
+                            <div class="my-1 border-t border-gray-50"></div>
+                            
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                    <div class="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                        </svg>
+                                    </div>
+                                    {{ app()->getLocale() === 'ar' ? 'تسجيل الخروج' : 'Logout' }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </header>
 
