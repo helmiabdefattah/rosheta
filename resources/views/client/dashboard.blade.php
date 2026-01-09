@@ -57,17 +57,6 @@
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-600">{{ app()->getLocale() === 'ar' ? 'نقاطي المتاحة' : 'My Available Points' }}</p>
-                        <p class="text-2xl font-bold text-slate-900 mt-2">{{ number_format($availableBonusPoints ?? 0) }}</p>
-                    </div>
-                    <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                        <i class="bi bi-star-fill text-amber-500 text-xl"></i>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Recent Activity -->

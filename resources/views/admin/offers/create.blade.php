@@ -451,14 +451,14 @@
             </button>
         </li>
         @if(auth()->user()->is_admin)
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="existing-offers-tab" data-bs-toggle="tab" data-bs-target="#existing-offers" type="button" role="tab" aria-controls="existing-offers" aria-selected="false">
-                {{ app()->getLocale() === 'ar' ? 'العروض الموجودة' : 'Existing Offers' }}
-                @if($existingOffers->count() > 0)
-                    <span class="badge bg-primary ms-2">{{ $existingOffers->count() }}</span>
-                @endif
-            </button>
-        </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="existing-offers-tab" data-bs-toggle="tab" data-bs-target="#existing-offers" type="button" role="tab" aria-controls="existing-offers" aria-selected="false">
+                    {{ app()->getLocale() === 'ar' ? 'العروض الموجودة' : 'Existing Offers' }}
+                    @if($existingOffers->count() > 0)
+                        <span class="badge bg-primary ms-2">{{ $existingOffers->count() }}</span>
+                    @endif
+                </button>
+            </li>
         @endif
     </ul>
 
@@ -467,34 +467,34 @@
         <!-- Create Offer Tab -->
         <div class="tab-pane fade show active" id="create-offer" role="tabpanel" aria-labelledby="create-offer-tab">
             <form id="offerForm" action="{{ route('offers.store') }}" method="POST">
-        @csrf
-        <input type="hidden" name="client_request_id" value="{{ $clientRequest->id }}">
+                @csrf
+                <input type="hidden" name="client_request_id" value="{{ $clientRequest->id }}">
 
-        <!-- Offer Details Card -->
-            <div class="card mb-4 {{ auth()->user()->is_admin || ($clientRequest->client_address_id != null || $clientRequest->insuranceCompany) ? '' : 'd-none' }}">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <span>{{ app()->getLocale() === 'ar' ? 'تفاصيل العرض' : 'Offer Details' }}</span>
+                <!-- Offer Details Card -->
+                <div class="card mb-4 {{ auth()->user()->is_admin || ($clientRequest->client_address_id != null || $clientRequest->insuranceCompany) ? '' : 'd-none' }}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>{{ app()->getLocale() === 'ar' ? 'تفاصيل العرض' : 'Offer Details' }}</span>
 
-                </div>
-                <div class="card-body row g-3">
-                    <!-- Client Request Display (Readonly) -->
-                    <div class="col-md-6 {{ auth()->user()->is_admin ? '' : 'd-none' }}">
-                        <label class="form-label">{{ app()->getLocale() === 'ar' ? 'طلب العميل' : 'Client Request' }}</label>
-                        <div class="readonly-field">
-                            <div class="d-flex justify-content-between align-items-center w-100">
+                    </div>
+                    <div class="card-body row g-3">
+                        <!-- Client Request Display (Readonly) -->
+                        <div class="col-md-6 ">
+                            <label class="form-label">{{ app()->getLocale() === 'ar' ? 'طلب العميل' : 'Client Request' }}</label>
+                            <div class="readonly-field">
+                                <div class="d-flex justify-content-between align-items-center w-100">
                                 <span>
                                     Request #{{ $clientRequest->id }} - {{ $clientRequest->client->name ?? 'N/A' }}
                                 </span>
-                                <span class="badge {{ in_array($clientRequest->type, ['test', 'radiology']) ? 'bg-info' : 'bg-success' }}">
+                                    <span class="badge {{ in_array($clientRequest->type, ['test', 'radiology']) ? 'bg-info' : 'bg-success' }}">
                                     {{ in_array($clientRequest->type, ['test', 'radiology']) ? ucfirst($clientRequest->type) : 'Medicine' }}
                                 </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Pharmacy/Laboratory Selection -->
-                    <div class="col-md-6 {{ auth()->user()->is_admin ? '' : 'd-none' }}">
-                        @if(in_array($clientRequest->type, ['test', 'radiology']))                            <!-- Laboratory Selection for Tests -->
+                        <!-- Pharmacy/Laboratory Selection -->
+                        <div class="col-md-6 ">
+                            @if(in_array($clientRequest->type, ['test', 'radiology']))                            <!-- Laboratory Selection for Tests -->
                             <label for="laboratory_id" class="form-label">{{ app()->getLocale() === 'ar' ? 'المعمل' : 'Laboratory' }} <span class="text-danger">*</span></label>
                             @if(auth()->user()->laboratory_id)
                                 <input type="hidden" name="laboratory_id" value="{{ auth()->user()->laboratory_id }}">
@@ -512,355 +512,372 @@
                             @error('laboratory_id')
                             <div class="text-danger small">{{ $message }}</div>
                             @enderror
-                        @else
-                            <!-- Pharmacy Selection for Medicines -->
-                            <label for="pharmacy_id" class="form-label">{{ app()->getLocale() === 'ar' ? 'الصيدلية' : 'Pharmacy' }} <span class="text-danger">*</span></label>
-                            @if(auth()->user()->pharmacy_id)
-                                <input type="hidden" name="pharmacy_id" value="{{ auth()->user()->pharmacy_id }}">
-                                <div class="readonly-field">
-                                    {{ auth()->user()->pharmacy->name ?? 'N/A' }}
-                                </div>
                             @else
-                                <select name="pharmacy_id" id="pharmacy_id" class="form-select select2" required>
-                                    <option value="">{{ app()->getLocale() === 'ar' ? 'اختر صيدلية' : 'Select a pharmacy' }}</option>
-                                    @foreach($pharmacies as $id => $name)
-                                        <option value="{{ $id }}" {{ old('pharmacy_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
-                                    @endforeach
-                                </select>
+                                <!-- Pharmacy Selection for Medicines -->
+                                <label for="pharmacy_id" class="form-label">{{ app()->getLocale() === 'ar' ? 'الصيدلية' : 'Pharmacy' }} <span class="text-danger">*</span></label>
+                                @if(auth()->user()->pharmacy_id)
+                                    <input type="hidden" name="pharmacy_id" value="{{ auth()->user()->pharmacy_id }}">
+                                    <div class="readonly-field">
+                                        {{ auth()->user()->pharmacy->name ?? 'N/A' }}
+                                    </div>
+                                @else
+                                    <select name="pharmacy_id" id="pharmacy_id" class="form-select select2" required>
+                                        <option value="">{{ app()->getLocale() === 'ar' ? 'اختر صيدلية' : 'Select a pharmacy' }}</option>
+                                        @foreach($pharmacies as $id => $name)
+                                            <option value="{{ $id }}" {{ old('pharmacy_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
+                                        @endforeach
+                                    </select>
+                                @endif
+                                @error('pharmacy_id')
+                                <div class="text-danger small">{{ $message }}</div>
+                                @enderror
                             @endif
-                            @error('pharmacy_id')
-                            <div class="text-danger small">{{ $message }}</div>
-                            @enderror
-                        @endif
-                    </div>
-                    
-                    <!-- Client Insurance Company (Readonly) - Always show for test/radiology requests -->
-                    @if(in_array($clientRequest->type, ['test', 'radiology']))
-                        @php
-                            $insuranceCompany = $clientRequest->insuranceCompany ?? $clientRequest->client->insuranceCompany ?? null;
-                        @endphp
-                        @if($insuranceCompany)
-                            <div class="col-md-6">
-                                <label class="form-label">{{ app()->getLocale() === 'ar' ? 'شركة التأمين' : 'Insurance Company' }}</label>
-                                <div class="readonly-field">
-                                    <div class="d-flex justify-content-between align-items-center w-100">
+                        </div>
+
+                        <!-- Client Insurance Company (Readonly) - Always show for test/radiology requests -->
+                        @if(in_array($clientRequest->type, ['test', 'radiology']))
+                            @php
+                                $insuranceCompany = $clientRequest->insuranceCompany ?? $clientRequest->client->insuranceCompany ?? null;
+                            @endphp
+                            @if($insuranceCompany)
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ app()->getLocale() === 'ar' ? 'شركة التأمين' : 'Insurance Company' }}</label>
+                                    <div class="readonly-field">
+                                        <div class="d-flex justify-content-between align-items-center w-100">
                                         <span>
                                             {{ app()->getLocale() === 'ar' ? ($insuranceCompany->name_ar ?? $insuranceCompany->name) : $insuranceCompany->name }}
                                         </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Insurance Supported Checkbox -->
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ app()->getLocale() === 'ar' ? 'دعم التأمين' : 'Insurance Support' }}</label>
+                                    <div class="form-check mt-2">
+                                        <input
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            name="insurance_supported"
+                                            id="insurance_supported"
+                                            value="1"
+                                            {{ old('insurance_supported') ? 'checked' : '' }}
+                                        >
+                                        <label class="form-check-label" for="insurance_supported">
+                                            {{ app()->getLocale() === 'ar' ? 'نعم، نحن ندعم هذه الشركة' : 'Yes, we support this insurance company' }}
+                                        </label>
+                                    </div>
+                                </div>
+                            @endif
+                        @endif
+
+                            <!-- Client Address (Readonly) -->
+                            <div class="col-md-6">
+                                <label class="form-label">{{ app()->getLocale() === 'ar' ? 'عنوان العميل' : 'Client Address' }}</label>
+                                <div class="readonly-field">
+                                    <div class="d-flex flex-column w-100">
+                                        <span>{{ $clientRequest->address->address ?? 'N/A' }}</span>
+                                        <small class="text-muted">
+                                            {{ $clientRequest->address->city->name ?? '' }}
+                                            @if(!empty($clientRequest->address->area))
+                                                - {{ $clientRequest->address->area->name ?? '' }}
+                                            @endif
+                                        </small>
                                     </div>
                                 </div>
                             </div>
-                            <!-- Insurance Supported Checkbox -->
-                            <div class="col-md-6">
-                                <label class="form-label">{{ app()->getLocale() === 'ar' ? 'دعم التأمين' : 'Insurance Support' }}</label>
-                                <div class="form-check mt-2">
-                                    <input 
-                                        class="form-check-input" 
-                                        type="checkbox" 
-                                        name="insurance_supported" 
-                                        id="insurance_supported" 
-                                        value="1"
-                                        {{ old('insurance_supported') ? 'checked' : '' }}
+                            <!-- Home Visit Options -->
+                                                @if($clientRequest->client_address_id && $clientRequest->type != 'medicine')
+
+                        <div class="col-md-6">
+                                <label class="form-label">{{ app()->getLocale() === 'ar' ? 'زيارة منزلية' : 'Home Visit' }}</label>
+
+                                <div class="form-check">
+                                    <input
+                                        class="form-check-input"
+                                        type="radio"
+                                        name="home_visit_type"
+                                        id="no_home_visit"
+                                        value="no_visit"
+                                        checked="{{ $clientRequest->client_address_id == null ? 'checked' : '' }}"
                                     >
-                                    <label class="form-check-label" for="insurance_supported">
-                                        {{ app()->getLocale() === 'ar' ? 'نعم، نحن ندعم هذه الشركة' : 'Yes, we support this insurance company' }}
+                                    <label class="form-check-label" for="no_home_visit">
+                                        {{ app()->getLocale() === 'ar' ? 'المعمل لا يقدم زيارة منزلية' : 'Lab does not offer home visit' }}
                                     </label>
                                 </div>
-                            </div>
-                        @endif
-                    @endif
 
-                    @if($clientRequest->client_address_id)
-                    <!-- Client Address (Readonly) -->
-                    <div class="col-md-6">
-                        <label class="form-label">{{ app()->getLocale() === 'ar' ? 'عنوان العميل' : 'Client Address' }}</label>
-                        <div class="readonly-field">
-                            <div class="d-flex flex-column w-100">
-                                <span>{{ $clientRequest->address->address ?? 'N/A' }}</span>
-                                <small class="text-muted">
-                                    {{ $clientRequest->address->city->name ?? '' }}
-                                    @if(!empty($clientRequest->address->area))
-                                        - {{ $clientRequest->address->area->name ?? '' }}
-                                    @endif
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Visit Price Input -->
-                        <!-- Home Visit Options -->
-                        <div class="col-md-6">
-                            <label class="form-label">{{ app()->getLocale() === 'ar' ? 'زيارة منزلية' : 'Home Visit' }}</label>
+                                <div class="form-check mt-1">
+                                    <input
+                                        class="form-check-input"
+                                        type="radio"
+                                        name="home_visit_type"
+                                        id="price"
+                                        value="price"
+                                    >
+                                    <label class="form-check-label" for="price">
+                                        {{ app()->getLocale() === 'ar' ? 'إضافة سعر' : 'Add price' }}
+                                    </label>
+                                </div>
 
-                            <div class="form-check">
-                                <input
-                                    class="form-check-input"
-                                    type="radio"
-                                    name="home_visit_type"
-                                    id="no_home_visit"
-                                    value="no_visit"
-                                    checked="{{ $clientRequest->client_address_id == null ? 'checked' : '' }}"
-                                >
-                                <label class="form-check-label" for="no_home_visit">
-                                    {{ app()->getLocale() === 'ar' ? 'المعمل لا يقدم زيارة منزلية' : 'Lab does not offer home visit' }}
+                            </div>
+
+                            <!-- Visit Price Input -->
+                            <div class="col-md-6">
+                                <label for="visit_price" class="form-label">
+                                    {{ app()->getLocale() === 'ar' ? 'سعر الزيارة' : 'Visit Price' }}
                                 </label>
-                            </div>
 
-                            <!-- <div class="form-check mt-1">
-                                <input
-                                    class="form-check-input"
-                                    type="radio"
-                                    name="home_visit_type"
-                                    id="free_home_visit"
-                                    value="free_visit"
-                                >
-                                <label class="form-check-label" for="free_home_visit">
-                                    {{ app()->getLocale() === 'ar' ? 'المعمل يقدم زيارة منزلية مجانية' : 'Lab offers free home visit' }}
+                                <div class="input-group">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        class="form-control text-end"
+                                        id="visit_price"
+                                        name="visit_price"
+                                        value="{{ old('visit_price', '0.00') }}"
+                                        disabled
+                                    >
+                                    <span class="input-group-text">EGP</span>
+                                </div>
+
+                                @error('visit_price')
+                                <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            </div>
+                                                @endif
+
+                    @if($clientRequest->type == 'medicine')
+                            <div class="col-md-6">
+                                <label for="visit_price" class="form-label">
+                                    {{ app()->getLocale() === 'ar' ? 'سعر التوصيل' : 'delivrey Price' }}
                                 </label>
-                            </div> -->
-                            <div class="form-check mt-1">
-                                <input
-                                    class="form-check-input"
-                                    type="radio"
-                                    name="home_visit_type"
-                                    id="price"
-                                    value="price"
-                                >
-                                <label class="form-check-label" for="free_home_visit">
-                                    {{ app()->getLocale() === 'ar' ? 'إضافة سعر' : 'Add price' }}
-                                </label>
+
+                                <div class="input-group">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        class="form-control text-end"
+                                        id="visit_price"
+                                        name="visit_price"
+                                        value="{{ old('visit_price', '0.00') }}"
+                                        enabled
+                                    >
+                                    <span class="input-group-text">EGP</span>
+                                </div>
+
+                                @error('visit_price')
+                                <div class="text-danger small">{{ $message }}</div>
+                                @enderror
                             </div>
-
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="visit_price" class="form-label">
-                                {{ app()->getLocale() === 'ar' ? 'سعر الزيارة' : 'Visit Price' }}
-                            </label>
-
-                            <div class="input-group">
-                                <input
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    class="form-control text-end"
-                                    id="visit_price"
-                                    name="visit_price"
-                                    value="{{ old('visit_price', '0.00') }}"
-                                >
-                                <span class="input-group-text">EGP</span>
-                            </div>
-
-                            @error('visit_price')
-                            <div class="text-danger small">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                    @endif
-                </div>
-            </div>
-            <!-- New visit scheduling fields -->
-            @if($clientRequest->client_address_id)
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <span>{{ app()->getLocale() === 'ar' ? 'جدولة الزيارة المنزلية' : 'Home Visit Scheduling' }}</span>
-                </div>
-                <div class="card-body row g-3">
-                    <div class="col-md-4">
-                        <label for="visit_period" class="form-label">
-                            {{ app()->getLocale() === 'ar' ? 'دورية الزيارة' : 'Visit Period' }}
-                        </label>
-                        <select name="visit_period" id="visit_period" class="form-select">
-                            <option value="">{{ app()->getLocale() === 'ar' ? 'اختر الدورية' : 'Select period' }}</option>
-                            <option value="daily" {{ old('visit_period') === 'daily' ? 'selected' : '' }}>
-                                {{ app()->getLocale() === 'ar' ? 'يوميًا' : 'Daily' }}
-                            </option>
-                            <option value="every_two_days" {{ old('visit_period') === 'every_two_days' ? 'selected' : '' }}>
-                                {{ app()->getLocale() === 'ar' ? 'كل يومين' : 'Every two days' }}
-                            </option>
-                            <option value="once_weekly" {{ old('visit_period') === 'once_weekly' ? 'selected' : '' }}>
-                                {{ app()->getLocale() === 'ar' ? 'مرة أسبوعيًا' : 'Once weekly' }}
-                            </option>
-                            <option value="twice_weekly" {{ old('visit_period') === 'twice_weekly' ? 'selected' : '' }}>
-                                {{ app()->getLocale() === 'ar' ? 'مرتان أسبوعيًا' : 'Twice weekly' }}
-                            </option>
-                        </select>
-                        @error('visit_period')
-                        <div class="text-danger small">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="col-md-4">
-                        <label for="visit_start_time" class="form-label">
-                            {{ app()->getLocale() === 'ar' ? 'وقت بدء الزيارة' : 'Visit Start Time' }}
-                        </label>
-                        <input
-                            type="time"
-                            id="visit_start_time"
-                            name="visit_start_time"
-                            class="form-control"
-                            value="{{ old('visit_start_time') }}"
-                        >
-                        @error('visit_start_time')
-                        <div class="text-danger small">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="col-md-4">
-                        <label for="visit_duration" class="form-label">
-                            {{ app()->getLocale() === 'ar' ? 'مدة الزيارة (ساعات)' : 'Visit Duration (hours)' }}
-                        </label>
-                        <div class="input-group">
-                            <input
-                                type="number"
-                                min="1"
-                                max="24"
-                                step="1"
-                                id="visit_duration"
-                                name="visit_duration"
-                                class="form-control text-end"
-                                value="{{ old('visit_duration') }}"
-                            >
-                            <span class="input-group-text">{{ app()->getLocale() === 'ar' ? 'ساعة' : 'hrs' }}</span>
-                        </div>
-                        @error('visit_duration')
-                        <div class="text-danger small">{{ $message }}</div>
-                        @enderror
+                            @endif
                     </div>
                 </div>
-            </div>
-            @endif
-        <!-- Request Images Card -->
-        @if(!empty($clientRequest->images))
-            <div class="card mb-4">
-                <div class="card-header">Request Images</div>
-                <div class="card-body">
-                    <div class="image-container mb-3">
-                        <button type="button" class="nav-arrow nav-left" id="prevImage">&lt;</button>
-                        <img id="currentImage"
-                             src="{{ Str::startsWith($clientRequest->images[0] ?? '', ['http://','https://'])
+
+                <!-- New visit scheduling fields - Only show for test/radiology with address -->
+                @if($clientRequest->client_address_id && $clientRequest->type != 'medicine')
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>{{ app()->getLocale() === 'ar' ? 'جدولة الزيارة المنزلية' : 'Home Visit Scheduling' }}</span>
+                        </div>
+                        <div class="card-body row g-3">
+                            <div class="col-md-4">
+                                <label for="visit_period" class="form-label">
+                                    {{ app()->getLocale() === 'ar' ? 'دورية الزيارة' : 'Visit Period' }}
+                                </label>
+                                <select name="visit_period" id="visit_period" class="form-select">
+                                    <option value="">{{ app()->getLocale() === 'ar' ? 'اختر الدورية' : 'Select period' }}</option>
+                                    <option value="daily" {{ old('visit_period') === 'daily' ? 'selected' : '' }}>
+                                        {{ app()->getLocale() === 'ar' ? 'يوميًا' : 'Daily' }}
+                                    </option>
+                                    <option value="every_two_days" {{ old('visit_period') === 'every_two_days' ? 'selected' : '' }}>
+                                        {{ app()->getLocale() === 'ar' ? 'كل يومين' : 'Every two days' }}
+                                    </option>
+                                    <option value="once_weekly" {{ old('visit_period') === 'once_weekly' ? 'selected' : '' }}>
+                                        {{ app()->getLocale() === 'ar' ? 'مرة أسبوعيًا' : 'Once weekly' }}
+                                    </option>
+                                    <option value="twice_weekly" {{ old('visit_period') === 'twice_weekly' ? 'selected' : '' }}>
+                                        {{ app()->getLocale() === 'ar' ? 'مرتان أسبوعيًا' : 'Twice weekly' }}
+                                    </option>
+                                </select>
+                                @error('visit_period')
+                                <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-md-4">
+                                <label for="visit_start_time" class="form-label">
+                                    {{ app()->getLocale() === 'ar' ? 'وقت بدء الزيارة' : 'Visit Start Time' }}
+                                </label>
+                                <input
+                                    type="time"
+                                    id="visit_start_time"
+                                    name="visit_start_time"
+                                    class="form-control"
+                                    value="{{ old('visit_start_time') }}"
+                                >
+                                @error('visit_start_time')
+                                <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-md-4">
+                                <label for="visit_duration" class="form-label">
+                                    {{ app()->getLocale() === 'ar' ? 'مدة الزيارة (ساعات)' : 'Visit Duration (hours)' }}
+                                </label>
+                                <div class="input-group">
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max="24"
+                                        step="1"
+                                        id="visit_duration"
+                                        name="visit_duration"
+                                        class="form-control text-end"
+                                        value="{{ old('visit_duration') }}"
+                                    >
+                                    <span class="input-group-text">{{ app()->getLocale() === 'ar' ? 'ساعة' : 'hrs' }}</span>
+                                </div>
+                                @error('visit_duration')
+                                <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Request Images Card -->
+                @if(!empty($clientRequest->images))
+                    <div class="card mb-4">
+                        <div class="card-header">Request Images</div>
+                        <div class="card-body">
+                            <div class="image-container mb-3">
+                                <button type="button" class="nav-arrow nav-left" id="prevImage">&lt;</button>
+                                <img id="currentImage"
+                                     src="{{ Str::startsWith($clientRequest->images[0] ?? '', ['http://','https://'])
             ? $clientRequest->images[0]
             : 'http://' . $clientRequest->images[0] }}"
-                             alt="Request Image">
-                        <button type="button" class="nav-arrow nav-right" id="nextImage">&gt;</button>
-                    </div>
-                    <div class="d-flex gap-2 overflow-auto" id="thumbnails">
-                        @foreach($clientRequest->images as $index => $image)
-                            <img
-                                src="{{ Str::startsWith($image, ['http://','https://']) ? $image : 'http://' . $image }}"
-                                class="img-thumbnail {{ $index == 0 ? 'thumbnail-selected' : '' }}"
-                                data-index="{{ $index }}"
-                                style="width:75px; cursor:pointer"
-                            >
-                        @endforeach
+                                     alt="Request Image">
+                                <button type="button" class="nav-arrow nav-right" id="nextImage">&gt;</button>
+                            </div>
+                            <div class="d-flex gap-2 overflow-auto" id="thumbnails">
+                                @foreach($clientRequest->images as $index => $image)
+                                    <img
+                                        src="{{ Str::startsWith($image, ['http://','https://']) ? $image : 'http://' . $image }}"
+                                        class="img-thumbnail {{ $index == 0 ? 'thumbnail-selected' : '' }}"
+                                        data-index="{{ $index }}"
+                                        style="width:75px; cursor:pointer"
+                                    >
+                                @endforeach
 
+                            </div>
+                            <div class="text-center mt-2" id="imageCounter">1 / {{ count($clientRequest->images) }}</div>
+                        </div>
                     </div>
-                    <div class="text-center mt-2" id="imageCounter">1 / {{ count($clientRequest->images) }}</div>
-                </div>
-            </div>
-        @endif
+                @endif
 
-        <!-- Client Request Lines Card -->
-        @if($clientRequest->lines->count() > 0)
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <!-- Client Request Lines Card -->
+                @if($clientRequest->lines->count() > 0)
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
                 <span>{{ app()->getLocale() === 'ar' ? 'طلب العميل' : 'Client Request' }} ({{ $clientRequest->lines->count() }})
                 </span>
-                    <button type="button" class="btn btn-success btn-sm" id="addAllLinesBtn">{{ app()->getLocale() === 'ar' ? 'إضافة جميع العناصر إلى العرض' : 'Add All to Offer' }}</button>
-                </div>
-                <div class="card-body table-responsive">
-                    <table class="table table-bordered table-hover">
-                        <thead class="table-light">
-                        @if(in_array($clientRequest->type, ['test', 'radiology']))
-                            <tr>
-                                <th>Test Name (EN)</th>
-                                <th>Test Name (AR)</th>
-                                <th>Description</th>
-                                <th>Conditions</th>
-                                <th>Action</th>
-                            </tr>
-                        @else
-                            <tr>
-                                <th>Medicine</th>
-                                <th>Dosage Form</th>
-                                <th>Quantity</th>
-                                <th>Unit</th>
-                                <th>Action</th>
-                            </tr>
-                        @endif
-                        </thead>
-                        <tbody>
-                        @foreach($clientRequest->lines as $line)
-                            @if(in_array($clientRequest->type, ['test', 'radiology']))
-                                <tr>
-                                    <td>{{ $line->medicalTest->test_name_en ?? 'N/A' }}</td>
-                                    <td>{{ $line->medicalTest->test_name_ar ?? 'N/A' }}</td>
-                                    <td class="small">{{ Str::limit($line->medicalTest->test_description ?? '', 100) }}</td>
-                                    <td class="small">{{ Str::limit($line->medicalTest->conditions ?? '', 100) }}</td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-primary add-line-btn"
-                                                data-type="{{ $clientRequest->type }}"
-                                                data-id="{{ $line->medical_test_id }}"
-                                                data-name-en="{{ $line->medicalTest->test_name_en ?? '' }}"
-                                                data-name-ar="{{ $line->medicalTest->test_name_ar ?? '' }}">
-                                            {{ app()->getLocale() === 'ar' ? 'إضافة إلى العرض' : 'Add to Offer' }}
-                                        </button>
-                                    </td>
-                                </tr>
-                            @else
-                                <tr>
-                                    <td>{{ $line->medicine->name ?? 'N/A' }}</td>
-                                    <td>{{ $line->medicine->dosage_form ?? 'N/A' }}</td>
-                                    <td>{{ $line->quantity }}</td>
-                                    <td>{{ $line->unit }}</td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-primary add-line-btn"
-                                                data-type="medicine"
-                                                data-id="{{ $line->medicine_id }}"
-                                                data-name="{{ $line->medicine->name ?? '' }}"
-                                                data-dosage="{{ $line->medicine->dosage_form ?? '' }}"
-                                                data-quantity="{{ $line->quantity }}"
-                                                data-unit="{{ $line->unit }}"
-                                                data-old-price="{{ $line->medicine->price ?? 0 }}">
-                                            Add to Offer
-                                        </button>
-                                    </td>
-                                </tr>
-                            @endif
-                        @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        @endif
+                            <button type="button" class="btn btn-success btn-sm" id="addAllLinesBtn">{{ app()->getLocale() === 'ar' ? 'إضافة جميع العناصر إلى العرض' : 'Add All to Offer' }}</button>
+                        </div>
+                        <div class="card-body table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                @if(in_array($clientRequest->type, ['test', 'radiology']))
+                                    <tr>
+                                        <th>Test Name (EN)</th>
+                                        <th>Test Name (AR)</th>
+                                        <th>Description</th>
+                                        <th>Conditions</th>
+                                        <th>Action</th>
+                                    </tr>
+                                @else
+                                    <tr>
+                                        <th>Medicine</th>
+                                        <th>Dosage Form</th>
+                                        <th>Quantity</th>
+                                        <th>Unit</th>
+                                        <th>Action</th>
+                                    </tr>
+                                @endif
+                                </thead>
+                                <tbody>
+                                @foreach($clientRequest->lines as $line)
+                                    @if(in_array($clientRequest->type, ['test', 'radiology']))
+                                        <tr>
+                                            <td>{{ $line->medicalTest->test_name_en ?? 'N/A' }}</td>
+                                            <td>{{ $line->medicalTest->test_name_ar ?? 'N/A' }}</td>
+                                            <td class="small">{{ Str::limit($line->medicalTest->test_description ?? '', 100) }}</td>
+                                            <td class="small">{{ Str::limit($line->medicalTest->conditions ?? '', 100) }}</td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-primary add-line-btn"
+                                                        data-type="{{ $clientRequest->type }}"
+                                                        data-id="{{ $line->medical_test_id }}"
+                                                        data-name-en="{{ $line->medicalTest->test_name_en ?? '' }}"
+                                                        data-name-ar="{{ $line->medicalTest->test_name_ar ?? '' }}">
+                                                    {{ app()->getLocale() === 'ar' ? 'إضافة إلى العرض' : 'Add to Offer' }}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @else
+                                        <tr>
+                                            <td>{{ $line->medicine->name ?? 'N/A' }}</td>
+                                            <td>{{ $line->medicine->dosage_form ?? 'N/A' }}</td>
+                                            <td>{{ $line->quantity }}</td>
+                                            <td>{{ $line->unit }}</td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-primary add-line-btn"
+                                                        data-type="medicine"
+                                                        data-id="{{ $line->medicine_id }}"
+                                                        data-name="{{ $line->medicine->name ?? '' }}"
+                                                        data-dosage="{{ $line->medicine->dosage_form ?? '' }}"
+                                                        data-quantity="{{ $line->quantity }}"
+                                                        data-unit="{{ $line->unit }}"
+                                                        data-old-price="{{ $line->medicine->price ?? 0 }}">
+                                                    Add to Offer
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @endif
 
-        <!-- Offer Lines Card -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
+                <!-- Offer Lines Card -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                 <span id="offerLinesTitle">
                    {{ app()->getLocale() === 'ar' ? 'عناصر العرض' : 'Offer Items' }}
 
                 </span>
-                <button type="button" class="btn btn-primary btn-sm" id="addOfferLineBtn">{{ app()->getLocale() === 'ar' ? 'إضافة عنصر' : 'Add Line' }}</button>
-            </div>
-            <div class="card-body" id="offerLinesContainer">
-                <div class="text-center text-muted" id="noOfferLinesMsg">{{ app()->getLocale() === 'ar' ? 'لا يوجد عناصر في العرض' : 'No offer lines added yet.' }}</div>
-            </div>
-        </div>
-
-        <!-- Total Price -->
-        <div class="card mb-4">
-            <div class="card-body total-price-container d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">{{ app()->getLocale() === 'ar' ? 'السعر الإجمالي' : 'Total Price' }}</h5>
-                <div class="d-flex align-items-center gap-2">
-                    <input type="text" id="total_price" name="total_price" class="form-control text-end fw-bold" value="0.00" readonly>
-                    <span class="fw-bold">{{ app()->getLocale() === 'ar' ? 'جنيه' : 'EGP' }}</span>
+                        <button type="button" class="btn btn-primary btn-sm" id="addOfferLineBtn">{{ app()->getLocale() === 'ar' ? 'إضافة عنصر' : 'Add Line' }}</button>
+                    </div>
+                    <div class="card-body" id="offerLinesContainer">
+                        <div class="text-center text-muted" id="noOfferLinesMsg">{{ app()->getLocale() === 'ar' ? 'لا يوجد عناصر في العرض' : 'No offer lines added yet.' }}</div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-            <!-- Submit Buttons -->
-            <div class="d-flex justify-content-end gap-2">
-                <a href="{{ url()->previous() }}" class="btn btn-secondary">{{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}</a>
-                <button type="submit" class="btn btn-primary">{{ app()->getLocale() === 'ar' ? 'إنشاء العرض' : 'Create Offer' }}</button>
-            </div>
+                <!-- Total Price -->
+                <div class="card mb-4">
+                    <div class="card-body total-price-container d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ app()->getLocale() === 'ar' ? 'السعر الإجمالي' : 'Total Price' }}</h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="text" id="total_price" name="total_price" class="form-control text-end fw-bold" value="0.00" readonly>
+                            <span class="fw-bold">{{ app()->getLocale() === 'ar' ? 'جنيه' : 'EGP' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ url()->previous() }}" class="btn btn-secondary">{{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}</a>
+                    <button type="submit" class="btn btn-primary">{{ app()->getLocale() === 'ar' ? 'إنشاء العرض' : 'Create Offer' }}</button>
+                </div>
             </form>
         </div>
 
@@ -875,101 +892,101 @@
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead>
-                                    <tr>
-                                        <th>{{ app()->getLocale() === 'ar' ? 'رقم العرض' : 'Offer ID' }}</th>
-                                        <th>{{ app()->getLocale() === 'ar' ? 'المزود' : 'Provider' }}</th>
-                                        <th>{{ app()->getLocale() === 'ar' ? 'السعر الإجمالي' : 'Total Price' }}</th>
-                                        <th>{{ app()->getLocale() === 'ar' ? 'الحالة' : 'Status' }}</th>
-                                        <th>{{ app()->getLocale() === 'ar' ? 'تاريخ الإنشاء' : 'Created At' }}</th>
-                                        <th>{{ app()->getLocale() === 'ar' ? 'الإجراءات' : 'Actions' }}</th>
-                                    </tr>
+                                <tr>
+                                    <th>{{ app()->getLocale() === 'ar' ? 'رقم العرض' : 'Offer ID' }}</th>
+                                    <th>{{ app()->getLocale() === 'ar' ? 'المزود' : 'Provider' }}</th>
+                                    <th>{{ app()->getLocale() === 'ar' ? 'السعر الإجمالي' : 'Total Price' }}</th>
+                                    <th>{{ app()->getLocale() === 'ar' ? 'الحالة' : 'Status' }}</th>
+                                    <th>{{ app()->getLocale() === 'ar' ? 'تاريخ الإنشاء' : 'Created At' }}</th>
+                                    <th>{{ app()->getLocale() === 'ar' ? 'الإجراءات' : 'Actions' }}</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($existingOffers as $offer)
-                                        <tr>
-                                            <td><strong>#{{ $offer->id }}</strong></td>
-                                            <td>
-                                                @if($offer->laboratory)
-                                                    <span class="badge bg-info">{{ $offer->laboratory->name }}</span>
-                                                @elseif($offer->pharmacy)
-                                                    <span class="badge bg-success">{{ $offer->pharmacy->name }}</span>
-                                                @else
-                                                    <span class="text-muted">N/A</span>
-                                                @endif
-                                            </td>
-                                            <td><strong>{{ number_format($offer->total_price, 2) }} {{ app()->getLocale() === 'ar' ? 'جنيه' : 'EGP' }}</strong></td>
-                                            <td>
-                                                @php
-                                                    $statusColors = [
-                                                        'pending' => 'bg-warning',
-                                                        'accepted' => 'bg-success',
-                                                        'rejected' => 'bg-danger',
-                                                        'draft' => 'bg-secondary',
-                                                    ];
-                                                    $statusColor = $statusColors[$offer->status] ?? 'bg-secondary';
-                                                @endphp
-                                                <span class="badge {{ $statusColor }}">{{ ucfirst($offer->status) }}</span>
-                                            </td>
-                                            <td>{{ $offer->created_at->format('Y-m-d H:i') }}</td>
-                                            <td>
-                                                @php
-                                                    $offerData = [
-                                                        'id' => $offer->id,
-                                                        'provider' => $offer->laboratory->name ?? $offer->pharmacy->name ?? 'N/A',
-                                                        'status' => $offer->status,
-                                                        'total_price' => (float) $offer->total_price,
-                                                        'created_at' => $offer->created_at->format('Y-m-d H:i'),
-                                                        'request_type' => $offer->request_type,
-                                                        'lines' => [],
-                                                    ];
+                                @foreach($existingOffers as $offer)
+                                    <tr>
+                                        <td><strong>#{{ $offer->id }}</strong></td>
+                                        <td>
+                                            @if($offer->laboratory)
+                                                <span class="badge bg-info">{{ $offer->laboratory->name }}</span>
+                                            @elseif($offer->pharmacy)
+                                                <span class="badge bg-success">{{ $offer->pharmacy->name }}</span>
+                                            @else
+                                                <span class="text-muted">N/A</span>
+                                            @endif
+                                        </td>
+                                        <td><strong>{{ number_format($offer->total_price, 2) }} {{ app()->getLocale() === 'ar' ? 'جنيه' : 'EGP' }}</strong></td>
+                                        <td>
+                                            @php
+                                                $statusColors = [
+                                                    'pending' => 'bg-warning',
+                                                    'accepted' => 'bg-success',
+                                                    'rejected' => 'bg-danger',
+                                                    'draft' => 'bg-secondary',
+                                                ];
+                                                $statusColor = $statusColors[$offer->status] ?? 'bg-secondary';
+                                            @endphp
+                                            <span class="badge {{ $statusColor }}">{{ ucfirst($offer->status) }}</span>
+                                        </td>
+                                        <td>{{ $offer->created_at->format('Y-m-d H:i') }}</td>
+                                        <td>
+                                            @php
+                                                $offerData = [
+                                                    'id' => $offer->id,
+                                                    'provider' => $offer->laboratory->name ?? $offer->pharmacy->name ?? 'N/A',
+                                                    'status' => $offer->status,
+                                                    'total_price' => (float) $offer->total_price,
+                                                    'created_at' => $offer->created_at->format('Y-m-d H:i'),
+                                                    'request_type' => $offer->request_type,
+                                                    'lines' => [],
+                                                ];
 
-                                                    // Compute lines total
-                                                    $linesTotal = 0;
+                                                // Compute lines total
+                                                $linesTotal = 0;
 
-                                                    if (in_array($offer->request_type, ['test', 'radiology'])) {
-                                                        foreach ($offer->testLines as $line) {
-                                                            $price = (float) ($line->price ?? 0);
-                                                            $linesTotal += $price;
+                                                if (in_array($offer->request_type, ['test', 'radiology'])) {
+                                                    foreach ($offer->testLines as $line) {
+                                                        $price = (float) ($line->price ?? 0);
+                                                        $linesTotal += $price;
 
-                                                            $offerData['lines'][] = [
-                                                                'test_name_en' => $line->medicalTest->test_name_en ?? 'N/A',
-                                                                'test_name_ar' => $line->medicalTest->test_name_ar ?? 'N/A',
-                                                                'price' => $price,
-                                                            ];
-                                                        }
-                                                    } else { // medicines
-                                                        foreach ($offer->medicineLines as $line) {
-                                                            $quantity = (int) ($line->quantity ?? 1);
-                                                            $price = (float) ($line->price ?? 0);
-                                                            $linesTotal += $quantity * $price;
-
-                                                            $offerData['lines'][] = [
-                                                                'medicine_name' => $line->medicine->name ?? 'N/A',
-                                                                'quantity' => $quantity,
-                                                                'unit' => $line->unit ?? 'box',
-                                                                'price' => $price,
-                                                            ];
-                                                        }
+                                                        $offerData['lines'][] = [
+                                                            'test_name_en' => $line->medicalTest->test_name_en ?? 'N/A',
+                                                            'test_name_ar' => $line->medicalTest->test_name_ar ?? 'N/A',
+                                                            'price' => $price,
+                                                        ];
                                                     }
+                                                } else { // medicines
+                                                    foreach ($offer->medicineLines as $line) {
+                                                        $quantity = (int) ($line->quantity ?? 1);
+                                                        $price = (float) ($line->price ?? 0);
+                                                        $linesTotal += $quantity * $price;
 
-                                                    // Determine if the offer includes a home visit and calculate visit price
-                                                    $hasHomeVisit = optional($offer->request)->client_address_id ? true : false;
-                                                    $visitPrice = $hasHomeVisit ? max($offerData['total_price'] - $linesTotal, 0) : 0;
+                                                        $offerData['lines'][] = [
+                                                            'medicine_name' => $line->medicine->name ?? 'N/A',
+                                                            'quantity' => $quantity,
+                                                            'unit' => $line->unit ?? 'box',
+                                                            'price' => $price,
+                                                        ];
+                                                    }
+                                                }
 
-                                                    $offerData['has_home_visit'] = $hasHomeVisit;
-                                                    $offerData['visit_price'] = $visitPrice;
-                                                @endphp
+                                                // Determine if the offer includes a home visit and calculate visit price
+                                                $hasHomeVisit = optional($offer->request)->client_address_id ? true : false;
+                                                $visitPrice = $hasHomeVisit ? max($offerData['total_price'] - $linesTotal, 0) : 0;
 
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-sm btn-info view-offer-details"
-                                                    data-offer='{{ json_encode($offerData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) }}'
-                                                >
-                                                    {{ app()->getLocale() === 'ar' ? 'عرض التفاصيل' : 'View Details' }}
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    @endforeach
+                                                $offerData['has_home_visit'] = $hasHomeVisit;
+                                                $offerData['visit_price'] = $visitPrice;
+                                            @endphp
+
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-info view-offer-details"
+                                                data-offer='{{ json_encode($offerData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) }}'
+                                            >
+                                                {{ app()->getLocale() === 'ar' ? 'عرض التفاصيل' : 'View Details' }}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
                                 </tbody>
                             </table>
                         </div>
@@ -1014,6 +1031,7 @@
         const testPrices = {!! json_encode($testPrices ?? [], JSON_UNESCAPED_UNICODE) !!};
         const laboratoryId = {{ auth()->user()->laboratory_id ?? 'null' }};
         const requestType = "{{ $clientRequest->type ?? 'medicine' }}";
+        const isMedicineRequest = requestType === 'medicine';
         const requestImages = {!! json_encode(
     collect($clientRequest->images ?? [])->map(function ($img) {
         return \Illuminate\Support\Str::startsWith($img, ['http://','https://'])
@@ -1030,7 +1048,12 @@
             $('.select2').select2({ width: '100%' });
             initImageCarousel();
             initOfferLines();
-            initVisitPriceToggle();
+
+            // Only initialize visit price toggle for non-medicine requests with address
+            if (!isMedicineRequest && {{ $clientRequest->client_address_id ? 'true' : 'false' }}) {
+                initVisitPriceToggle();
+            }
+
             $('#visit_price').on('input', updateTotal);
 
             // Add individual line
@@ -1247,7 +1270,12 @@
         // ---------------- Total Calculation ----------------
         function updateTotal() {
             let total = offerLines.reduce((sum, line) => sum + (parseFloat(line.price) || 0) * (parseFloat(line.quantity) || 1), 0);
-            total += parseFloat($('#visit_price').val()) || 0;
+
+            // Only add visit price for non-medicine requests with address
+            if (!isMedicineRequest && {{ $clientRequest->client_address_id ? 'true' : 'false' }}) {
+                total += parseFloat($('#visit_price').val()) || 0;
+            }
+
             $('#total_price').val(total.toFixed(2));
         }
 
@@ -1255,7 +1283,6 @@
         function initVisitPriceToggle() {
             const visitPriceInput = $('#visit_price');
             const noVisit = $('#no_home_visit');
-            const freeVisit = $('#free_home_visit');
             const paidVisit = $('#price');
 
             function toggleVisitPrice() {
@@ -1267,7 +1294,7 @@
                 updateTotal();
             }
 
-            noVisit.add(freeVisit).add(paidVisit).change(toggleVisitPrice);
+            noVisit.add(paidVisit).change(toggleVisitPrice);
             toggleVisitPrice();
         }
     </script>

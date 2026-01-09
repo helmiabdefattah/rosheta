@@ -7,6 +7,7 @@ use App\Models\Nurse;
 use App\Models\Area;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class NurseController extends Controller
 {
@@ -53,6 +54,7 @@ class NurseController extends Controller
             'phone_number' => 'required|string|max:50|unique:users,phone_number,' . $user->id,
             'email'        => 'nullable|email|max:255|unique:users,email,' . $user->id,
             'avatar'       => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:2048',
+            'password'     => 'nullable|string|min:6',
         ]);
 
         /** NURSE VALIDATION */
@@ -79,6 +81,12 @@ class NurseController extends Controller
                 'phone_number' => $validatedUser['phone_number'],
                 'email'        => $validatedUser['email'] ?? null,
             ]);
+
+            if ($request->filled('password')) {
+                $user->update([
+                    'password' => Hash::make($request->input('password')),
+                ]);
+            }
 
             /** AVATAR VIA SPATIE MEDIA LIBRARY */
             if ($request->hasFile('avatar')) {
@@ -109,7 +117,7 @@ class NurseController extends Controller
             ->with(
                 'success',
                 app()->getLocale() === 'ar'
-                    ? 'تم تحديث بيانات الممرض/ة'
+                    ? 'تم تحديث بيانات التمريض'
                     : 'Nurse updated successfully'
             );
     }
@@ -130,7 +138,7 @@ class NurseController extends Controller
         return back()->with(
             'success',
             app()->getLocale() === 'ar'
-                ? 'تم حذف الممرض/ة'
+                ? 'تم حذف التمريض'
                 : 'Nurse deleted successfully'
         );
     }

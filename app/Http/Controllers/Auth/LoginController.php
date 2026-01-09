@@ -29,6 +29,9 @@ class LoginController extends Controller
             if ($user->laboratory_id) {
                 return redirect()->route('laboratories.dashboard');
             }
+            if ($user->pharmacy_id) {
+                return redirect()->route('pharmacies.dashboard');
+            }
             if ($user->nurse_id) {
                 return redirect()->route('nurse.dashboard');
             }
@@ -56,7 +59,10 @@ class LoginController extends Controller
         $remember = $request->filled('remember');
 
         // First, try to authenticate as a User (admin/lab owner) - only by email
-        $user = User::where('email', $login)->first();
+        $user = User::where(function($query) use ($login) {
+            $query->where('email', $login)
+                ->orWhere('phone_number', $login);
+        })->first();
         if ($user && Hash::check($password, $user->password)) {
             Auth::login($user, $remember);
             $request->session()->regenerate();
@@ -67,6 +73,9 @@ class LoginController extends Controller
             // Redirect laboratory owners to their dashboard
             if ($user->laboratory_id) {
                 return redirect()->route('laboratories.dashboard');
+            }
+            if ($user->pharmacy_id) {
+                return redirect()->route('pharmacies.dashboard');
             }
             if ($user->nurse_id) {
                 return redirect()->route('nurse.dashboard');

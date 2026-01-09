@@ -1,7 +1,7 @@
 @extends('admin.layouts.admin')
 
-@section('title', app()->getLocale() === 'ar' ? 'تعديل ممرض/ة' : 'Edit Nurse')
-@section('page-title', app()->getLocale() === 'ar' ? 'تعديل ممرض/ة' : 'Edit Nurse')
+@section('title', app()->getLocale() === 'ar' ? 'تعديل تمريض' : 'Edit Nurse')
+@section('page-title', app()->getLocale() === 'ar' ? 'تعديل تمريض' : 'Edit Nurse')
 
 @section('content')
 <form action="{{ route('admin.nurses.update', $nurse) }}" method="POST" enctype="multipart/form-data" class="max-w-4xl mx-auto space-y-6">
@@ -40,7 +40,7 @@
 	</div>
 
 	<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-		<h3 class="text-base font-semibold mb-4">{{ app()->getLocale() === 'ar' ? 'بيانات الممرض/ة' : 'Nurse Details' }}</h3>
+		<h3 class="text-base font-semibold mb-4">{{ app()->getLocale() === 'ar' ? 'بيانات التمريض' : 'Nurse Details' }}</h3>
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'النوع' : 'Gender' }}</label>

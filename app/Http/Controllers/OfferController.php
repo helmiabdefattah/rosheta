@@ -210,11 +210,16 @@ class OfferController extends Controller
 
             $successMessage = app()->getLocale() === 'ar' ? 'تم إنشاء العرض بنجاح' : 'Offer created successfully.';
 
+            // Check user type and redirect accordingly
             if ($user->laboratory_id) {
                 return redirect()->route('laboratories.dashboard')
                     ->with('success', $successMessage);
+            } elseif ($user->pharmacy_id) {
+                return redirect()->route('pharmacies.dashboard') // Update this route name as needed
+                ->with('success', $successMessage);
             }
 
+            // Default redirect for admin users
             return redirect()->route('admin.client-requests.index')
                 ->with('success', $successMessage);
         } catch (\Exception $e) {
@@ -224,7 +229,6 @@ class OfferController extends Controller
                 'error' => $e->getMessage()
             ])->withInput();
         }
-
     }
     public function show(Offer $offer)
     {

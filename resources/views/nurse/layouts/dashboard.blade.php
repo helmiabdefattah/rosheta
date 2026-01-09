@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', app()->getLocale() === 'ar' ? 'لوحة تحكم الممرض/ة' : 'Nurse Dashboard')</title>
+    <title>@yield('title', app()->getLocale() === 'ar' ? 'لوحة تحكم التمريض' : 'Nurse Dashboard')</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -113,7 +113,7 @@
             <a href="{{ route('nurse.dashboard') }}" class="flex items-center gap-3">
                 <img src="/images/mo-logo.png" alt="Mostashfa-on Logo" class="h-10 w-auto object-contain">
                 <span class="text-lg font-bold tracking-tight text-white">
-                        {{ app()->getLocale() === 'ar' ? 'ممرض/ة' : 'Nurse' }}
+                        {{ app()->getLocale() === 'ar' ? 'تمريض' : 'Nurse' }}
                     </span>
             </a>
             <button id="close-sidebar" class="lg:hidden ms-auto text-slate-400 hover:text-white">
@@ -244,8 +244,14 @@
                         @endif
                     </div>
                 </div>
-                
+
                 <div class="flex items-center gap-4">
+
+                    <!-- Nurse Status Badge -->
+                    <span class="nurse-badge">
+                        <i class="bi bi-heart-pulse text-xs"></i>
+                        {{ app()->getLocale() === 'ar' ? 'تمريض معتمد' : 'Certified Nurse' }}
+                </span>
                     <!-- Language Toggle -->
                     <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                        class="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-nursePrimary hover:bg-nursePrimary/5 rounded-lg transition-all duration-200">
@@ -256,7 +262,7 @@
                     </a>
 
                     <x-notification-dropdown />
-                    
+
                     <!-- Profile Dropdown -->
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" class="flex items-center gap-3 focus:outline-none group">
@@ -264,16 +270,16 @@
                                 <p class="text-sm font-bold text-slate-800 leading-none">{{ $nurseUser->name }}</p>
                                 <p class="text-[11px] text-nursePrimary mt-1 leading-none uppercase tracking-wider font-semibold">Nurse</p>
                             </div>
-                            <img src="{{ $nurseAvatarUrl }}" 
-                                 class="w-10 h-10 rounded-full border-2 border-gray-100 shadow-sm object-cover group-hover:border-nursePrimary transition-colors" 
+                            <img src="{{ $nurseAvatarUrl }}"
+                                 class="w-10 h-10 rounded-full border-2 border-gray-100 shadow-sm object-cover group-hover:border-nursePrimary transition-colors"
                                  alt="{{ $nurseUser->name }}">
                             <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                             </svg>
                         </button>
-                        
-                        <div x-show="open" 
-                             @click.away="open = false" 
+
+                        <div x-show="open"
+                             @click.away="open = false"
                              x-cloak
                              class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 origin-top-right transition-all"
                              x-transition:enter="transition ease-out duration-200"
@@ -282,7 +288,7 @@
                              x-transition:leave="transition ease-in duration-150"
                              x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                              x-transition:leave-end="opacity-0 scale-95 translate-y-[-10px]">
-                            
+
                             <div class="px-4 py-2 border-b border-gray-50 mb-1">
                                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Account</p>
                             </div>
@@ -295,9 +301,9 @@
                                 </div>
                                 {{ app()->getLocale() === 'ar' ? 'الملف الشخصي' : 'Profile Settings' }}
                             </a>
-                            
+
                             <div class="my-1 border-t border-gray-50"></div>
-                            
+
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
@@ -358,10 +364,10 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    
+
     <!-- Alpine.js for interactive components -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+
     <!-- Toastr Notifications -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
@@ -408,14 +414,14 @@
         messagingSenderId: "{{ config('services.fcm.messaging_sender_id', '') }}",
         appId: "{{ config('services.fcm.app_id', '') }}"
     };
-    
+
         try {
             firebase.initializeApp(firebaseConfig);
             window.firebase = firebase;
             window.firebaseConfig = firebaseConfig;
             window.FCM_VAPID_KEY = "{{ config('services.fcm.vapid_key', '') }}";
             console.log('FCM: Firebase SDK loaded successfully');
-            
+
             // Send config to service worker if it's registered
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.ready.then(registration => {
@@ -425,7 +431,7 @@
                     });
                 });
             }
-            
+
             // Set refresh flag if coming from login
             @if(session('fcm_token_refresh'))
             sessionStorage.setItem('fcm_token_refresh', 'true');
@@ -458,7 +464,7 @@
         "showMethod": "fadeIn",
         "hideMethod": "fadeOut"
     };
-    
+
     @if(app()->getLocale() === 'ar')
     toastr.options.rtl = true;
     @endif

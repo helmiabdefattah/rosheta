@@ -155,15 +155,15 @@
                     <div class="mb-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                         <p class="text-sm text-gray-700">
                             <span class="font-medium">{{ app()->getLocale() === 'ar' ? 'الحالية:' : 'Current:' }}</span>
-                            {{ app()->getLocale() === 'ar' 
-                                ? ($client->insuranceCompany->name_ar ?? $client->insuranceCompany->name) 
+                            {{ app()->getLocale() === 'ar'
+                                ? ($client->insuranceCompany->name_ar ?? $client->insuranceCompany->name)
                                 : $client->insuranceCompany->name }}
                         </p>
                     </div>
                 @endif
-                <select 
-                    id="insurance_company_id" 
-                    name="insurance_company_id" 
+                <select
+                    id="insurance_company_id"
+                    name="insurance_company_id"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-200 outline-none"
                 >
                     <option value="">{{ app()->getLocale() === 'ar' ? 'استخدام الحالية' : 'Use Current' }}</option>
@@ -175,19 +175,19 @@
                     <option value="new">{{ app()->getLocale() === 'ar' ? '+ إضافة شركة جديدة' : '+ Add New Company' }}</option>
                 </select>
                 <div id="new_insurance_company_container" style="display: none;">
-                    <input 
-                        type="text" 
-                        id="insurance_company_name" 
-                        name="insurance_company_name" 
-                        value="{{ old('insurance_company_name') }}" 
+                    <input
+                        type="text"
+                        id="insurance_company_name"
+                        name="insurance_company_name"
+                        value="{{ old('insurance_company_name') }}"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-200 outline-none mt-2"
                         placeholder="{{ app()->getLocale() === 'ar' ? 'أدخل اسم شركة التأمين' : 'Enter insurance company name' }}"
                     >
                 </div>
             </div>
             <p class="mt-1 text-xs text-gray-500">
-                {{ app()->getLocale() === 'ar' 
-                    ? 'إذا لم تختر شركة تأمين، سيتم استخدام شركة التأمين الحالية الخاصة بك' 
+                {{ app()->getLocale() === 'ar'
+                    ? 'إذا لم تختر شركة تأمين، سيتم استخدام شركة التأمين الحالية الخاصة بك'
                     : 'If you don\'t select an insurance company, your current insurance company will be used' }}
             </p>
             @error('insurance_company_id')
@@ -238,7 +238,7 @@
                         value="1"
                         class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                     >
-                    <span class="text-sm text-gray-700">{{ app()->getLocale() === 'ar' ? 'ضغط مرتفع' : 'High Blood Pressure' }}</span>
+                    <span class="text-sm text-gray-700">{{ app()->getLocale() === 'ar' ? 'مريض  ضغط' : 'High Blood Pressure' }}</span>
                 </label>
             </div>
         </div>
@@ -401,7 +401,7 @@
             $('#insurance_company_id').on('change', function() {
                 const container = $('#new_insurance_company_container');
                 const nameInput = $('#insurance_company_name');
-                
+
                 if ($(this).val() === 'new') {
                     container.slideDown();
                     nameInput.prop('required', false);

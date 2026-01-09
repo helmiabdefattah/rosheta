@@ -80,6 +80,11 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     Route::get('/test-requests/create/{type}', [App\Http\Controllers\ClientTestRequestController::class, 'create'])->name('test-requests.create');
     Route::post('/test-requests/{type}', [App\Http\Controllers\ClientTestRequestController::class, 'store'])->name('test-requests.store');
 
+    // Medicine Requests (simple create page that posts to test-requests.store with type=medicine)
+    Route::get('/medicine-requests/create', function () {
+        return view('client.medicine-requests.create');
+    })->name('medicine-requests.create');
+
     // Reviews
     Route::post('/reviews', [App\Http\Controllers\ClientReviewController::class, 'store'])->name('reviews.store');
 
@@ -119,6 +124,10 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     Route::get('/feedback', [App\Http\Controllers\ClientFeedbackController::class, 'create'])->name('feedback.create');
     Route::post('/feedback', [App\Http\Controllers\ClientFeedbackController::class, 'store'])->name('feedback.store');
     Route::get('/feedback/history', [App\Http\Controllers\ClientFeedbackController::class, 'index'])->name('feedback.index');
+
+    // Orders
+    Route::get('/orders', [App\Http\Controllers\ClientOrderController::class, 'index'])->name('orders.index');
+    Route::post('/orders/{order}/review', [App\Http\Controllers\ClientOrderController::class, 'storeReview'])->name('orders.review');
 });
 
 // Offer routes
@@ -189,6 +198,20 @@ Route::middleware('auth')->prefix('laboratory')->name('laboratories.')->group(fu
     Route::get('/support-tickets', [App\Http\Controllers\LaboratorySupportTicketController::class, 'create'])->name('support-tickets.create');
     Route::post('/support-tickets', [App\Http\Controllers\LaboratorySupportTicketController::class, 'store'])->name('support-tickets.store');
     Route::get('/support-tickets/history', [App\Http\Controllers\LaboratorySupportTicketController::class, 'index'])->name('support-tickets.index');
+});
+
+// Pharmacy Dashboard Routes
+Route::middleware('auth')->prefix('pharmacy')->name('pharmacies.')->group(function () {
+	Route::get('/dashboard', [App\Http\Controllers\PharmacyDashboardController::class, 'index'])->name('dashboard');
+	// Requests
+	Route::get('/requests', [App\Http\Controllers\PharmacyRequestController::class, 'index'])->name('requests.index');
+	// Offers
+	Route::get('/offers', [App\Http\Controllers\PharmacyOfferController::class, 'index'])->name('offers.index');
+	Route::get('/offers/accepted', [App\Http\Controllers\PharmacyOfferController::class, 'accepted'])->name('offers.accepted');
+	// Orders
+	Route::get('/orders', [App\Http\Controllers\PharmacyOrderController::class, 'index'])->name('orders.index');
+	Route::put('/orders/{order}/status', [App\Http\Controllers\PharmacyOrderController::class, 'updateStatus'])->name('orders.update-status');
+	Route::put('/orders/{order}/mark-paid', [App\Http\Controllers\PharmacyOrderController::class, 'markPaid'])->name('orders.mark-paid');
 });
 
 // Admin routes (Blade-based admin panel)

@@ -127,6 +127,10 @@
                    class="nav-item {{ request()->is('client/test-requests/create/radiology') ? 'active' : '' }}">
                     <span>{{ app()->getLocale() === 'ar' ? 'طلب أشعة' : 'Request Radiology Tests' }}</span>
                 </a>
+                <a href="{{ route('client.medicine-requests.create') }}"
+                   class="nav-item {{ request()->routeIs('client.medicine-requests.*') ? 'active' : '' }}">
+                    <span>{{ app()->getLocale() === 'ar' ? 'طلب أدوية' : 'Request Medicines' }}</span>
+                </a>
                         @if(Auth::guard('client')->user()->nurse_id == null)
 
                         <a href="{{ route('client.nurse-requests.index') }}"
@@ -140,6 +144,13 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <span>{{ app()->getLocale() === 'ar' ? 'العروض' : 'My Offers' }}</span>
+                </a>
+
+                <a href="{{ route('client.orders.index') }}" class="nav-item {{ request()->routeIs('client.orders.*') ? 'active' : '' }}">
+                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'تتبع الطلبات' : 'Track Orders' }}</span>
                 </a>
 
                 <a href="{{ route('client.addresses.index') }}" class="nav-item {{ request()->routeIs('client.addresses.*') ? 'active' : '' }}">
@@ -197,6 +208,7 @@
             </a>
 
             <div class="p-4 bg-black/5">
+                <!-- Language Toggle -->
                 <form method="POST" action="{{ route('logout') }}" class="w-full">
                     @csrf
                     <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors">
@@ -223,8 +235,43 @@
                         @endif
                     </div>
                 </div>
-                
+
                 <div class="flex items-center gap-4">
+                @php
+                    $client = Auth::guard('client')->user();
+                    $availableBonusPoints = \App\Models\BonusPoint::where('client_id', $client->id)
+                                                                   ->sum('points') ?? 0;
+                @endphp
+                <div class="flex items-center gap-4">
+                    <!-- Compact Points Display -->
+                    <div class="relative hidden md:block">
+                        <div class="flex items-center bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-1 rounded-xl border border-amber-200 shadow-sm">
+                            <div class="text-right me-3">
+                                <p class="text-xs font-semibold text-amber-800 mb-0.5">
+                                    {{ app()->getLocale() === 'ar' ? 'النقاط' : 'Points' }}
+                                </p>
+                                <span class="text-2xl font-bold text-amber-600">
+                        {{ number_format($availableBonusPoints ?? 0) }}
+                    </span>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Points Display -->
+                    <div class="md:hidden">
+                        <div class="flex items-center bg-gradient-to-r from-amber-50 to-yellow-50 px-3 py-1.5 rounded-lg border border-amber-200">
+                            <svg class="w-4 h-4 text-amber-600 me-1.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                            <span class="text-lg font-bold text-amber-600">{{ number_format($availableBonusPoints ?? 0) }}</span>
+                        </div>
+                    </div>
+
                     <!-- Language Toggle -->
                     <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                        class="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200">
@@ -235,7 +282,7 @@
                     </a>
 
                     <x-notification-dropdown />
-                    
+
                     <!-- Profile Dropdown -->
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" class="flex items-center gap-3 focus:outline-none group">
@@ -245,17 +292,17 @@
                                     {{ $clientUser->nurse_id ? (app()->getLocale() === 'ar' ? 'ممرض' : 'Nurse') : (app()->getLocale() === 'ar' ? 'عميل' : 'Client') }}
                                 </p>
                             </div>
-                            <img src="{{ $avatarUrl }}" 
-                                 class="w-10 h-10 rounded-full border-2 border-gray-100 shadow-sm object-cover group-hover:border-primary transition-colors" 
+                            <img src="{{ $avatarUrl }}"
+                                 class="w-10 h-10 rounded-full border-2 border-gray-100 shadow-sm object-cover group-hover:border-primary transition-colors"
                                  alt="{{ $clientUser->name }}">
                             <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                             </svg>
                         </button>
-                        
+
                         <!-- Dropdown menu -->
-                        <div x-show="open" 
-                             @click.away="open = false" 
+                        <div x-show="open"
+                             @click.away="open = false"
                              x-cloak
                              class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 origin-top-right transition-all"
                              x-transition:enter="transition ease-out duration-200"
@@ -264,7 +311,7 @@
                              x-transition:leave="transition ease-in duration-150"
                              x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                              x-transition:leave-end="opacity-0 scale-95 translate-y-[-10px]">
-                            
+
                             <div class="px-4 py-2 border-b border-gray-50 mb-1">
                                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Account</p>
                             </div>
@@ -277,9 +324,9 @@
                                 </div>
                                 {{ app()->getLocale() === 'ar' ? 'الملف الشخصي' : 'Profile Settings' }}
                             </a>
-                            
+
                             <div class="my-1 border-t border-gray-50"></div>
-                            
+
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
@@ -295,7 +342,6 @@
                     </div>
                 </div>
             </header>
-
             <main class="flex-1 overflow-y-auto p-4 lg:p-8">
                 @if(session('success'))
                     <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -340,10 +386,10 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    
+
     <!-- Alpine.js for interactive components -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+
     <!-- Toastr Notifications -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
@@ -390,14 +436,14 @@
             messagingSenderId: "{{ config('services.fcm.messaging_sender_id', '') }}",
             appId: "{{ config('services.fcm.app_id', '') }}"
         };
-        
+
         try {
             firebase.initializeApp(firebaseConfig);
             window.firebase = firebase;
             window.firebaseConfig = firebaseConfig;
             window.FCM_VAPID_KEY = "{{ config('services.fcm.vapid_key', '') }}";
             console.log('FCM: Firebase SDK loaded successfully');
-            
+
             // Send config to service worker if it's registered
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.ready.then(registration => {
@@ -407,7 +453,7 @@
                     });
                 });
             }
-            
+
             // Set refresh flag if coming from login
             @if(session('fcm_token_refresh'))
             sessionStorage.setItem('fcm_token_refresh', 'true');
@@ -418,7 +464,7 @@
     </script>
     <script src="{{ asset('js/fcm-token-manager.js') }}"></script>
     @endif
-    
+
     <!-- Notification Manager -->
     <script src="{{ asset('js/notification-manager.js') }}"></script>
     <script>
@@ -440,12 +486,12 @@
             "showMethod": "fadeIn",
             "hideMethod": "fadeOut"
         };
-        
+
         @if(app()->getLocale() === 'ar')
         toastr.options.rtl = true;
         @endif
     </script>
-    
+
     @stack('scripts')
 </body>
 </html>

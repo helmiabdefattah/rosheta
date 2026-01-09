@@ -98,7 +98,7 @@
                         </div>
 
                         <div>
-                            <p class="text-sm text-gray-500">{{ app()->getLocale() === 'ar' ? 'مكان التعليم' : 'Education Place' }}</p>
+                            <p class="text-sm text-gray-500">{{ app()->getLocale() === 'ar' ? 'المؤسسة التعليمية' : 'Education Institute' }}</p>
                             <p class="text-sm font-medium text-gray-800">{{ $nurse->education_place ?? '-' }}</p>
                         </div>
 
