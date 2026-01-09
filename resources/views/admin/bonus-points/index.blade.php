@@ -12,7 +12,7 @@
         </h3>
     </div>
 
-    <div class="p-6 overflow-x-auto">
+    <div class="p-6 table-scroll-container">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
             <tr>

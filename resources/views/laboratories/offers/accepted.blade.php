@@ -21,7 +21,7 @@
 @endpush
 
 @section('content')
-    <div class="bg-white rounded-lg shadow-sm mb-6">
+    <div class="bg-white rounded-lg shadow-sm mb-6 w-full">
         <div class="px-6 py-4 border-b border-gray-200">
             <form method="GET" action="{{ route('laboratories.offers.accepted') }}" class="flex gap-4 items-end">
                 <div class="flex-1">
@@ -42,9 +42,9 @@
                 </div>
             </form>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto overflow-y-auto" style="max-height: calc(100vh - 300px); min-width: 100%;">
             @if($offers->count() > 0)
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="w-full divide-y divide-gray-200" style="min-width: 1000px;">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'رقم العرض' : 'Offer ID' }}</th>
