@@ -50,6 +50,53 @@
         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
         .sidebar-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
 
+        /* Main Content Scrollbar - Both Directions */
+        .main-content-scroll::-webkit-scrollbar { 
+            width: 8px; 
+            height: 8px; 
+        }
+        .main-content-scroll::-webkit-scrollbar-track { 
+            background: #f1f5f9; 
+        }
+        .main-content-scroll::-webkit-scrollbar-thumb { 
+            background: #cbd5e1; 
+            border-radius: 4px; 
+        }
+        .main-content-scroll::-webkit-scrollbar-thumb:hover { 
+            background: #94a3b8; 
+        }
+        .main-content-scroll::-webkit-scrollbar-corner {
+            background: #f1f5f9;
+        }
+
+        /* Table Scrollbar - Horizontal Only */
+        .table-scroll-container {
+            overflow-y: hidden;
+            overflow-x: auto;
+        }
+        .table-scroll-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        .table-scroll-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .table-scroll-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .table-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Ensure tables maintain minimum width for horizontal scroll */
+        .table-scroll-container table {
+            min-width: 100%;
+            table-layout: auto;
+        }
+        .table-scroll-container table td,
+        .table-scroll-container table th {
+            white-space: nowrap;
+        }
+
         /* Navigation Item Styles */
         .nav-item {
             display: flex;
@@ -95,13 +142,13 @@
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-hidden">
+<body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-x-auto">
 
-    <div class="flex h-screen w-full">
+    <div class="flex min-h-screen min-w-full">
 
         <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden backdrop-blur-sm"></div>
 
-        <aside id="sidebar" class="fixed lg:static inset-y-0 z-50 w-64 bg-sidebar text-white flex flex-col shadow-2xl sidebar-transition sidebar-closed-ltr lg:translate-x-0 h-full">
+        <aside id="sidebar" class="fixed lg:static inset-y-0 z-50 w-64 bg-sidebar text-white flex flex-col shadow-2xl sidebar-transition sidebar-closed-ltr lg:translate-x-0 lg:h-screen h-full">
 
             <div class="h-16 flex items-center px-6 border-b border-slate-800/50">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
@@ -254,9 +301,9 @@
             </div>
         </aside>
 
-        <div class="flex-1 flex flex-col h-full bg-gray-100 relative">
+        <div class="flex-1 flex flex-col bg-gray-100 relative min-w-0 lg:h-screen">
 
-            <header class="h-16 bg-white flex items-center justify-between px-6 border-b border-gray-200">
+            <header class="h-16 bg-white flex items-center justify-between px-6 border-b border-gray-200 flex-shrink-0">
                 <div class="flex items-center gap-4">
                     <button id="open-sidebar" class="lg:hidden text-slate-600">
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -333,7 +380,7 @@
                 </div>
             </header>
 
-            <main class="flex-1 overflow-y-auto p-4 lg:p-8">
+            <main class="flex-1 overflow-y-auto overflow-x-auto p-4 lg:p-8 main-content-scroll">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
                         <h1 class="text-2xl font-bold text-slate-800">@yield('page-title', 'Dashboard')</h1>
@@ -384,6 +431,15 @@
             $.ajaxSetup({
                 headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
             });
+
+            // Global DataTables configuration for horizontal scrolling only
+            if ($.fn.DataTable) {
+                $.extend(true, $.fn.dataTable.defaults, {
+                    scrollY: false,
+                    scrollX: true,
+                    scrollCollapse: false
+                });
+            }
         });
     </script>
     <!-- Firebase SDK -->

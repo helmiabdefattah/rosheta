@@ -37,6 +37,9 @@
         $('#clients-table').DataTable({
             processing: true,
             serverSide: true,
+            scrollY: false,
+            scrollX: true,
+            scrollCollapse: false,
             ajax: "{{ route('admin.clients.data') }}",
             columns: [
                 { data: 'id', name: 'id' },
