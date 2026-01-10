@@ -16,28 +16,37 @@ class OfferCreatedNotification extends BaseNotification
     ) {
     }
 
-    protected function getTitle(): string
+    protected function getTitleAr(): string
     {
-        return app()->getLocale() === 'ar' 
-            ? 'عرض جديد على طلبك' 
-            : 'New Offer on Your Request';
+        return 'عرض جديد على طلبك';
     }
 
-    protected function getMessage(): string
+    protected function getTitleEn(): string
     {
-        // Ensure relationships are loaded
+        return 'New Offer on Your Request';
+    }
+
+    protected function getMessageAr(): string
+    {
+        $this->ensureRelationsLoaded();
+        $providerName = $this->offer->provider_name ?? 'المزود';
+        $price = number_format($this->offer->total_price ?? 0, 2);
+        return "تم استلام عرض جديد من {$providerName} بقيمة {$price} " . config('app.currency_ar', 'جم');
+    }
+
+    protected function getMessageEn(): string
+    {
+        $this->ensureRelationsLoaded();
+        $providerName = $this->offer->provider_name ?? 'Provider';
+        $price = number_format($this->offer->total_price ?? 0, 2);
+        return "You have received a new offer from {$providerName} for {$price} " . config('app.currency', 'EGP');
+    }
+
+    private function ensureRelationsLoaded(): void
+    {
         if (!$this->offer->relationLoaded('pharmacy') && !$this->offer->relationLoaded('laboratory')) {
             $this->offer->load(['pharmacy', 'laboratory']);
         }
-        
-        $providerName = $this->offer->provider_name ?? 'Provider';
-        $price = number_format($this->offer->total_price ?? 0, 2);
-        
-        if (app()->getLocale() === 'ar') {
-            return "تم استلام عرض جديد من {$providerName} بقيمة {$price} " . config('app.currency', 'EGP');
-        }
-        
-        return "You have received a new offer from {$providerName} for {$price} " . config('app.currency', 'EGP');
     }
 
     protected function getSubject(): string
@@ -45,6 +54,11 @@ class OfferCreatedNotification extends BaseNotification
         return app()->getLocale() === 'ar' 
             ? 'عرض جديد على طلبك' 
             : 'New Offer on Your Request';
+    }
+
+    protected function getUrl(): ?string
+    {
+        return url('/client/offers');
     }
 
     protected function getFcmData(): array

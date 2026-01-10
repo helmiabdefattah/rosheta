@@ -99,6 +99,12 @@
         [x-cloak] { display: none !important; }
     </style>
 
+    <script>
+        window.UserConfig = {
+            notificationSound: {{ (auth()->user()?->notification_sound ?? false) ? 'true' : 'false' }}
+        };
+    </script>
+
     @stack('styles')
 </head>
 <body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-hidden">
@@ -230,7 +236,7 @@
             </div>
         </aside>
 
-        <div class="flex-1 flex flex-col h-full bg-gray-100 relative">
+        <div class="flex-1 flex flex-col h-screen bg-gray-100 relative overflow-hidden">
 
             <header class="h-16 bg-white flex items-center justify-between px-6 border-b border-gray-200 shadow-sm transition-all duration-300">
                 <div class="flex items-center gap-4">
@@ -281,7 +287,7 @@
                         <div x-show="open"
                              @click.away="open = false"
                              x-cloak
-                             class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 origin-top-right transition-all"
+                             class="absolute ltr:right-0 rtl:left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 ltr:origin-top-right rtl:origin-top-left transition-all"
                              x-transition:enter="transition ease-out duration-200"
                              x-transition:enter-start="opacity-0 scale-95 translate-y-[-10px]"
                              x-transition:enter-end="opacity-100 scale-100 translate-y-0"
@@ -293,13 +299,23 @@
                                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Account</p>
                             </div>
 
-                            <a href="{{ $nurseProfileUrl }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-nursePrimary/5 hover:text-nursePrimary transition-colors">
+                            <a href="{{ route('user.profile.edit') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-nursePrimary/5 hover:text-nursePrimary transition-colors">
                                 <div class="w-8 h-8 rounded-lg bg-nursePrimary/10 flex items-center justify-center text-nursePrimary">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                                     </svg>
                                 </div>
-                                {{ app()->getLocale() === 'ar' ? 'الملف الشخصي' : 'Profile Settings' }}
+                                {{ app()->getLocale() === 'ar' ? 'إعدادات الحساب' : 'Account Settings' }}
+                            </a>
+
+                            <a href="{{ $nurseProfileUrl }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-nursePrimary/5 hover:text-nursePrimary transition-colors">
+                                <div class="w-8 h-8 rounded-lg bg-nursePrimary/10 flex items-center justify-center text-nursePrimary">
+                                    <svg class="bi bi-person-badge w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                                        <path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0h-7zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2.5z"/>
+                                    </svg>
+                                </div>
+                                {{ app()->getLocale() === 'ar' ? 'بيانات التمريض' : 'Nurse Data' }}
                             </a>
 
                             <div class="my-1 border-t border-gray-50"></div>

@@ -101,11 +101,17 @@
         [x-cloak] { display: none !important; }
     </style>
 
+    <script>
+        window.UserConfig = {
+            notificationSound: {{ (Auth::guard('client')->user()?->notification_sound ?? false) ? 'true' : 'false' }}
+        };
+    </script>
+
     @stack('styles')
 </head>
-<body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-x-auto overflow-y-auto">
+<body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-hidden">
 
-    <div class="flex min-h-screen min-w-full">
+    <div class="flex h-screen min-w-full overflow-hidden">
 
         <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden backdrop-blur-sm"></div>
 
@@ -240,7 +246,7 @@
             </div>
         </aside>
 
-        <div class="flex-1 flex flex-col min-h-full bg-gray-100 relative min-w-0">
+        <div class="flex-1 flex flex-col bg-gray-100 relative min-w-0 h-screen overflow-hidden">
 
             <header class="h-16 bg-white flex items-center justify-between px-6 border-b border-gray-200 shadow-sm transition-all duration-300">
                 <div class="flex items-center gap-4">
@@ -323,7 +329,7 @@
                         <div x-show="open"
                              @click.away="open = false"
                              x-cloak
-                             class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 origin-top-right transition-all"
+                             class="absolute ltr:right-0 rtl:left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 ltr:origin-top-right rtl:origin-top-left transition-all"
                              x-transition:enter="transition ease-out duration-200"
                              x-transition:enter-start="opacity-0 scale-95 translate-y-[-10px]"
                              x-transition:enter-end="opacity-100 scale-100 translate-y-0"

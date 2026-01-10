@@ -16,10 +16,10 @@ class FcmTokenManager {
      */
     detectPlatform() {
         // Check if running in mobile app (you can customize this detection)
-        const isMobileApp = window.navigator.userAgent.includes('Mobile') || 
-                           window.navigator.standalone || 
-                           window.matchMedia('(display-mode: standalone)').matches;
-        
+        const isMobileApp = window.navigator.userAgent.includes('Mobile') ||
+            window.navigator.standalone ||
+            window.matchMedia('(display-mode: standalone)').matches;
+
         return isMobileApp ? 'mobile' : 'web';
     }
 
@@ -44,7 +44,7 @@ class FcmTokenManager {
 
         try {
             console.log('FCM: Initializing Firebase Messaging...');
-            
+
             // Check if we're in a browser environment
             if (typeof window === 'undefined') {
                 console.warn('FCM: Window object not available');
@@ -62,12 +62,12 @@ class FcmTokenManager {
                         console.warn('FCM: Service worker registration failed:', err);
                         return null;
                     });
-                    
+
                     if (registration) {
                         // Wait for service worker to be ready
                         serviceWorkerRegistration = await navigator.serviceWorker.ready;
                         console.log('FCM: Service worker registered and ready');
-                        
+
                         // Send Firebase config to service worker
                         if (serviceWorkerRegistration.active && window.firebaseConfig) {
                             serviceWorkerRegistration.active.postMessage({
@@ -90,12 +90,12 @@ class FcmTokenManager {
             // This requires the service worker to be ready
             try {
                 this.messaging = firebase.messaging();
-                
+
                 // Verify messaging instance is valid
                 if (!this.messaging || typeof this.messaging.getToken !== 'function') {
                     throw new Error('Messaging instance is not valid');
                 }
-                
+
                 console.log('FCM: Messaging instance created successfully');
             } catch (msgError) {
                 console.error('FCM: Failed to get messaging instance:', msgError);
@@ -106,11 +106,11 @@ class FcmTokenManager {
             // Request notification permission
             console.log('FCM: Requesting notification permission...');
             const permission = await Notification.requestPermission();
-            
+
             if (permission === 'granted') {
                 console.log('FCM: Notification permission granted');
                 await this.getToken();
-                
+
                 // Only setup handlers if messaging is valid
                 if (this.messaging) {
                     this.setupTokenRefresh();
@@ -171,7 +171,7 @@ class FcmTokenManager {
     async sendTokenToServer(token) {
         try {
             console.log('FCM: Sending token to server...', { platform: this.platform, tokenLength: token.length });
-            
+
             const response = await fetch('/fcm-token', {
                 method: 'POST',
                 headers: {
@@ -234,18 +234,28 @@ class FcmTokenManager {
             if (typeof this.messaging.onMessage === 'function') {
                 this.messaging.onMessage((payload) => {
                     console.log('FCM: Message received:', payload);
-                    
+
                     // Show browser notification
                     if (Notification.permission === 'granted') {
-                        const notificationTitle = payload.notification?.title || 'New Notification';
+                        const data = payload.data || {};
+                        const isAr = (document.documentElement.lang || '').startsWith('ar') || document.documentElement.dir === 'rtl';
+
+                        // Pick localized title/body from data if available
+                        let title = isAr ? (data.title_ar || data.title) : (data.title_en || data.title);
+                        let body = isAr ? (data.message_ar || data.message || data.body) : (data.message_en || data.message || data.body);
+
+                        // Fallback to legacy notification object
+                        if (!title && payload.notification) title = payload.notification.title;
+                        if (!body && payload.notification) body = payload.notification.body;
+
                         const notificationOptions = {
-                            body: payload.notification?.body || '',
-                            icon: payload.notification?.icon || '/images/logo.png',
-                            badge: '/images/logo.png',
-                            data: payload.data || {}
+                            body: body || '',
+                            icon: data.icon || '/images/mo-logo.png',
+                            badge: '/images/mo-logo.png',
+                            data: data
                         };
 
-                        new Notification(notificationTitle, notificationOptions);
+                        new Notification(title || 'New Notification', notificationOptions);
                     }
 
                     // Trigger custom event for handling in the app
@@ -348,9 +358,9 @@ function waitForFirebase(maxAttempts = 15, attempt = 0) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('FCM: Starting initialization...');
-    
+
     // Start waiting for Firebase
     waitForFirebase();
 
@@ -370,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Re-initialize after login (triggered by login success or page load)
-window.addEventListener('fcm-reinitialize', function() {
+window.addEventListener('fcm-reinitialize', function () {
     if (fcmManager) {
         fcmManager.reinitialize();
     } else if (typeof firebase !== 'undefined' && firebase.messaging) {
@@ -379,7 +389,7 @@ window.addEventListener('fcm-reinitialize', function() {
 });
 
 // Handle logout - remove token
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     // Check if clicking logout button/link
     const logoutElement = e.target.closest('form[action*="logout"], a[href*="logout"], button[onclick*="logout"]');
     if (logoutElement && fcmManager) {

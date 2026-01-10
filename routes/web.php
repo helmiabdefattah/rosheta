@@ -35,9 +35,18 @@ Route::post('/fcm-token', [App\Http\Controllers\FcmTokenController::class, 'upda
 Route::delete('/fcm-token', [App\Http\Controllers\FcmTokenController::class, 'remove'])->name('fcm-token.remove');
 
 // Notifications (for authenticated users)
+Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
 Route::get('/notifications/unread', [App\Http\Controllers\NotificationController::class, 'unread'])->name('notifications.unread');
 Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
 Route::post('/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
+Route::delete('/notifications', [App\Http\Controllers\NotificationController::class, 'destroyAll'])->name('notifications.destroy-all');
+
+// User Profile (for system users: Admin, Lab, pharmacy, Nurse)
+Route::middleware('auth')->group(function() {
+    Route::get('/user/profile', [App\Http\Controllers\UserProfileController::class, 'edit'])->name('user.profile.edit');
+    Route::put('/user/profile', [App\Http\Controllers\UserProfileController::class, 'update'])->name('user.profile.update');
+});
 
 // Auth routes
 Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');

@@ -63,6 +63,8 @@ class UserController extends Controller
             unset($validated['password']);
         }
 
+        $validated['notification_sound'] = $request->has('notification_sound');
+        
         $user->update($validated);
 
         return redirect()->route('admin.users.index')

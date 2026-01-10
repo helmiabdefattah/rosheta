@@ -28,12 +28,19 @@ class NotificationManager {
 
         // Listen for FCM messages (primary method for receiving notifications)
         window.addEventListener('fcm-message', (event) => {
-            const payload = event.detail;
-            if (payload.notification && typeof toastr !== 'undefined') {
+            const payload = event.detail || {};
+            const data = payload.data || {};
+
+            // Check if we have either a notification object OR sufficient data in the payload
+            if ((payload.notification || data.title || data.title_ar || data.title_en) && typeof toastr !== 'undefined') {
                 this.showNotification({
-                    title: payload.notification.title || 'Notification',
-                    message: payload.notification.body || '',
-                    data: payload.data || {},
+                    title: payload.notification?.title || '',
+                    message: payload.notification?.body || '',
+                    title_ar: data.title_ar,
+                    title_en: data.title_en,
+                    message_ar: data.message_ar,
+                    message_en: data.message_en,
+                    data: data,
                 });
 
                 // Update unread count after receiving FCM notification
@@ -128,7 +135,7 @@ class NotificationManager {
     }
 
     /**
-     * Show notification using Toastr
+     * Show notification using Toastr with premium card UI
      */
     showNotification(notification) {
         if (typeof toastr === 'undefined') {
@@ -136,36 +143,157 @@ class NotificationManager {
             return;
         }
 
-        const title = notification.title || 'Notification';
-        const message = notification.message || '';
+        const isAr = (document.documentElement.lang || '').startsWith('ar') || document.documentElement.getAttribute('dir') === 'rtl';
+        const title = isAr ? (notification.title_ar || notification.title) : (notification.title_en || notification.title);
+        const message = isAr ? (notification.message_ar || notification.message || notification.body) : (notification.message_en || notification.message || notification.body);
         const data = notification.data || {};
 
-        // Determine notification type based on data.type or default to info
-        let type = 'info';
-        if (data.type) {
-            const typeMap = {
-                'offer_created': 'success',
-                'offer_accepted': 'success',
-                'order_shipped': 'info',
-                'error': 'error',
-                'warning': 'warning',
-            };
-            type = typeMap[data.type] || 'info';
+        // Play sound if enabled in UserConfig
+        if (window.UserConfig && window.UserConfig.notificationSound) {
+            this.playNotificationSound();
         }
 
-        // Show toastr notification
-        toastr[type](message, title, {
-            timeOut: 5000,
-            extendedTimeOut: 10000,
+        // Determine notification type and icon
+        let type = 'info';
+        let icon = '🔔';
+
+        if (data.type) {
+            const typeMap = {
+                'offer_created': { type: 'success', icon: '💰' },
+                'offer_accepted': { type: 'success', icon: '✅' },
+                'order_shipped': { type: 'info', icon: '🚚' },
+                'test_notification': { type: 'info', icon: '🧪' },
+                'error': { type: 'error', icon: '❌' },
+                'warning': { type: 'warning', icon: '⚠️' },
+            };
+            const config = typeMap[data.type] || { type: 'info', icon: '🔔' };
+            type = config.type;
+            icon = config.icon;
+        }
+
+        // Custom HTML for Toastr to look like a card
+        const toastContent = `
+            <div class="toastr-card">
+                <div class="toastr-icon">${icon}</div>
+                <div class="toastr-body">
+                    <div class="toastr-title">${title}</div>
+                    <div class="toastr-message">${message}</div>
+                </div>
+            </div>
+        `;
+
+        // Configure premium toastr options
+        toastr.options = {
+            timeOut: 8000,
+            extendedTimeOut: 15000,
             progressBar: true,
-            closeButton: true,
-            onclick: function () {
-                // Handle click - could navigate to relevant page
-                if (data.action && data.url) {
-                    window.location.href = data.url;
+            closeButton: false, // Cleaner without close button
+            positionClass: "toast-top-right",
+            preventDuplicates: false,
+            showDuration: "300",
+            hideDuration: "1000",
+            showEasing: "swing",
+            hideEasing: "linear",
+            showMethod: "fadeIn",
+            hideMethod: "fadeOut",
+            onShown: function () {
+                // Style specific tweaks if needed
+            },
+            onclick: () => {
+                const notificationId = data.id || data.notification_id;
+                const redirectUrl = data.url || notification.url;
+
+                if (notificationId && window.notificationManager) {
+                    window.notificationManager.markAsRead(notificationId).then(() => {
+                        if (redirectUrl) window.location.href = redirectUrl;
+                    });
+                } else if (redirectUrl) {
+                    window.location.href = redirectUrl;
                 }
             }
-        });
+        };
+
+        // Show toastr
+        toastr[type](toastContent);
+
+        // Inject custom CSS if not already present
+        if (!document.getElementById('toastr-custom-styles')) {
+            const style = document.createElement('style');
+            style.id = 'toastr-custom-styles';
+            style.innerHTML = `
+                #toast-container > div {
+                    opacity: 1;
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                    border-radius: 12px;
+                    padding: 0;
+                    background-image: none !important;
+                    background-color: white !important;
+                    width: 350px;
+                    overflow: hidden;
+                    border: 1px solid #f1f5f9;
+                }
+                .toastr-card {
+                    display: flex;
+                    align-items: center;
+                    padding: 16px;
+                    gap: 12px;
+                }
+                .toastr-icon {
+                    font-size: 24px;
+                    flex-shrink: 0;
+                    width: 48px;
+                    height: 48px;
+                    background: #f8fafc;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 10px;
+                }
+                .toastr-body {
+                    flex-grow: 1;
+                    min-width: 0;
+                }
+                .toastr-title {
+                    font-weight: 700;
+                    font-size: 14px;
+                    color: #1e293b;
+                    margin-bottom: 2px;
+                }
+                .toastr-message {
+                    font-size: 13px;
+                    color: #64748b;
+                    line-height: 1.4;
+                }
+                .toast-progress {
+                    background-color: var(--primary-color, #2dd4bf);
+                    opacity: 0.3;
+                    height: 3px;
+                }
+                #toast-container > .toast-success .toast-progress { background-color: #10b981; }
+                #toast-container > .toast-info .toast-progress { background-color: #3b82f6; }
+                #toast-container > .toast-warning .toast-progress { background-color: #f59e0b; }
+                #toast-container > .toast-error .toast-progress { background-color: #ef4444; }
+                
+                /* RTL support */
+                [dir="rtl"] .toastr-card { flex-direction: row; }
+                [dir="rtl"] #toast-container > div { text-align: right; }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
+    /**
+     * Play notification sound
+     */
+    playNotificationSound() {
+        try {
+            // Using a high-quality notification sound URL
+            const soundUrl = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3';
+            const audio = new Audio(soundUrl);
+            audio.play().catch(e => console.warn('Audio play failed:', e));
+        } catch (error) {
+            console.warn('Error playing sound:', error);
+        }
     }
 
     /**
@@ -201,8 +329,10 @@ class NotificationManager {
                 // Refresh notification count
                 this.checkNotifications();
             }
+            return response;
         } catch (error) {
             console.error('Error marking notification as read:', error);
+            throw error;
         }
     }
 

@@ -140,7 +140,20 @@
                 @enderror
             </div>
 
-            <div class="flex items-center justify-end gap-4 pt-4 border-t border-gray-200">
+            <div class="py-4 border-t border-gray-200">
+                <label class="flex items-center gap-3 cursor-pointer group">
+                    <div class="relative inline-flex items-center">
+                        <input type="checkbox" name="notification_sound" value="1" {{ old('notification_sound', $client->notification_sound) ? 'checked' : '' }} class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    </div>
+                    <span class="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">
+                        {{ app()->getLocale() === 'ar' ? 'تفعيل صوت الإشعارات' : 'Enable Notification Sound' }}
+                    </span>
+                </label>
+                <p class="text-xs text-gray-500 mt-1 ps-14">
+                    {{ app()->getLocale() === 'ar' ? 'تشغيل صوت مميز عند استلام إشعارات جديدة' : 'Play a distinct sound when new notifications arrive' }}
+                </p>
+            </div>
                 <a href="{{ route('client.dashboard') }}" class="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-200">
                     {{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}
                 </a>

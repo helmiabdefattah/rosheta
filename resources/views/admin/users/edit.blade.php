@@ -57,6 +57,15 @@
                             class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
                     </div>
                 </div>
+                <div class="mt-4 py-4 border-t border-slate-100">
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" name="notification_sound" value="1" {{ old('notification_sound', $user->notification_sound) ? 'checked' : '' }} 
+                            class="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary">
+                        <span class="text-sm font-medium text-slate-700 group-hover:text-primary transition-colors">
+                            {{ app()->getLocale() === 'ar' ? 'تفعيل صوت الإشعارات' : 'Enable Notification Sound' }}
+                        </span>
+                    </label>
+                </div>
             </div>
         </div>
 

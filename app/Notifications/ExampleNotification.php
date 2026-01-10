@@ -28,7 +28,12 @@ class ExampleNotification extends BaseNotification
     /**
      * Get the notification title.
      */
-    protected function getTitle(): string
+    protected function getTitleAr(): string
+    {
+        return 'إشعار مثال';
+    }
+
+    protected function getTitleEn(): string
     {
         return 'Example Notification';
     }
@@ -36,7 +41,12 @@ class ExampleNotification extends BaseNotification
     /**
      * Get the notification message.
      */
-    protected function getMessage(): string
+    protected function getMessageAr(): string
+    {
+        return 'هذا هو نص إشعار مثال.';
+    }
+
+    protected function getMessageEn(): string
     {
         return 'This is an example notification message.';
     }

@@ -111,12 +111,18 @@
         .sidebar-closed-rtl { transform: translateX(100%); }
         [x-cloak] { display: none !important; }
     </style>
+
+    <script>
+        window.UserConfig = {
+            notificationSound: {{ (auth()->user()?->notification_sound ?? false) ? 'true' : 'false' }}
+        };
+    </script>
     
     @stack('styles')
 </head>
-<body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-x-auto overflow-y-auto">
+<body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-hidden">
 
-    <div class="flex min-h-screen min-w-full">
+    <div class="flex h-screen min-w-full overflow-hidden">
 
         <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden backdrop-blur-sm"></div>
 
@@ -227,7 +233,7 @@
             </div>
         </aside>
 
-        <div class="flex-1 flex flex-col min-h-full bg-gray-100 relative min-w-0">
+        <div class="flex-1 flex flex-col bg-gray-100 relative min-w-0 h-screen overflow-hidden">
 
             <header class="h-16 bg-white flex items-center justify-between px-6 border-b border-gray-200 shadow-sm">
                 <div class="flex items-center gap-4">
@@ -272,7 +278,7 @@
                         <div x-show="open" 
                              @click.away="open = false" 
                              x-cloak
-                             class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 origin-top-right transition-all"
+                             class="absolute ltr:right-0 rtl:left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 ltr:origin-top-right rtl:origin-top-left transition-all"
                              x-transition:enter="transition ease-out duration-200"
                              x-transition:enter-start="opacity-0 scale-95 translate-y-[-10px]"
                              x-transition:enter-end="opacity-100 scale-100 translate-y-0"
@@ -280,14 +286,23 @@
                              x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                              x-transition:leave-end="opacity-0 scale-95 translate-y-[-10px]">
                             
-                            <div class="px-4 py-2 border-b border-gray-50 mb-1">
+                             <div class="px-4 py-2 border-b border-gray-50 mb-1">
                                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Account</p>
                             </div>
+
+                            <a href="{{ route('user.profile.edit') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-primary/5 hover:text-primary transition-colors">
+                                <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                    </svg>
+                                </div>
+                                {{ app()->getLocale() === 'ar' ? 'ملفي الشخصي' : 'My Profile' }}
+                            </a>
 
                             <a href="{{ route('laboratories.profile.edit') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-primary/5 hover:text-primary transition-colors">
                                 <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 012-2H5a2 2 0 01-2 2v16m14-2h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                     </svg>
                                 </div>
                                 {{ app()->getLocale() === 'ar' ? 'ملف المعمل' : 'Laboratory Profile' }}
