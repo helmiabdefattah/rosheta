@@ -55,8 +55,15 @@ class FcmTokenManager {
             let serviceWorkerRegistration = null;
             if ('serviceWorker' in navigator) {
                 try {
-                    // Try to register service worker with cache busting
-                    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js?v=1.0.1', {
+                    // Build registration URL with config for immediate SW initialization
+                    let swUrl = '/firebase-messaging-sw.js?v=1.0.1';
+                    if (window.firebaseConfig) {
+                        const params = new URLSearchParams(window.firebaseConfig);
+                        swUrl += '&' + params.toString();
+                    }
+
+                    // Try to register service worker with config in URL
+                    const registration = await navigator.serviceWorker.register(swUrl, {
                         scope: '/'
                     }).catch(err => {
                         console.warn('FCM: Service worker registration failed:', err);

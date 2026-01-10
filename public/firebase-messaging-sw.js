@@ -1,72 +1,35 @@
 // Firebase Service Worker for background message handling
-// This file is required for FCM to work properly
-
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
-// Listen for config from main page
-let firebaseConfig = null;
-let messagingInitialized = false;
+// 1. Extract config from registration URL (Synchronous)
+const swUrl = new URL(self.location);
+const firebaseConfig = {
+    apiKey: swUrl.searchParams.get('apiKey'),
+    authDomain: swUrl.searchParams.get('authDomain'),
+    projectId: swUrl.searchParams.get('projectId'),
+    storageBucket: swUrl.searchParams.get('storageBucket'),
+    messagingSenderId: swUrl.searchParams.get('messagingSenderId'),
+    appId: swUrl.searchParams.get('appId')
+};
 
-self.addEventListener('install', (event) => {
-    self.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-    event.waitUntil(self.clients.claim());
-});
-
-self.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'FIREBASE_CONFIG') {
-        firebaseConfig = event.data.config;
-        initializeFirebase();
-    }
-});
-
-function initializeFirebase() {
-    if (!firebaseConfig) {
-        // Wait for config from main page
-        return;
-    }
-
+// 2. Initialize Firebase immediately (Synchronous evaluation)
+if (firebaseConfig.apiKey) {
     try {
-        // Check if app already exists
-        let app;
-        try {
-            app = firebase.app();
-        } catch (e) {
-            // App doesn't exist, initialize it
-            app = firebase.initializeApp(firebaseConfig);
-        }
-
-        setupMessaging();
-    } catch (error) {
-        console.error('[firebase-messaging-sw.js] Error initializing:', error);
-    }
-}
-
-function setupMessaging() {
-    if (messagingInitialized) {
-        return;
-    }
-
-    try {
+        firebase.initializeApp(firebaseConfig);
         const messaging = firebase.messaging();
-        messagingInitialized = true;
 
         // Handle background messages
+        // CRITICAL: This MUST be called on initial evaluation
         messaging.onBackgroundMessage((payload) => {
             console.log('[firebase-messaging-sw.js] Received background message ', payload);
 
             const data = payload.data || {};
-            // Determine language (heuristic: if browser is likely Arabic)
             const isAr = self.navigator.language.startsWith('ar');
 
-            // Fallbacks from generic data keys
             let notificationTitle = data.title || 'New Notification';
             let notificationBody = data.body || data.message || '';
 
-            // Prioritize translated versions if available in data
             if (isAr && data.title_ar) {
                 notificationTitle = data.title_ar;
                 notificationBody = data.message_ar || notificationBody;
@@ -81,40 +44,41 @@ function setupMessaging() {
                 badge: '/images/mo-logo.png',
                 data: data,
                 vibrate: [200, 100, 200],
-                tag: data.type || 'generic' // Prevent duplicate alerts for same event
+                tag: data.type || 'generic'
             };
 
             self.registration.showNotification(notificationTitle, notificationOptions);
         });
 
-        console.log('[firebase-messaging-sw.js] Messaging initialized successfully');
+        console.log('[firebase-messaging-sw.js] Messaging initialized synchronously');
     } catch (error) {
-        console.error('[firebase-messaging-sw.js] Error setting up messaging:', error);
+        console.error('[firebase-messaging-sw.js] Error during sync init:', error);
     }
 }
+
+self.addEventListener('install', (event) => {
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(self.clients.claim());
+});
 
 // Handle notification click
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
 
-    // Check various locations for the URL (FCM sometimes nests it)
     const notificationData = event.notification.data || {};
     const url = notificationData.url || (notificationData.data ? notificationData.data.url : null);
-
-    console.log('[SW] Notification Clicked. URL found:', url, 'Full Data:', notificationData);
 
     if (url) {
         event.waitUntil(
             clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-                // 1. Try to find an existing window already at this URL and focus it
                 for (const client of clientList) {
                     if (client.url === url && 'focus' in client) {
                         return client.focus();
                     }
                 }
-
-                // 2. If no window is at this URL, but we have a window open, 
-                // we could navigate it, but usually opening a new one is safer
                 if (clients.openWindow) {
                     return clients.openWindow(url);
                 }
@@ -123,8 +87,11 @@ self.addEventListener('notificationclick', (event) => {
     }
 });
 
-// Try to initialize if Firebase is available (will wait for config)
-if (typeof firebase !== 'undefined') {
-    // Don't initialize yet, wait for config from main page
-    console.log('[firebase-messaging-sw.js] Waiting for Firebase config from main page...');
-}
+// Legacy support for dynamic updates (though sync init is primary now)
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'FIREBASE_CONFIG') {
+        console.log('[firebase-messaging-sw.js] Received config update via message');
+        // If it wasn't initialized (e.g. refresh), this might help, 
+        // but push events still require the sync init above to work.
+    }
+});
