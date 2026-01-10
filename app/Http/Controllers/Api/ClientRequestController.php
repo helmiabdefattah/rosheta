@@ -9,6 +9,9 @@ use App\Models\ClientAddress;
 use App\Models\ClientRequest;
 use App\Models\MedicalTest;
 use App\Models\Medicine;
+use App\Models\User;
+use App\Notifications\NewClientRequestNotification;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -147,6 +150,22 @@ class ClientRequestController extends Controller
             return $requestModel->load(['address.city', 'address.area', 'lines.medicine', 'client']);
         });
 
+        // Notify related pharmacies (same city)
+        try {
+            if (true || ($created->address && $created->address->city_id)) {
+                $pharmacyUsers = User::whereNotNull('pharmacy_id')
+                    ->whereHas('pharmacy.area', function($q) use($created) {
+                        // $q->where('city_id', $created->address->city_id);
+                    })->get();
+                
+                if ($pharmacyUsers->count() > 0) {
+                    Notification::send($pharmacyUsers, new NewClientRequestNotification($created));
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('Notification failed for new client request: ' . $e->getMessage());
+        }
+
         return (new ClientRequestResource($created))
             ->additional([
                 'message' => 'Request created successfully.',
@@ -241,6 +260,30 @@ class ClientRequestController extends Controller
 
             return $requestModel->load(['address.city', 'address.area', 'testLines.medicalTest', 'client']);
         });
+
+        // Notify related laboratories (same city + matching type)
+        try {
+            if (true || ($created->address && $created->address->city_id)) {
+                $type = $created->type; // 'test' or 'radiology'
+                $labUsers = User::whereNotNull('laboratory_id')
+                    // ->whereHas('laboratory.area', function($q) use($created) {
+                    //     $q->where('city_id', $created->address->city_id);
+                    // })
+                    ->whereHas('laboratory', function($q) use($type) {
+                        $q->where(function($qt) use ($type) {
+                            $qt->where('type', 'both')
+                              ->orWhere('type', $type);
+                        })->where('is_active', true);
+                    })
+                    ->get();
+                
+                if ($labUsers->count() > 0) {
+                    Notification::send($labUsers, new NewClientRequestNotification($created));
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('Notification failed for new client test request: ' . $e->getMessage());
+        }
 
         return (new ClientRequestResource($created))
             ->additional([

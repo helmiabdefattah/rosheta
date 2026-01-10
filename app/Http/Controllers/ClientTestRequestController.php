@@ -7,6 +7,9 @@ use App\Models\ClientRequest;
 use App\Models\ClientRequestLine;
 use App\Models\MedicalTest;
 use App\Models\InsuranceCompany;
+use App\Models\User;
+use App\Notifications\NewClientRequestNotification;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -103,7 +106,7 @@ class ClientTestRequestController extends Controller
             ])->withInput();
         }
 
-        DB::transaction(function () use ($request, $validated, $client, $type) {
+        $clientRequest = DB::transaction(function () use ($request, $validated, $client, $type) {
 
             $imageNames = [];
 
@@ -161,7 +164,39 @@ class ClientTestRequestController extends Controller
                     ])->toArray()
                 );
             }
+
+            return $clientRequest;
         });
+
+        // Notify related providers
+        try {
+            if ($clientRequest->type === 'medicine') {
+                $pharmacyUsers = User::whereNotNull('pharmacy_id')
+                    ->whereHas('pharmacy', function($q) {
+                        $q->where('is_active', true);
+                    })->get();
+                
+                if ($pharmacyUsers->count() > 0) {
+                    Notification::send($pharmacyUsers, new NewClientRequestNotification($clientRequest));
+                }
+            } else {
+                $type = $clientRequest->type; // 'test' or 'radiology'
+                $labUsers = User::whereNotNull('laboratory_id')
+                    ->whereHas('laboratory', function($q) use($type) {
+                        $q->where(function($qt) use ($type) {
+                            $qt->where('type', 'both')
+                              ->orWhere('type', $type);
+                        })->where('is_active', true);
+                    })
+                    ->get();
+                
+                if ($labUsers->count() > 0) {
+                    Notification::send($labUsers, new NewClientRequestNotification($clientRequest));
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('Notification failed for client test/medicine request: ' . $e->getMessage());
+        }
 
         return redirect()
             ->route('client.dashboard')
