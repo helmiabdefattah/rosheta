@@ -415,7 +415,7 @@
             console.error('FCM: Error initializing Firebase SDK:', error);
         }
     </script>
-    <script src="{{ asset('js/fcm-token-manager.js') }}"></script>
+    <script src="{{ asset('js/fcm-token-manager.js') }}?v=1.0.1"></script>
     @else
     <script>
         console.warn('FCM: Firebase API key not configured. Please set FCM_API_KEY in .env file');
@@ -423,7 +423,7 @@
     @endif
     
     <!-- Notification Manager -->
-    <script src="{{ asset('js/notification-manager.js') }}"></script>
+    <script src="{{ asset('js/notification-manager.js') }}?v=1.0.1"></script>
     <script>
         // Configure Toastr
         toastr.options = {

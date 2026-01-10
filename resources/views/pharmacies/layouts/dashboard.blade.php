@@ -10,6 +10,7 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+
 	<script src="https://cdn.tailwindcss.com"></script>
 	<script>
 		tailwind.config = {
@@ -225,6 +226,62 @@
 		</main>
 	</div>
 </div>
+    <!-- Firebase SDK -->
+    @if(config('services.fcm.api_key'))
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "{{ config('services.fcm.api_key', '') }}",
+            authDomain: "{{ config('services.fcm.auth_domain', '') }}",
+            projectId: "{{ config('services.fcm.project_id', '') }}",
+            storageBucket: "{{ config('services.fcm.storage_bucket', '') }}",
+            messagingSenderId: "{{ config('services.fcm.messaging_sender_id', '') }}",
+            appId: "{{ config('services.fcm.app_id', '') }}"
+        };
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            window.firebase = firebase;
+            window.firebaseConfig = firebaseConfig;
+            window.FCM_VAPID_KEY = "{{ config('services.fcm.vapid_key', '') }}";
+            
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.active?.postMessage({
+                        type: 'FIREBASE_CONFIG',
+                        config: firebaseConfig
+                    });
+                });
+            }
+        } catch (error) {
+            console.error('FCM: Error initializing Firebase SDK:', error);
+        }
+    </script>
+    <script src="{{ asset('js/fcm-token-manager.js') }}?v=1.0.1"></script>
+    @endif
+    
+    <!-- Notification Manager -->
+    <script src="{{ asset('js/notification-manager.js') }}?v=1.0.1"></script>
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "timeOut": "5000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+        @if(app()->getLocale() === 'ar')
+        toastr.options.rtl = true;
+        @endif
+    </script>
+
 <script>
 	$(function(){
 		const isRTL = $('html').attr('dir') === 'rtl';
@@ -237,6 +294,7 @@
 		$.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
 	});
 </script>
+
 @stack('scripts')
 </body>
 </html>
