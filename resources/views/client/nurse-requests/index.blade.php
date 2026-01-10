@@ -34,6 +34,16 @@
 								@endswitch
 							</div>
 						@endif
+						@if($r->patient_age)
+							<div class="mb-1">
+								<strong>{{ app()->getLocale() === 'ar' ? 'عمر المريض' : 'Patient age' }}:</strong> {{ $r->patient_age }} {{ app()->getLocale() === 'ar' ? 'سنة' : 'years' }}
+							</div>
+						@endif
+						@if($r->medical_condition)
+							<div class="mb-1">
+								<strong>{{ app()->getLocale() === 'ar' ? 'الحالة الطبية' : 'Medical condition' }}:</strong> {{ $r->medical_condition }}
+							</div>
+						@endif
 						@if($r->address)
 							<div class="mb-1">
 								<strong>{{ __('Address') }}:</strong> {{ $r->address->address }}

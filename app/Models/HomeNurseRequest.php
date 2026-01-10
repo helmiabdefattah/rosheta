@@ -21,6 +21,8 @@ class HomeNurseRequest extends Model
 		'service_type',
 		'preferred_gender',
 		'medical_notes',
+		'patient_age',
+		'medical_condition',
 		'visits_count',
 		'visit_frequency',
 		'visit_start_date',
@@ -119,7 +121,12 @@ class HomeNurseRequest extends Model
     public function scopeRequestsList($query, Nurse $nurse = null)
     {
         return $query
-            ->with(['client', 'address', 'offers'])
+            ->with([
+                'client.governorate',
+                'client.city',
+                'address.area.city.governorate',
+                'offers'
+            ])
             ->where('status', 'pending')
             ->when($nurse, function ($q) use ($nurse) {
                 // Exclude requests already offered by this nurse

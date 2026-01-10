@@ -27,8 +27,20 @@
 				</div>
 				<div class="md:col-span-2">
 					<div class="text-xs text-slate-500">{{ __('Medical notes') }}</div>
-					<div>{{ $request->medical_last ?? '-' }}</div>
+					<div>{{ $request->medical_notes ?? '-' }}</div>
 				</div>
+				@if($request->patient_age)
+				<div>
+					<div class="text-xs text-slate-500">{{ app()->getLocale() === 'ar' ? 'عمر المريض' : 'Patient age' }}</div>
+					<div>{{ $request->patient_age }} {{ app()->getLocale() === 'ar' ? 'سنة' : 'years' }}</div>
+				</div>
+				@endif
+				@if($request->medical_condition)
+				<div>
+					<div class="text-xs text-slate-500">{{ app()->getLocale() === 'ar' ? 'الحالة الطبية' : 'Medical condition' }}</div>
+					<div>{{ $request->medical_condition }}</div>
+				</div>
+				@endif
 			</div>
 		</div>
 

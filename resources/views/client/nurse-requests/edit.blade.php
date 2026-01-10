@@ -28,6 +28,23 @@
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 					<div>
 						<label class="block text-sm font-medium text-slate-700 mb-1">
+							{{ app()->getLocale() === 'ar' ? 'عمر المريض (اختياري)' : 'Patient age (optional)' }}
+						</label>
+						<input type="number" name="patient_age" min="0" max="150" class="mt-1 block w-full border rounded-md p-2"
+							   value="{{ old('patient_age', $request->patient_age) }}">
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-slate-700 mb-1">
+							{{ app()->getLocale() === 'ar' ? 'الحالة الطبية (اختياري)' : 'Medical condition (optional)' }}
+						</label>
+						<input type="text" name="medical_condition" class="mt-1 block w-full border rounded-md p-2"
+							   value="{{ old('medical_condition', $request->medical_condition) }}">
+					</div>
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div>
+						<label class="block text-sm font-medium text-slate-700 mb-1">
 							{{ app()->getLocale() === 'ar' ? 'اختر العنوان (اختياري)' : 'Select address (optional)' }}
 						</label>
 						<select name="address_id" class="mt-1 block w-full border rounded-md p-2">
