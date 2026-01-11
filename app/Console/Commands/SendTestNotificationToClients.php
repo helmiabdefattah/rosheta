@@ -32,8 +32,8 @@ class SendTestNotificationToClients extends Command
      */
     public function handle()
     {
-        $title = $this->option('title') ?? 'Test Notification';
-        $message = $this->option('message') ?? 'This is a test notification from the system.';
+        $title = $this->option('title');
+        $message = $this->option('message');
         $limit = $this->option('limit') ? (int) $this->option('limit') : null;
         $withTokensOnly = $this->option('with-tokens-only');
 

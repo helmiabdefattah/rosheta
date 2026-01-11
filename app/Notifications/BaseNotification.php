@@ -98,46 +98,89 @@ abstract class BaseNotification extends Notification
 
     /**
      * Get the FCM representation of the notification.
-     * Override in child classes to customize.
-     *
-     * @param  mixed  $notifiable
-     * @return array
      */
     public function toFcm($notifiable): array
     {
+        $data = $this->getFcmData();
+        $url = $this->getUrl();
+        
+        if ($url) {
+            $data['url'] = $url;
+            $data['has_url'] = true;
+        }
+
+        // Add both languages to data for flexible display
+        $data['title_ar'] = $this->getTitleAr();
+        $data['title_en'] = $this->getTitleEn();
+        $data['message_ar'] = $this->getMessageAr();
+        $data['message_en'] = $this->getMessageEn();
+
+        // Determine which language to show based on system locale at time of sending
+        // but the SW or client JS will override this based on user preference
+        $isAr = app()->getLocale() === 'ar';
+
         return [
-            'title' => $this->getTitle(),
-            'body' => $this->getMessage(),
-            'data' => $this->getFcmData(),
+            'title' => $isAr ? $this->getTitleAr() : $this->getTitleEn(),
+            'body' => $isAr ? $this->getMessageAr() : $this->getMessageEn(),
+            'data' => $data,
         ];
     }
 
     /**
-     * Get the array representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return array<string, mixed>
+     * Get the array representation (for database)
      */
     public function toArray($notifiable): array
     {
+        $data = $this->getNotificationData();
+        $url = $this->getUrl();
+        
+        if ($url) {
+            $data['url'] = $url;
+            $data['has_url'] = true;
+        }
+
         return [
-            'title' => $this->getTitle(),
-            'message' => $this->getMessage(),
-            'data' => $this->getNotificationData(),
+            'title_ar' => $this->getTitleAr(),
+            'title_en' => $this->getTitleEn(),
+            'message_ar' => $this->getMessageAr(),
+            'message_en' => $this->getMessageEn(),
+            'url' => $url,
+            'data' => $data,
         ];
     }
 
     /**
-     * Get the notification title.
-     * Override in child classes.
+     * Get localized title based on current app locale
      */
-    abstract protected function getTitle(): string;
+    protected function getTitle(): string
+    {
+        return app()->getLocale() === 'ar' ? $this->getTitleAr() : $this->getTitleEn();
+    }
 
     /**
-     * Get the notification message.
-     * Override in child classes.
+     * Get localized message based on current app locale
      */
-    abstract protected function getMessage(): string;
+    protected function getMessage(): string
+    {
+        return app()->getLocale() === 'ar' ? $this->getMessageAr() : $this->getMessageEn();
+    }
+
+    /**
+     * Language specific content
+     */
+    abstract protected function getTitleAr(): string;
+    abstract protected function getTitleEn(): string;
+    abstract protected function getMessageAr(): string;
+    abstract protected function getMessageEn(): string;
+
+    /**
+     * Get the redirect URL for the notification.
+     * Override in child classes to add a target link.
+     */
+    protected function getUrl(): ?string
+    {
+        return null;
+    }
 
     /**
      * Get the email subject.

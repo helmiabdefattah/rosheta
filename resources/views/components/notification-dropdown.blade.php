@@ -60,7 +60,7 @@
          x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100 transform scale-100"
          x-transition:leave-end="opacity-0 transform scale-95"
-         class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-slate-200 z-50 max-h-96 overflow-hidden flex flex-col"
+         class="absolute ltr:right-0 rtl:left-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-slate-200 z-50 max-h-96 overflow-hidden flex flex-col ltr:origin-top-right rtl:origin-top-left"
          style="display: none;">
         
         <!-- Header -->
@@ -100,7 +100,13 @@
                      @click="
                         if (!notification.read) {
                             fetch(`/notifications/${notification.id}/read`, {method: 'POST', headers: {'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content}})
-                                .then(() => { notification.read = true; unreadCount = Math.max(0, unreadCount - 1); });
+                                .then(() => { 
+                                    notification.read = true; 
+                                    unreadCount = Math.max(0, unreadCount - 1);
+                                    if(notification.url) window.location.href = notification.url;
+                                });
+                        } else if(notification.url) {
+                            window.location.href = notification.url;
                         }
                      ">
                     <div class="flex items-start gap-3">
@@ -120,7 +126,7 @@
         <!-- Footer -->
         <template x-if="notifications.length > 0">
             <div class="px-4 py-2 border-t border-slate-200 text-center">
-                <a href="#" class="text-xs text-primary hover:text-primary/80 font-medium">
+                <a href="{{ route('notifications.index') }}" class="text-xs text-primary hover:text-primary/80 font-medium">
                     {{ app()->getLocale() === 'ar' ? 'عرض الكل' : 'View all' }}
                 </a>
             </div>

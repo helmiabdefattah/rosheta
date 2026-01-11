@@ -16,33 +16,39 @@ class OfferAcceptedNotification extends BaseNotification
     ) {
     }
 
-    protected function getTitle(): string
+    protected function getTitleAr(): string
     {
-        $type = $this->offer->request_type === 'medicine' 
-            ? (app()->getLocale() === 'ar' ? 'دواء' : 'Medicine')
-            : (app()->getLocale() === 'ar' ? 'فحص طبي' : 'Medical Test');
-            
-        return app()->getLocale() === 'ar' 
-            ? "تم قبول عرضك - {$type}" 
-            : "Your Offer Accepted - {$type}";
+        $type = $this->offer->request_type === 'medicine' ? 'دواء' : 'فحص طبي';
+        return "تم قبول عرضك - {$type}";
     }
 
-    protected function getMessage(): string
+    protected function getTitleEn(): string
     {
-        // Ensure relationships are loaded
+        $type = $this->offer->request_type === 'medicine' ? 'Medicine' : 'Medical Test';
+        return "Your Offer Accepted - {$type}";
+    }
+
+    protected function getMessageAr(): string
+    {
+        $this->ensureRelationsLoaded();
+        $clientName = $this->offer->request->client->name ?? 'عميل';
+        $price = number_format($this->offer->total_price ?? 0, 2);
+        return "تم قبول عرضك من قبل {$clientName}. السعر الإجمالي: {$price} " . config('app.currency_ar', 'جم');
+    }
+
+    protected function getMessageEn(): string
+    {
+        $this->ensureRelationsLoaded();
+        $clientName = $this->offer->request->client->name ?? 'Client';
+        $price = number_format($this->offer->total_price ?? 0, 2);
+        return "Your offer has been accepted by {$clientName}. Total price: {$price} " . config('app.currency', 'EGP');
+    }
+
+    private function ensureRelationsLoaded(): void
+    {
         if (!$this->offer->relationLoaded('request')) {
             $this->offer->load('request.client');
         }
-        
-        $clientName = $this->offer->request->client->name ?? 'Client';
-        $price = number_format($this->offer->total_price ?? 0, 2);
-        $currency = config('app.currency', 'EGP');
-        
-        if (app()->getLocale() === 'ar') {
-            return "تم قبول عرضك من قبل {$clientName}. السعر الإجمالي: {$price} {$currency}";
-        }
-        
-        return "Your offer has been accepted by {$clientName}. Total price: {$price} {$currency}";
     }
 
     protected function getSubject(): string
@@ -50,6 +56,17 @@ class OfferAcceptedNotification extends BaseNotification
         return app()->getLocale() === 'ar' 
             ? 'تم قبول عرضك' 
             : 'Your Offer Has Been Accepted';
+    }
+
+    protected function getUrl(): ?string
+    {
+        try {
+            return $this->offer->request_type === 'medicine' 
+                ? route('pharmacies.orders.index')
+                : route('laboratories.offers.accepted');
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     protected function getFcmData(): array

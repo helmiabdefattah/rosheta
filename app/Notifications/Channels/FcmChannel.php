@@ -162,11 +162,16 @@ class FcmChannel
                 'type' => $data['type'] ?? 'notification',
             ]);
 
+            // Ensure all data values are strings for FCM withData()
+            $stringData = array_map(function ($value) {
+                return is_array($value) ? json_encode($value) : (string) $value;
+            }, $data);
+
             // Create cloud message
-            // Include both notification (for background) and data (for foreground)
+            // We use ->withData() to allow the Service Worker and Foreground handler to handle 
+            // localization and display logic using the AR/EN versions in the data payload.
             $message = CloudMessage::withTarget('token', $token)
-                ->withNotification($firebaseNotification)
-                ->withData($data);
+                ->withData($stringData);
 
             // Send the message
             $messaging->send($message);

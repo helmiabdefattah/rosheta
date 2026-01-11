@@ -10,6 +10,7 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+
 	<script src="https://cdn.tailwindcss.com"></script>
 	<script>
 		tailwind.config = {
@@ -35,6 +36,9 @@
 	<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 	<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 
+	<!-- Alpine.js for interactive components -->
+	<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
 	<style>
 		.sidebar-scroll::-webkit-scrollbar { width: 4px; }
 		.sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -48,6 +52,12 @@
 		.sidebar-closed-ltr{transform:translateX(-100%);}
 		.sidebar-closed-rtl{transform:translateX(100%);}
 	</style>
+
+	<script>
+		window.UserConfig = {
+			notificationSound: {{ (auth()->user()?->notification_sound ?? false) ? 'true' : 'false' }}
+		};
+	</script>
 
 	@stack('styles')
 </head>
@@ -126,7 +136,7 @@
 			</form>
 		</div>
 	</aside>
-	<div class="flex-1 flex flex-col h-full bg-gray-100 relative">
+	<div class="flex-1 flex flex-col h-screen bg-gray-100 relative overflow-hidden">
 		<header class="h-16 bg-white flex items-center justify-between px-6 border-b border-gray-200 shadow-sm">
 			<div class="flex items-center gap-4">
 				<button id="open-sidebar" class="lg:hidden text-slate-600">
@@ -139,11 +149,64 @@
 					@endif
 				</div>
 			</div>
-			<div class="hidden md:block text-right">
-				@if(isset($pharmacy) && $pharmacy)
-					<p class="text-sm font-semibold text-slate-800">{{ $pharmacy->name }}</p>
-					<p class="text-xs text-slate-500">{{ app()->getLocale() === 'ar' ? 'الصيدلية' : 'Pharmacy' }}</p>
-				@endif
+			
+			<div class="flex items-center gap-4">
+				<x-notification-dropdown />
+
+				<!-- Profile Dropdown -->
+				<div class="relative" x-data="{ open: false }">
+					<button @click="open = !open" class="flex items-center gap-3 focus:outline-none group">
+						<div class="text-right hidden sm:block">
+							<p class="text-sm font-bold text-slate-800 leading-none">{{ auth()->user()->name }}</p>
+							<p class="text-[11px] text-primary mt-1 leading-none uppercase tracking-wider font-semibold">{{ app()->getLocale() === 'ar' ? 'الصيدلية' : 'Pharmacy' }}</p>
+						</div>
+						<img src="{{ auth()->user()->getFirstMediaUrl('profile_image') ?: 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&background=0d9488&color=fff' }}" 
+							 class="w-10 h-10 rounded-full border-2 border-gray-100 shadow-sm object-cover group-hover:border-primary transition-colors" 
+							 alt="{{ auth()->user()->name }}">
+						<svg class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+						</svg>
+					</button>
+
+					<div x-show="open" 
+						 @click.away="open = false" 
+						 x-cloak
+						 class="absolute ltr:right-0 rtl:left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 ltr:origin-top-right rtl:origin-top-left transition-all"
+						 x-transition:enter="transition ease-out duration-200"
+						 x-transition:enter-start="opacity-0 scale-95 translate-y-[-10px]"
+						 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+						 x-transition:leave="transition ease-in duration-150"
+						 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+						 x-transition:leave-end="opacity-0 scale-95 translate-y-[-10px]">
+						
+						<div class="px-4 py-2 border-b border-gray-50 mb-1">
+							<p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Account</p>
+						</div>
+
+						<a href="{{ route('user.profile.edit') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-primary/5 hover:text-primary transition-colors">
+							<div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+								<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+								</svg>
+							</div>
+							{{ app()->getLocale() === 'ar' ? 'ملفي الشخصي' : 'My Profile' }}
+						</a>
+
+						<div class="my-1 border-t border-gray-50"></div>
+						
+						<form method="POST" action="{{ route('logout') }}">
+							@csrf
+							<button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+								<div class="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
+									<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+									</svg>
+								</div>
+								{{ app()->getLocale() === 'ar' ? 'تسجيل الخروج' : 'Logout' }}
+							</button>
+						</form>
+					</div>
+				</div>
 			</div>
 		</header>
 		<main class="flex-1 overflow-y-auto p-4 lg:p-8">
@@ -163,6 +226,62 @@
 		</main>
 	</div>
 </div>
+    <!-- Firebase SDK -->
+    @if(config('services.fcm.api_key'))
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "{{ config('services.fcm.api_key', '') }}",
+            authDomain: "{{ config('services.fcm.auth_domain', '') }}",
+            projectId: "{{ config('services.fcm.project_id', '') }}",
+            storageBucket: "{{ config('services.fcm.storage_bucket', '') }}",
+            messagingSenderId: "{{ config('services.fcm.messaging_sender_id', '') }}",
+            appId: "{{ config('services.fcm.app_id', '') }}"
+        };
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            window.firebase = firebase;
+            window.firebaseConfig = firebaseConfig;
+            window.FCM_VAPID_KEY = "{{ config('services.fcm.vapid_key', '') }}";
+            
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.active?.postMessage({
+                        type: 'FIREBASE_CONFIG',
+                        config: firebaseConfig
+                    });
+                });
+            }
+        } catch (error) {
+            console.error('FCM: Error initializing Firebase SDK:', error);
+        }
+    </script>
+    <script src="{{ asset('js/fcm-token-manager.js') }}?v=1.0.2"></script>
+    @endif
+    
+    <!-- Notification Manager -->
+    <script src="{{ asset('js/notification-manager.js') }}?v=1.0.2"></script>
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "timeOut": "5000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+        @if(app()->getLocale() === 'ar')
+        toastr.options.rtl = true;
+        @endif
+    </script>
+
 <script>
 	$(function(){
 		const isRTL = $('html').attr('dir') === 'rtl';
@@ -175,6 +294,7 @@
 		$.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
 	});
 </script>
+
 @stack('scripts')
 </body>
 </html>

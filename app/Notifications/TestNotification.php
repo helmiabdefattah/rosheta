@@ -7,8 +7,8 @@ namespace App\Notifications;
  */
 class TestNotification extends BaseNotification
 {
-    protected string $customTitle;
-    protected string $customMessage;
+    protected ?string $customTitle;
+    protected ?string $customMessage;
 
     // Enable push notifications
     protected bool $sendPush = true;
@@ -17,26 +17,36 @@ class TestNotification extends BaseNotification
     protected bool $sendMail = false;
     protected bool $sendSms = false;
 
-    public function __construct(string $title = null, string $message = null)
+    public function __construct(?string $title = null, ?string $message = null)
     {
-        $this->customTitle = $title ?? 'Test Notification';
-        $this->customMessage = $message ?? 'This is a test notification from the system.';
+        $this->customTitle = $title;
+        $this->customMessage = $message;
     }
 
     /**
      * Get the notification title.
      */
-    protected function getTitle(): string
+    protected function getTitleAr(): string
     {
-        return $this->customTitle;
+        return $this->customTitle ?: 'إشعار تجريبي';
+    }
+
+    protected function getTitleEn(): string
+    {
+        return $this->customTitle ?: 'Test Notification';
     }
 
     /**
      * Get the notification message.
      */
-    protected function getMessage(): string
+    protected function getMessageAr(): string
     {
-        return $this->customMessage;
+        return $this->customMessage ?: 'هذا إشعار تجريبي من النظام.';
+    }
+
+    protected function getMessageEn(): string
+    {
+        return $this->customMessage ?: 'This is a test notification from the system.';
     }
 
     /**
@@ -48,6 +58,15 @@ class TestNotification extends BaseNotification
             'type' => 'test',
             'timestamp' => now()->toIso8601String(),
         ];
+    }
+
+    protected function getUrl(): ?string
+    {
+        try {
+            return route('client.dashboard');
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     /**

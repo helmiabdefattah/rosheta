@@ -87,6 +87,7 @@ class ClientProfileController extends Controller
             'phone_number' => $validated['phone_number'],
             'email' => $validated['email'] ?? $client->email,
             'insurance_company_id' => $insuranceCompanyId,
+            'notification_sound' => $request->has('notification_sound'),
         ]);
 
         return redirect()->route('client.profile.edit')

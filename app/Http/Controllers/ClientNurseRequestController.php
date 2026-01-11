@@ -8,6 +8,9 @@ use App\Models\NurseOffer;
 use App\Models\Area;
 use App\Models\NurseVisit;
 use App\Models\Review;
+use App\Models\User;
+use App\Notifications\NewClientRequestNotification;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -102,6 +105,25 @@ class ClientNurseRequestController extends Controller
 			'status' => 'pending',
 			'payment_status' => 'pending',
 		]);
+
+        // Notify related nurses
+        try {
+            $requestModel->load(['address', 'client']);
+            if ( true || ($requestModel->address && $requestModel->address->area_id) ) {
+                $areaId = $requestModel->address->area_id;
+                $nurseUsers = User::whereNotNull('nurse_id')
+                    ->whereHas('nurse', function($q) use($areaId) {
+                        // $q->whereJsonContains('area_ids', (string)$areaId)
+                          $q->where('status', 'active');
+                    })->get();
+                
+                if ($nurseUsers->count() > 0) {
+                    Notification::send($nurseUsers, new NewClientRequestNotification($requestModel));
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('Notification failed for new nurse request: ' . $e->getMessage());
+        }
 
         return redirect()
             ->route('client.nurse-requests.show', $requestModel)

@@ -141,10 +141,16 @@
         .sidebar-closed-rtl { transform: translateX(100%); }
         [x-cloak] { display: none !important; }
     </style>
-</head>
-<body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-x-auto">
 
-    <div class="flex min-h-screen min-w-full">
+    <script>
+        window.UserConfig = {
+            notificationSound: {{ (auth()->user()?->notification_sound ?? false) ? 'true' : 'false' }}
+        };
+    </script>
+</head>
+<body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-hidden">
+
+    <div class="flex h-screen min-w-full overflow-hidden">
 
         <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden backdrop-blur-sm"></div>
 
@@ -279,7 +285,7 @@
                 </a>
             </nav>
 
-            <a href="{{ route('admin.users.edit', auth()->id()) }}" class="border-t border-slate-800 p-4 bg-black/10 block hover:bg-black/20 transition-colors">
+            <a href="{{ route('user.profile.edit') }}" class="border-t border-slate-800 p-4 bg-black/10 block hover:bg-black/20 transition-colors">
                 <div class="flex items-center gap-3">
                     <img src="{{ auth()->user()->getFirstMediaUrl('profile_image') ?: 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&background=2dd4bf&color=fff' }}" 
                          class="w-10 h-10 rounded-full border-2 border-slate-700 object-cover">
@@ -301,7 +307,7 @@
             </div>
         </aside>
 
-        <div class="flex-1 flex flex-col bg-gray-100 relative min-w-0 lg:h-screen">
+        <div class="flex-1 flex flex-col bg-gray-100 relative min-w-0 h-screen overflow-hidden">
 
             <header class="h-16 bg-white flex items-center justify-between px-6 border-b border-gray-200 flex-shrink-0">
                 <div class="flex items-center gap-4">
@@ -341,7 +347,7 @@
                         <div x-show="open" 
                              @click.away="open = false" 
                              x-cloak
-                             class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 origin-top-right transition-all"
+                             class="absolute ltr:right-0 rtl:left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 ltr:origin-top-right rtl:origin-top-left transition-all"
                              x-transition:enter="transition ease-out duration-200"
                              x-transition:enter-start="opacity-0 scale-95 translate-y-[-10px]"
                              x-transition:enter-end="opacity-100 scale-100 translate-y-0"
@@ -481,11 +487,11 @@
             console.error('FCM: Error initializing Firebase SDK:', error);
         }
     </script>
-    <script src="{{ asset('js/fcm-token-manager.js') }}"></script>
+    <script src="{{ asset('js/fcm-token-manager.js') }}?v=1.0.2"></script>
     @endif
     
     <!-- Notification Manager -->
-    <script src="{{ asset('js/notification-manager.js') }}"></script>
+    <script src="{{ asset('js/notification-manager.js') }}?v=1.0.2"></script>
     <script>
         // Configure Toastr
         toastr.options = {
