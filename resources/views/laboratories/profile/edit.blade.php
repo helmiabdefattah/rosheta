@@ -233,7 +233,11 @@
                             <option value="">{{ app()->getLocale() === 'ar' ? 'اختر المنطقة' : 'Select Area' }}</option>
                             @foreach($areas as $area)
                                 <option value="{{ $area->id }}" {{ old('area_id', $laboratory->area_id) == $area->id ? 'selected' : '' }}>
-                                    {{ $area->name }} - {{ $area->city->name ?? '' }} - {{ $area->city->governorate->name ?? '' }}
+                                    @if(app()->getLocale() === 'ar')
+                                        {{ $area->name_ar }} - {{ $area->city->name_ar ?? '' }} - {{ $area->city->governorate->name_ar ?? '' }}
+                                    @else
+                                        {{ $area->name }} - {{ $area->city->name ?? '' }} - {{ $area->city->governorate->name ?? '' }}
+                                    @endif
                                 </option>
                             @endforeach
                         </select>

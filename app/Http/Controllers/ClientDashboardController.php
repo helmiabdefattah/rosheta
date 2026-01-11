@@ -29,6 +29,13 @@ class ClientDashboardController extends Controller
             'scheduled_visits' => NurseVisit::whereHas('request', fn($q) => $q->where('client_id', $client->id))
                 ->where('status', 'scheduled')
                 ->count(),
+            'test_results' => \App\Models\Offer::where('status', 'accepted')
+                ->whereIn('request_type', ['test', 'radiology'])
+                ->whereHas('request', function($q) use ($client) {
+                    $q->where('client_id', $client->id);
+                })
+                ->whereHas('attachments')
+                ->count(),
         ];
 
         // Recent requests

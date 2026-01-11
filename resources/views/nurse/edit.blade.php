@@ -72,7 +72,11 @@
 								$selected = in_array($area->id, (array) old('area_ids', $nurse->area_ids ?? []));
 							@endphp
 							<option value="{{ $area->id }}" {{ $selected ? 'selected' : '' }}>
-								{{ $area->name }} - {{ $area->city->name ?? '' }} @if($area->city?->governorate) ({{ $area->city->governorate->name }}) @endif
+								@if(app()->getLocale() === 'ar')
+									{{ $area->name_ar }} - {{ $area->city->name_ar ?? '' }} @if($area->city?->governorate) ({{ $area->city->governorate->name_ar }}) @endif
+								@else
+									{{ $area->name }} - {{ $area->city->name ?? '' }} @if($area->city?->governorate) ({{ $area->city->governorate->name }}) @endif
+								@endif
 							</option>
 						@endforeach
 					</select>

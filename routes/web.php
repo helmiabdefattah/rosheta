@@ -134,6 +134,9 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     Route::post('/feedback', [App\Http\Controllers\ClientFeedbackController::class, 'store'])->name('feedback.store');
     Route::get('/feedback/history', [App\Http\Controllers\ClientFeedbackController::class, 'index'])->name('feedback.index');
 
+    // Test Results
+    Route::get('/test-results', [App\Http\Controllers\ClientTestResultController::class, 'index'])->name('test-results.index');
+
     // Orders
     Route::get('/orders', [App\Http\Controllers\ClientOrderController::class, 'index'])->name('orders.index');
     Route::post('/orders/{order}/review', [App\Http\Controllers\ClientOrderController::class, 'storeReview'])->name('orders.review');

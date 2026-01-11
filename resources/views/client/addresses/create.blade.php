@@ -43,7 +43,7 @@
                     <option value="">{{ app()->getLocale() === 'ar' ? 'اختر المدينة' : 'Select City' }}</option>
                     @foreach($cities as $city)
                         <option value="{{ $city->id }}" {{ old('city_id') == $city->id ? 'selected' : '' }}>
-                            {{ $city->name }}
+                            {{ app()->getLocale() === 'ar' ? $city->name_ar : $city->name }}
                         </option>
                     @endforeach
                 </select>
@@ -161,6 +161,8 @@
             allowClear: true
         });
 
+        const isRTL = {{ app()->getLocale() === 'ar' ? 'true' : 'false' }};
+
         // Load areas when city changes
         $('#city_id').on('change', function() {
             const cityId = $(this).val();
@@ -179,7 +181,7 @@
                                 areaSelect.append(
                                     $('<option></option>')
                                         .attr('value', area.id)
-                                        .text(area.name || area.name_ar)
+                                        .text(isRTL ? (area.name_ar || area.name) : (area.name || area.name_ar))
                                 );
                             });
                         }

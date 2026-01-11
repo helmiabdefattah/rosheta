@@ -1,4 +1,7 @@
 <div class="flex items-center gap-2">
+    <a href="{{ route('admin.areas.show', $area) }}" class="px-3 py-1 text-sm bg-slate-100 text-slate-700 rounded hover:bg-slate-200 transition-colors">
+        {{ app()->getLocale() === 'ar' ? 'عرض' : 'View' }}
+    </a>
     <a href="{{ route('admin.areas.edit', $area) }}" class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">
         {{ app()->getLocale() === 'ar' ? 'تعديل' : 'Edit' }}
     </a>

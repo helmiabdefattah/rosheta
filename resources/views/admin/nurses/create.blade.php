@@ -65,7 +65,11 @@
 					<select name="area_ids[]" multiple class="w-full border border-gray-300 rounded-lg p-2 tags-multiselect" data-placeholder="{{ app()->getLocale() === 'ar' ? 'اختر منطقة/مناطق' : 'Select area(s)' }}">
 						@foreach($areas as $area)
 							<option value="{{ $area->id }}" {{ (collect(old('area_ids', []))->contains($area->id)) ? 'selected' : '' }}>
-								{{ $area->name }} - {{ $area->city->name ?? '' }} @if($area->city?->governorate) ({{ $area->city->governorate->name }}) @endif
+								@if(app()->getLocale() === 'ar')
+									{{ $area->name_ar }} - {{ $area->city->name_ar ?? '' }} @if($area->city?->governorate) ({{ $area->city->governorate->name_ar }}) @endif
+								@else
+									{{ $area->name }} - {{ $area->city->name ?? '' }} @if($area->city?->governorate) ({{ $area->city->governorate->name }}) @endif
+								@endif
 							</option>
 						@endforeach
 					</select>
