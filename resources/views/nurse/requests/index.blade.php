@@ -8,7 +8,7 @@
                 <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 text-white">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h3 class="text-xl font-bold">{{ $request->service_type }}</h3>
+                            <h3 class="text-xl font-bold">{{ $request->getTranslatedServiceType() }}</h3>
                             <p class="text-sm text-blue-100 mt-1">Request #{{ $request->id }}</p>
                         </div>
                         <span class="px-3 py-1 text-xs font-semibold rounded-full bg-white text-blue-600 uppercase">
@@ -30,7 +30,7 @@
                                     <span class="text-sm font-medium text-gray-600 w-32 flex-shrink-0">
                                         {{ app()->getLocale() === 'ar' ? 'نوع الخدمة' : 'Service Type' }}:
                                     </span>
-                                    <span class="text-sm text-gray-800">{{ $request->service_type }}</span>
+                                    <span class="text-sm text-gray-800">{{ $request->getTranslatedServiceType() }}</span>
                                 </div>
 
                                 <div class="flex items-start">

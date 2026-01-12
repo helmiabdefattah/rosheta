@@ -13,17 +13,14 @@
 					<label class="block text-sm font-medium text-slate-700 mb-1">
 						{{ app()->getLocale() === 'ar' ? 'نوع الخدمة' : 'Service type' }}
 					</label>
-					<input type="text" name="service_type" class="mt-1 block w-full border rounded-md p-2" required
-						   placeholder="{{ app()->getLocale() === 'ar' ? 'مثال: رعاية الجروح، إعطاء حقن، علاج وريدي...' : 'e.g., Wound care, IV therapy, injection...' }}"
-						   value="{{ old('service_type') }}">
-				</div>
-
-				<div>
-					<label class="block text-sm font-medium text-slate-700 mb-1">
-						{{ app()->getLocale() === 'ar' ? 'ملاحظات طبية (اختياري)' : 'Medical notes (optional)' }}
-					</label>
-					<textarea name="medical_notes" rows="3" class="mt-1 block w-full border rounded-md p-2"
-							  placeholder="{{ app()->getLocale() === 'ar' ? 'اشرح الأعراض، تعليمات الطبيب، الحساسية...' : 'Describe symptoms, doctor instructions, allergies...' }}">{{ old('medical_notes') }}</textarea>
+					<select name="service_type" class="mt-1 block w-full border rounded-md p-2" required>
+						<option value="">{{ app()->getLocale() === 'ar' ? 'اختر نوع الخدمة' : 'Select service type' }}</option>
+						@foreach($serviceTypesWithTranslations as $serviceType)
+							<option value="{{ $serviceType['value'] }}" @selected(old('service_type') === $serviceType['value'])>
+								{{ $serviceType['label'] }}
+							</option>
+						@endforeach
+					</select>
 				</div>
 
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -72,24 +69,69 @@
 							<label class="block text-sm font-medium text-slate-700 mb-1">
 								{{ app()->getLocale() === 'ar' ? 'تكرار الزيارات' : 'Frequency' }}
 							</label>
-							<select name="visit_frequency" class="mt-1 block w-full border rounded-md p-2" required>
+							<select id="visit_frequency" name="visit_frequency" class="mt-1 block w-full border rounded-md p-2">
 								<option value="daily" @selected(old('visit_frequency')==='daily')>
 									{{ app()->getLocale() === 'ar' ? 'يومياً' : 'Daily' }}
 								</option>
 								<option value="every_two_days" @selected(old('visit_frequency')==='every_two_days')>
 									{{ app()->getLocale() === 'ar' ? 'كل يومين' : 'Every 2 days' }}
 								</option>
-								<option value="once_weekly" @selected(old('visit_frequency')==='once_weekly')>
-									{{ app()->getLocale() === 'ar' ? 'مرة أسبوعياً' : 'Once weekly' }}
+								<option value="weekly" @selected(old('visit_frequency')==='weekly')>
+									{{ app()->getLocale() === 'ar' ? 'أسبوعياً' : 'Weekly' }}
 								</option>
-								<option value="twice_weekly" @selected(old('visit_frequency')==='twice_weekly')>
-									{{ app()->getLocale() === 'ar' ? 'مرتان أسبوعياً' : 'Twice weekly' }}
+								<option value="custom" @selected(old('visit_frequency')==='custom')>
+									{{ app()->getLocale() === 'ar' ? 'مخصص' : 'Custom' }}
 								</option>
 							</select>
 						</div>
 					</div>
 				</div>
 
+				{{-- Custom Days Selection --}}
+				<div id="custom_days_container" class="hidden">
+					<label class="block text-sm font-medium text-slate-700 mb-2">
+						{{ app()->getLocale() === 'ar' ? 'اختر أيام الأسبوع' : 'Select days of the week' }}
+					</label>
+					<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+						@php
+							$days = [
+								0 => ['en' => 'Sunday', 'ar' => 'الأحد'],
+								1 => ['en' => 'Monday', 'ar' => 'الإثنين'],
+								2 => ['en' => 'Tuesday', 'ar' => 'الثلاثاء'],
+								3 => ['en' => 'Wednesday', 'ar' => 'الأربعاء'],
+								4 => ['en' => 'Thursday', 'ar' => 'الخميس'],
+								5 => ['en' => 'Friday', 'ar' => 'الجمعة'],
+								6 => ['en' => 'Saturday', 'ar' => 'السبت'],
+							];
+							$oldDays = old('custom_visit_days', []);
+						@endphp
+						@foreach($days as $dayNum => $dayNames)
+							<label class="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-slate-50">
+								<input type="checkbox" name="custom_visit_days[]" value="{{ $dayNum }}" 
+									   class="rounded" 
+									   @checked(in_array($dayNum, $oldDays))>
+								<span class="text-sm text-slate-700">{{ app()->getLocale() === 'ar' ? $dayNames['ar'] : $dayNames['en'] }}</span>
+							</label>
+						@endforeach
+					</div>
+					<div id="custom_days_error" class="text-red-600 text-sm mt-2 hidden"></div>
+				</div>
+
+				
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div>
+						<label class="block text-sm font-medium text-slate-700 mb-1">
+							{{ app()->getLocale() === 'ar' ? 'تاريخ البدء' : 'Start date' }}
+						</label>
+						<input type="date" name="visit_start_date" class="mt-1 block w-full border rounded-md p-2" value="{{ old('visit_start_date') }}" required>
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-slate-700 mb-1">
+							{{ app()->getLocale() === 'ar' ? 'الوقت المفضل' : 'Preferred time' }}
+						</label>
+						<input type="time" name="visit_time" class="mt-1 block w-full border rounded-md p-2" value="{{ old('visit_time') }}" required>
+					</div>
+				</div>
 				<div>
 					<label class="block text-sm font-medium text-slate-700 mb-1">
 						{{ app()->getLocale() === 'ar' ? 'تفضيل نوع الممرض/ـة (اختياري)' : 'Preferred nurse gender (optional)' }}
@@ -107,20 +149,6 @@
 					</select>
 				</div>
 
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<div>
-						<label class="block text-sm font-medium text-slate-700 mb-1">
-							{{ app()->getLocale() === 'ar' ? 'تاريخ البدء' : 'Start date' }}
-						</label>
-						<input type="date" name="visit_start_date" class="mt-1 block w-full border rounded-md p-2" value="{{ old('visit_start_date') }}" required>
-					</div>
-					<div>
-						<label class="block text-sm font-medium text-slate-700 mb-1">
-							{{ app()->getLocale() === 'ar' ? 'الوقت المفضل' : 'Preferred time' }}
-						</label>
-						<input type="time" name="visit_time" class="mt-1 block w-full border rounded-md p-2" value="{{ old('visit_time') }}" required>
-					</div>
-				</div>
 
 				<div>
 					<div class="flex items-center gap-2">
@@ -146,6 +174,34 @@
 					</label>
 					<input type="number" step="0.01" name="total_price" class="mt-1 block w-full border rounded-md p-2" value="{{ old('total_price') }}">
 				</div>
+
+				<div>
+					<label class="block text-sm font-medium text-slate-700 mb-1">
+						{{ app()->getLocale() === 'ar' ? 'ملاحظات طبية (اختياري)' : 'Medical notes (optional)' }}
+					</label>
+					<textarea name="medical_notes" rows="3" class="mt-1 block w-full border rounded-md p-2"
+							  placeholder="{{ app()->getLocale() === 'ar' ? 'اشرح الأعراض، تعليمات الطبيب، الحساسية...' : 'Describe symptoms, doctor instructions, allergies...' }}">{{ old('medical_notes') }}</textarea>
+				</div>
+
+				<div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+					<div class="flex items-start gap-3">
+						<div class="flex-shrink-0 mt-0.5">
+							<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+							</svg>
+						</div>
+						<div class="flex-1">
+							<h4 class="text-sm font-semibold text-blue-800 mb-1">
+								{{ app()->getLocale() === 'ar' ? 'ملاحظة مهمة' : 'Important Note' }}
+							</h4>
+							<p class="text-sm text-blue-700 leading-relaxed">
+								{{ app()->getLocale() === 'ar' 
+									? 'بعد إرسال طلبك، سيتم مراجعته من قبل الممرضين المتاحين. ستحصل على عروض من الممرضين المؤهلين ويمكنك اختيار العرض الأنسب لك. يرجى التأكد من صحة جميع المعلومات المقدمة.' 
+									: 'After submitting your request, it will be reviewed by available nurses. You will receive offers from qualified nurses and can choose the most suitable offer for you. Please ensure all provided information is accurate.' }}
+							</p>
+						</div>
+					</div>
+				</div>
 			</div>
 
 			<div class="flex justify-end gap-3">
@@ -158,6 +214,160 @@
 			</div>
 		</form>
 	</div>
+
+	@push('scripts')
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			const visitsCountInput = document.querySelector('input[name="visits_count"]');
+			const visitFrequencySelect = document.getElementById('visit_frequency');
+			const customDaysContainer = document.getElementById('custom_days_container');
+			const customDaysCheckboxes = document.querySelectorAll('input[name="custom_visit_days[]"]');
+			const errorMessage = document.createElement('div');
+			errorMessage.className = 'text-red-600 text-sm mt-2 hidden';
+			errorMessage.id = 'custom_days_error';
+			customDaysContainer.appendChild(errorMessage);
+
+			function getSelectedDays() {
+				return Array.from(customDaysCheckboxes)
+					.filter(cb => cb.checked)
+					.map(cb => parseInt(cb.value))
+					.sort((a, b) => a - b);
+			}
+
+			function hasConsecutiveDays(days) {
+				if (days.length < 2) return false;
+				
+				// Check consecutive days (including wrap-around: 6 and 0)
+				for (let i = 0; i < days.length; i++) {
+					const current = days[i];
+					const next = days[(i + 1) % days.length];
+					const diff = (next - current + 7) % 7;
+					
+					if (diff === 1) return true;
+					// Check wrap-around: Saturday (6) and Sunday (0)
+					if (current === 6 && next === 0) return true;
+				}
+				return false;
+			}
+
+			function validateCustomDays() {
+				const selectedDays = getSelectedDays();
+				const errorMsg = errorMessage;
+				const isArabic = {{ app()->getLocale() === 'ar' ? 'true' : 'false' }};
+
+				// Clear previous error
+				errorMsg.classList.add('hidden');
+				errorMsg.textContent = '';
+
+				if (selectedDays.length === 0) {
+					errorMsg.textContent = isArabic 
+						? 'يجب اختيار يوم واحد على الأقل'
+						: 'Please select at least one day';
+					errorMsg.classList.remove('hidden');
+					return false;
+				}
+
+				if (selectedDays.length === 7) {
+					errorMsg.textContent = isArabic 
+						? 'لا يمكن اختيار جميع أيام الأسبوع'
+						: 'Cannot select all days of the week';
+					errorMsg.classList.remove('hidden');
+					return false;
+				}
+
+				if (hasConsecutiveDays(selectedDays)) {
+					errorMsg.textContent = isArabic 
+						? 'لا يمكن اختيار يومين متتاليين'
+						: 'Cannot select two consecutive days';
+					errorMsg.classList.remove('hidden');
+					return false;
+				}
+
+				return true;
+			}
+
+			function updateFrequencyField() {
+				const visitsCount = parseInt(visitsCountInput.value) || 0;
+				
+				if (visitsCount === 1) {
+					visitFrequencySelect.disabled = true;
+					visitFrequencySelect.removeAttribute('required');
+					visitFrequencySelect.value = '';
+					customDaysContainer.classList.add('hidden');
+					customDaysCheckboxes.forEach(cb => cb.removeAttribute('required'));
+					errorMessage.classList.add('hidden');
+				} else {
+					visitFrequencySelect.disabled = false;
+					visitFrequencySelect.setAttribute('required', 'required');
+					updateCustomDaysVisibility();
+				}
+			}
+
+			// Add event listeners once for custom days checkboxes
+			customDaysCheckboxes.forEach(cb => {
+				cb.addEventListener('change', function(e) {
+					const checkbox = e.target;
+					const selectedDays = getSelectedDays();
+					const isArabic = {{ app()->getLocale() === 'ar' ? 'true' : 'false' }};
+					
+					// Check if selecting this day would create consecutive days
+					if (checkbox.checked) {
+						if (selectedDays.length === 7) {
+							checkbox.checked = false;
+							errorMessage.textContent = isArabic 
+								? 'لا يمكن اختيار جميع أيام الأسبوع'
+								: 'Cannot select all days of the week';
+							errorMessage.classList.remove('hidden');
+							return;
+						}
+						
+						if (hasConsecutiveDays(selectedDays)) {
+							checkbox.checked = false;
+							errorMessage.textContent = isArabic 
+								? 'لا يمكن اختيار يومين متتاليين'
+								: 'Cannot select two consecutive days';
+							errorMessage.classList.remove('hidden');
+							return;
+						}
+					}
+					
+					// Validate after change
+					validateCustomDays();
+				});
+			});
+
+			function updateCustomDaysVisibility() {
+				if (visitFrequencySelect.value === 'custom') {
+					customDaysContainer.classList.remove('hidden');
+				} else {
+					customDaysContainer.classList.add('hidden');
+					customDaysCheckboxes.forEach(cb => {
+						cb.removeAttribute('required');
+						cb.checked = false;
+					});
+					errorMessage.classList.add('hidden');
+				}
+			}
+
+			// Add validation on form submit
+			const form = document.querySelector('form');
+			form.addEventListener('submit', function(e) {
+				if (visitFrequencySelect.value === 'custom' && !visitFrequencySelect.disabled) {
+					if (!validateCustomDays()) {
+						e.preventDefault();
+						return false;
+					}
+				}
+			});
+
+			visitsCountInput.addEventListener('input', updateFrequencyField);
+			visitFrequencySelect.addEventListener('change', updateCustomDaysVisibility);
+
+			// Initialize on page load
+			updateFrequencyField();
+		});
+	</script>
+	@endpush
 @endsection
 
 

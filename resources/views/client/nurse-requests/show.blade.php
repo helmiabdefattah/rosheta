@@ -11,7 +11,7 @@
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<div>
 					<div class="text-xs text-slate-500">{{ __('Service') }}</div>
-					<div class="font-semibold">{{ $request->service_type }}</div>
+					<div class="font-semibold">{{ $request->getTranslatedServiceType() }}</div>
 				</div>
 				<div>
 					<div class="text-xs text-slate-500">{{ __('Status') }}</div>

@@ -16,7 +16,7 @@
 						<span class="text-sm text-slate-500">#{{ $r->id }}</span>
 						<span class="px-2 py-1 text-xs rounded bg-slate-100 text-slate-700">{{ ucfirst($r->status) }}</span>
 					</div>
-					<h3 class="text-lg font-semibold text-slate-900 mt-2">{{ $r->service_type }}</h3>
+					<h3 class="text-lg font-semibold text-slate-900 mt-2">{{ $r->getTranslatedServiceType() }}</h3>
 					<div class="mt-2 text-sm text-slate-600">
 						<div class="mb-1">
 							<strong>{{ __('Start') }}:</strong> {{ optional($r->visit_start_date)->format('Y-m-d') }} {{ $r->visit_time }}

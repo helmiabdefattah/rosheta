@@ -14,9 +14,131 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ClientNurseRequestController extends Controller
 {
+	/**
+	 * Get available service types.
+	 */
+	private function getServiceTypes(): array
+	{
+		return [
+			'Daily Basic Care Assistance',
+			'Health Monitoring Services',
+			'Post-Surgery Recovery Care',
+			'Elderly & Senior Care',
+			'Maternal & Newborn Support',
+			'Pediatric Nursing Services',
+			'Chronic Disease Management',
+			'Emergency & Urgent Care',
+			'Injury & Trauma Care',
+			'Respite & Family Support',
+			'Medical Equipment Assistance',
+			'Home Testing & Sample Collection',
+			'Nutrition & Feeding Support',
+			'Wound Care & Dressing Changes',
+			'Pain Management Services',
+			'Personal Hygiene Assistance',
+			'Rehabilitation & Mobility Support',
+			'Palliative & Comfort Care',
+			'Health Education & Training',
+			'General Nursing Consultation',
+		];
+	}
+
+	/**
+	 * Get service type translation.
+	 */
+	private function getServiceTypeTranslation(string $serviceType): string
+	{
+		$translations = [
+			'Daily Basic Care Assistance' => [
+				'en' => 'Daily Basic Care Assistance',
+				'ar' => 'مساعدة الرعاية الأساسية اليومية'
+			],
+			'Health Monitoring Services' => [
+				'en' => 'Health Monitoring Services',
+				'ar' => 'خدمات مراقبة الصحة'
+			],
+			'Post-Surgery Recovery Care' => [
+				'en' => 'Post-Surgery Recovery Care',
+				'ar' => 'رعاية ما بعد الجراحة'
+			],
+			'Elderly & Senior Care' => [
+				'en' => 'Elderly & Senior Care',
+				'ar' => 'رعاية كبار السن'
+			],
+			'Maternal & Newborn Support' => [
+				'en' => 'Maternal & Newborn Support',
+				'ar' => 'دعم الأمهات والمواليد الجدد'
+			],
+			'Pediatric Nursing Services' => [
+				'en' => 'Pediatric Nursing Services',
+				'ar' => 'خدمات التمريض للأطفال'
+			],
+			'Chronic Disease Management' => [
+				'en' => 'Chronic Disease Management',
+				'ar' => 'إدارة الأمراض المزمنة'
+			],
+			'Emergency & Urgent Care' => [
+				'en' => 'Emergency & Urgent Care',
+				'ar' => 'الرعاية الطارئة والعاجلة'
+			],
+			'Injury & Trauma Care' => [
+				'en' => 'Injury & Trauma Care',
+				'ar' => 'رعاية الإصابات والصدمات'
+			],
+			'Respite & Family Support' => [
+				'en' => 'Respite & Family Support',
+				'ar' => 'دعم الأسرة والراحة'
+			],
+			'Medical Equipment Assistance' => [
+				'en' => 'Medical Equipment Assistance',
+				'ar' => 'مساعدة المعدات الطبية'
+			],
+			'Home Testing & Sample Collection' => [
+				'en' => 'Home Testing & Sample Collection',
+				'ar' => 'الفحوصات المنزلية وجمع العينات'
+			],
+			'Nutrition & Feeding Support' => [
+				'en' => 'Nutrition & Feeding Support',
+				'ar' => 'دعم التغذية والتغذية'
+			],
+			'Wound Care & Dressing Changes' => [
+				'en' => 'Wound Care & Dressing Changes',
+				'ar' => 'رعاية الجروح وتغيير الضمادات'
+			],
+			'Pain Management Services' => [
+				'en' => 'Pain Management Services',
+				'ar' => 'خدمات إدارة الألم'
+			],
+			'Personal Hygiene Assistance' => [
+				'en' => 'Personal Hygiene Assistance',
+				'ar' => 'مساعدة النظافة الشخصية'
+			],
+			'Rehabilitation & Mobility Support' => [
+				'en' => 'Rehabilitation & Mobility Support',
+				'ar' => 'دعم إعادة التأهيل والحركة'
+			],
+			'Palliative & Comfort Care' => [
+				'en' => 'Palliative & Comfort Care',
+				'ar' => 'الرعاية التلطيفية والراحة'
+			],
+			'Health Education & Training' => [
+				'en' => 'Health Education & Training',
+				'ar' => 'التعليم الصحي والتدريب'
+			],
+			'General Nursing Consultation' => [
+				'en' => 'General Nursing Consultation',
+				'ar' => 'استشارة تمريضية عامة'
+			],
+		];
+
+		$locale = app()->getLocale();
+		return $translations[$serviceType][$locale] ?? $serviceType;
+	}
+
 	/**
 	 * List client's home nurse requests.
 	 */
@@ -58,8 +180,15 @@ class ClientNurseRequestController extends Controller
 		abort_unless($client, 403);
 
 		$addresses = $client->addresses()->with(['city', 'area'])->orderByDesc('id')->get();
+		$serviceTypes = $this->getServiceTypes();
+		$serviceTypesWithTranslations = array_map(function($type) {
+			return [
+				'value' => $type,
+				'label' => $this->getServiceTypeTranslation($type)
+			];
+		}, $serviceTypes);
 
-		return view('client.nurse-requests.create', compact('addresses'));
+		return view('client.nurse-requests.create', compact('addresses', 'serviceTypes', 'serviceTypesWithTranslations'));
 	}
 
 	/**
@@ -71,21 +200,70 @@ class ClientNurseRequestController extends Controller
 		$client = Auth::guard('client')->user();
 		abort_unless($client, 403);
 
+		$serviceTypes = $this->getServiceTypes();
 		$validated = $request->validate([
-			'service_type' => 'required|string|max:255',
+			'service_type' => ['required', 'string', Rule::in($serviceTypes)],
 			'preferred_gender' => 'nullable|in:male,female',
 			'medical_notes' => 'nullable|string|max:2000',
 			'patient_age' => 'nullable|integer|min:0|max:150',
 			'medical_condition' => 'nullable|string|max:2000',
 			'address_id' => 'nullable|exists:client_addresses,id',
 			'visits_count' => 'required|integer|min:1|max:60',
-			'visit_frequency' => 'required|in:daily,every_two_days,once_weekly,twice_weekly',
+			'visit_frequency' => [
+				Rule::requiredIf(function () use ($request) {
+					return $request->input('visits_count', 1) > 1;
+				}),
+				Rule::in(['daily', 'every_two_days', 'weekly', 'custom']),
+			],
+			'custom_visit_days' => [
+				'nullable',
+				'array',
+				'required_if:visit_frequency,custom',
+				function ($attribute, $value, $fail) {
+					if (is_array($value)) {
+						$days = array_map('intval', $value);
+						$uniqueDays = array_unique($days);
+						
+						// Must select at least one day
+						if (count($uniqueDays) === 0) {
+							$fail(__('Please select at least one day.'));
+							return;
+						}
+						
+						// Cannot select all 7 days
+						if (count($uniqueDays) === 7) {
+							$fail(__('Cannot select all days of the week.'));
+							return;
+						}
+						
+						// Cannot select consecutive days
+						sort($uniqueDays);
+						for ($i = 0; $i < count($uniqueDays); $i++) {
+							$current = $uniqueDays[$i];
+							$next = $uniqueDays[($i + 1) % count($uniqueDays)];
+							$diff = ($next - $current + 7) % 7;
+							
+							if ($diff === 1) {
+								$fail(__('Cannot select two consecutive days.'));
+								return;
+							}
+						}
+					}
+				},
+			],
+			'custom_visit_days.*' => 'integer|min:0|max:6',
 			'visit_start_date' => 'required|date|after_or_equal:today',
 			'visit_time' => 'required|date_format:H:i',
 			'needs_overnight' => 'sometimes|boolean',
 			'overnight_days' => 'nullable|integer|min:1|max:30',
 			'total_price' => 'nullable|numeric|min:0',
 		]);
+
+		// If visits_count is 1, set visit_frequency to null
+		if ($validated['visits_count'] == 1) {
+			$validated['visit_frequency'] = null;
+			$validated['custom_visit_days'] = null;
+		}
 
         $requestModel = HomeNurseRequest::create([
 			'client_id' => $client->id,
@@ -96,7 +274,8 @@ class ClientNurseRequestController extends Controller
 			'patient_age' => $validated['patient_age'] ?? null,
 			'medical_condition' => $validated['medical_condition'] ?? null,
 			'visits_count' => $validated['visits_count'],
-            'visit_frequency' => $validated['visit_frequency'],
+            'visit_frequency' => $validated['visit_frequency'] ?? null,
+			'custom_visit_days' => $validated['custom_visit_days'] ?? null,
             'visit_start_date' => $validated['visit_start_date'],
 			'visit_time' => $validated['visit_time'],
 			'needs_overnight' => (bool)($validated['needs_overnight'] ?? false),
@@ -154,10 +333,19 @@ class ClientNurseRequestController extends Controller
 		abort_unless($client && $home_nurse_request->client_id === $client->id, 403);
 
 		$addresses = $client->addresses()->with(['city', 'area'])->orderByDesc('id')->get();
+		$serviceTypes = $this->getServiceTypes();
+		$serviceTypesWithTranslations = array_map(function($type) {
+			return [
+				'value' => $type,
+				'label' => $this->getServiceTypeTranslation($type)
+			];
+		}, $serviceTypes);
 
 		return view('client.nurse-requests.edit', [
 			'request' => $home_nurse_request,
 			'addresses' => $addresses,
+			'serviceTypes' => $serviceTypes,
+			'serviceTypesWithTranslations' => $serviceTypesWithTranslations,
 		]);
 	}
 
@@ -169,15 +357,56 @@ class ClientNurseRequestController extends Controller
 		$client = Auth::guard('client')->user();
 		abort_unless($client && $home_nurse_request->client_id === $client->id, 403);
 
+		$serviceTypes = $this->getServiceTypes();
 		$validated = $request->validate([
-			'service_type' => 'required|string|max:255',
+			'service_type' => ['required', 'string', Rule::in($serviceTypes)],
 			'preferred_gender' => 'nullable|in:male,female',
 			'medical_notes' => 'nullable|string|max:2000',
 			'patient_age' => 'nullable|integer|min:0|max:150',
 			'medical_condition' => 'nullable|string|max:2000',
 			'address_id' => 'nullable|exists:client_addresses,id',
 			'visits_count' => 'required|integer|min:1|max:60',
-			'visit_frequency' => 'required|in:daily,every_two_days,once_weekly,twice_weekly',
+			'visit_frequency' => [
+				'required',
+				Rule::in(['daily', 'every_two_days', 'weekly', 'custom']),
+			],
+			'custom_visit_days' => [
+				'nullable',
+				'array',
+				'required_if:visit_frequency,custom',
+				function ($attribute, $value, $fail) {
+					if (is_array($value)) {
+						$days = array_map('intval', $value);
+						$uniqueDays = array_unique($days);
+						
+						// Must select at least one day
+						if (count($uniqueDays) === 0) {
+							$fail(__('Please select at least one day.'));
+							return;
+						}
+						
+						// Cannot select all 7 days
+						if (count($uniqueDays) === 7) {
+							$fail(__('Cannot select all days of the week.'));
+							return;
+						}
+						
+						// Cannot select consecutive days
+						sort($uniqueDays);
+						for ($i = 0; $i < count($uniqueDays); $i++) {
+							$current = $uniqueDays[$i];
+							$next = $uniqueDays[($i + 1) % count($uniqueDays)];
+							$diff = ($next - $current + 7) % 7;
+							
+							if ($diff === 1) {
+								$fail(__('Cannot select two consecutive days.'));
+								return;
+							}
+						}
+					}
+				},
+			],
+			'custom_visit_days.*' => 'integer|min:0|max:6',
 			'visit_start_date' => 'required|date|after_or_equal:today',
 			'visit_time' => 'required|date_format:H:i',
 			'needs_overnight' => 'sometimes|boolean',
@@ -185,9 +414,16 @@ class ClientNurseRequestController extends Controller
 			'total_price' => 'nullable|numeric|min:0',
 		]);
 
+		// If visits_count is 1, set visit_frequency to null
+		if ($validated['visits_count'] == 1) {
+			$validated['visit_frequency'] = null;
+			$validated['custom_visit_days'] = null;
+		}
+
 		$dirtySchedule = (
 			$home_nurse_request->visits_count != $validated['visits_count'] ||
-			$home_nurse_request->visit_frequency !== $validated['visit_frequency'] ||
+			$home_nurse_request->visit_frequency !== ($validated['visit_frequency'] ?? null) ||
+			$home_nurse_request->custom_visit_days != ($validated['custom_visit_days'] ?? null) ||
 			$home_nurse_request->visit_start_date?->format('Y-m-d') !== $validated['visit_start_date'] ||
 			$home_nurse_request->visit_time !== $validated['visit_time'] ||
 			(bool)$home_nurse_request->needs_overnight !== (bool)($validated['needs_overnight'] ?? false) ||
@@ -202,7 +438,8 @@ class ClientNurseRequestController extends Controller
 			'patient_age' => $validated['patient_age'] ?? null,
 			'medical_condition' => $validated['medical_condition'] ?? null,
 			'visits_count' => $validated['visits_count'],
-			'visit_frequency' => $validated['visit_frequency'],
+			'visit_frequency' => $validated['visit_frequency'] ?? null,
+			'custom_visit_days' => $validated['custom_visit_days'] ?? null,
 			'visit_start_date' => $validated['visit_start_date'],
 			'visit_time' => $validated['visit_time'],
 			'needs_overnight' => (bool)($validated['needs_overnight'] ?? false),
