@@ -48,7 +48,11 @@
                     <x-admin.ui.select name="area_id" :selected="old('area_id')" placeholder="{{ app()->getLocale() === 'ar' ? 'اختر المنطقة' : 'Select Area' }}">
                          @foreach($areas as $area)
                             <option value="{{ $area->id }}" {{ old('area_id') == $area->id ? 'selected' : '' }}>
-                                {{ $area->name }} - {{ $area->city->name ?? '' }}
+                                @if(app()->getLocale() === 'ar')
+                                    {{ $area->name_ar }} - {{ $area->city->name_ar ?? '' }}
+                                @else
+                                    {{ $area->name }} - {{ $area->city->name ?? '' }}
+                                @endif
                             </option>
                         @endforeach
                     </x-admin.ui.select>

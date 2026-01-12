@@ -57,7 +57,7 @@
 							{{ app()->getLocale() === 'ar' ? 'رقم الطلب' : 'Order ID' }}
 						</th>
 						<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-							{{ app()->getLocale() === 'ar' ? 'الصيدلية' : 'Pharmacy' }}
+							{{ app()->getLocale() === 'ar' ? 'المقدم' : 'Provider' }}
 						</th>
 						<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 							{{ app()->getLocale() === 'ar' ? 'الإجمالي' : 'Total Price' }}
@@ -83,7 +83,14 @@
 								<span class="font-semibold">#{{ $order->id }}</span>
 							</td>
 							<td class="px-4 py-3 text-sm text-gray-700">
-								{{ $order->pharmacy?->name ?? 'N/A' }}
+                                @if($order->laboratory_id)
+                                    <span class="flex items-center gap-1.5 text-teal-600 font-medium">
+                                        <i class="bi bi-hospital text-xs"></i>
+                                        {{ $order->laboratory->name ?? 'N/A' }}
+                                    </span>
+                                @else
+                                    {{ $order->pharmacy?->name ?? 'N/A' }}
+                                @endif
 							</td>
 							<td class="px-4 py-3 text-sm text-gray-700">
 								<span class="font-semibold">{{ number_format($order->total_price ?? 0, 2) }} {{ app()->getLocale() === 'ar' ? 'ج.م' : 'EGP' }}</span>
@@ -104,6 +111,14 @@
 								<span class="px-2 py-1 text-xs font-semibold rounded-full {{ $statusColors[$order->status] ?? 'bg-gray-100 text-gray-800' }}">
 									{{ $statusLabels[$order->status] ?? ucfirst($order->status) }}
 								</span>
+                                @if($order->laboratory_id && $order->offer && $order->offer->attachments->count() > 0)
+                                    <div class="mt-2 text-center">
+                                        <a href="{{ route('client.test-results.index') }}" class="text-[10px] font-bold text-primary hover:underline uppercase tracking-tighter">
+                                            <i class="bi bi-file-earmark-check me-1"></i>
+                                            {{ app()->getLocale() === 'ar' ? 'عرض النتائج' : 'View Results' }}
+                                        </a>
+                                    </div>
+                                @endif
 							</td>
 							<td class="px-4 py-3 text-sm text-gray-700">
 								@if($order->payed)

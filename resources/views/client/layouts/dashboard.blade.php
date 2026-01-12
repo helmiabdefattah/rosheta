@@ -178,6 +178,13 @@
                     <span>{{ app()->getLocale() === 'ar' ? 'تتبع الطلبات' : 'Track Orders' }}</span>
                 </a>
 
+                <a href="{{ route('client.test-results.index') }}" class="nav-item {{ request()->routeIs('client.test-results.*') ? 'active' : '' }}">
+                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'نتائج التحاليل' : 'Test Results' }}</span>
+                </a>
+
                 <a href="{{ route('client.addresses.index') }}" class="nav-item {{ request()->routeIs('client.addresses.*') ? 'active' : '' }}">
                     <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>

@@ -57,6 +57,20 @@
                     </div>
                 </div>
             </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                <a href="{{ route('client.test-results.index') }}" class="block group">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">{{ app()->getLocale() === 'ar' ? 'نتائج التحاليل' : 'Test Results' }}</p>
+                            <p class="text-2xl font-bold text-slate-900 mt-2 group-hover:text-primary transition-colors">{{ $stats['test_results'] }}</p>
+                        </div>
+                        <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                            <i class="bi bi-file-earmark-medical text-xl"></i>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
 
         <!-- Recent Activity -->
