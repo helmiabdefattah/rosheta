@@ -140,6 +140,9 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     // Orders
     Route::get('/orders', [App\Http\Controllers\ClientOrderController::class, 'index'])->name('orders.index');
     Route::post('/orders/{order}/review', [App\Http\Controllers\ClientOrderController::class, 'storeReview'])->name('orders.review');
+
+    // Laboratories
+    Route::get('/laboratories', [App\Http\Controllers\ClientLaboratoryController::class, 'index'])->name('laboratories.index');
 });
 
 // Offer routes
