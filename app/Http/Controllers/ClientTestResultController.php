@@ -14,7 +14,7 @@ class ClientTestResultController extends Controller
     public function index(Request $request)
     {
         $client = Auth::guard('client')->user();
-        
+
         // Get accepted offers for medical tests or radiology that belong to this client
         $results = Offer::where('status', 'accepted')
             ->whereIn('request_type', ['test', 'radiology'])
@@ -41,7 +41,7 @@ class ClientTestResultController extends Controller
     public function show(Offer $offer)
     {
         $client = Auth::guard('client')->user();
-        
+
         // Ensure the offer belongs to the client and is a test offer
         if ($offer->request->client_id !== $client->id || !in_array($offer->request_type, ['test', 'radiology'])) {
             abort(403);

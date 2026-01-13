@@ -55,4 +55,9 @@ class Pharmacy extends Model
 	{
 		return $this->morphMany(Review::class, 'reviewable');
 	}
+
+	public function quotes()
+	{
+		return $this->morphMany(Quote::class, 'model');
+	}
 }

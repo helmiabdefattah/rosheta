@@ -115,6 +115,7 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     Route::get('/offers/get', [App\Http\Controllers\ClientOfferController::class, 'getOffers'])->name('offers.get');
     Route::put('/offers/{offer}/accept', [App\Http\Controllers\ClientOfferController::class, 'accept'])->name('offers.accept');
     Route::put('/offers/{offer}/reject', [App\Http\Controllers\ClientOfferController::class, 'reject'])->name('offers.reject');
+    Route::post('/offers/direct', [App\Http\Controllers\ClientOfferController::class, 'createDirectOffer'])->name('offers.direct');
 
     // Addresses
     Route::get('/addresses', [App\Http\Controllers\ClientAddressController::class, 'index'])->name('addresses.index');
@@ -143,6 +144,11 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
 
     // Laboratories
     Route::get('/laboratories', [App\Http\Controllers\ClientLaboratoryController::class, 'index'])->name('laboratories.index');
+    Route::get('/laboratories/{laboratory}/offers', [App\Http\Controllers\ClientLaboratoryController::class, 'offers'])->name('laboratories.offers');
+
+    // Quotes
+    Route::get('/quotes', [App\Http\Controllers\ClientQuoteController::class, 'index'])->name('quotes.index');
+    Route::post('/quotes', [App\Http\Controllers\ClientQuoteController::class, 'store'])->name('quotes.store');
 });
 
 // Offer routes
@@ -196,6 +202,10 @@ Route::middleware('auth')->prefix('laboratory')->name('laboratories.')->group(fu
     Route::put('/offers/{offer}/vendor-status', [App\Http\Controllers\LaboratoryOfferController::class, 'updateVendorStatus'])->name('offers.update-vendor-status');
     Route::post('/offers/{offer}/attachments', [App\Http\Controllers\LaboratoryOfferController::class, 'uploadAttachment'])->name('offers.upload-attachment');
     Route::delete('/offers/{offer}/attachments/{attachment}', [App\Http\Controllers\LaboratoryOfferController::class, 'deleteAttachment'])->name('offers.delete-attachment');
+
+    // Quotes
+    Route::get('/quotes', [App\Http\Controllers\LaboratoryQuoteController::class, 'index'])->name('quotes.index');
+    Route::put('/quotes/{quote}', [App\Http\Controllers\LaboratoryQuoteController::class, 'update'])->name('quotes.update');
 
     // Profile
     Route::get('/profile/edit', [App\Http\Controllers\LaboratoryProfileController::class, 'edit'])->name('profile.edit');

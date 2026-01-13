@@ -132,11 +132,12 @@
                     @foreach($laboratories as $laboratory)
                         <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow">
                             {{-- Logo --}}
-                            @if($laboratory->getFirstMediaUrl('logo'))
+                            @if($laboratory->logo)
                                 <div class="mb-3">
-                                    <img src="{{ $laboratory->getFirstMediaUrl('logo', 'thumb') }}" 
+                                    <img src="{{ asset('storage/' . $laboratory->logo) }}" 
                                          alt="{{ $laboratory->name }}" 
-                                         class="w-full h-32 object-contain rounded">
+                                         class="w-full h-32 object-contain rounded"
+                                         onerror="this.style.display='none'">
                                 </div>
                             @endif
 
@@ -202,6 +203,26 @@
                                     {{ Str::limit($laboratory->address, 100) }}
                                 </div>
                             @endif
+
+                            {{-- Action Buttons --}}
+                            <div class="mt-4 space-y-2">
+                                <a href="{{ route('client.laboratories.offers', $laboratory->id) }}" 
+                                   class="block w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-center">
+                                    <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 011 12V7a4 4 0 014-4z"/>
+                                    </svg>
+                                    {{ app()->getLocale() === 'ar' ? 'عرض العروض' : 'View Offers' }}
+                                </a>
+                                <button type="button" 
+                                        class="w-full px-4 py-2 bg-primary text-white rounded-md hover:bg-teal-700 transition-colors quote-btn"
+                                        data-laboratory-id="{{ $laboratory->id }}"
+                                        data-laboratory-name="{{ $laboratory->name }}">
+                                    <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                                    </svg>
+                                    {{ app()->getLocale() === 'ar' ? 'إرسال استفسار' : 'Send Quote' }}
+                                </button>
+                            </div>
                         </div>
                     @endforeach
                 </div>
@@ -220,6 +241,74 @@
                     </p>
                 </div>
             @endif
+        </div>
+    </div>
+
+    {{-- Quote Modal --}}
+    <div id="quoteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800">
+                        {{ app()->getLocale() === 'ar' ? 'إرسال استفسار' : 'Send Quote' }}
+                    </h3>
+                    <button type="button" id="closeQuoteModal" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600">
+                        <strong>{{ app()->getLocale() === 'ar' ? 'المختبر:' : 'Laboratory:' }}</strong>
+                        <span id="modalLaboratoryName" class="text-gray-800"></span>
+                    </p>
+                </div>
+
+                <form id="quoteForm">
+                    <input type="hidden" name="model_type" value="App\Models\Laboratory">
+                    <input type="hidden" name="model_id" id="modalLaboratoryId">
+
+                    <div class="mb-4">
+                        <label for="quote" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ app()->getLocale() === 'ar' ? 'الاستفسار' : 'Quote' }}
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <textarea 
+                            name="quote" 
+                            id="quote" 
+                            rows="6" 
+                            class="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary"
+                            placeholder="{{ app()->getLocale() === 'ar' ? 'اكتب استفسارك هنا...' : 'Write your quote here...' }}"
+                            required></textarea>
+                        <p class="mt-1 text-xs text-gray-500">
+                            {{ app()->getLocale() === 'ar' ? 'الحد الأقصى 5000 حرف' : 'Maximum 5000 characters' }}
+                        </p>
+                    </div>
+
+                    <div id="quoteError" class="mb-4 hidden">
+                        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                            <p id="quoteErrorText"></p>
+                        </div>
+                    </div>
+
+                    <div id="quoteSuccess" class="mb-4 hidden">
+                        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+                            <p id="quoteSuccessText"></p>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-3">
+                        <button type="button" id="cancelQuoteBtn" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                            {{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-teal-700">
+                            {{ app()->getLocale() === 'ar' ? 'إرسال' : 'Send' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -385,6 +474,103 @@
                         dir: isRTL ? 'rtl' : 'ltr'
                     });
                 }
+            });
+
+            // Quote Modal functionality
+            const quoteModal = document.getElementById('quoteModal');
+            const quoteForm = document.getElementById('quoteForm');
+            const closeQuoteModal = document.getElementById('closeQuoteModal');
+            const cancelQuoteBtn = document.getElementById('cancelQuoteBtn');
+            const quoteError = document.getElementById('quoteError');
+            const quoteSuccess = document.getElementById('quoteSuccess');
+            const quoteErrorText = document.getElementById('quoteErrorText');
+            const quoteSuccessText = document.getElementById('quoteSuccessText');
+
+            // Open modal when quote button is clicked
+            $(document).on('click', '.quote-btn', function() {
+                const laboratoryId = $(this).data('laboratory-id');
+                const laboratoryName = $(this).data('laboratory-name');
+                
+                $('#modalLaboratoryId').val(laboratoryId);
+                $('#modalLaboratoryName').text(laboratoryName);
+                
+                // Reset form
+                quoteForm.reset();
+                quoteError.classList.add('hidden');
+                quoteSuccess.classList.add('hidden');
+                
+                // Show modal
+                quoteModal.classList.remove('hidden');
+            });
+
+            // Close modal
+            function closeModal() {
+                quoteModal.classList.add('hidden');
+                quoteForm.reset();
+                quoteError.classList.add('hidden');
+                quoteSuccess.classList.add('hidden');
+            }
+
+            closeQuoteModal.addEventListener('click', closeModal);
+            cancelQuoteBtn.addEventListener('click', closeModal);
+
+            // Close modal when clicking outside
+            quoteModal.addEventListener('click', function(e) {
+                if (e.target === quoteModal) {
+                    closeModal();
+                }
+            });
+
+            // Handle form submission
+            quoteForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Hide previous messages
+                quoteError.classList.add('hidden');
+                quoteSuccess.classList.add('hidden');
+
+                const formData = new FormData(quoteForm);
+                const submitBtn = quoteForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                
+                // Disable submit button
+                submitBtn.disabled = true;
+                submitBtn.textContent = isArabic ? 'جاري الإرسال...' : 'Sending...';
+
+                fetch('{{ route("client.quotes.store") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        quoteSuccessText.textContent = data.message;
+                        quoteSuccess.classList.remove('hidden');
+                        quoteForm.reset();
+                        
+                        // Close modal after 2 seconds
+                        setTimeout(() => {
+                            closeModal();
+                        }, 2000);
+                    } else {
+                        quoteErrorText.textContent = data.message || (isArabic ? 'حدث خطأ أثناء الإرسال' : 'An error occurred while sending');
+                        quoteError.classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    quoteErrorText.textContent = isArabic ? 'حدث خطأ أثناء الإرسال' : 'An error occurred while sending';
+                    quoteError.classList.remove('hidden');
+                })
+                .finally(() => {
+                    // Re-enable submit button
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                });
             });
         });
     </script>

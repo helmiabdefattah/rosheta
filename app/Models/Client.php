@@ -51,6 +51,11 @@ class Client extends Authenticatable
     {
         return $this->hasMany(Feedback::class);
     }
+
+    public function quotes()
+    {
+        return $this->hasMany(Quote::class);
+    }
     protected static function booted(): void
     {
         static::created(function (self $client) {

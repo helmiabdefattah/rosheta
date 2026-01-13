@@ -6,7 +6,10 @@ use App\Models\Laboratory;
 use App\Models\Area;
 use App\Models\City;
 use App\Models\Governorate;
+use App\Models\MedicalTestOffer;
+use App\Models\ClientAddress;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ClientLaboratoryController extends Controller
 {
@@ -63,5 +66,34 @@ class ClientLaboratoryController extends Controller
             'cities',
             'areas'
         ));
+    }
+
+    /**
+     * Display offers for a specific laboratory.
+     */
+    public function offers(Laboratory $laboratory)
+    {
+        // Verify laboratory is active
+        if (!$laboratory->is_active) {
+            return redirect()->route('client.laboratories.index')
+                ->with('error', app()->getLocale() === 'ar'
+                    ? 'المختبر غير متاح'
+                    : 'Laboratory is not available');
+        }
+
+        // Get all offers for this laboratory with medical test details
+        $offers = MedicalTestOffer::where('laboratory_id', $laboratory->id)
+            ->with(['medicalTest'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        // Get client addresses for the modal
+        $client = Auth::guard('client')->user();
+        $addresses = ClientAddress::where('client_id', $client->id)
+            ->with(['area.city.governorate'])
+            ->latest()
+            ->get();
+
+        return view('client.laboratories.offers', compact('laboratory', 'offers', 'addresses'));
     }
 }

@@ -100,6 +100,11 @@ class Laboratory extends Model implements HasMedia
 	{
 		return $this->morphMany(SupportTicket::class, 'ticketable');
 	}
+
+	public function quotes()
+	{
+		return $this->morphMany(Quote::class, 'model');
+	}
 }
 
 

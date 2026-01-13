@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\ClientRequest;
+use App\Models\ClientRequestLine;
 use App\Models\Offer;
+use App\Models\OfferLine;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -201,7 +203,7 @@ class ClientOfferController extends Controller
                 // Reload offer with relationships for notification
                 $offer->refresh();
                 $offer->load(['request.client', 'pharmacy', 'laboratory', 'user']);
-                
+
                 // Notify the offer creator (pharmacy/lab owner) about acceptance
                 if ($offer->user) {
                     try {
@@ -251,6 +253,114 @@ class ClientOfferController extends Controller
             ->with('success', app()->getLocale() === 'ar'
                 ? 'تم رفض العرض'
                 : 'Offer rejected');
+    }
+
+    /**
+     * Create a direct offer (accept medical test offer from laboratory)
+     */
+    public function createDirectOffer(Request $request)
+    {
+        $client = Auth::guard('client')->user();
+
+        $validated = $request->validate([
+            'type' => 'required|in:medicine,test',
+            'note' => 'nullable|string',
+            'pharmacy_id' => 'required_if:type,medicine|nullable|exists:pharmacies,id',
+            'laboratory_id' => 'required_if:type,test|nullable|exists:laboratories,id',
+            'client_address_id' => 'nullable|exists:client_addresses,id',
+            'lines' => 'required|array|min:1',
+            'lines.*.item_type' => 'required|in:medicine,test',
+            'lines.*.medicine_id' => 'required_if:lines.*.item_type,medicine|nullable|exists:medicines,id',
+            'lines.*.medical_test_id' => 'required_if:lines.*.item_type,test|nullable|exists:medical_tests,id',
+            'lines.*.quantity' => 'nullable|integer|min:1',
+            'lines.*.unit' => 'nullable|string',
+            'lines.*.price' => 'required|numeric|min:0',
+        ]);
+
+        if (!empty($validated['client_address_id'])) {
+            \App\Models\ClientAddress::where('id', $validated['client_address_id'])
+                ->where('client_id', $client->id)
+                ->firstOrFail();
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $clientRequest = ClientRequest::create([
+                'client_id' => $client->id,
+                'client_address_id' => $validated['client_address_id'] ?? null,
+                'note' => $validated['note'] ?? null,
+                'status' => 'confirmed',
+                'type' => $validated['type'],
+            ]);
+
+            foreach ($validated['lines'] as $line) {
+                ClientRequestLine::create([
+                    'client_request_id' => $clientRequest->id,
+                    'item_type' => $line['item_type'],
+                    'medicine_id' => $line['medicine_id'] ?? null,
+                    'medical_test_id' => $line['medical_test_id'] ?? null,
+                    'quantity' => $line['quantity'] ?? 1,
+                    'unit' => $line['unit'] ?? null,
+                ]);
+            }
+
+            $totalPrice = collect($validated['lines'])->sum(
+                fn ($line) => ($line['quantity'] ?? 1) * $line['price']
+            );
+
+            $offer = Offer::create([
+                'client_request_id' => $clientRequest->id,
+                'pharmacy_id' => $validated['type'] === 'medicine' ? $validated['pharmacy_id'] : null,
+                'laboratory_id' => $validated['type'] === 'test' ? $validated['laboratory_id'] : null,
+                'user_id' => $client->id,
+                'status' => 'accepted',
+                'vendor_status' => 'preparing',
+                'total_price' => $totalPrice,
+                'request_type' => $validated['type'],
+            ]);
+
+            foreach ($validated['lines'] as $line) {
+                OfferLine::create([
+                    'offer_id' => $offer->id,
+                    'item_type' => $line['item_type'],
+                    'medicine_id' => $line['medicine_id'] ?? null,
+                    'medical_test_id' => $line['medical_test_id'] ?? null,
+                    'quantity' => $line['quantity'] ?? 1,
+                    'unit' => $line['unit'] ?? null,
+                    'price' => $line['price'],
+                ]);
+            }
+
+            DB::commit();
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => true,
+                    'success' => true,
+                    'message' => __('Offer accepted successfully'),
+                    'offer' => $offer->load([
+                        'request.lines',
+                        'medicineLines.medicine',
+                        'testLines.medicalTest',
+                        'pharmacy',
+                        'laboratory',
+                    ]),
+                ]);
+            }
+
+            // ✅ THIS WILL NOW RUN
+            return redirect()
+                ->route('client.test-results.index')
+                ->with('success', __('Offer accepted successfully'));
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+
+
+            return back()->withErrors(['error' => $e->getMessage()])->withInput();
+        }
     }
 }
 
