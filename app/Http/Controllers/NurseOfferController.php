@@ -61,7 +61,8 @@ class NurseOfferController extends Controller
 
 		// Available requests to offer on: pending, and no existing offer by this nurse
 		$existingOfferedIds = NurseOffer::where('nurse_id', $user->nurse_id)->pluck('home_nurse_request_id')->all();
-		$availableRequests = HomeNurseRequest::where('status', 'pending')
+		$availableRequests = HomeNurseRequest::with(['client', 'address.area.city'])
+			->where('status', 'pending')
 			->whereNotIn('id', $existingOfferedIds)
 			->orderByDesc('created_at')
 			->limit(50)
@@ -92,7 +93,41 @@ class NurseOfferController extends Controller
 		$validated = $request->validate([
 			'home_nurse_request_id' => ['required', 'exists:home_nurse_requests,id'],
 			'notes' => ['nullable', 'string', 'max:2000'],
-			'visit_period' => ['required', Rule::in(['daily', 'every_two_days', 'once_weekly', 'twice_weekly'])],
+			'visit_period' => ['required', Rule::in(['daily', 'every_two_days', 'weekly', 'custom'])],
+			'custom_visit_days' => [
+				'nullable',
+				'array',
+				'required_if:visit_period,custom',
+				function ($attribute, $value, $fail) {
+					if (is_array($value)) {
+						$days = array_map('intval', $value);
+						$uniqueDays = array_unique($days);
+						
+						if (count($uniqueDays) === 0) {
+							$fail(__('Please select at least one day.'));
+							return;
+						}
+						
+						if (count($uniqueDays) === 7) {
+							$fail(__('Cannot select all days of the week.'));
+							return;
+						}
+						
+						sort($uniqueDays);
+						for ($i = 0; $i < count($uniqueDays); $i++) {
+							$current = $uniqueDays[$i];
+							$next = $uniqueDays[($i + 1) % count($uniqueDays)];
+							$diff = ($next - $current + 7) % 7;
+							
+							if ($diff === 1) {
+								$fail(__('Cannot select two consecutive days.'));
+								return;
+							}
+						}
+					}
+				},
+			],
+			'custom_visit_days.*' => 'integer|min:0|max:6',
 			'visit_start_time' => ['nullable', 'date_format:H:i'],
 			'visit_duration' => ['nullable', 'integer', 'min:1', 'max:24'],
 			'visits_count' => ['required', 'integer', 'min:1', 'max:60'],
@@ -115,6 +150,7 @@ class NurseOfferController extends Controller
 			'nurse_id' => $user->nurse_id,
 			'notes' => $validated['notes'] ?? null,
 			'visit_period' => $validated['visit_period'],
+			'custom_visit_days' => $validated['custom_visit_days'] ?? null,
 			'visit_start_time' => $validated['visit_start_time'] ?? null,
 			'visit_duration' => $validated['visit_duration'] ?? null,
 			'visits_count' => $validated['visits_count'],
@@ -151,7 +187,41 @@ class NurseOfferController extends Controller
 
 		$validated = $request->validate([
 			'notes' => ['nullable', 'string', 'max:2000'],
-			'visit_period' => ['required', Rule::in(['daily', 'every_two_days', 'once_weekly', 'twice_weekly'])],
+			'visit_period' => ['required', Rule::in(['daily', 'every_two_days', 'weekly', 'custom'])],
+			'custom_visit_days' => [
+				'nullable',
+				'array',
+				'required_if:visit_period,custom',
+				function ($attribute, $value, $fail) {
+					if (is_array($value)) {
+						$days = array_map('intval', $value);
+						$uniqueDays = array_unique($days);
+						
+						if (count($uniqueDays) === 0) {
+							$fail(__('Please select at least one day.'));
+							return;
+						}
+						
+						if (count($uniqueDays) === 7) {
+							$fail(__('Cannot select all days of the week.'));
+							return;
+						}
+						
+						sort($uniqueDays);
+						for ($i = 0; $i < count($uniqueDays); $i++) {
+							$current = $uniqueDays[$i];
+							$next = $uniqueDays[($i + 1) % count($uniqueDays)];
+							$diff = ($next - $current + 7) % 7;
+							
+							if ($diff === 1) {
+								$fail(__('Cannot select two consecutive days.'));
+								return;
+							}
+						}
+					}
+				},
+			],
+			'custom_visit_days.*' => 'integer|min:0|max:6',
 			'visit_start_time' => ['nullable', 'date_format:H:i'],
 			'visit_duration' => ['nullable', 'integer', 'min:1', 'max:24'],
 			'visits_count' => ['required', 'integer', 'min:1', 'max:60'],
@@ -164,6 +234,7 @@ class NurseOfferController extends Controller
 		$offer->update([
 			'notes' => $validated['notes'] ?? null,
 			'visit_period' => $validated['visit_period'],
+			'custom_visit_days' => $validated['custom_visit_days'] ?? null,
 			'visit_start_time' => $validated['visit_start_time'] ?? null,
 			'visit_duration' => $validated['visit_duration'] ?? null,
 			'visits_count' => $validated['visits_count'],

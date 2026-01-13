@@ -15,10 +15,10 @@ class NurseVisit extends Model
     protected $fillable = [
         'home_nurse_request_id',
         'nurse_id',
-			'nurse_offer_id',
+        'nurse_offer_id',
         'visit_datetime',
         'status',
-			'paid',
+        'paid',
         'notes',
     ];
 

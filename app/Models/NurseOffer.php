@@ -22,6 +22,9 @@ class NurseOffer extends Model
         'visit_price',
         'visits_count',
         'visit_period',
+        'custom_visit_days',
+        'visit_start_time',
+        'visit_duration',
         'notes',
         'status',
     ];
@@ -31,6 +34,7 @@ class NurseOffer extends Model
         'total_price' => 'decimal:2',
         'visit_price' => 'decimal:2',
         'visits_count' => 'integer',
+        'custom_visit_days' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -73,44 +77,87 @@ class NurseOffer extends Model
      */
     public function scheduleVisits(): void
     {
-        $request = $this->request;
-        if (!$request) {
-            return;
-        }
-
         $count = (int) $this->visits_count;
-        if ($count <= 0) {
+        if ($count <= 0 || !$this->home_nurse_request_id) {
             return;
         }
 
-        $start = Carbon::parse($request->visit_start_date);
-        $current = $start->copy();
+        $start = Carbon::parse(
+            Carbon::parse($this->request->visit_start_date)->format('Y-m-d')
+            . ' '
+            . $this->request->visit_time
+        );
 
-        for ($i = 0; $i < $count; $i++) {
-            $this->visits()->create([
-                'home_nurse_request_id' => $this->home_nurse_request_id,
-                'nurse_id' => $this->nurse_id,
-                'visit_datetime' => $current->copy(),
-                'status' => 'scheduled',
-            ]);
+        /*
+        |--------------------------------------------------------------------------
+        | Custom Days Scheduling
+        |--------------------------------------------------------------------------
+        */
+        if ($this->visit_period === 'custom' && !empty($this->custom_visit_days)) {
 
-            switch ($request->visit_frequency) {
-                case 'daily':
-                    $current->addDay();
-                    break;
-                case 'every_two_days':
-                    $current->addDays(2);
-                    break;
-                case 'once_weekly':
-                    $current->addWeek();
-                    break;
-                case 'twice_weekly':
-                    $current->addDays(($i % 2) ? 4 : 3);
-                    break;
-                default:
-                    $current->addWeek();
+            $customDays = collect($this->custom_visit_days)
+                ->map(fn ($d) => (int) $d)
+                ->unique()
+                ->sort()
+                ->values();
+
+            $current = $start->copy()->startOfDay();
+            $scheduled = 0;
+
+            while ($scheduled < $count) {
+
+                if ($customDays->contains($current->dayOfWeek)) {
+
+                    $this->visits()->create([
+                        'home_nurse_request_id' => $this->home_nurse_request_id,
+                        'nurse_offer_id'        => $this->id,
+                        'nurse_id'              => $this->nurse_id,
+                        'visit_datetime'        => $current->copy()->setTimeFromTimeString($this->request->visit_time),
+                        'status'                => 'scheduled',
+                    ]);
+
+                    $scheduled++;
+                }
+
+                $current->addDay();
+            }
+
+        } else {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Standard Scheduling
+            |--------------------------------------------------------------------------
+            */
+            $current = $start->copy();
+
+            for ($i = 0; $i < $count; $i++) {
+
+                $this->visits()->create([
+                    'home_nurse_request_id' => $this->home_nurse_request_id,
+                    'nurse_offer_id'        => $this->id,
+                    'nurse_id'              => $this->nurse_id,
+                    'visit_datetime'        => $current->copy(),
+                    'status'                => 'scheduled',
+                ]);
+
+                switch ($this->visit_period) {
+                    case 'daily':
+                        $current->addDay();
+                        break;
+
+                    case 'every_two_days':
+                        $current->addDays(2);
+                        break;
+
+                    case 'weekly':
+                    default:
+                        $current->addWeek();
+                        break;
+                }
             }
         }
 
+        $this->forceFill(['status' => 'pending'])->save();
     }
 }

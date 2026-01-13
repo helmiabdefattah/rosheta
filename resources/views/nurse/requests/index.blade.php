@@ -45,7 +45,37 @@
                                         {{ app()->getLocale() === 'ar' ? 'تكرار الزيارات' : 'Frequency' }}:
                                     </span>
                                     <span class="text-sm text-gray-800">
-                                        {{ ucfirst(str_replace('_', ' ', $request->visit_frequency)) }}
+                                        @if($request->visit_frequency === 'custom' && !empty($request->custom_visit_days))
+                                            @php
+                                                $days = [
+                                                    0 => ['en' => 'Sunday', 'ar' => 'الأحد'],
+                                                    1 => ['en' => 'Monday', 'ar' => 'الإثنين'],
+                                                    2 => ['en' => 'Tuesday', 'ar' => 'الثلاثاء'],
+                                                    3 => ['en' => 'Wednesday', 'ar' => 'الأربعاء'],
+                                                    4 => ['en' => 'Thursday', 'ar' => 'الخميس'],
+                                                    5 => ['en' => 'Friday', 'ar' => 'الجمعة'],
+                                                    6 => ['en' => 'Saturday', 'ar' => 'السبت'],
+                                                ];
+                                                $selectedDays = array_map('intval', $request->custom_visit_days);
+                                                sort($selectedDays);
+                                                $dayNames = array_map(function($dayNum) use ($days) {
+                                                    return app()->getLocale() === 'ar' ? $days[$dayNum]['ar'] : $days[$dayNum]['en'];
+                                                }, $selectedDays);
+                                            @endphp
+                                            <span class="font-semibold">{{ app()->getLocale() === 'ar' ? 'أيام محددة' : 'Custom' }}:</span>
+                                            <span class="ml-1">{{ implode(', ', $dayNames) }}</span>
+                                        @elseif($request->visit_frequency)
+                                            @php
+                                                $frequencyMap = [
+                                                    'daily' => app()->getLocale() === 'ar' ? 'يومياً' : 'Daily',
+                                                    'every_two_days' => app()->getLocale() === 'ar' ? 'كل يومين' : 'Every 2 days',
+                                                    'weekly' => app()->getLocale() === 'ar' ? 'أسبوعياً' : 'Weekly',
+                                                ];
+                                            @endphp
+                                            {{ $frequencyMap[$request->visit_frequency] ?? ucfirst(str_replace('_', ' ', $request->visit_frequency)) }}
+                                        @else
+                                            {{ app()->getLocale() === 'ar' ? 'زيارة واحدة' : 'Single visit' }}
+                                        @endif
                                     </span>
                                 </div>
 
