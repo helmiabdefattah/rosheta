@@ -10,10 +10,13 @@ use App\Models\NurseVisit;
 use App\Models\Review;
 use App\Models\User;
 use App\Notifications\NewClientRequestNotification;
+use App\Notifications\NurseOfferAcceptedNotification;
+use App\Notifications\NurseOfferRejectedNotification;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class ClientNurseRequestController extends Controller
@@ -496,6 +499,19 @@ class ClientNurseRequestController extends Controller
             $nurse_offer->scheduleVisits();
         });
 
+        // Load relationships and send notification to nurse
+        try {
+            $nurse_offer->refresh();
+            $nurse_offer->load(['request.client', 'nurse.user']);
+            if ($nurse_offer->nurse && $nurse_offer->nurse->user) {
+                $nurseUser = $nurse_offer->nurse->user;
+                $nurseUser->notify(new NurseOfferAcceptedNotification($nurse_offer));
+            }
+        } catch (\Exception $e) {
+            // Log error but don't fail the request
+            Log::error('Failed to send nurse offer accepted notification: ' . $e->getMessage());
+        }
+
         return back()->with('success', __('Offer accepted successfully.'));
     }
 	/**
@@ -511,6 +527,19 @@ class ClientNurseRequestController extends Controller
 		}
 
 		$nurse_offer->update(['status' => 'rejected']);
+
+		// Load relationships and send notification to nurse
+		try {
+			$nurse_offer->refresh();
+			$nurse_offer->load(['request.client', 'nurse.user']);
+			if ($nurse_offer->nurse && $nurse_offer->nurse->user) {
+				$nurseUser = $nurse_offer->nurse->user;
+				$nurseUser->notify(new NurseOfferRejectedNotification($nurse_offer));
+			}
+		} catch (\Exception $e) {
+			// Log error but don't fail the request
+			Log::error('Failed to send nurse offer rejected notification: ' . $e->getMessage());
+		}
 
 		return back()->with('success', __('Offer rejected.'));
 	}

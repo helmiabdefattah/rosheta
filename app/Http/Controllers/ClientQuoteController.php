@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Quote;
+use App\Models\User;
+use App\Notifications\QuoteReceivedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 
 class ClientQuoteController extends Controller
@@ -56,6 +60,28 @@ class ClientQuoteController extends Controller
             'client_id' => Auth::guard('client')->id(),
             'quote' => $validated['quote'],
         ]);
+
+        // Load relationships and send notification to laboratory/pharmacy users
+        try {
+            $quote->load(['client', 'quotable']);
+            
+            if ($validated['model_type'] === 'App\\Models\\Laboratory') {
+                // Get all users associated with this laboratory
+                $labUsers = User::where('laboratory_id', $validated['model_id'])->get();
+                if ($labUsers->count() > 0) {
+                    Notification::send($labUsers, new QuoteReceivedNotification($quote));
+                }
+            } elseif ($validated['model_type'] === 'App\\Models\\Pharmacy') {
+                // Get all users associated with this pharmacy
+                $pharmacyUsers = User::where('pharmacy_id', $validated['model_id'])->get();
+                if ($pharmacyUsers->count() > 0) {
+                    Notification::send($pharmacyUsers, new QuoteReceivedNotification($quote));
+                }
+            }
+        } catch (\Exception $e) {
+            // Log error but don't fail the request
+            Log::error('Failed to send quote received notification: ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,

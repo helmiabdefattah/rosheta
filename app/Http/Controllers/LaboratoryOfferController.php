@@ -6,9 +6,13 @@ use App\Models\Offer;
 use App\Models\Laboratory;
 use App\Models\Attachment;
 use App\Models\Order;
+use App\Notifications\OfferAttachmentUploadedNotification;
+use App\Notifications\OfferPaidNotification;
+use App\Notifications\OfferVendorStatusUpdatedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class LaboratoryOfferController extends Controller
@@ -75,7 +79,29 @@ class LaboratoryOfferController extends Controller
             'vendor_status' => 'required|in:sample_collected,test_completed',
         ]);
 
-        $offer->update(['vendor_status' => $validated['vendor_status']]);
+        // Store old vendor status before updating
+        $oldVendorStatus = $offer->vendor_status;
+        $newVendorStatus = $validated['vendor_status'];
+
+        // Only update and notify if status actually changed
+        if ($oldVendorStatus !== $newVendorStatus) {
+            $offer->update(['vendor_status' => $newVendorStatus]);
+            
+            // Refresh and load necessary relationships after updating
+            $offer->refresh();
+            $offer->load(['request.client', 'laboratory']);
+
+            // Send notification to client
+            try {
+                if ($offer->request && $offer->request->client) {
+                    $client = $offer->request->client;
+                    $client->notify(new OfferVendorStatusUpdatedNotification($offer, $newVendorStatus));
+                }
+            } catch (\Exception $e) {
+                // Log error but don't fail the request
+                Log::error('Failed to send vendor status notification: ' . $e->getMessage());
+            }
+        }
 
         return response()->json([
             'success' => true,
@@ -121,6 +147,18 @@ class LaboratoryOfferController extends Controller
             'mime_type' => $file->getMimeType(),
             'description' => $validated['description'] ?? null,
         ]);
+
+        // Load necessary relationships and send notification to client
+        try {
+            $offer->load(['request.client', 'laboratory']);
+            if ($offer->request && $offer->request->client) {
+                $client = $offer->request->client;
+                $client->notify(new OfferAttachmentUploadedNotification($offer, $attachment));
+            }
+        } catch (\Exception $e) {
+            // Log error but don't fail the request
+            Log::error('Failed to send attachment notification: ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,
@@ -283,23 +321,37 @@ class LaboratoryOfferController extends Controller
                 $order = Order::firstOrCreate(
                     ['offer_id' => $offer->id],
                     [
-                        'client_id' => $offer->client_request->client_id ?? null,
+                        'client_request_id' => $offer->client_request_id,
                         'laboratory_id' => $offer->laboratory_id,
-                        'total_amount' => $offer->total_price ?? 0,
+                        'total_price' => $offer->total_price ?? 0,
                         'status' => 'delivered',
-                        'type' => 'medical_test',
                         'payed' => true,
                     ]
                 );
 
                 // Update order as paid if it already exists
-                if ($order->exists) {
+                if ($order->wasRecentlyCreated === false) {
                     $order->update([
                         'payed' => true,
                         'status' => 'delivered',
                     ]);
                 }
             });
+
+            // Refresh and load necessary relationships after updating
+            $offer->refresh();
+            $offer->load(['request.client', 'laboratory']);
+
+            // Send notification to client
+            try {
+                if ($offer->request && $offer->request->client) {
+                    $client = $offer->request->client;
+                    $client->notify(new OfferPaidNotification($offer));
+                }
+            } catch (\Exception $e) {
+                // Log error but don't fail the request
+                Log::error('Failed to send offer paid notification: ' . $e->getMessage());
+            }
 
             return response()->json([
                 'success' => true,

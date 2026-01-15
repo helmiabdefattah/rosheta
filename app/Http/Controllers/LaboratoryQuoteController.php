@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Laboratory;
 use App\Models\Quote;
+use App\Notifications\QuoteRepliedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class LaboratoryQuoteController extends Controller
 {
@@ -74,9 +76,40 @@ class LaboratoryQuoteController extends Controller
             'reply' => 'required|string|max:5000',
         ]);
 
+        // Store old reply status before updating
+        $hadReply = !empty($quote->reply);
+
         $quote->update([
             'reply' => $validated['reply'],
         ]);
+
+        // Load relationships and send notification to client
+        // Only send if this is a new reply (not editing existing reply)
+        if (!$hadReply) {
+            try {
+                // Refresh to get latest data
+                $quote->refresh();
+                
+                // Load relationships - ensure quotable is loaded properly
+                $quote->load(['client']);
+                
+                // Manually load the quotable relationship to ensure it's available
+                if ($quote->model_type && $quote->model_id) {
+                    $modelClass = $quote->model_type;
+                    if (class_exists($modelClass)) {
+                        $quotable = $modelClass::find($quote->model_id);
+                        $quote->setRelation('quotable', $quotable);
+                    }
+                }
+                
+                if ($quote->client) {
+                    $quote->client->notify(new QuoteRepliedNotification($quote));
+                }
+            } catch (\Exception $e) {
+                // Log error but don't fail the request
+                Log::error('Failed to send quote replied notification: ' . $e->getMessage());
+            }
+        }
 
         if ($request->expectsJson()) {
             return response()->json([

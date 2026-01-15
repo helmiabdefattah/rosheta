@@ -7,8 +7,10 @@ use App\Models\HomeNurseRequest;
 use App\Models\NurseOffer;
 use App\Models\Nurse;
 use App\Models\NurseVisit;
+use App\Notifications\NurseOfferCreatedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class NurseOfferController extends Controller
@@ -160,6 +162,18 @@ class NurseOfferController extends Controller
 			'price' => $total,
 			'status' => 'pending',
 		]);
+
+		// Load necessary relationships and send notification to client
+		try {
+			$offer->load(['request.client', 'nurse.user']);
+			if ($offer->request && $offer->request->client) {
+				$client = $offer->request->client;
+				$client->notify(new NurseOfferCreatedNotification($offer));
+			}
+		} catch (\Exception $e) {
+			// Log error but don't fail the request
+			Log::error('Failed to send nurse offer notification: ' . $e->getMessage());
+		}
 
 		return redirect()->route('nurse.offers.index')->with('success', __('Offer created successfully.'));
 	}

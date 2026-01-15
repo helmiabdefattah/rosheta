@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Pharmacy;
+use App\Notifications\OrderPaidNotification;
+use App\Notifications\OrderStatusUpdatedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class PharmacyOrderController extends Controller
 {
@@ -68,7 +72,30 @@ class PharmacyOrderController extends Controller
 			'status' => 'required|in:preparing,delivering,delivered',
 		]);
 
-		$order->update(['status' => $validated['status']]);
+		// Store old status before updating
+		$oldStatus = $order->status;
+		$newStatus = $validated['status'];
+
+		// Only update if status actually changed
+		if ($oldStatus !== $newStatus) {
+			// Update the order status
+			$order->update(['status' => $newStatus]);
+			
+			// Refresh and load necessary relationships after updating
+			$order->refresh();
+			$order->load(['request.client', 'pharmacy']);
+
+			// Send notification to client
+			try {
+				if ($order->request && $order->request->client) {
+					$client = $order->request->client;
+					$client->notify(new OrderStatusUpdatedNotification($order, $oldStatus, $newStatus));
+				}
+			} catch (\Exception $e) {
+				// Log error but don't fail the request
+				Log::error('Failed to send order status notification: ' . $e->getMessage());
+			}
+		}
 
 		return redirect()->route('pharmacies.orders.index')
 			->with('success', app()->getLocale() === 'ar' 
@@ -88,7 +115,29 @@ class PharmacyOrderController extends Controller
 					: 'You are not authorized to update this order.');
 		}
 
-		$order->update(['payed' => true]);
+		// Store old payment status before updating
+		$wasPaid = $order->payed;
+
+		// Only update and notify if order wasn't already paid
+		if (!$wasPaid) {
+			// Update the order payment status
+			$order->update(['payed' => true]);
+			
+			// Refresh and load necessary relationships after updating
+			$order->refresh();
+			$order->load(['request.client', 'pharmacy']);
+
+			// Send notification to client
+			try {
+				if ($order->request && $order->request->client) {
+					$client = $order->request->client;
+					$client->notify(new OrderPaidNotification($order));
+				}
+			} catch (\Exception $e) {
+				// Log error but don't fail the request
+				Log::error('Failed to send order paid notification: ' . $e->getMessage());
+			}
+		}
 
 		return redirect()->route('pharmacies.orders.index')
 			->with('success', app()->getLocale() === 'ar' 
