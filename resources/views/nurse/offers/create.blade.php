@@ -159,7 +159,41 @@
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div>
 							<label class="block text-sm font-medium text-slate-700 mb-1">{{ __('Visit start time') }}</label>
-							<input type="time" name="visit_start_time" class="w-full border rounded-md p-2" value="{{ old('visit_start_time', $req->visit_time) }}">
+							<div class="grid grid-cols-2 gap-2">
+								<div>
+									<select name="visit_start_time_hour" id="visit_start_time_hour" class="w-full border rounded-md p-2">
+										<option value="">{{ app()->getLocale() === 'ar' ? 'ساعة' : 'Hour' }}</option>
+										@php
+											$oldTime = old('visit_start_time', $req->visit_time);
+											$timeParts = $oldTime ? explode(':', $oldTime) : [null, null];
+											$selectedHour = isset($timeParts[0]) ? (int)$timeParts[0] : null;
+										@endphp
+										@for($h = 0; $h < 24; $h++)
+											<option value="{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}" @selected($selectedHour === $h)>
+												{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}
+											</option>
+										@endfor
+									</select>
+								</div>
+								<div>
+									<select name="visit_start_time_minute" id="visit_start_time_minute" class="w-full border rounded-md p-2">
+										<option value="">{{ app()->getLocale() === 'ar' ? 'دقيقة' : 'Minute' }}</option>
+										@php
+											$selectedMinute = isset($timeParts[1]) ? (int)$timeParts[1] : null;
+											// Round to nearest 15-minute interval if not already
+											if ($selectedMinute !== null) {
+												$selectedMinute = round($selectedMinute / 15) * 15;
+												if ($selectedMinute === 60) $selectedMinute = 0;
+											}
+										@endphp
+										<option value="00" @selected($selectedMinute === 0 || $selectedMinute === null)>00</option>
+										<option value="15" @selected($selectedMinute === 15)>15</option>
+										<option value="30" @selected($selectedMinute === 30)>30</option>
+										<option value="45" @selected($selectedMinute === 45)>45</option>
+									</select>
+								</div>
+							</div>
+							<input type="hidden" name="visit_start_time" id="visit_start_time">
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-slate-700 mb-1">{{ __('Visit duration (hours)') }}</label>
@@ -321,6 +355,27 @@
 
             updateTotal(); // initial calculation
             updateCustomDaysVisibility(); // initial visibility
+
+            // Handle time input combination
+            const visitStartTimeHour = document.getElementById('visit_start_time_hour');
+            const visitStartTimeMinute = document.getElementById('visit_start_time_minute');
+            const visitStartTimeHidden = document.getElementById('visit_start_time');
+
+            function updateVisitStartTime() {
+                const hour = visitStartTimeHour.value;
+                const minute = visitStartTimeMinute.value;
+                if (hour && minute) {
+                    visitStartTimeHidden.value = hour + ':' + minute;
+                } else {
+                    visitStartTimeHidden.value = '';
+                }
+            }
+
+            visitStartTimeHour.addEventListener('change', updateVisitStartTime);
+            visitStartTimeMinute.addEventListener('change', updateVisitStartTime);
+            
+            // Initialize on page load
+            updateVisitStartTime();
         });
     </script>
 @endsection

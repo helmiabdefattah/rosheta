@@ -411,7 +411,21 @@ class ClientNurseRequestController extends Controller
 			],
 			'custom_visit_days.*' => 'integer|min:0|max:6',
 			'visit_start_date' => 'required|date|after_or_equal:today',
-			'visit_time' => 'required|date_format:H:i',
+			'visit_time' => [
+				'required',
+				'date_format:H:i',
+				function ($attribute, $value, $fail) {
+					if ($value) {
+						$parts = explode(':', $value);
+						if (count($parts) === 2) {
+							$minute = (int)$parts[1];
+							if (!in_array($minute, [0, 15, 30, 45])) {
+								$fail(__('Minutes must be 00, 15, 30, or 45.'));
+							}
+						}
+					}
+				},
+			],
 			'needs_overnight' => 'sometimes|boolean',
 			'overnight_days' => 'nullable|integer|min:1|max:30',
 			'total_price' => 'nullable|numeric|min:0',

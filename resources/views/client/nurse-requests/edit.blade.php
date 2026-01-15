@@ -145,7 +145,41 @@
 						<label class="block text-sm font-medium text-slate-700 mb-1">
 							{{ app()->getLocale() === 'ar' ? 'الوقت المفضل' : 'Preferred time' }}
 						</label>
-						<input type="time" name="visit_time" class="mt-1 block w-full border rounded-md p-2" value="{{ old('visit_time', $request->visit_time) }}" required>
+						<div class="grid grid-cols-2 gap-2">
+							<div>
+								<select name="visit_time_hour" id="visit_time_hour" class="mt-1 block w-full border rounded-md p-2" required>
+									<option value="">{{ app()->getLocale() === 'ar' ? 'ساعة' : 'Hour' }}</option>
+									@php
+										$oldTime = old('visit_time', $request->visit_time);
+										$timeParts = $oldTime ? explode(':', $oldTime) : [null, null];
+										$selectedHour = isset($timeParts[0]) ? (int)$timeParts[0] : null;
+									@endphp
+									@for($h = 0; $h < 24; $h++)
+										<option value="{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}" @selected($selectedHour === $h)>
+											{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}
+										</option>
+									@endfor
+								</select>
+							</div>
+							<div>
+								<select name="visit_time_minute" id="visit_time_minute" class="mt-1 block w-full border rounded-md p-2" required>
+									<option value="">{{ app()->getLocale() === 'ar' ? 'دقيقة' : 'Minute' }}</option>
+									@php
+										$selectedMinute = isset($timeParts[1]) ? (int)$timeParts[1] : null;
+										// Round to nearest 15-minute interval if not already
+										if ($selectedMinute !== null) {
+											$selectedMinute = round($selectedMinute / 15) * 15;
+											if ($selectedMinute === 60) $selectedMinute = 0;
+										}
+									@endphp
+									<option value="00" @selected($selectedMinute === 0 || $selectedMinute === null)>00</option>
+									<option value="15" @selected($selectedMinute === 15)>15</option>
+									<option value="30" @selected($selectedMinute === 30)>30</option>
+									<option value="45" @selected($selectedMinute === 45)>45</option>
+								</select>
+							</div>
+						</div>
+						<input type="hidden" name="visit_time" id="visit_time" required>
 					</div>
 				</div>
 
@@ -337,6 +371,27 @@
 
 			// Initialize on page load
 			updateFrequencyField();
+
+			// Handle time input combination
+			const visitTimeHour = document.getElementById('visit_time_hour');
+			const visitTimeMinute = document.getElementById('visit_time_minute');
+			const visitTimeHidden = document.getElementById('visit_time');
+
+			function updateVisitTime() {
+				const hour = visitTimeHour.value;
+				const minute = visitTimeMinute.value;
+				if (hour && minute) {
+					visitTimeHidden.value = hour + ':' + minute + ':00';
+				} else {
+					visitTimeHidden.value = '';
+				}
+			}
+
+			visitTimeHour.addEventListener('change', updateVisitTime);
+			visitTimeMinute.addEventListener('change', updateVisitTime);
+			
+			// Initialize on page load
+			updateVisitTime();
 		});
 	</script>
 	@endpush

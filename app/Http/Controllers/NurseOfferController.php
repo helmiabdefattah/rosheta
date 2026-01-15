@@ -130,7 +130,21 @@ class NurseOfferController extends Controller
 				},
 			],
 			'custom_visit_days.*' => 'integer|min:0|max:6',
-			'visit_start_time' => ['nullable', 'date_format:H:i'],
+			'visit_start_time' => [
+				'nullable',
+				'date_format:H:i',
+				function ($attribute, $value, $fail) {
+					if ($value) {
+						$parts = explode(':', $value);
+						if (count($parts) === 2) {
+							$minute = (int)$parts[1];
+							if (!in_array($minute, [0, 15, 30, 45])) {
+								$fail(__('Minutes must be 00, 15, 30, or 45.'));
+							}
+						}
+					}
+				},
+			],
 			'visit_duration' => ['nullable', 'integer', 'min:1', 'max:24'],
 			'visits_count' => ['required', 'integer', 'min:1', 'max:60'],
 			'visit_price' => ['required', 'numeric', 'min:0'],
@@ -236,7 +250,21 @@ class NurseOfferController extends Controller
 				},
 			],
 			'custom_visit_days.*' => 'integer|min:0|max:6',
-			'visit_start_time' => ['nullable', 'date_format:H:i'],
+			'visit_start_time' => [
+				'nullable',
+				'date_format:H:i',
+				function ($attribute, $value, $fail) {
+					if ($value) {
+						$parts = explode(':', $value);
+						if (count($parts) === 2) {
+							$minute = (int)$parts[1];
+							if (!in_array($minute, [0, 15, 30, 45])) {
+								$fail(__('Minutes must be 00, 15, 30, or 45.'));
+							}
+						}
+					}
+				},
+			],
 			'visit_duration' => ['nullable', 'integer', 'min:1', 'max:24'],
 			'visits_count' => ['required', 'integer', 'min:1', 'max:60'],
 			'visit_price' => ['required', 'numeric', 'min:0'],
