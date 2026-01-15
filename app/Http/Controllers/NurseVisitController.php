@@ -63,6 +63,9 @@ class NurseVisitController extends Controller
 
 		// Only update and notify if marking as paid and wasn't already paid
 		if ($paid && !$wasPaid) {
+			// Load relationships before updating to ensure bonus points are awarded correctly
+			$visit->load(['request', 'offer']);
+			
 			$visit->update(['paid' => $paid]);
 
 			// Refresh and load necessary relationships after updating

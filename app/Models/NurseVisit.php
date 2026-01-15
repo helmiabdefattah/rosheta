@@ -32,9 +32,18 @@ class NurseVisit extends Model
 		static::updated(function (self $visit) {
 			// When a visit becomes paid, award points based on offer.visit_price
 			if ($visit->isDirty('paid') && (bool)$visit->paid === true) {
+				// Ensure relationships are loaded
+				if (!$visit->relationLoaded('request')) {
+					$visit->load('request');
+				}
+				if (!$visit->relationLoaded('offer')) {
+					$visit->load('offer');
+				}
+				
 				$clientId = (int) ($visit->request?->client_id ?? 0);
 				$visitPrice = (float) ($visit->offer?->visit_price ?? 0);
 				$points = (int) round($visitPrice);
+				
 				if ($clientId > 0 && $points > 0) {
 					\App\Models\BonusPoint::awardUnique(
 						clientId: $clientId,
