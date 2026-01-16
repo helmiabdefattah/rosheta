@@ -55,9 +55,19 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($requests as $request)
-                            <tr class="hover:bg-gray-50">
+                            @php
+                                $isForThisLab = $request->model_type === 'App\Models\Laboratory' && $request->model_id == $laboratory->id;
+                            @endphp
+                            <tr class="hover:bg-gray-50 {{ $isForThisLab ? 'bg-blue-50 border-l-4 border-blue-500' : '' }}">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-sm font-semibold text-slate-800">#{{ $request->id }}</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm font-semibold text-slate-800">#{{ $request->id }}</span>
+                                        @if($isForThisLab)
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-600 text-white">
+                                                {{ app()->getLocale() === 'ar' ? 'خاص بك' : 'For You' }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="text-sm text-slate-600">{{ $request->client->name ?? 'N/A' }}</span>

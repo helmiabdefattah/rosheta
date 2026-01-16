@@ -22,8 +22,20 @@
 				</thead>
 				<tbody class="bg-white divide-y divide-gray-200">
 				@foreach($requests as $req)
-					<tr>
-						<td class="px-6 py-3 text-sm text-slate-800">#{{ $req->id }}</td>
+					@php
+						$isForThisPharmacy = $req->model_type === 'App\Models\Pharmacy' && $req->model_id == $pharmacy->id;
+					@endphp
+					<tr class="{{ $isForThisPharmacy ? 'bg-green-50 border-l-4 border-green-500' : '' }}">
+						<td class="px-6 py-3 text-sm text-slate-800">
+							<div class="flex items-center gap-2">
+								<span>#{{ $req->id }}</span>
+								@if($isForThisPharmacy)
+									<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-600 text-white">
+										{{ app()->getLocale() === 'ar' ? 'خاص بك' : 'For You' }}
+									</span>
+								@endif
+							</div>
+						</td>
 						<td class="px-6 py-3 text-sm text-slate-700">{{ $req->client->name ?? 'N/A' }}<div class="text-xs text-slate-500">{{ $req->client->phone_number ?? '' }}</div></td>
 						<td class="px-6 py-3"><span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">{{ $req->lines->where('item_type','medicine')->count() }}</span></td>
 						<td class="px-6 py-3 text-sm text-slate-600">

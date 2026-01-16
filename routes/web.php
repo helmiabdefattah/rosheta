@@ -6,6 +6,7 @@ use App\Http\Controllers\OfferController;
 use App\Http\Controllers\LocaleController;
 use App\Models\Offer;
 use App\Models\ClientRequest;
+use Illuminate\Http\Request;
 
 Route::get('/', function () {
     return view('welcome');
@@ -90,7 +91,7 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     Route::post('/test-requests/{type}', [App\Http\Controllers\ClientTestRequestController::class, 'store'])->name('test-requests.store');
 
     // Medicine Requests (simple create page that posts to test-requests.store with type=medicine)
-    Route::get('/medicine-requests/create', function () {
+    Route::get('/medicine-requests/create', function (Request $request) {
         return view('client.medicine-requests.create');
     })->name('medicine-requests.create');
 
@@ -145,6 +146,9 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     // Laboratories
     Route::get('/laboratories', [App\Http\Controllers\ClientLaboratoryController::class, 'index'])->name('laboratories.index');
     Route::get('/laboratories/{laboratory}/offers', [App\Http\Controllers\ClientLaboratoryController::class, 'offers'])->name('laboratories.offers');
+
+    // Service Providers Search (Laboratories & Pharmacies)
+    Route::get('/service-providers', [App\Http\Controllers\ClientServiceProviderController::class, 'index'])->name('service-providers.index');
 
     // Quotes
     Route::get('/quotes', [App\Http\Controllers\ClientQuoteController::class, 'index'])->name('quotes.index');

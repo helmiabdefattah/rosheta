@@ -17,7 +17,7 @@ use Illuminate\Validation\Rule;
 
 class ClientTestRequestController extends Controller
 {
-    public function create(string $type)
+    public function create(Request $request, string $type)
     {
         if (!in_array($type, ['test', 'radiology'])) {
             abort(404);
@@ -54,11 +54,21 @@ class ClientTestRequestController extends Controller
             ->orderBy('name')
             ->get();
 
+        // Check if a specific laboratory is selected
+        $laboratory = null;
+        if ($request->has('laboratory_id')) {
+            $laboratory = \App\Models\Laboratory::where('id', $request->laboratory_id)
+                ->where('is_active', true)
+                ->with(['area.city.governorate'])
+                ->first();
+        }
+
         return view('client.test-requests.create', [
             'items' => $items,
             'addresses' => $addresses,
             'insuranceCompanies' => $insuranceCompanies,
             'type' => $type,
+            'laboratory' => $laboratory,
         ]);
     }
     public function store(Request $request, string $type)
@@ -129,6 +139,23 @@ class ClientTestRequestController extends Controller
                 $insuranceCompanyId = $request->insurance_company_id;
             }
 
+            // Get model_type and model_id if provided
+            $modelType = null;
+            $modelId = null;
+            if ($request->filled('laboratory_id')) {
+                $laboratory = \App\Models\Laboratory::find($request->laboratory_id);
+                if ($laboratory && $laboratory->is_active) {
+                    $modelType = 'App\Models\Laboratory';
+                    $modelId = $laboratory->id;
+                }
+            } elseif ($request->filled('pharmacy_id')) {
+                $pharmacy = \App\Models\Pharmacy::find($request->pharmacy_id);
+                if ($pharmacy && $pharmacy->is_active) {
+                    $modelType = 'App\Models\Pharmacy';
+                    $modelId = $pharmacy->id;
+                }
+            }
+
             $clientRequest = ClientRequest::create([
                 'client_id' => $client->id,
                 'client_address_id' => $validated['client_address_id'] ?? null,
@@ -141,6 +168,8 @@ class ClientTestRequestController extends Controller
                 'status' => 'pending',
                 'images' => $imageNames,
                 'type' => $type,
+                'model_type' => $modelType,
+                'model_id' => $modelId,
             ]);
 
             if (!empty($validated['tests'])) {
@@ -170,28 +199,44 @@ class ClientTestRequestController extends Controller
 
         // Notify related providers
         try {
-            if ($clientRequest->type === 'medicine') {
-                $pharmacyUsers = User::whereNotNull('pharmacy_id')
-                    ->whereHas('pharmacy', function($q) {
-                        $q->where('is_active', true);
-                    })->get();
-                
-                if ($pharmacyUsers->count() > 0) {
-                    Notification::send($pharmacyUsers, new NewClientRequestNotification($clientRequest));
+            // If request is for a specific provider, only notify that provider
+            if ($clientRequest->model_type && $clientRequest->model_id) {
+                if ($clientRequest->model_type === 'App\Models\Laboratory') {
+                    $laboratory = \App\Models\Laboratory::find($clientRequest->model_id);
+                    if ($laboratory && $laboratory->user) {
+                        $laboratory->user->notify(new NewClientRequestNotification($clientRequest));
+                    }
+                } elseif ($clientRequest->model_type === 'App\Models\Pharmacy') {
+                    $pharmacy = \App\Models\Pharmacy::find($clientRequest->model_id);
+                    if ($pharmacy && $pharmacy->user) {
+                        $pharmacy->user->notify(new NewClientRequestNotification($clientRequest));
+                    }
                 }
             } else {
-                $type = $clientRequest->type; // 'test' or 'radiology'
-                $labUsers = User::whereNotNull('laboratory_id')
-                    ->whereHas('laboratory', function($q) use($type) {
-                        $q->where(function($qt) use ($type) {
-                            $qt->where('type', 'both')
-                              ->orWhere('type', $type);
-                        })->where('is_active', true);
-                    })
-                    ->get();
-                
-                if ($labUsers->count() > 0) {
-                    Notification::send($labUsers, new NewClientRequestNotification($clientRequest));
+                // Notify all active providers (original behavior)
+                if ($clientRequest->type === 'medicine') {
+                    $pharmacyUsers = User::whereNotNull('pharmacy_id')
+                        ->whereHas('pharmacy', function($q) {
+                            $q->where('is_active', true);
+                        })->get();
+                    
+                    if ($pharmacyUsers->count() > 0) {
+                        Notification::send($pharmacyUsers, new NewClientRequestNotification($clientRequest));
+                    }
+                } else {
+                    $type = $clientRequest->type; // 'test' or 'radiology'
+                    $labUsers = User::whereNotNull('laboratory_id')
+                        ->whereHas('laboratory', function($q) use($type) {
+                            $q->where(function($qt) use ($type) {
+                                $qt->where('type', 'both')
+                                  ->orWhere('type', $type);
+                            })->where('is_active', true);
+                        })
+                        ->get();
+                    
+                    if ($labUsers->count() > 0) {
+                        Notification::send($labUsers, new NewClientRequestNotification($clientRequest));
+                    }
                 }
             }
         } catch (\Exception $e) {
