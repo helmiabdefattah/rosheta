@@ -253,8 +253,15 @@
                 </div>
             </a>
 
-            <div class="p-4 bg-black/5">
+            <div class="p-4 bg-black/5 space-y-2">
                 <!-- Language Toggle -->
+                <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
+                </a>
+                <!-- Logout -->
                 <form method="POST" action="{{ route('logout') }}" class="w-full">
                     @csrf
                     <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors">
@@ -275,7 +282,7 @@
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
                     <div>
-                        <h1 class="text-xl font-bold text-slate-800">@yield('page-title', app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard')</h1>
+                        <h1 class="text-base md:text-xl font-bold text-slate-800">@yield('page-title', app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard')</h1>
                         @hasSection('page-description')
                             <p class="text-sm text-slate-500 hidden sm:block">@yield('page-description')</p>
                         @endif
@@ -372,6 +379,15 @@
                             </a>
 
                             <div class="my-1 border-t border-gray-50"></div>
+
+                            <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-primary/5 hover:text-primary transition-colors">
+                                <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                                    </svg>
+                                </div>
+                                {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
+                            </a>
 
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf

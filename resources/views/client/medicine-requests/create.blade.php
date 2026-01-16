@@ -1,7 +1,7 @@
 @extends('client.layouts.dashboard')
 
-@section('title', app()->getLocale() === 'ar' ? 'إنشاء طلب أدوية' : 'Create Medicine Request')
-@section('page-title', app()->getLocale() === 'ar' ? 'إنشاء طلب أدوية' : 'Create Medicine Request')
+@section('title', app()->getLocale() === 'ar' ? ' طلب أدوية' : ' Medicine Request')
+@section('page-title', app()->getLocale() === 'ar' ? ' طلب أدوية' : ' Medicine Request')
 @section('page-description', app()->getLocale() === 'ar' ? 'ارفع صور الروشتة أو أضف ملاحظات لطلب الأدوية' : 'Upload prescription images or add notes to request medicines')
 
 @push('styles')

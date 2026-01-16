@@ -4,13 +4,13 @@
 @endphp
 
 @section('title', app()->getLocale() === 'ar'
-    ? ($isTest ? 'إنشاء طلب تحاليل' : 'إنشاء طلب أشعة')
-    : ($isTest ? 'Create Test Request' : 'Create Radiology Request')
+    ? ($isTest ? ' طلب تحاليل' : ' طلب أشعة')
+    : ($isTest ? ' Test Request' : ' radiology request')
 )
 
 @section('page-title', app()->getLocale() === 'ar'
-    ? ($isTest ? 'إنشاء طلب تحاليل طبية' : 'إنشاء طلب أشعة')
-    : ($isTest ? 'Create Medical Test Request' : 'Create Radiology Request')
+    ? ($isTest ? ' طلب تحاليل طبية' : ' طلب أشعة')
+    : ($isTest ? ' Medical Test Request' : ' radiology request')
 )
 
 @section('page-description', app()->getLocale() === 'ar'

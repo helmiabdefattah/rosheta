@@ -241,6 +241,9 @@ Route::middleware('auth')->prefix('pharmacy')->name('pharmacies.')->group(functi
 	Route::get('/orders', [App\Http\Controllers\PharmacyOrderController::class, 'index'])->name('orders.index');
 	Route::put('/orders/{order}/status', [App\Http\Controllers\PharmacyOrderController::class, 'updateStatus'])->name('orders.update-status');
 	Route::put('/orders/{order}/mark-paid', [App\Http\Controllers\PharmacyOrderController::class, 'markPaid'])->name('orders.mark-paid');
+	// Pharmacy Profile
+	Route::get('/profile/edit', [App\Http\Controllers\PharmacyProfileController::class, 'edit'])->name('profile.edit');
+	Route::put('/profile/{pharmacy}', [App\Http\Controllers\PharmacyProfileController::class, 'update'])->name('profile.update');
 });
 
 // Admin routes (Blade-based admin panel)

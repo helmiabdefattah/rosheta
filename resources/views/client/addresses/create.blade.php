@@ -7,6 +7,7 @@
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
     .select2-container--default .select2-selection--single {
         height: 42px;
@@ -19,6 +20,12 @@
     }
     .select2-container--default .select2-selection--single .select2-selection__arrow {
         height: 40px;
+    }
+    #locationMap {
+        height: 400px;
+        width: 100%;
+        border-radius: 0.5rem;
+        border: 1px solid #d1d5db;
     }
 </style>
 @endpush
@@ -88,43 +95,24 @@
                 @enderror
             </div>
 
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                    <label for="lat" class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ app()->getLocale() === 'ar' ? 'خط العرض' : 'Latitude' }}
-                        <span class="text-gray-500 text-xs">({{ app()->getLocale() === 'ar' ? 'اختياري' : 'Optional' }})</span>
-                    </label>
-                    <input 
-                        type="number" 
-                        id="lat" 
-                        name="lat" 
-                        step="any"
-                        value="{{ old('lat') }}"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                        placeholder="30.0444"
-                    >
-                    @error('lat')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div>
-                    <label for="lng" class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ app()->getLocale() === 'ar' ? 'خط الطول' : 'Longitude' }}
-                        <span class="text-gray-500 text-xs">({{ app()->getLocale() === 'ar' ? 'اختياري' : 'Optional' }})</span>
-                    </label>
-                    <input 
-                        type="number" 
-                        id="lng" 
-                        name="lng" 
-                        step="any"
-                        value="{{ old('lng') }}"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                        placeholder="31.2357"
-                    >
-                    @error('lng')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ app()->getLocale() === 'ar' ? 'اختر موقعك على الخريطة' : 'Select Your Location on Map' }}
+                    <span class="text-gray-500 text-xs">({{ app()->getLocale() === 'ar' ? 'انقر على الخريطة لتحديد موقعك' : 'Click on the map to select your location' }})</span>
+                </label>
+                <div id="locationMap"></div>
+                <p class="mt-2 text-xs text-gray-500">
+                    {{ app()->getLocale() === 'ar' ? 'انقر على الخريطة أو اسحب العلامة لتحديد موقعك بدقة' : 'Click on the map or drag the marker to set your exact location' }}
+                </p>
+                <!-- Hidden inputs for lat and lng -->
+                <input type="hidden" id="lat" name="lat" value="{{ old('lat') }}">
+                <input type="hidden" id="lng" name="lng" value="{{ old('lng') }}">
+                @error('lat')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+                @error('lng')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <div class="flex items-center justify-end gap-4 pt-4 border-t border-gray-200">
@@ -147,6 +135,7 @@
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     $(document).ready(function() {
         // Initialize Select2 for city
@@ -192,6 +181,48 @@
                 });
             }
         });
+
+        // Initialize Leaflet Map
+        var currentLat = parseFloat($('#lat').val()) || 30.0444; // Default to Cairo, Egypt
+        var currentLng = parseFloat($('#lng').val()) || 31.2357;
+        
+        // Initialize map
+        var map = L.map('locationMap').setView([currentLat, currentLng], 13);
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Create a marker (draggable)
+        var marker = L.marker([currentLat, currentLng], {
+            draggable: true
+        }).addTo(map);
+        
+        // Function to update marker and hidden inputs
+        function updateLocation(lat, lng) {
+            marker.setLatLng([lat, lng]);
+            map.setView([lat, lng], 15);
+            $('#lat').val(lat.toFixed(8));
+            $('#lng').val(lng.toFixed(8));
+        }
+        
+        // Update hidden inputs when marker is dragged
+        marker.on('dragend', function(e) {
+            var position = marker.getLatLng();
+            updateLocation(position.lat, position.lng);
+        });
+        
+        // Update marker position and hidden inputs when map is clicked
+        map.on('click', function(e) {
+            updateLocation(e.latlng.lat, e.latlng.lng);
+        });
+        
+        // If coordinates exist, center map on them
+        if ($('#lat').val() && $('#lng').val()) {
+            map.setView([currentLat, currentLng], 15);
+        }
     });
 </script>
 @endpush

@@ -121,7 +121,14 @@
     @stack('styles')
 </head>
 <body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-hidden">
-
+@php
+    $currentUser = auth()->user();
+    $currentLaboratory = $currentUser->laboratory_id ? \App\Models\Laboratory::find($currentUser->laboratory_id) : null;
+    $currentLaboratoryName = $currentLaboratory ? $currentLaboratory->name : $currentUser->name;
+    $currentLaboratoryEmail = $currentLaboratory ? ($currentLaboratory->email ?: $currentUser->email) : $currentUser->email;
+    $currentLaboratoryLogo = $currentLaboratory ? ($currentLaboratory->getFirstMediaUrl('logo') ?: ($currentLaboratory->logo ? asset('storage/' . $currentLaboratory->logo) : null)) : null;
+    $currentAvatarUrl = $currentLaboratoryLogo ?: ($currentUser->getFirstMediaUrl('profile_image') ?: 'https://ui-avatars.com/api/?name=' . urlencode($currentLaboratoryName) . '&background=0d9488&color=fff');
+@endphp
     <div class="flex h-screen min-w-full overflow-hidden">
 
         <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden backdrop-blur-sm"></div>
@@ -220,11 +227,13 @@
 
             <a href="{{ route('laboratories.profile.edit') }}" class="border-t border-slate-800 p-4 bg-black/10 block hover:bg-black/20 transition-colors">
                 <div class="flex items-center gap-3">
-                    <img src="{{ auth()->user()->getFirstMediaUrl('profile_image') ?: 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&background=0d9488&color=fff' }}"
-                         class="w-10 h-10 rounded-full border-2 border-slate-700 object-cover">
+                    <img src="{{ $currentAvatarUrl }}"
+                         class="w-10 h-10 rounded-full border-2 border-slate-700 object-cover"
+                         alt="{{ $currentLaboratoryName }}"
+                         onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($currentLaboratoryName) }}&background=0d9488&color=fff'">
                     <div class="flex-1 overflow-hidden">
-                        <p class="text-sm font-semibold text-white truncate">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-slate-400 truncate">{{ auth()->user()->email }}</p>
+                        <p class="text-sm font-semibold text-white truncate">{{ $currentLaboratoryName }}</p>
+                        <p class="text-xs text-slate-400 truncate">{{ $currentLaboratoryEmail }}</p>
                     </div>
                 </div>
             </a>
@@ -271,12 +280,13 @@
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" class="flex items-center gap-3 focus:outline-none group">
                             <div class="text-right hidden sm:block">
-                                <p class="text-sm font-bold text-slate-800 leading-none">{{ auth()->user()->name }}</p>
+                                <p class="text-sm font-bold text-slate-800 leading-none">{{ $currentLaboratoryName }}</p>
                                 <p class="text-[11px] text-primary mt-1 leading-none uppercase tracking-wider font-semibold">Laboratory</p>
                             </div>
-                            <img src="{{ auth()->user()->getFirstMediaUrl('profile_image') ?: 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&background=0d9488&color=fff' }}"
+                            <img src="{{ $currentAvatarUrl }}"
                                  class="w-10 h-10 rounded-full border-2 border-gray-100 shadow-sm object-cover group-hover:border-primary transition-colors"
-                                 alt="{{ auth()->user()->name }}">
+                                 alt="{{ $currentLaboratoryName }}"
+                                 onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($currentLaboratoryName) }}&background=0d9488&color=fff'">
                             <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                             </svg>

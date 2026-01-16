@@ -62,6 +62,13 @@
 	@stack('styles')
 </head>
 <body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-hidden">
+@php
+	$currentUser = auth()->user();
+	$currentPharmacy = $currentUser->pharmacy_id ? \App\Models\Pharmacy::find($currentUser->pharmacy_id) : null;
+	$currentPharmacyName = $currentPharmacy ? $currentPharmacy->name : $currentUser->name;
+	$currentPharmacyEmail = $currentPharmacy ? ($currentPharmacy->email ?: $currentUser->email) : $currentUser->email;
+	$currentAvatarUrl = $currentUser->getFirstMediaUrl('profile_image') ?: 'https://ui-avatars.com/api/?name=' . urlencode($currentPharmacyName) . '&background=0d9488&color=fff';
+@endphp
 <div class="flex h-screen w-full">
 	<div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden backdrop-blur-sm"></div>
 	<aside id="sidebar" class="fixed lg:static inset-y-0 z-50 w-64 bg-sidebar text-white flex flex-col shadow-2xl sidebar-transition sidebar-closed-ltr lg:translate-x-0 h-full">
@@ -111,14 +118,19 @@
 				<span>{{ app()->getLocale() === 'ar' ? 'إدارة الطلبات' : 'Manage Orders' }}</span>
 			</a>
 			<div class="menu-header">{{ app()->getLocale() === 'ar' ? 'الإعدادات' : 'SETTINGS' }}</div>
-			{{-- Placeholder for pharmacy profile routes if exist --}}
+			<a href="{{ route('pharmacies.profile.edit') }}" class="nav-item {{ request()->routeIs('pharmacies.profile.*') ? 'active' : '' }}">
+				<svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+				</svg>
+				<span>{{ app()->getLocale() === 'ar' ? 'إدارة ملف الصيدلية' : 'Manage Pharmacy Profile' }}</span>
+			</a>
 		</nav>
 		<div class="border-t border-slate-800 p-4 bg-black/10">
 			<div class="flex items-center gap-3 mb-3">
-				<img src="https://ui-avatars.com/api/?name={{ auth()->user()->name }}&background=0d9488&color=fff" class="w-10 h-10 rounded-full border-2 border-slate-700">
+				<img src="{{ $currentAvatarUrl }}" class="w-10 h-10 rounded-full border-2 border-slate-700" alt="{{ $currentPharmacyName }}" onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($currentPharmacyName) }}&background=0d9488&color=fff'">
 				<div class="flex-1 overflow-hidden">
-					<p class="text-sm font-semibold text-white truncate">{{ auth()->user()->name }}</p>
-					<p class="text-xs text-slate-400 truncate">{{ auth()->user()->email }}</p>
+					<p class="text-sm font-semibold text-white truncate">{{ $currentPharmacyName }}</p>
+					<p class="text-xs text-slate-400 truncate">{{ $currentPharmacyEmail }}</p>
 				</div>
 			</div>
 			<a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" class="flex items-center justify-center gap-2 px-3 py-2 mb-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors">
@@ -157,12 +169,13 @@
 				<div class="relative" x-data="{ open: false }">
 					<button @click="open = !open" class="flex items-center gap-3 focus:outline-none group">
 						<div class="text-right hidden sm:block">
-							<p class="text-sm font-bold text-slate-800 leading-none">{{ auth()->user()->name }}</p>
+							<p class="text-sm font-bold text-slate-800 leading-none">{{ $currentPharmacyName }}</p>
 							<p class="text-[11px] text-primary mt-1 leading-none uppercase tracking-wider font-semibold">{{ app()->getLocale() === 'ar' ? 'الصيدلية' : 'Pharmacy' }}</p>
 						</div>
-						<img src="{{ auth()->user()->getFirstMediaUrl('profile_image') ?: 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&background=0d9488&color=fff' }}" 
+						<img src="{{ $currentAvatarUrl }}" 
 							 class="w-10 h-10 rounded-full border-2 border-gray-100 shadow-sm object-cover group-hover:border-primary transition-colors" 
-							 alt="{{ auth()->user()->name }}">
+							 alt="{{ $currentPharmacyName }}"
+							 onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($currentPharmacyName) }}&background=0d9488&color=fff'">
 						<svg class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
 						</svg>
@@ -190,6 +203,15 @@
 								</svg>
 							</div>
 							{{ app()->getLocale() === 'ar' ? 'ملفي الشخصي' : 'My Profile' }}
+						</a>
+
+						<a href="{{ route('pharmacies.profile.edit') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-primary/5 hover:text-primary transition-colors">
+							<div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+								<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+								</svg>
+							</div>
+							{{ app()->getLocale() === 'ar' ? 'ملف الصيدلية' : 'Pharmacy Profile' }}
 						</a>
 
 						<div class="my-1 border-t border-gray-50"></div>
