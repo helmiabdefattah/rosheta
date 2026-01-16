@@ -38,19 +38,19 @@
         .sidebar-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
 
         /* Main Content Scrollbar - Both Directions */
-        .main-content-scroll::-webkit-scrollbar { 
-            width: 8px; 
-            height: 8px; 
+        .main-content-scroll::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
-        .main-content-scroll::-webkit-scrollbar-track { 
-            background: #f1f5f9; 
+        .main-content-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
         }
-        .main-content-scroll::-webkit-scrollbar-thumb { 
-            background: #cbd5e1; 
-            border-radius: 4px; 
+        .main-content-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
         }
-        .main-content-scroll::-webkit-scrollbar-thumb:hover { 
-            background: #94a3b8; 
+        .main-content-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
         .main-content-scroll::-webkit-scrollbar-corner {
             background: #f1f5f9;
@@ -193,19 +193,19 @@
                     <span>{{ app()->getLocale() === 'ar' ? 'عناويني' : 'My Addresses' }}</span>
                 </a>
 
-                <a href="{{ route('client.laboratories.index') }}" class="nav-item {{ request()->routeIs('client.laboratories.*') ? 'active' : '' }}">
-                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
-                    </svg>
-                    <span>{{ app()->getLocale() === 'ar' ? 'المعامل' : 'Laboratories' }}</span>
-                </a>
+{{--                <a href="{{ route('client.laboratories.index') }}" class="nav-item {{ request()->routeIs('client.laboratories.*') ? 'active' : '' }}">--}}
+{{--                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">--}}
+{{--                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>--}}
+{{--                    </svg>--}}
+{{--                    <span>{{ app()->getLocale() === 'ar' ? 'المعامل' : 'Laboratories' }}</span>--}}
+{{--                </a>--}}
 
-                <a href="{{ route('client.quotes.index') }}" class="nav-item {{ request()->routeIs('client.quotes.*') ? 'active' : '' }}">
-                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                    </svg>
-                    <span>{{ app()->getLocale() === 'ar' ? 'استفساراتي' : 'My Quotes' }}</span>
-                </a>
+{{--                <a href="{{ route('client.quotes.index') }}" class="nav-item {{ request()->routeIs('client.quotes.*') ? 'active' : '' }}">--}}
+{{--                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">--}}
+{{--                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>--}}
+{{--                    </svg>--}}
+{{--                    <span>{{ app()->getLocale() === 'ar' ? 'استفساراتي' : 'My Quotes' }}</span>--}}
+{{--                </a>--}}
 
                 <div class="menu-header">{{ app()->getLocale() === 'ar' ? 'الإعدادات' : 'SETTINGS' }}</div>
                         @if(Auth::guard('client')->user()->nurse_id == null)
@@ -253,8 +253,15 @@
                 </div>
             </a>
 
-            <div class="p-4 bg-black/5">
+            <div class="p-4 bg-black/5 space-y-2">
                 <!-- Language Toggle -->
+                <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
+                </a>
+                <!-- Logout -->
                 <form method="POST" action="{{ route('logout') }}" class="w-full">
                     @csrf
                     <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors">
@@ -275,7 +282,7 @@
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
                     <div>
-                        <h1 class="text-xl font-bold text-slate-800">@yield('page-title', app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard')</h1>
+                        <h1 class="text-base md:text-xl font-bold text-slate-800">@yield('page-title', app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard')</h1>
                         @hasSection('page-description')
                             <p class="text-sm text-slate-500 hidden sm:block">@yield('page-description')</p>
                         @endif
@@ -372,6 +379,15 @@
                             </a>
 
                             <div class="my-1 border-t border-gray-50"></div>
+
+                            <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-primary/5 hover:text-primary transition-colors">
+                                <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                                    </svg>
+                                </div>
+                                {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
+                            </a>
 
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf

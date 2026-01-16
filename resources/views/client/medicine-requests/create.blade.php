@@ -1,7 +1,7 @@
 @extends('client.layouts.dashboard')
 
-@section('title', app()->getLocale() === 'ar' ? 'إنشاء طلب أدوية' : 'Create Medicine Request')
-@section('page-title', app()->getLocale() === 'ar' ? 'إنشاء طلب أدوية' : 'Create Medicine Request')
+@section('title', app()->getLocale() === 'ar' ? ' طلب أدوية' : ' Medicine Request')
+@section('page-title', app()->getLocale() === 'ar' ? ' طلب أدوية' : ' Medicine Request')
 @section('page-description', app()->getLocale() === 'ar' ? 'ارفع صور الروشتة أو أضف ملاحظات لطلب الأدوية' : 'Upload prescription images or add notes to request medicines')
 
 @push('styles')
@@ -21,6 +21,63 @@
 <div class="max-w-4xl mx-auto">
 	<form method="POST" action="{{ route('client.test-requests.store', 'medicine') }}" enctype="multipart/form-data" id="medicineRequestForm">
 		@csrf
+
+		@php
+			$pharmacy = null;
+			if(request()->has('pharmacy_id')) {
+				$pharmacy = \App\Models\Pharmacy::where('id', request('pharmacy_id'))
+					->where('is_active', true)
+					->with(['area.city.governorate'])
+					->first();
+			}
+		@endphp
+
+		@if($pharmacy)
+			<!-- Selected Pharmacy Info (Read-only) -->
+			<div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+				<h3 class="text-lg font-semibold text-green-900 mb-4">
+					{{ app()->getLocale() === 'ar' ? 'الصيدلية المحددة' : 'Selected Pharmacy' }}
+				</h3>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div>
+						<label class="block text-sm font-medium text-green-800 mb-1">
+							{{ app()->getLocale() === 'ar' ? 'اسم الصيدلية' : 'Pharmacy Name' }}
+						</label>
+						<p class="text-green-900 font-semibold">{{ $pharmacy->name }}</p>
+					</div>
+					@if($pharmacy->phone)
+						<div>
+							<label class="block text-sm font-medium text-green-800 mb-1">
+								{{ app()->getLocale() === 'ar' ? 'الهاتف' : 'Phone' }}
+							</label>
+							<p class="text-green-900">{{ $pharmacy->phone }}</p>
+						</div>
+					@endif
+					@if($pharmacy->area)
+						<div>
+							<label class="block text-sm font-medium text-green-800 mb-1">
+								{{ app()->getLocale() === 'ar' ? 'الموقع' : 'Location' }}
+							</label>
+							<p class="text-green-900">
+								{{ app()->getLocale() === 'ar' ? $pharmacy->area->name_ar : $pharmacy->area->name }}
+								@if($pharmacy->area->city)
+									, {{ app()->getLocale() === 'ar' ? $pharmacy->area->city->name_ar : $pharmacy->area->city->name }}
+								@endif
+							</p>
+						</div>
+					@endif
+					@if($pharmacy->address)
+						<div>
+							<label class="block text-sm font-medium text-green-800 mb-1">
+								{{ app()->getLocale() === 'ar' ? 'العنوان' : 'Address' }}
+							</label>
+							<p class="text-green-900">{{ $pharmacy->address }}</p>
+						</div>
+					@endif
+				</div>
+				<input type="hidden" name="pharmacy_id" value="{{ $pharmacy->id }}">
+			</div>
+		@endif
 
 		<!-- Address Selection -->
 		<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">

@@ -42,6 +42,18 @@ class PharmacyDashboardController extends Controller
 
 		$recentRequests = ClientRequest::where('type', $requestType)
 			->where('status', 'pending')
+			->where(function($query) use ($pharmacy) {
+				// Show requests specifically for this pharmacy
+				$query->where(function($subQ) use ($pharmacy) {
+					$subQ->where('model_type', 'App\Models\Pharmacy')
+						 ->where('model_id', $pharmacy->id);
+				})
+				// OR show requests without specific provider (available to all)
+				->orWhere(function($subQ) {
+					$subQ->whereNull('model_type')
+						 ->whereNull('model_id');
+				});
+			})
 			->whereDoesntHave('offers', function ($q) use ($pharmacy) {
 				$q->where('pharmacy_id', $pharmacy->id);
 			})

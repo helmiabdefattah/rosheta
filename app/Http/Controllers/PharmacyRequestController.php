@@ -19,6 +19,18 @@ class PharmacyRequestController extends Controller
 		$q = ClientRequest::query()
 			->where('type', 'medicine')
 			->where('status', 'pending')
+			->where(function($query) use ($pharmacy) {
+				// Show requests specifically for this pharmacy
+				$query->where(function($subQ) use ($pharmacy) {
+					$subQ->where('model_type', 'App\Models\Pharmacy')
+						 ->where('model_id', $pharmacy->id);
+				})
+				// OR show requests without specific provider (available to all)
+				->orWhere(function($subQ) {
+					$subQ->whereNull('model_type')
+						 ->whereNull('model_id');
+				});
+			})
 			->with(['client', 'address.area.city.governorate', 'lines.medicine'])
 			->whereDoesntHave('offers', function ($qb) use ($pharmacy) {
 				$qb->where('pharmacy_id', $pharmacy->id);

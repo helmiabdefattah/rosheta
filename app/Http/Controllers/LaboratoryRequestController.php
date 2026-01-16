@@ -24,7 +24,20 @@ class LaboratoryRequestController extends Controller
             ($laboratory->type === 'radiology' ? ['radiology'] : ['test', 'radiology']);
 
         // Get all requests that match laboratory's type(s) and don't have offers from this laboratory
+        // If request has model_type and model_id, only show if it matches this laboratory
         $query = ClientRequest::whereIn('type', $requestTypes)
+            ->where(function($q) use ($laboratory) {
+                // Show requests specifically for this laboratory
+                $q->where(function($subQ) use ($laboratory) {
+                    $subQ->where('model_type', 'App\Models\Laboratory')
+                         ->where('model_id', $laboratory->id);
+                })
+                // OR show requests without specific provider (available to all)
+                ->orWhere(function($subQ) {
+                    $subQ->whereNull('model_type')
+                         ->whereNull('model_id');
+                });
+            })
             ->whereDoesntHave('offers', function($q) use ($laboratory) {
                 $q->where('laboratory_id', $laboratory->id);
             })

@@ -22,6 +22,8 @@ class ClientRequest extends Model
         'note',
         'status',
         'type', // 'medicine' or 'test'
+        'model_type', // 'App\Models\Laboratory' or 'App\Models\Pharmacy'
+        'model_id', // ID of the Laboratory or Pharmacy
         'images',
     ];
 
@@ -73,6 +75,12 @@ class ClientRequest extends Model
     public function offers()
     {
         return $this->hasMany(Offer::class);
+    }
+
+    // Polymorphic relationship to Laboratory or Pharmacy
+    public function provider()
+    {
+        return $this->morphTo('model');
     }
 
     // Get all lines with their relationships loaded

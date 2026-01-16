@@ -34,10 +34,10 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-    
+
     <!-- Alpine.js for interactive components -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+
     <!-- Toastr Notifications -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
@@ -49,19 +49,19 @@
         .sidebar-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
 
         /* Main Content Scrollbar - Both Directions */
-        .main-content-scroll::-webkit-scrollbar { 
-            width: 8px; 
-            height: 8px; 
+        .main-content-scroll::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
-        .main-content-scroll::-webkit-scrollbar-track { 
-            background: #f1f5f9; 
+        .main-content-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
         }
-        .main-content-scroll::-webkit-scrollbar-thumb { 
-            background: #cbd5e1; 
-            border-radius: 4px; 
+        .main-content-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
         }
-        .main-content-scroll::-webkit-scrollbar-thumb:hover { 
-            background: #94a3b8; 
+        .main-content-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
         .main-content-scroll::-webkit-scrollbar-corner {
             background: #f1f5f9;
@@ -117,11 +117,18 @@
             notificationSound: {{ (auth()->user()?->notification_sound ?? false) ? 'true' : 'false' }}
         };
     </script>
-    
+
     @stack('styles')
 </head>
 <body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-hidden">
-
+@php
+    $currentUser = auth()->user();
+    $currentLaboratory = $currentUser->laboratory_id ? \App\Models\Laboratory::find($currentUser->laboratory_id) : null;
+    $currentLaboratoryName = $currentLaboratory ? $currentLaboratory->name : $currentUser->name;
+    $currentLaboratoryEmail = $currentLaboratory ? ($currentLaboratory->email ?: $currentUser->email) : $currentUser->email;
+    $currentLaboratoryLogo = $currentLaboratory ? ($currentLaboratory->getFirstMediaUrl('logo') ?: ($currentLaboratory->logo ? asset('storage/' . $currentLaboratory->logo) : null)) : null;
+    $currentAvatarUrl = $currentLaboratoryLogo ?: ($currentUser->getFirstMediaUrl('profile_image') ?: 'https://ui-avatars.com/api/?name=' . urlencode($currentLaboratoryName) . '&background=0d9488&color=fff');
+@endphp
     <div class="flex h-screen min-w-full overflow-hidden">
 
         <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden backdrop-blur-sm"></div>
@@ -180,12 +187,12 @@
                     <span>{{ app()->getLocale() === 'ar' ? 'عروضي على الفحوصات' : 'My Test Offers' }}</span>
                 </a>
 
-                <a href="{{ route('laboratories.quotes.index') }}" class="nav-item {{ request()->routeIs('laboratories.quotes.*') ? 'active' : '' }}">
-                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                    </svg>
-                    <span>{{ app()->getLocale() === 'ar' ? 'الاستفسارات' : 'Quotes' }}</span>
-                </a>
+{{--                <a href="{{ route('laboratories.quotes.index') }}" class="nav-item {{ request()->routeIs('laboratories.quotes.*') ? 'active' : '' }}">--}}
+{{--                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">--}}
+{{--                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>--}}
+{{--                    </svg>--}}
+{{--                    <span>{{ app()->getLocale() === 'ar' ? 'الاستفسارات' : 'Quotes' }}</span>--}}
+{{--                </a>--}}
 
                 <div class="menu-header">{{ app()->getLocale() === 'ar' ? 'الإعدادات' : 'SETTINGS' }}</div>
 
@@ -220,15 +227,17 @@
 
             <a href="{{ route('laboratories.profile.edit') }}" class="border-t border-slate-800 p-4 bg-black/10 block hover:bg-black/20 transition-colors">
                 <div class="flex items-center gap-3">
-                    <img src="{{ auth()->user()->getFirstMediaUrl('profile_image') ?: 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&background=0d9488&color=fff' }}" 
-                         class="w-10 h-10 rounded-full border-2 border-slate-700 object-cover">
+                    <img src="{{ $currentAvatarUrl }}"
+                         class="w-10 h-10 rounded-full border-2 border-slate-700 object-cover"
+                         alt="{{ $currentLaboratoryName }}"
+                         onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($currentLaboratoryName) }}&background=0d9488&color=fff'">
                     <div class="flex-1 overflow-hidden">
-                        <p class="text-sm font-semibold text-white truncate">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-slate-400 truncate">{{ auth()->user()->email }}</p>
+                        <p class="text-sm font-semibold text-white truncate">{{ $currentLaboratoryName }}</p>
+                        <p class="text-xs text-slate-400 truncate">{{ $currentLaboratoryEmail }}</p>
                     </div>
                 </div>
             </a>
-            
+
             <div class="p-4 bg-black/5">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
@@ -254,7 +263,7 @@
                         @endif
                     </div>
                 </div>
-                
+
                 <div class="flex items-center gap-4">
                     <!-- Language Toggle -->
                     <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
@@ -264,26 +273,27 @@
                         </svg>
                         <span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
                     </a>
-                    
+
                     <x-notification-dropdown />
-                    
+
                     <!-- Profile Dropdown -->
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" class="flex items-center gap-3 focus:outline-none group">
                             <div class="text-right hidden sm:block">
-                                <p class="text-sm font-bold text-slate-800 leading-none">{{ auth()->user()->name }}</p>
+                                <p class="text-sm font-bold text-slate-800 leading-none">{{ $currentLaboratoryName }}</p>
                                 <p class="text-[11px] text-primary mt-1 leading-none uppercase tracking-wider font-semibold">Laboratory</p>
                             </div>
-                            <img src="{{ auth()->user()->getFirstMediaUrl('profile_image') ?: 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&background=0d9488&color=fff' }}" 
-                                 class="w-10 h-10 rounded-full border-2 border-gray-100 shadow-sm object-cover group-hover:border-primary transition-colors" 
-                                 alt="{{ auth()->user()->name }}">
+                            <img src="{{ $currentAvatarUrl }}"
+                                 class="w-10 h-10 rounded-full border-2 border-gray-100 shadow-sm object-cover group-hover:border-primary transition-colors"
+                                 alt="{{ $currentLaboratoryName }}"
+                                 onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($currentLaboratoryName) }}&background=0d9488&color=fff'">
                             <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                             </svg>
                         </button>
-                        
-                        <div x-show="open" 
-                             @click.away="open = false" 
+
+                        <div x-show="open"
+                             @click.away="open = false"
                              x-cloak
                              class="absolute ltr:right-0 rtl:left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 ltr:origin-top-right rtl:origin-top-left transition-all"
                              x-transition:enter="transition ease-out duration-200"
@@ -292,7 +302,7 @@
                              x-transition:leave="transition ease-in duration-150"
                              x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                              x-transition:leave-end="opacity-0 scale-95 translate-y-[-10px]">
-                            
+
                              <div class="px-4 py-2 border-b border-gray-50 mb-1">
                                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Account</p>
                             </div>
@@ -314,9 +324,9 @@
                                 </div>
                                 {{ app()->getLocale() === 'ar' ? 'ملف المعمل' : 'Laboratory Profile' }}
                             </a>
-                            
+
                             <div class="my-1 border-t border-gray-50"></div>
-                            
+
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
@@ -396,14 +406,14 @@
             messagingSenderId: "{{ config('services.fcm.messaging_sender_id', '') }}",
             appId: "{{ config('services.fcm.app_id', '') }}"
         };
-        
+
         try {
             firebase.initializeApp(firebaseConfig);
             window.firebase = firebase;
             window.firebaseConfig = firebaseConfig; // Store config for service worker
             window.FCM_VAPID_KEY = "{{ config('services.fcm.vapid_key', '') }}";
             console.log('FCM: Firebase SDK loaded successfully');
-            
+
             // Send config to service worker if it's registered
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.ready.then(registration => {
@@ -413,7 +423,7 @@
                     });
                 });
             }
-            
+
             // Set refresh flag if coming from login
             @if(session('fcm_token_refresh'))
             sessionStorage.setItem('fcm_token_refresh', 'true');
@@ -428,7 +438,7 @@
         console.warn('FCM: Firebase API key not configured. Please set FCM_API_KEY in .env file');
     </script>
     @endif
-    
+
     <!-- Notification Manager -->
     <script src="{{ asset('js/notification-manager.js') }}?v=1.0.2"></script>
     <script>
@@ -450,12 +460,12 @@
             "showMethod": "fadeIn",
             "hideMethod": "fadeOut"
         };
-        
+
         @if(app()->getLocale() === 'ar')
         toastr.options.rtl = true;
         @endif
     </script>
-    
+
     @stack('scripts')
 </body>
 </html>

@@ -2,8 +2,8 @@
 
 @section('title', app()->getLocale() === 'ar' ? 'العروض' : 'My Offers')
 
-@section('page-title', app()->getLocale() === 'ar' ? 'عروض على طلباتي' : 'Offers for My Requests')
-@section('page-description', app()->getLocale() === 'ar' ? 'عروض من الصيدليات والمعامل على طلباتك' : 'Offers from pharmacies and laboratories for your requests')
+@section('page-title', app()->getLocale() === 'ar' ? 'عروضي ' : ' My Offers ')
+@section('page-description', app()->getLocale() === 'ar' ? 'عروضي' : 'My Offers')
 
 @push('styles')
 <style>

@@ -4,13 +4,13 @@
 @endphp
 
 @section('title', app()->getLocale() === 'ar'
-    ? ($isTest ? 'إنشاء طلب تحاليل' : 'إنشاء طلب أشعة')
-    : ($isTest ? 'Create Test Request' : 'Create Radiology Request')
+    ? ($isTest ? ' طلب تحاليل' : ' طلب أشعة')
+    : ($isTest ? ' Test Request' : ' radiology request')
 )
 
 @section('page-title', app()->getLocale() === 'ar'
-    ? ($isTest ? 'إنشاء طلب تحاليل طبية' : 'إنشاء طلب أشعة')
-    : ($isTest ? 'Create Medical Test Request' : 'Create Radiology Request')
+    ? ($isTest ? ' طلب تحاليل طبية' : ' طلب أشعة')
+    : ($isTest ? ' Medical Test Request' : ' radiology request')
 )
 
 @section('page-description', app()->getLocale() === 'ar'
@@ -75,6 +75,53 @@
 <div class="max-w-4xl mx-auto">
     <form method="POST" action="{{ route('client.test-requests.store', $type) }}" enctype="multipart/form-data" id="testRequestForm">
         @csrf
+
+        @if(isset($laboratory) && $laboratory)
+            <!-- Selected Laboratory Info (Read-only) -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                <h3 class="text-lg font-semibold text-blue-900 mb-4">
+                    {{ app()->getLocale() === 'ar' ? 'المختبر المحدد' : 'Selected Laboratory' }}
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-blue-800 mb-1">
+                            {{ app()->getLocale() === 'ar' ? 'اسم المختبر' : 'Laboratory Name' }}
+                        </label>
+                        <p class="text-blue-900 font-semibold">{{ $laboratory->name }}</p>
+                    </div>
+                    @if($laboratory->phone)
+                        <div>
+                            <label class="block text-sm font-medium text-blue-800 mb-1">
+                                {{ app()->getLocale() === 'ar' ? 'الهاتف' : 'Phone' }}
+                            </label>
+                            <p class="text-blue-900">{{ $laboratory->phone }}</p>
+                        </div>
+                    @endif
+                    @if($laboratory->area)
+                        <div>
+                            <label class="block text-sm font-medium text-blue-800 mb-1">
+                                {{ app()->getLocale() === 'ar' ? 'الموقع' : 'Location' }}
+                            </label>
+                            <p class="text-blue-900">
+                                {{ app()->getLocale() === 'ar' ? $laboratory->area->name_ar : $laboratory->area->name }}
+                                @if($laboratory->area->city)
+                                    , {{ app()->getLocale() === 'ar' ? $laboratory->area->city->name_ar : $laboratory->area->city->name }}
+                                @endif
+                            </p>
+                        </div>
+                    @endif
+                    @if($laboratory->address)
+                        <div>
+                            <label class="block text-sm font-medium text-blue-800 mb-1">
+                                {{ app()->getLocale() === 'ar' ? 'العنوان' : 'Address' }}
+                            </label>
+                            <p class="text-blue-900">{{ $laboratory->address }}</p>
+                        </div>
+                    @endif
+                </div>
+                <input type="hidden" name="laboratory_id" value="{{ $laboratory->id }}">
+            </div>
+        @endif
 
         <!-- Home Visit Option -->
         @if($type == 'test')

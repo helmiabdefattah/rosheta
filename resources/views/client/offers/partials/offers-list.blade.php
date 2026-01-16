@@ -6,10 +6,10 @@
                 $offers = $item['offers'];
             @endphp
 
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
                 <!-- Request Header -->
                 <div class="mb-4 pb-4 border-b border-gray-200">
-                    <div class="flex items-center justify-between">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                         <div>
                             <h3 class="text-lg font-semibold text-slate-900">
                                 {{ app()->getLocale() === 'ar' ? 'طلب' : 'Request' }} #{{ $request->id }}
@@ -34,7 +34,7 @@
                                 {{ $request->created_at->format('Y-m-d H:i') }}
                             </p>
                         </div>
-                        <span class="status-badge status-{{ $request->status }}">
+                        <span class="status-badge status-{{ $request->status }} self-start md:self-auto">
                             {{ ucfirst($request->status) }}
                         </span>
                     </div>
@@ -43,8 +43,8 @@
                 <!-- Offers List -->
                 <div class="space-y-4">
                     @foreach($offers as $offer)
-                        <div class="offer-card border border-gray-200 rounded-lg p-4 hover:border-primary transition-all">
-                            <div class="flex items-start justify-between mb-3">
+                        <div class="offer-card border border-gray-200 rounded-lg p-4 md:p-4 hover:border-primary transition-all">
+                            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-3">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-3 mb-2">
                                         <h4 class="font-semibold text-slate-900">
@@ -150,7 +150,7 @@
                                     @endif
                                 </div>
 
-                                <div class="text-right ml-4">
+                                <div class="w-full md:w-auto md:text-right md:ml-4 border-t md:border-t-0 pt-3 md:pt-0">
                                     <div class="text-2xl font-bold text-primary mb-1">
                                         {{ number_format($offer->total_price ?? 0, 2) }}
                                     </div>
@@ -203,8 +203,8 @@
                                             <input type="hidden" name="model_id" value="{{ $offer->laboratory_id }}">
                                             <input type="hidden" name="offer_id" value="{{ $offer->id }}">
 
-                                            <div class="flex items-center justify-between gap-3">
-                                                <div class="flex items-center gap-2">
+                                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                                                <div class="flex flex-col md:flex-row md:items-center gap-2">
                         <span class="text-sm text-gray-700">
                             {{ app()->getLocale() === 'ar' ? 'تقييم الخدمة:' : 'Rate service:' }}
                         </span>
@@ -223,7 +223,7 @@
                                                     </div>
                                                 </div>
 
-                                                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 text-sm">
+                                                <button type="submit" class="w-full md:w-auto px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 text-sm">
                                                     {{ app()->getLocale() === 'ar' ? 'إرسال التقييم' : 'Submit Review' }}
                                                 </button>
                                             </div>
@@ -242,7 +242,7 @@
 
                             <!-- Offer Actions -->
                             @if($offer->status === 'pending')
-                                <div class="flex items-center gap-3 pt-3 border-t border-gray-200 mt-3">
+                                <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 pt-3 border-t border-gray-200 mt-3">
                                     <form action="{{ route('client.offers.accept', $offer) }}" method="POST" class="flex-1" onsubmit="return confirm('{{ app()->getLocale() === 'ar' ? 'هل أنت متأكد من قبول هذا العرض؟' : 'Are you sure you want to accept this offer?' }}');">
                                         @csrf
                                         @method('PUT')

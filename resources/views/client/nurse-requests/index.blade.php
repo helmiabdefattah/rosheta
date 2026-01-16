@@ -9,9 +9,9 @@
 	</div>
 
 	@forelse($requests as $r)
-		<div class="bg-white rounded-lg shadow p-6 mb-4">
-			<div class="flex items-start justify-between">
-				<div>
+		<div class="bg-white rounded-lg shadow p-4 md:p-6 mb-4">
+			<div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+				<div class="flex-1">
 					<div class="flex items-center gap-3">
 						<span class="text-sm text-slate-500">#{{ $r->id }}</span>
 						<span class="px-2 py-1 text-xs rounded bg-slate-100 text-slate-700">{{ ucfirst($r->status) }}</span>
@@ -52,7 +52,7 @@
 						@endif
 					</div>
 				</div>
-				<div class="flex gap-2">
+				<div class="flex flex-wrap gap-2">
 					<a href="{{ route('client.nurse-requests.edit', $r) }}" class="px-3 py-1 text-sm bg-blue-600 text-white rounded">{{ __('Edit') }}</a>
 					<a href="{{ route('client.nurse-requests.create') }}" class="px-3 py-1 text-sm bg-green-600 text-white rounded">{{ __('Create') }}</a>
 					<a href="{{ route('client.nurse-requests.show', $r) }}" class="px-3 py-1 text-sm bg-slate-200 text-slate-800 rounded">{{ __('View') }}</a>
@@ -71,7 +71,7 @@
 						@foreach($r->offers as $offer)
 							@php $modalId = 'nurse-offer-modal-'.$offer->id; @endphp
 							<div class="p-3 border rounded">
-								<div class="flex items-start justify-between">
+								<div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
 									<div>
 										<div class="font-medium">
 											{{ $offer->nurse?->user?->name ?? (app()->getLocale() === 'ar' ? 'ممرض/ـة' : 'Nurse') }}
@@ -101,21 +101,25 @@
 											</span>
 										</div>
 									</div>
-									<div class="flex items-center gap-2">
-										<button type="button" class="px-3 py-1 text-sm bg-slate-100 text-slate-800 rounded"
-										        data-modal-open="{{ $modalId }}">{{ app()->getLocale() === 'ar' ? 'الملف' : 'Profile' }}</button>
-										<span class="px-2 py-1 text-xs rounded bg-slate-100 text-slate-700">{{ ucfirst($offer->status) }}</span>
+									<div class="flex flex-col md:flex-row items-start md:items-center gap-2">
+										<div class="flex items-center gap-2">
+											<button type="button" class="px-3 py-1 text-sm bg-slate-100 text-slate-800 rounded"
+											        data-modal-open="{{ $modalId }}">{{ app()->getLocale() === 'ar' ? 'الملف' : 'Profile' }}</button>
+											<span class="px-2 py-1 text-xs rounded bg-slate-100 text-slate-700">{{ ucfirst($offer->status) }}</span>
+										</div>
 										@if($offer->status === 'pending')
-											<form action="{{ route('client.nurse-offers.accept', $offer) }}" method="POST" onsubmit="return confirm('{{ app()->getLocale() === 'ar' ? 'تأكيد قبول العرض؟' : 'Accept this offer?' }}');">
-												@csrf
-												@method('PUT')
-												<button type="submit" class="px-3 py-1 text-sm bg-green-600 text-white rounded">{{ app()->getLocale() === 'ar' ? 'قبول' : 'Accept' }}</button>
-											</form>
-											<form action="{{ route('client.nurse-offers.reject', $offer) }}" method="POST" onsubmit="return confirm('{{ app()->getLocale() === 'ar' ? 'تأكيد رفض العرض؟' : 'Reject this offer?' }}');">
-												@csrf
-												@method('PUT')
-												<button type="submit" class="px-3 py-1 text-sm bg-red-600 text-white rounded">{{ app()->getLocale() === 'ar' ? 'رفض' : 'Reject' }}</button>
-											</form>
+											<div class="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+												<form action="{{ route('client.nurse-offers.accept', $offer) }}" method="POST" onsubmit="return confirm('{{ app()->getLocale() === 'ar' ? 'تأكيد قبول العرض؟' : 'Accept this offer?' }}');" class="w-full md:w-auto">
+													@csrf
+													@method('PUT')
+													<button type="submit" class="w-full md:w-auto px-3 py-1 text-sm bg-green-600 text-white rounded">{{ app()->getLocale() === 'ar' ? 'قبول' : 'Accept' }}</button>
+												</form>
+												<form action="{{ route('client.nurse-offers.reject', $offer) }}" method="POST" onsubmit="return confirm('{{ app()->getLocale() === 'ar' ? 'تأكيد رفض العرض؟' : 'Reject this offer?' }}');" class="w-full md:w-auto">
+													@csrf
+													@method('PUT')
+													<button type="submit" class="w-full md:w-auto px-3 py-1 text-sm bg-red-600 text-white rounded">{{ app()->getLocale() === 'ar' ? 'رفض' : 'Reject' }}</button>
+												</form>
+											</div>
 										@endif
 									</div>
 								</div>
