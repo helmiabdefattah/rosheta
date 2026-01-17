@@ -141,7 +141,8 @@
                         </svg>
                     </div>
                 </div>
-                <div class="filter-content collapsed p-6" id="filterContent">
+                <div class="filter-content collapsed" id="filterContent">
+                    <div class="p-6">
                     <form method="GET" action="{{ route('client.dashboard') }}" class="space-y-4" id="filterForm">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             {{-- Service Provider Type (Required) --}}
@@ -167,7 +168,7 @@
                                     {{ app()->getLocale() === 'ar' ? 'المحافظة' : 'Governorate' }}
                                     <span class="text-red-500">*</span>
                                 </label>
-                                <select name="governorate_id" id="governorate_id" class="w-full border rounded-md p-2" required>
+                                <select name="governorate_id" id="governorate_id" class="w-full border rounded-md p-2">
                                     <option value="">{{ app()->getLocale() === 'ar' ? 'اختر المحافظة' : 'Select Governorate' }}</option>
                                     @foreach($governorates ?? [] as $governorate)
                                         <option value="{{ $governorate->id }}" @selected(request('governorate_id') == $governorate->id)>
@@ -219,6 +220,7 @@
                             </a>
                         </div>
                     </form>
+                    </div>
                 </div>
             </div>
 
@@ -323,13 +325,13 @@
                                     {{-- Action Buttons --}}
                                     <div class="mt-4 space-y-2">
                                         @if($providerType === 'laboratory')
-                                            <a href="{{ route('client.laboratories.offers', $item->id) }}" 
+                                            <!-- <a href="{{ route('client.laboratories.offers', $item->id) }}" 
                                                class="block w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-center mb-2">
                                                 <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 011 12V7a4 4 0 014-4z"/>
                                                 </svg>
                                                 {{ app()->getLocale() === 'ar' ? 'عرض العروض' : 'View Offers' }}
-                                            </a>
+                                            </a> -->
                                             @if($item->type === 'test' || $item->type === 'both')
                                                 <a href="{{ route('client.test-requests.create', ['type' => 'test', 'laboratory_id' => $item->id]) }}" 
                                                    class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center mb-2">
