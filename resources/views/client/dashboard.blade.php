@@ -166,7 +166,6 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
                                     {{ app()->getLocale() === 'ar' ? 'المحافظة' : 'Governorate' }}
-                                    <span class="text-red-500">*</span>
                                 </label>
                                 <select name="governorate_id" id="governorate_id" class="w-full border rounded-md p-2">
                                     <option value="">{{ app()->getLocale() === 'ar' ? 'اختر المحافظة' : 'Select Governorate' }}</option>
