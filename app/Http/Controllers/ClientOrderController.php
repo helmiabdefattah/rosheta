@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Pharmacy;
+use App\Models\Laboratory;
 use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +21,7 @@ class ClientOrderController extends Controller
 			->with([
 				'request.client',
 				'pharmacy',
+				'laboratory',
 				'offer',
 			])
 			->orderByDesc('created_at');
@@ -47,24 +49,37 @@ class ClientOrderController extends Controller
 
 		$orders = $query->paginate(15);
 
-		// Load reviews for the orders
+		// Load reviews for the orders (both pharmacy and laboratory)
 		$offerIds = $orders->pluck('offer_id')->filter()->unique();
 		$pharmacyIds = $orders->pluck('pharmacy_id')->filter()->unique();
+		$laboratoryIds = $orders->pluck('laboratory_id')->filter()->unique();
 
 		$reviews = Review::where('client_id', $client->id)
-			->where('reviewable_type', Pharmacy::class)
-			->whereIn('reviewable_id', $pharmacyIds)
 			->whereIn('offer_id', $offerIds)
+			->where(function ($q) use ($pharmacyIds, $laboratoryIds) {
+				$q->where(function ($qq) use ($pharmacyIds) {
+					$qq->where('reviewable_type', Pharmacy::class)
+						->whereIn('reviewable_id', $pharmacyIds);
+				})->orWhere(function ($qq) use ($laboratoryIds) {
+					$qq->where('reviewable_type', Laboratory::class)
+						->whereIn('reviewable_id', $laboratoryIds);
+				});
+			})
 			->get()
 			->keyBy(function ($review) {
-				return $review->offer_id . '_' . $review->reviewable_id;
+				return $review->offer_id . '_' . $review->reviewable_type . '_' . $review->reviewable_id;
 			});
 
 		// Attach reviews to orders
 		foreach ($orders as $order) {
-			if ($order->pharmacy_id && $order->offer_id) {
-				$key = $order->offer_id . '_' . $order->pharmacy_id;
-				$order->review = $reviews->get($key);
+			if ($order->offer_id) {
+				if ($order->pharmacy_id) {
+					$key = $order->offer_id . '_' . Pharmacy::class . '_' . $order->pharmacy_id;
+					$order->review = $reviews->get($key);
+				} elseif ($order->laboratory_id) {
+					$key = $order->offer_id . '_' . Laboratory::class . '_' . $order->laboratory_id;
+					$order->review = $reviews->get($key);
+				}
 			}
 		}
 
@@ -83,12 +98,20 @@ class ClientOrderController extends Controller
 					: 'You are not authorized to review this order.');
 		}
 
-		// Verify order has pharmacy
-		if (!$order->pharmacy_id) {
+		// Verify order has pharmacy or laboratory
+		if (!$order->pharmacy_id && !$order->laboratory_id) {
 			return redirect()->route('client.orders.index')
 				->with('error', app()->getLocale() === 'ar' 
-					? 'هذا الطلب لا يحتوي على صيدلية.' 
-					: 'This order does not have a pharmacy.');
+					? 'هذا الطلب لا يحتوي على مزود خدمة.' 
+					: 'This order does not have a service provider.');
+		}
+
+		// Verify order has offer_id
+		if (!$order->offer_id) {
+			return redirect()->route('client.orders.index')
+				->with('error', app()->getLocale() === 'ar' 
+					? 'هذا الطلب لا يحتوي على عرض.' 
+					: 'This order does not have an offer.');
 		}
 
 		$validated = $request->validate([
@@ -96,10 +119,19 @@ class ClientOrderController extends Controller
 			'comment' => 'nullable|string|max:2000',
 		]);
 
+		// Determine reviewable type and id
+		if ($order->pharmacy_id) {
+			$reviewableType = Pharmacy::class;
+			$reviewableId = $order->pharmacy_id;
+		} else {
+			$reviewableType = Laboratory::class;
+			$reviewableId = $order->laboratory_id;
+		}
+
 		// Check if review already exists
 		$existingReview = Review::where('client_id', $client->id)
-			->where('reviewable_type', Pharmacy::class)
-			->where('reviewable_id', $order->pharmacy_id)
+			->where('reviewable_type', $reviewableType)
+			->where('reviewable_id', $reviewableId)
 			->where('offer_id', $order->offer_id)
 			->first();
 
@@ -118,8 +150,8 @@ class ClientOrderController extends Controller
 
 		// Create new review
 		Review::create([
-			'reviewable_type' => Pharmacy::class,
-			'reviewable_id' => $order->pharmacy_id,
+			'reviewable_type' => $reviewableType,
+			'reviewable_id' => $reviewableId,
 			'client_id' => $client->id,
 			'offer_id' => $order->offer_id,
 			'rating' => $validated['rating'],

@@ -4,8 +4,70 @@
 @section('page-title', app()->getLocale() === 'ar' ? 'تتبع الطلبات' : 'Track Orders')
 @section('page-description', app()->getLocale() === 'ar' ? 'عرض ومتابعة جميع طلباتك' : 'View and track all your orders')
 
+@push('styles')
+<style>
+	.review-modal {
+		display: none;
+	}
+	.review-modal.show {
+		display: none; /* Hidden on mobile */
+	}
+	@media (min-width: 768px) {
+		.review-modal.show {
+			display: flex !important; /* Show on desktop */
+		}
+	}
+	.star-rating {
+		display: inline-flex;
+		direction: ltr;
+	}
+	.star-rating input[type="radio"] {
+		display: none;
+	}
+	.star-rating label {
+		cursor: pointer;
+		font-size: 1.25rem;
+		color: #cbd5e1; /* slate-300 */
+		margin-inline: 2px;
+	}
+	.star-rating input[type="radio"]:checked ~ label {
+		color: #fbbf24; /* amber-400 */
+	}
+	.star-rating label:hover,
+	.star-rating label:hover ~ label {
+		color: #facc15; /* amber-300 */
+	}
+	.refresh-indicator {
+		display: inline-block;
+		animation: spin 1s linear infinite;
+	}
+	@keyframes spin {
+		from { transform: rotate(0deg); }
+		to { transform: rotate(360deg); }
+	}
+</style>
+@endpush
+
 @section('content')
 <div class="max-w-7xl mx-auto space-y-6">
+	<div class="flex items-center justify-between mb-6">
+		<div>
+			<h2 class="text-2xl font-bold text-slate-900">
+				{{ app()->getLocale() === 'ar' ? 'طلباتي' : 'My Orders' }}
+			</h2>
+			<p class="text-sm text-gray-600 mt-1">
+				{{ app()->getLocale() === 'ar'
+					? 'سيتم تحديث القائمة تلقائياً كل 20 ثانية'
+					: 'List will auto-refresh every 20 seconds' }}
+			</p>
+		</div>
+		<div class="flex items-center gap-3">
+			<span id="lastRefresh" class="text-xs text-gray-500"></span>
+			<span id="refreshIndicator" class="refresh-indicator hidden">
+				<i class="bi bi-arrow-clockwise text-primary"></i>
+			</span>
+		</div>
+	</div>
 	<!-- Filters -->
 	<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
 		<form method="GET" action="{{ route('client.orders.index') }}" class="flex flex-wrap items-center gap-3">
@@ -42,7 +104,7 @@
 	</div>
 
 	<!-- Orders -->
-	<div class="bg-white rounded-lg shadow-sm border border-gray-200">
+	<div id="ordersContainer" class="bg-white rounded-lg shadow-sm border border-gray-200">
 		<div class="p-4 md:p-6 border-b">
 			<h3 class="text-lg font-semibold text-slate-900">
 				{{ app()->getLocale() === 'ar' ? 'طلباتي' : 'My Orders' }}
@@ -106,49 +168,99 @@
 
 @push('scripts')
 <script>
-	document.addEventListener('DOMContentLoaded', function() {
-		// Star rating interaction
-		document.querySelectorAll('.star-input').forEach(function(input) {
-			input.addEventListener('change', function() {
-				const rating = parseInt(this.value);
-				const container = this.closest('form');
-				const stars = container.querySelectorAll('.star-icon');
-				stars.forEach(function(star, index) {
-					if (index < rating) {
-						star.classList.remove('text-gray-300');
-						star.classList.add('text-yellow-400');
-					} else {
-						star.classList.remove('text-yellow-400');
-						star.classList.add('text-gray-300');
+(function() {
+	'use strict';
+
+	// Wait for jQuery to be available
+	if (typeof jQuery === 'undefined') {
+		console.error('jQuery is not loaded');
+	} else {
+		(function($) {
+			'use strict';
+
+			let refreshInterval;
+			const refreshIntervalMs = 20000; // 20 seconds
+
+			function updateLastRefreshTime() {
+				const now = new Date();
+				const timeStr = now.toLocaleTimeString();
+				$('#lastRefresh').text('{{ app()->getLocale() === "ar" ? "آخر تحديث:" : "Last refresh:" }} ' + timeStr);
+			}
+
+			function refreshOrders() {
+				$('#refreshIndicator').removeClass('hidden');
+
+				// Get current filter values
+				const status = $('select[name="status"]').val() || '';
+				const paid = $('select[name="paid"]').val() || '';
+				const search = $('input[name="search"]').val() || '';
+
+				$.ajax({
+					url: '{{ route("client.orders.index") }}',
+					method: 'GET',
+					data: {
+						status: status,
+						paid: paid,
+						search: search
+					},
+					headers: {
+						'X-Requested-With': 'XMLHttpRequest',
+						'Accept': 'text/html'
+					},
+					success: function(html) {
+						// Extract the orders container from the response
+						const $temp = $('<div>').html(html);
+						const $newContent = $temp.find('#ordersContainer').html();
+						if ($newContent) {
+							$('#ordersContainer').html($newContent);
+						}
+						updateLastRefreshTime();
+					},
+					error: function(xhr, status, error) {
+						console.error('Failed to refresh orders:', error);
+					},
+					complete: function() {
+						$('#refreshIndicator').addClass('hidden');
+					}
+				});
+			}
+
+			// Star rating initialization (same as offers page)
+			document.addEventListener('DOMContentLoaded', function () {
+				document.querySelectorAll('.star-rating').forEach(function(group) {
+					const radios = group.querySelectorAll('input[type="radio"]');
+					radios.forEach(function(radio) {
+						radio.addEventListener('change', function() {
+							// No-op, CSS sibling selector handles color
+						});
+					});
+				});
+			});
+
+			$(document).ready(function() {
+				// Initial setup
+				updateLastRefreshTime();
+
+				// Start auto-refresh
+				refreshInterval = setInterval(refreshOrders, refreshIntervalMs);
+
+				// Refresh on page visibility change (when user comes back to tab)
+				document.addEventListener('visibilitychange', function() {
+					if (!document.hidden) {
+						refreshOrders();
 					}
 				});
 			});
-		});
 
-		// Modal open/close
-		document.querySelectorAll('[data-open-review]').forEach(function(button) {
-			button.addEventListener('click', function() {
-				const modalId = this.getAttribute('data-open-review');
-				document.getElementById(modalId).classList.remove('hidden');
-			});
-		});
-
-		document.querySelectorAll('[data-close-review]').forEach(function(button) {
-			button.addEventListener('click', function() {
-				const modalId = this.getAttribute('data-close-review');
-				document.getElementById(modalId).classList.add('hidden');
-			});
-		});
-
-		// Close modal on outside click
-		document.querySelectorAll('[id^="review-modal-"]').forEach(function(modal) {
-			modal.addEventListener('click', function(e) {
-				if (e.target === this) {
-					this.classList.add('hidden');
+			// Cleanup on page unload
+			$(window).on('beforeunload', function() {
+				if (refreshInterval) {
+					clearInterval(refreshInterval);
 				}
 			});
-		});
-	});
+		})(jQuery);
+	}
+})();
 </script>
 @endpush
 @endsection

@@ -9,6 +9,11 @@ class Offer extends Model
 {
     use HasFactory;
 
+    // Request type constants
+    const TYPE_TEST = 'test';
+    const TYPE_RADIOLOGY = 'radiology';
+    const TYPE_MEDICINE = 'medicine';
+
     protected $fillable = [
         'client_request_id',
         'pharmacy_id',

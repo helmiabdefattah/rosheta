@@ -53,8 +53,8 @@
             </h2>
             <p class="text-sm text-gray-600 mt-1">
                 {{ app()->getLocale() === 'ar'
-                    ? 'سيتم تحديث القائمة تلقائياً كل 5 ثوانٍ'
-                    : 'List will auto-refresh every 5 seconds' }}
+                    ? 'سيتم تحديث القائمة تلقائياً كل 20 ثانية'
+                    : 'List will auto-refresh every 20 seconds' }}
             </p>
         </div>
         <div class="flex items-center gap-3">
@@ -94,7 +94,7 @@
                 'use strict';
 
                 let refreshInterval;
-                const refreshIntervalMs = 5000; // 5 seconds
+                const refreshIntervalMs = 20000; // 20 seconds
                 let currentFilterType = '{{ $defaultType }}';
 
                 function updateLastRefreshTime() {
