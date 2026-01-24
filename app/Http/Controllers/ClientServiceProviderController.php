@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CharitableOrganization;
 use App\Models\Laboratory;
 use App\Models\Pharmacy;
 use App\Models\Area;
@@ -30,7 +31,7 @@ class ClientServiceProviderController extends Controller
             // Validate required fields
             $request->validate([
                 'governorate_id' => 'required|exists:governorates,id',
-                'provider_type' => 'required|in:laboratory,pharmacy',
+                'provider_type' => 'required|in:laboratory,pharmacy,charity',
             ]);
 
             $governorateId = $request->governorate_id;
@@ -38,7 +39,26 @@ class ClientServiceProviderController extends Controller
             $cityId = $request->city_id;
             $areaId = $request->area_id;
 
-        if ($providerType === 'laboratory') {
+        if ($providerType === 'charity') {
+            $query = CharitableOrganization::with(['governorate', 'city', 'area']);
+
+            // Filter by governorate (required)
+            $query->where('governorate_id', $governorateId);
+
+            // Filter by city (optional)
+            if ($cityId) {
+                $query->where('city_id', $cityId);
+            }
+
+            // Filter by area (optional)
+            if ($areaId) {
+                $query->where('area_id', $areaId);
+            }
+
+            $results = $query->get();
+
+            // Note: Charity organizations don't have lat/lng, so they won't appear on map
+        } elseif ($providerType === 'laboratory') {
             $query = Laboratory::with(['area.city.governorate'])
                 ->where('is_active', true)
                 ->whereNotNull('lat')

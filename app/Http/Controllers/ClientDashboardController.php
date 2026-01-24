@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CharitableOrganization;
 use App\Models\ClientRequest;
 use App\Models\NurseVisit;
 use App\Models\Order;
@@ -87,7 +88,26 @@ class ClientDashboardController extends Controller
             $cityId = request('city_id');
             $areaId = request('area_id');
 
-            if ($providerType === 'laboratory') {
+            if ($providerType === 'charity') {
+                $query = CharitableOrganization::with(['governorate', 'city', 'area']);
+
+                // Filter by governorate (required)
+                $query->where('governorate_id', $governorateId);
+
+                // Filter by city (optional)
+                if ($cityId) {
+                    $query->where('city_id', $cityId);
+                }
+
+                // Filter by area (optional)
+                if ($areaId) {
+                    $query->where('area_id', $areaId);
+                }
+
+                $results = $query->get();
+
+                // Note: Charity organizations don't have lat/lng, so they won't appear on map
+            } elseif ($providerType === 'laboratory') {
                 $query = \App\Models\Laboratory::with(['area.city.governorate'])
                     ->where('is_active', true)
                     ->whereNotNull('lat')

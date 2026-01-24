@@ -330,6 +330,10 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectLaboratoryOwner::class])
 
     // Bonus Points
     Route::get('/bonus-points', [App\Http\Controllers\Admin\BonusPointController::class, 'index'])->name('bonus-points.index');
+
+    // Charitable Organizations
+    Route::get('/charitable-organizations/data', [App\Http\Controllers\Admin\CharitableOrganizationController::class, 'data'])->name('charitable-organizations.data');
+    Route::resource('charitable-organizations', App\Http\Controllers\Admin\CharitableOrganizationController::class);
 });
 // Add this after your admin routes or create a separate nurse group
 

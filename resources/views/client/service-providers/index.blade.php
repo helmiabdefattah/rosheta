@@ -88,6 +88,9 @@
                                 <option value="pharmacy" @selected(request('provider_type') === 'pharmacy')>
                                     {{ app()->getLocale() === 'ar' ? 'صيدلية' : 'Pharmacy' }}
                                 </option>
+                                <option value="charity" @selected(request('provider_type') === 'charity')>
+                                    {{ app()->getLocale() === 'ar' ? 'منظمة خيرية' : 'Charitable Organization' }}
+                                </option>
                             </select>
                         </div>
 
@@ -153,8 +156,8 @@
         </div>
 
         @if(request()->has('governorate_id') && request()->has('provider_type'))
-            {{-- Map Section --}}
-            @if(isset($markers) && count($markers) > 0)
+            {{-- Map Section (only for laboratories and pharmacies, not charity organizations) --}}
+            @if(request('provider_type') !== 'charity' && isset($markers) && count($markers) > 0)
                 <div class="bg-white rounded-lg shadow p-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">
                         {{ app()->getLocale() === 'ar' ? 'الخريطة' : 'Map' }}
@@ -193,53 +196,98 @@
                                 {{-- Type Badge --}}
                                 <div class="mb-2">
                                     <span class="px-2 py-1 text-xs rounded-full 
-                                        {{ $providerType === 'laboratory' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
-                                        {{ $providerType === 'laboratory' 
-                                            ? (app()->getLocale() === 'ar' ? 'مختبر' : 'Laboratory')
-                                            : (app()->getLocale() === 'ar' ? 'صيدلية' : 'Pharmacy') }}
+                                        {{ $providerType === 'laboratory' ? 'bg-blue-100 text-blue-800' : ($providerType === 'pharmacy' ? 'bg-green-100 text-green-800' : 'bg-rose-100 text-rose-800') }}">
+                                        @if($providerType === 'laboratory')
+                                            {{ app()->getLocale() === 'ar' ? 'مختبر' : 'Laboratory' }}
+                                        @elseif($providerType === 'pharmacy')
+                                            {{ app()->getLocale() === 'ar' ? 'صيدلية' : 'Pharmacy' }}
+                                        @else
+                                            {{ app()->getLocale() === 'ar' ? 'منظمة خيرية' : 'Charitable Organization' }}
+                                        @endif
                                     </span>
                                 </div>
 
                                 {{-- Location --}}
-                                @if($item->area)
-                                    <div class="text-sm text-gray-600 mb-2">
-                                        <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        </svg>
-                                        {{ app()->getLocale() === 'ar' ? $item->area->name_ar : $item->area->name }}
-                                        @if($item->area->city)
-                                            , {{ app()->getLocale() === 'ar' ? $item->area->city->name_ar : $item->area->city->name }}
-                                        @endif
-                                    </div>
+                                @if($providerType === 'charity')
+                                    @if($item->city || $item->area)
+                                        <div class="text-sm text-gray-600 mb-2">
+                                            <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            </svg>
+                                            @if($item->area)
+                                                {{ app()->getLocale() === 'ar' ? ($item->area->name_ar ?? $item->area->name) : ($item->area->name ?? $item->area->name_ar) }}
+                                            @endif
+                                            @if($item->city)
+                                                @if($item->area), @endif
+                                                {{ app()->getLocale() === 'ar' ? ($item->city->name_ar ?? $item->city->name) : ($item->city->name ?? $item->city->name_ar) }}
+                                            @endif
+                                        </div>
+                                    @endif
+                                @else
+                                    @if($item->area)
+                                        <div class="text-sm text-gray-600 mb-2">
+                                            <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            </svg>
+                                            {{ app()->getLocale() === 'ar' ? $item->area->name_ar : $item->area->name }}
+                                            @if($item->area->city)
+                                                , {{ app()->getLocale() === 'ar' ? $item->area->city->name_ar : $item->area->city->name }}
+                                            @endif
+                                        </div>
+                                    @endif
                                 @endif
 
                                 {{-- Contact Info --}}
                                 <div class="space-y-1 text-sm text-gray-600">
-                                    @if($item->phone)
-                                        <div>
-                                            <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                                            </svg>
-                                            {{ $item->phone }}
-                                        </div>
-                                    @endif
-                                    @if($item->email)
-                                        <div>
-                                            <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                            </svg>
-                                            {{ $item->email }}
-                                        </div>
-                                    @endif
-                                    @if($item->opening_time && $item->closing_time)
-                                        <div>
-                                            <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                            {{ \Carbon\Carbon::parse($item->opening_time)->format('H:i') }} - 
-                                            {{ \Carbon\Carbon::parse($item->closing_time)->format('H:i') }}
-                                        </div>
+                                    @if($providerType === 'charity')
+                                        @if($item->phone_numbers && count($item->phone_numbers) > 0)
+                                            @foreach($item->phone_numbers as $phone)
+                                                <div>
+                                                    <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                                    </svg>
+                                                    {{ $phone }}
+                                                </div>
+                                            @endforeach
+                                        @endif
+                                        @if($item->services && count($item->services) > 0)
+                                            <div class="mt-2">
+                                                <span class="font-semibold">{{ app()->getLocale() === 'ar' ? 'الخدمات:' : 'Services:' }}</span>
+                                                <ul class="list-disc list-inside mt-1">
+                                                    @foreach($item->services as $service)
+                                                        <li class="text-xs">{{ $service }}</li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
+                                    @else
+                                        @if($item->phone)
+                                            <div>
+                                                <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                                </svg>
+                                                {{ $item->phone }}
+                                            </div>
+                                        @endif
+                                        @if($item->email)
+                                            <div>
+                                                <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                                </svg>
+                                                {{ $item->email }}
+                                            </div>
+                                        @endif
+                                        @if($item->opening_time && $item->closing_time)
+                                            <div>
+                                                <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                                {{ \Carbon\Carbon::parse($item->opening_time)->format('H:i') }} - 
+                                                {{ \Carbon\Carbon::parse($item->closing_time)->format('H:i') }}
+                                            </div>
+                                        @endif
                                     @endif
                                 </div>
 
@@ -252,7 +300,9 @@
 
                                 {{-- Action Buttons --}}
                                 <div class="mt-4 space-y-2">
-                                    @if($providerType === 'laboratory')
+                                    @if($providerType === 'charity')
+                                        {{-- Charity organizations don't have action buttons, just display info --}}
+                                    @elseif($providerType === 'laboratory')
                                         <a href="{{ route('client.laboratories.offers', $item->id) }}" 
                                            class="block w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-center mb-2">
                                             <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
