@@ -28,7 +28,7 @@
                     </select>
                 </div>
                 <div>
-                    <button type="submit" class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+                    <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                         {{ app()->getLocale() === 'ar' ? 'بحث' : 'Search' }}
                     </button>
                     @if(request('search') || request('status'))

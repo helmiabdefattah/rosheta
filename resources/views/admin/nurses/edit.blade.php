@@ -124,7 +124,7 @@
 
 	<div class="flex items-center justify-end gap-2">
 		<a href="{{ route('admin.nurses.index') }}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm">{{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}</a>
-		<button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg text-sm">{{ app()->getLocale() === 'ar' ? 'حفظ' : 'Save' }}</button>
+		<button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">{{ app()->getLocale() === 'ar' ? 'حفظ' : 'Save' }}</button>
 	</div>
 </form>
 @endsection

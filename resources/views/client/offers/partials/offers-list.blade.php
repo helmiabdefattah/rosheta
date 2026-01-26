@@ -223,7 +223,7 @@
                                                     </div>
                                                 </div>
 
-                                                <button type="submit" class="w-full md:w-auto px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 text-sm">
+                                                <button type="submit" class="w-full md:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
                                                     {{ app()->getLocale() === 'ar' ? 'إرسال التقييم' : 'Submit Review' }}
                                                 </button>
                                             </div>

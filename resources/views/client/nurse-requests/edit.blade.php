@@ -213,7 +213,7 @@
 				<a href="{{ route('client.nurse-requests.show', $request) }}" class="px-4 py-2 rounded-md border">
 					{{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}
 				</a>
-				<button type="submit" class="px-4 py-2 rounded-md bg-primary text-white">
+				<button type="submit" class="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700">
 					{{ app()->getLocale() === 'ar' ? 'حفظ التغييرات' : 'Save Changes' }}
 				</button>
 			</div>

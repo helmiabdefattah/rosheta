@@ -103,7 +103,7 @@
 							class="w-full border border-gray-300 rounded-lg p-2 text-xs"
 							placeholder="{{ app()->getLocale() === 'ar' ? 'تعليق (اختياري)' : 'Comment (optional)' }}"
 						>{{ old('comment') }}</textarea>
-						<button type="submit" class="w-full px-3 py-1.5 bg-primary text-white rounded-lg hover:opacity-90 text-xs">
+						<button type="submit" class="w-full px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs">
 							{{ app()->getLocale() === 'ar' ? 'إرسال' : 'Submit' }}
 						</button>
 					</div>

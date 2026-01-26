@@ -121,7 +121,7 @@
                 </a>
                 <button 
                     type="submit" 
-                    class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-teal-700 transition duration-200 font-medium"
+                    class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200 font-medium"
                 >
                     <i class="bi bi-check-circle me-2"></i>
                     {{ app()->getLocale() === 'ar' ? 'إضافة العنوان' : 'Add Address' }}

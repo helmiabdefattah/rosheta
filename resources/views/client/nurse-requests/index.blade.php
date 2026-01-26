@@ -5,7 +5,7 @@
 
 @section('content')
 	<div class="flex justify-end mb-4">
-		<a href="{{ route('client.nurse-requests.create') }}" class="px-4 py-2 bg-primary text-white rounded-md">{{ __('New Request') }}</a>
+		<a href="{{ route('client.nurse-requests.create') }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">{{ __('New Request') }}</a>
 	</div>
 
 	@forelse($requests as $r)

@@ -35,7 +35,9 @@ class LoginController extends Controller
             if ($user->nurse_id) {
                 return redirect()->route('nurse.dashboard');
             }
-
+            if ($user->doctor()->exists()) {
+                return redirect()->route('doctor.dashboard');
+            }
 
             // Redirect other users to admin dashboard
             return redirect()->route('admin.dashboard');
@@ -79,6 +81,9 @@ class LoginController extends Controller
             }
             if ($user->nurse_id) {
                 return redirect()->route('nurse.dashboard');
+            }
+            if ($user->doctor()->exists()) {
+                return redirect()->route('doctor.dashboard');
             }
             // Redirect other users to admin dashboard
             return redirect()->route('admin.dashboard');

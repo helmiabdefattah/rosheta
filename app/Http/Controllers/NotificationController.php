@@ -68,12 +68,14 @@ class NotificationController extends Controller
         
         if (Auth::guard('client')->check()) {
             $layout = 'client.layouts.dashboard';
+        } elseif (method_exists($user, 'doctor') && $user->doctor()->exists()) {
+            $layout = 'doctor.layouts.dashboard';
         } elseif ($user->laboratory_id) {
-             $layout = 'laboratories.layouts.dashboard';
+            $layout = 'laboratories.layouts.dashboard';
         } elseif ($user->pharmacy_id) {
-             $layout = 'pharmacies.layouts.dashboard';
-        } elseif ($user->nurse_id || $user->nurse()->exists()) {
-             $layout = 'nurse.layouts.dashboard';
+            $layout = 'pharmacies.layouts.dashboard';
+        } elseif ($user->nurse_id || (method_exists($user, 'nurse') && $user->nurse()->exists())) {
+            $layout = 'nurse.layouts.dashboard';
         }
 
         return view('notifications.index', compact('notifications', 'layout'));

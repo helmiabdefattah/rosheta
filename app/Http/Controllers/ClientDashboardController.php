@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CharitableOrganization;
+use App\Models\Clinic;
 use App\Models\ClientRequest;
 use App\Models\NurseVisit;
 use App\Models\Order;
@@ -107,6 +108,35 @@ class ClientDashboardController extends Controller
                 $results = $query->get();
 
                 // Note: Charity organizations don't have lat/lng, so they won't appear on map
+            } elseif ($providerType === 'doctor') {
+                $query = Clinic::with(['doctor.specialization', 'governorate', 'city', 'area'])
+                    ->whereHas('doctor')
+                    ->where('governorate_id', $governorateId);
+
+                if ($cityId) {
+                    $query->where('city_id', $cityId);
+                }
+                if ($areaId) {
+                    $query->where('area_id', $areaId);
+                }
+
+                $results = $query->orderBy('name')->get();
+
+                foreach ($results as $clinic) {
+                    if ($clinic->latitude && $clinic->longitude) {
+                        $markers[] = [
+                            'id' => $clinic->id,
+                            'name' => $clinic->name,
+                            'lat' => (float) $clinic->latitude,
+                            'lng' => (float) $clinic->longitude,
+                            'type' => 'clinic',
+                            'address' => $clinic->address ?? null,
+                            'doctor_name' => $clinic->doctor?->name,
+                            'specialization' => $clinic->doctor?->specialization?->name,
+                            'book_url' => route('client.doctor-reservation.book', $clinic),
+                        ];
+                    }
+                }
             } elseif ($providerType === 'laboratory') {
                 $query = \App\Models\Laboratory::with(['area.city.governorate'])
                     ->where('is_active', true)

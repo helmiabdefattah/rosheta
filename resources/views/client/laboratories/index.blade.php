@@ -108,7 +108,7 @@
                 </div>
 
                 <div class="flex gap-2">
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
                         {{ app()->getLocale() === 'ar' ? 'بحث' : 'Search' }}
                     </button>
                     <a href="{{ route('client.laboratories.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
@@ -207,7 +207,7 @@
                             {{-- Action Buttons --}}
                             <div class="mt-4 space-y-2">
                                 <a href="{{ route('client.laboratories.offers', $laboratory->id) }}" 
-                                   class="block w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-center">
+                                   class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center">
                                     <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 011 12V7a4 4 0 014-4z"/>
                                     </svg>
@@ -303,7 +303,7 @@
                         <button type="button" id="cancelQuoteBtn" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                             {{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}
                         </button>
-                        <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-teal-700">
+                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
                             {{ app()->getLocale() === 'ar' ? 'إرسال' : 'Send' }}
                         </button>
                     </div>

@@ -48,7 +48,7 @@
                 <a href="{{ route('laboratories.users.index') }}" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
                     {{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}
                 </a>
-                <button type="submit" class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+                <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                     {{ app()->getLocale() === 'ar' ? 'إنشاء' : 'Create' }}
                 </button>
             </div>

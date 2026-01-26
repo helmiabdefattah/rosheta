@@ -125,6 +125,20 @@
                     </div>
                 </a>
             </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                <a href="{{ route('client.doctor-reservation.index') }}" class="block group">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">{{ app()->getLocale() === 'ar' ? 'حجز موعد طبيب' : 'Doctor Reservation' }}</p>
+                            <p class="text-lg font-bold text-slate-900 mt-2 group-hover:text-primary transition-colors">{{ app()->getLocale() === 'ar' ? 'احجز الآن' : 'Book now' }}</p>
+                        </div>
+                        <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                            <i class="bi bi-calendar-check text-xl"></i>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
 
         <!-- Service Provider Search Section -->
@@ -160,6 +174,9 @@
                                     </option>
                                     <option value="charity" @selected(request('provider_type') === 'charity')>
                                         {{ app()->getLocale() === 'ar' ? 'منظمة خيرية' : 'Charitable Organization' }}
+                                    </option>
+                                    <option value="doctor" @selected(request('provider_type') === 'doctor')>
+                                        {{ app()->getLocale() === 'ar' ? 'أطباء وعيادات' : 'Doctors & Clinics' }}
                                     </option>
                                 </select>
                             </div>
@@ -214,7 +231,7 @@
                         </div>
 
                         <div class="flex gap-2">
-                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
                                 {{ app()->getLocale() === 'ar' ? 'بحث' : 'Search' }}
                             </button>
                             <a href="{{ route('client.dashboard') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
@@ -226,8 +243,8 @@
             </div>
 
             @if(request()->has('governorate_id') && request()->has('provider_type'))
-                {{-- Map Section (only for laboratories and pharmacies, not charity organizations) --}}
-                @if(request('provider_type') !== 'charity' && isset($markers) && count($markers) > 0)
+                {{-- Map Section (for laboratories, pharmacies, and doctors/clinics; not charity) --}}
+                @if(!in_array(request('provider_type'), ['charity']) && isset($markers) && count($markers) > 0)
                     <div class="bg-white rounded-lg shadow p-6 mt-6">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">
                             {{ app()->getLocale() === 'ar' ? 'الخريطة' : 'Map' }}
@@ -252,8 +269,15 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             @foreach($results as $item)
                                 <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow" data-marker-id="{{ $item->id }}">
-                                    {{-- Logo --}}
-                                    @if(isset($item->logo) && $item->logo)
+                                    {{-- Logo (doctor profile image for clinics) --}}
+                                    @if($providerType === 'doctor' && $item->doctor && $item->doctor->getFirstMediaUrl('profile_image'))
+                                        <div class="mb-3">
+                                            <img src="{{ $item->doctor->getFirstMediaUrl('profile_image') }}" 
+                                                 alt="{{ $item->doctor->name }}" 
+                                                 class="w-20 h-20 rounded-full object-cover"
+                                                 onerror="this.style.display='none'">
+                                        </div>
+                                    @elseif(isset($item->logo) && $item->logo)
                                         <div class="mb-3">
                                             <img src="{{ asset('storage/' . $item->logo) }}" 
                                                  alt="{{ $item->name }}" 
@@ -263,21 +287,33 @@
                                     @endif
 
                                     {{-- Name --}}
-                                    <h4 class="text-lg font-semibold text-gray-800 mb-2">{{ $item->name }}</h4>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-2">
+                                        @if($providerType === 'doctor')
+                                            {{ $item->doctor?->name ?? $item->name }}
+                                            @if($item->name && $item->doctor) <span class="text-sm font-normal text-gray-600">— {{ $item->name }}</span> @endif
+                                        @else
+                                            {{ $item->name }}
+                                        @endif
+                                    </h4>
 
                                     {{-- Type Badge --}}
                                     <div class="mb-2">
                                         <span class="px-2 py-1 text-xs rounded-full 
-                                            {{ $providerType === 'laboratory' ? 'bg-blue-100 text-blue-800' : ($providerType === 'pharmacy' ? 'bg-green-100 text-green-800' : 'bg-rose-100 text-rose-800') }}">
+                                            {{ $providerType === 'laboratory' ? 'bg-blue-100 text-blue-800' : ($providerType === 'pharmacy' ? 'bg-green-100 text-green-800' : ($providerType === 'doctor' ? 'bg-teal-100 text-teal-800' : 'bg-rose-100 text-rose-800')) }}">
                                             @if($providerType === 'laboratory')
                                                 {{ app()->getLocale() === 'ar' ? 'مختبر' : 'Laboratory' }}
                                             @elseif($providerType === 'pharmacy')
                                                 {{ app()->getLocale() === 'ar' ? 'صيدلية' : 'Pharmacy' }}
+                                            @elseif($providerType === 'doctor')
+                                                {{ app()->getLocale() === 'ar' ? 'عيادة / طبيب' : 'Clinic / Doctor' }}
                                             @else
                                                 {{ app()->getLocale() === 'ar' ? 'منظمة خيرية' : 'Charitable Organization' }}
                                             @endif
                                         </span>
                                     </div>
+                                    @if($providerType === 'doctor' && $item->doctor?->specialization)
+                                        <p class="text-sm text-primary font-medium mb-2">{{ $item->doctor->specialization->name }}</p>
+                                    @endif
 
                                     {{-- Location --}}
                                     @if($providerType === 'charity')
@@ -293,6 +329,26 @@
                                                 @if($item->city)
                                                     @if($item->area), @endif
                                                     {{ app()->getLocale() === 'ar' ? ($item->city->name_ar ?? $item->city->name) : ($item->city->name ?? $item->city->name_ar) }}
+                                                @endif
+                                            </div>
+                                        @endif
+                                    @elseif($providerType === 'doctor')
+                                        @if($item->governorate || $item->city || $item->area)
+                                            <div class="text-sm text-gray-600 mb-2">
+                                                <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                </svg>
+                                                @if($item->area)
+                                                    {{ app()->getLocale() === 'ar' ? ($item->area->name_ar ?? $item->area->name) : ($item->area->name ?? $item->area->name_ar) }}
+                                                @endif
+                                                @if($item->city)
+                                                    @if($item->area), @endif
+                                                    {{ app()->getLocale() === 'ar' ? ($item->city->name_ar ?? $item->city->name) : ($item->city->name ?? $item->city->name_ar) }}
+                                                @endif
+                                                @if($item->governorate)
+                                                    @if($item->city || $item->area), @endif
+                                                    {{ app()->getLocale() === 'ar' ? ($item->governorate->name_ar ?? $item->governorate->name) : ($item->governorate->name ?? $item->governorate->name_ar) }}
                                                 @endif
                                             </div>
                                         @endif
@@ -313,7 +369,19 @@
 
                                     {{-- Contact Info --}}
                                     <div class="space-y-1 text-sm text-gray-600">
-                                        @if($providerType === 'charity')
+                                        @if($providerType === 'doctor')
+                                            @if($item->address)
+                                                <div>
+                                                    <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                    </svg>
+                                                    {{ Str::limit($item->address, 80) }}
+                                                </div>
+                                            @endif
+                                            <div class="text-gray-700 mt-1">
+                                                {{ app()->getLocale() === 'ar' ? 'كشف:' : 'Examination:' }} <strong>{{ number_format($item->medical_examination_price ?? 0, 2) }}</strong>
+                                            </div>
+                                        @elseif($providerType === 'charity')
                                             @if($item->phone_numbers && count($item->phone_numbers) > 0)
                                                 @foreach($item->phone_numbers as $phone)
                                                     <div>
@@ -363,8 +431,8 @@
                                         @endif
                                     </div>
 
-                                    {{-- Address --}}
-                                    @if($item->address)
+                                    {{-- Address (for non-doctor: lab/pharmacy) --}}
+                                    @if($providerType !== 'doctor' && $item->address)
                                         <div class="mt-2 text-sm text-gray-500">
                                             {{ Str::limit($item->address, 100) }}
                                         </div>
@@ -374,9 +442,17 @@
                                     <div class="mt-4 space-y-2">
                                         @if($providerType === 'charity')
                                             {{-- Charity organizations don't have action buttons, just display info --}}
+                                        @elseif($providerType === 'doctor')
+                                            <a href="{{ route('client.doctor-reservation.book', $item) }}" 
+                                               class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center">
+                                                <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                </svg>
+                                                {{ app()->getLocale() === 'ar' ? 'حجز موعد' : 'Book Appointment' }}
+                                            </a>
                                         @elseif($providerType === 'laboratory')
                                             <a href="{{ route('client.laboratories.offers', $item->id) }}" 
-                                               class="block w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-center mb-2">
+                                               class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center mb-2">
                                                 <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 011 12V7a4 4 0 014-4z"/>
                                                 </svg>
@@ -685,8 +761,9 @@
         }).addTo(map);
 
         const mapMarkers = [];
+        const iconColors = { laboratory: 'blue', pharmacy: 'green', clinic: '#0d9488' };
         markers.forEach(function(markerData) {
-            const iconColor = markerData.type === 'laboratory' ? 'blue' : 'green';
+            const iconColor = iconColors[markerData.type] || 'gray';
             const customIcon = L.divIcon({
                 className: 'custom-marker',
                 html: `<div style="background-color: ${iconColor}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
@@ -694,16 +771,25 @@
                 iconAnchor: [10, 10]
             });
 
+            let typeLabel = isArabic ? 'مختبر' : 'Laboratory';
+            if (markerData.type === 'pharmacy') typeLabel = isArabic ? 'صيدلية' : 'Pharmacy';
+            if (markerData.type === 'clinic') typeLabel = isArabic ? 'عيادة / طبيب' : 'Clinic / Doctor';
+
+            let popupContent = `
+                <div style="min-width: 200px;">
+                    <h4 style="font-weight: bold; margin-bottom: 5px;">${markerData.name}</h4>
+                    <p style="margin: 2px 0; font-size: 12px;">${typeLabel}</p>
+                    ${markerData.doctor_name ? `<p style="margin: 2px 0; font-size: 12px;">${markerData.doctor_name}</p>` : ''}
+                    ${markerData.specialization ? `<p style="margin: 2px 0; font-size: 12px; color: #0d9488;">${markerData.specialization}</p>` : ''}
+                    ${markerData.phone ? `<p style="margin: 2px 0; font-size: 12px;">📞 ${markerData.phone}</p>` : ''}
+                    ${markerData.address ? `<p style="margin: 2px 0; font-size: 12px;">📍 ${markerData.address}</p>` : ''}
+                    ${markerData.book_url ? `<a href="${markerData.book_url}" style="display: inline-block; margin-top: 8px; padding: 4px 12px; background: #0d9488; color: white; border-radius: 6px; font-size: 12px; text-decoration: none;">${isArabic ? 'حجز موعد' : 'Book Appointment'}</a>` : ''}
+                </div>
+            `;
+
             const marker = L.marker([markerData.lat, markerData.lng], { icon: customIcon })
                 .addTo(map)
-                .bindPopup(`
-                    <div style="min-width: 200px;">
-                        <h4 style="font-weight: bold; margin-bottom: 5px;">${markerData.name}</h4>
-                        <p style="margin: 2px 0; font-size: 12px;">${markerData.type === 'laboratory' ? (isArabic ? 'مختبر' : 'Laboratory') : (isArabic ? 'صيدلية' : 'Pharmacy')}</p>
-                        ${markerData.phone ? `<p style="margin: 2px 0; font-size: 12px;">📞 ${markerData.phone}</p>` : ''}
-                        ${markerData.address ? `<p style="margin: 2px 0; font-size: 12px;">📍 ${markerData.address}</p>` : ''}
-                    </div>
-                `);
+                .bindPopup(popupContent);
 
             mapMarkers.push({ marker: marker, data: markerData });
         });

@@ -149,7 +149,7 @@
                 <p class="text-gray-500 text-lg mb-4">
                     {{ app()->getLocale() === 'ar' ? 'لم تقم بإرسال أي استفسارات بعد' : 'You haven\'t sent any quotes yet' }}
                 </p>
-                <a href="{{ route('client.laboratories.index') }}" class="inline-block px-6 py-2 bg-primary text-white rounded-lg hover:bg-teal-700 transition-colors">
+                <a href="{{ route('client.laboratories.index') }}" class="inline-block px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                     {{ app()->getLocale() === 'ar' ? 'تصفح المعامل' : 'Browse Laboratories' }}
                 </a>
             </div>
