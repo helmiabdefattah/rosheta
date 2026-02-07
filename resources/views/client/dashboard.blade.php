@@ -441,7 +441,6 @@
 
                                     {{-- Action Buttons --}}
                                     <div class="mt-4 space-y-2">
-<<<<<<< HEAD
                                         @if($providerType === 'charity')
                                             {{-- Charity organizations don't have action buttons, just display info --}}
                                         @elseif($providerType === 'doctor')
