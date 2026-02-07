@@ -355,10 +355,8 @@ class ClientOfferController extends Controller
                 ->with('success', __('Offer accepted successfully'));
 
         } catch (\Throwable $e) {
+            report($e);
             DB::rollBack();
-
-
-
             return back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
     }

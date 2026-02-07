@@ -83,7 +83,9 @@ class ClientDashboardController extends Controller
         $providerType = request('provider_type');
 
         // Process search if filters are provided
-        if (request()->has('governorate_id') && request()->has('provider_type')) {
+        // if (request()->has('governorate_id') && request()->has('provider_type')) {
+        if (request()->has('provider_type')) {
+
             $governorateId = request('governorate_id');
             $providerType = request('provider_type');
             $cityId = request('city_id');
@@ -142,21 +144,11 @@ class ClientDashboardController extends Controller
                     ->where('is_active', true)
                     ->whereNotNull('lat')
                     ->whereNotNull('lng');
-
-                $query->whereHas('area.city', function ($q) use ($governorateId) {
-                    $q->where('governorate_id', $governorateId);
-                });
-
-                if ($cityId) {
-                    $query->whereHas('area', function ($q) use ($cityId) {
-                        $q->where('city_id', $cityId);
+                if ($governorateId) {
+                $query = $query->whereHas('area.city', function ($q) use ($governorateId) {
+                        $q->where('governorate_id', $governorateId);
                     });
                 }
-
-                if ($areaId) {
-                    $query->where('area_id', $areaId);
-                }
-
                 $results = $query->get();
 
                 foreach ($results as $lab) {

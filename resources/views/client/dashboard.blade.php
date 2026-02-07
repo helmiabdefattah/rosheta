@@ -155,7 +155,8 @@
                         </svg>
                     </div>
                 </div>
-                <div class="filter-content collapsed p-6" id="filterContent">
+                <div class="filter-content collapsed" id="filterContent">
+                    <div class="p-6">
                     <form method="GET" action="{{ route('client.dashboard') }}" class="space-y-4" id="filterForm">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             {{-- Service Provider Type (Required) --}}
@@ -185,9 +186,8 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
                                     {{ app()->getLocale() === 'ar' ? 'المحافظة' : 'Governorate' }}
-                                    <span class="text-red-500">*</span>
                                 </label>
-                                <select name="governorate_id" id="governorate_id" class="w-full border rounded-md p-2" required>
+                                <select name="governorate_id" id="governorate_id" class="w-full border rounded-md p-2">
                                     <option value="">{{ app()->getLocale() === 'ar' ? 'اختر المحافظة' : 'Select Governorate' }}</option>
                                     @foreach($governorates ?? [] as $governorate)
                                         <option value="{{ $governorate->id }}" @selected(request('governorate_id') == $governorate->id)>
@@ -239,6 +239,7 @@
                             </a>
                         </div>
                     </form>
+                    </div>
                 </div>
             </div>
 
@@ -272,15 +273,15 @@
                                     {{-- Logo (doctor profile image for clinics) --}}
                                     @if($providerType === 'doctor' && $item->doctor && $item->doctor->getFirstMediaUrl('profile_image'))
                                         <div class="mb-3">
-                                            <img src="{{ $item->doctor->getFirstMediaUrl('profile_image') }}" 
-                                                 alt="{{ $item->doctor->name }}" 
+                                            <img src="{{ $item->doctor->getFirstMediaUrl('profile_image') }}"
+                                                 alt="{{ $item->doctor->name }}"
                                                  class="w-20 h-20 rounded-full object-cover"
                                                  onerror="this.style.display='none'">
                                         </div>
                                     @elseif(isset($item->logo) && $item->logo)
                                         <div class="mb-3">
-                                            <img src="{{ asset('storage/' . $item->logo) }}" 
-                                                 alt="{{ $item->name }}" 
+                                            <img src="{{ asset('storage/' . $item->logo) }}"
+                                                 alt="{{ $item->name }}"
                                                  class="w-full h-32 object-contain rounded"
                                                  onerror="this.style.display='none'">
                                         </div>
@@ -298,7 +299,7 @@
 
                                     {{-- Type Badge --}}
                                     <div class="mb-2">
-                                        <span class="px-2 py-1 text-xs rounded-full 
+                                        <span class="px-2 py-1 text-xs rounded-full
                                             {{ $providerType === 'laboratory' ? 'bg-blue-100 text-blue-800' : ($providerType === 'pharmacy' ? 'bg-green-100 text-green-800' : ($providerType === 'doctor' ? 'bg-teal-100 text-teal-800' : 'bg-rose-100 text-rose-800')) }}">
                                             @if($providerType === 'laboratory')
                                                 {{ app()->getLocale() === 'ar' ? 'مختبر' : 'Laboratory' }}
@@ -424,7 +425,7 @@
                                                     <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                     </svg>
-                                                    {{ \Carbon\Carbon::parse($item->opening_time)->format('H:i') }} - 
+                                                    {{ \Carbon\Carbon::parse($item->opening_time)->format('H:i') }} -
                                                     {{ \Carbon\Carbon::parse($item->closing_time)->format('H:i') }}
                                                 </div>
                                             @endif
@@ -440,10 +441,11 @@
 
                                     {{-- Action Buttons --}}
                                     <div class="mt-4 space-y-2">
+<<<<<<< HEAD
                                         @if($providerType === 'charity')
                                             {{-- Charity organizations don't have action buttons, just display info --}}
                                         @elseif($providerType === 'doctor')
-                                            <a href="{{ route('client.doctor-reservation.book', $item) }}" 
+                                            <a href="{{ route('client.doctor-reservation.book', $item) }}"
                                                class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center">
                                                 <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -451,15 +453,15 @@
                                                 {{ app()->getLocale() === 'ar' ? 'حجز موعد' : 'Book Appointment' }}
                                             </a>
                                         @elseif($providerType === 'laboratory')
-                                            <a href="{{ route('client.laboratories.offers', $item->id) }}" 
-                                               class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center mb-2">
-                                                <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 011 12V7a4 4 0 014-4z"/>
-                                                </svg>
-                                                {{ app()->getLocale() === 'ar' ? 'عرض العروض' : 'View Offers' }}
-                                            </a>
+{{--                                            <a href="{{ route('client.laboratories.offers', $item->id) }}" --}}
+{{--                                               class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center mb-2">--}}
+{{--                                                <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">--}}
+{{--                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 011 12V7a4 4 0 014-4z"/>--}}
+{{--                                                </svg>--}}
+{{--                                                {{ app()->getLocale() === 'ar' ? 'عرض العروض' : 'View Offers' }}--}}
+{{--                                            </a> -->--}}
                                             @if($item->type === 'test' || $item->type === 'both')
-                                                <a href="{{ route('client.test-requests.create', ['type' => 'test', 'laboratory_id' => $item->id]) }}" 
+                                                <a href="{{ route('client.test-requests.create', ['type' => 'test', 'laboratory_id' => $item->id]) }}"
                                                    class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center mb-2">
                                                     <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -468,7 +470,7 @@
                                                 </a>
                                             @endif
                                             @if($item->type === 'radiology' || $item->type === 'both')
-                                                <a href="{{ route('client.test-requests.create', ['type' => 'radiology', 'laboratory_id' => $item->id]) }}" 
+                                                <a href="{{ route('client.test-requests.create', ['type' => 'radiology', 'laboratory_id' => $item->id]) }}"
                                                    class="block w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-center">
                                                     <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -477,7 +479,7 @@
                                                 </a>
                                             @endif
                                         @else
-                                            <a href="{{ route('client.medicine-requests.create', ['pharmacy_id' => $item->id]) }}" 
+                                            <a href="{{ route('client.medicine-requests.create', ['pharmacy_id' => $item->id]) }}"
                                                class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center">
                                                 <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
@@ -647,10 +649,10 @@
             const governorateId = $(this).val();
             const citySelect = $('#city_id');
             const areaSelect = $('#area_id');
-            
+
             citySelect.select2('destroy');
             areaSelect.select2('destroy');
-            
+
             citySelect.empty().append('<option value="">' + (isArabic ? 'جميع المدن' : 'All Cities') + '</option>');
             areaSelect.empty().append('<option value="">' + (isArabic ? 'جميع المناطق' : 'All Areas') + '</option>');
 
@@ -708,7 +710,7 @@
         $('#city_id').on('change', function() {
             const cityId = $(this).val();
             const areaSelect = $('#area_id');
-            
+
             areaSelect.select2('destroy');
             areaSelect.empty().append('<option value="">' + (isArabic ? 'جميع المناطق' : 'All Areas') + '</option>');
 
@@ -752,9 +754,9 @@
         @if(isset($markers) && count($markers) > 0)
         const mapCenter = {!! json_encode($mapCenter) !!};
         const markers = {!! json_encode($markers) !!};
-        
+
         const map = L.map('serviceProviderMap').setView([mapCenter.lat, mapCenter.lng], 12);
-        
+
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 19
