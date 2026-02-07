@@ -206,6 +206,28 @@
                 </div>
             </div>
         </div>
+
+        <!-- Charitable Organizations -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow duration-300 relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-rose-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110 duration-500"></div>
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-rose-100/80 rounded-xl flex items-center justify-center text-rose-600 shadow-sm group-hover:bg-rose-600 group-hover:text-white transition-colors duration-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <h3 class="text-sm font-medium text-slate-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'المنظمات الخيرية' : 'Charitable Organizations' }}</h3>
+                <div class="flex items-end justify-between mt-1">
+                    <p class="text-3xl font-black text-slate-800 tracking-tight">{{ number_format($stats['charitable_organizations']) }}</p>
+                    <a href="{{ route('admin.charitable-organizations.index') }}" class="text-sm font-semibold text-rose-600 hover:text-rose-700 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                         {{ app()->getLocale() === 'ar' ? 'عرض' : 'View' }}
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Recent Activity -->

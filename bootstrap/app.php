@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Route middleware alias for selective CORS
         $middleware->alias([
             'cors' => \App\Http\Middleware\CorsMiddleware::class,
+            'doctor' => \App\Http\Middleware\EnsureUserIsDoctor::class,
         ]);
 
         $middleware->web(append: [

@@ -141,7 +141,7 @@
                             {{-- Accept Offer Button --}}
                             <button 
                                 type="button"
-                                class="w-full px-4 py-2 bg-primary text-white rounded-md hover:bg-teal-700 transition-colors accept-offer-btn"
+                                class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors accept-offer-btn"
                                 data-offer-id="{{ $offer->id }}"
                                 data-laboratory-id="{{ $laboratory->id }}"
                                 data-medical-test-id="{{ $offer->medical_test_id }}"
@@ -292,7 +292,7 @@
                         <button type="button" id="cancelAcceptOfferBtn" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                             {{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}
                         </button>
-                        <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-teal-700">
+                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
                             {{ app()->getLocale() === 'ar' ? 'قبول العرض' : 'Accept Offer' }}
                         </button>
                     </div>

@@ -308,7 +308,7 @@
             <a href="{{ route('pharmacies.dashboard') }}" class="btn btn-secondary">
                 {{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}
             </a>
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-success">
                 <i class="bi bi-check-circle me-2"></i>
                 {{ app()->getLocale() === 'ar' ? 'حفظ التغييرات' : 'Save Changes' }}
             </button>

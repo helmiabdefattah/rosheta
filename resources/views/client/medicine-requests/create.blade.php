@@ -91,7 +91,7 @@
 					<p class="text-sm text-orange-800 mb-3">
 						{{ app()->getLocale() === 'ar' ? 'لا توجد عناوين. يرجى إضافة عنوان جديد أولاً.' : 'No addresses found. Please add a new address first.' }}
 					</p>
-					<a href="{{ route('client.addresses.create') }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-teal-700 transition duration-200 text-sm font-medium">
+					<a href="{{ route('client.addresses.create') }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200 text-sm font-medium">
 						<i class="bi bi-plus-circle me-2"></i>
 						{{ app()->getLocale() === 'ar' ? 'إضافة عنوان جديد' : 'Add New Address' }}
 					</a>
@@ -221,7 +221,7 @@
 			</a>
 			<button
 				type="submit"
-				class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-teal-700 transition duration-200 font-medium"
+				class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200 font-medium"
 			>
 				<i class="bi bi-send me-2"></i>
 				{{ app()->getLocale() === 'ar' ? 'إرسال الطلب' : 'Submit Request' }}

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Area;
+use App\Models\CharitableOrganization;
 use App\Models\City;
 use App\Models\Client;
 use App\Models\ClientRequest;
@@ -33,6 +34,7 @@ class DashboardController extends Controller
             'governorates' => Governorate::count(),
             'cities' => City::count(),
             'areas' => Area::count(),
+            'charitable_organizations' => CharitableOrganization::count(),
         ];
 
         // Recent activity

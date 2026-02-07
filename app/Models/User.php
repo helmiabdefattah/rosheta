@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -80,6 +81,22 @@ class User extends Authenticatable implements FilamentUser, HasMedia
     public function nurse(): HasOne
     {
         return $this->hasOne(Nurse::class, 'user_id');
+    }
+
+    /**
+     * The doctor profile associated with this user (if any).
+     */
+    public function doctor(): HasOne
+    {
+        return $this->hasOne(Doctor::class, 'user_id');
+    }
+
+    /**
+     * Appointments (as patient).
+     */
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class);
     }
 
     public function canAccessPanel(Panel $panel): bool

@@ -52,7 +52,7 @@
 							@endif
 						</td>
 						<td class="px-6 py-3">
-							<a href="{{ route('offers.create', ['request' => $req->id]) }}" class="px-3 py-1 text-sm bg-primary text-white rounded">
+							<a href="{{ route('offers.create', ['request' => $req->id]) }}" class="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700">
 								{{ app()->getLocale() === 'ar' ? 'إنشاء عرض' : 'Make Offer' }}
 							</a>
 						</td>

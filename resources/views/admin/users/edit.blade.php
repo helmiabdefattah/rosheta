@@ -73,7 +73,7 @@
             <a href="{{ route('admin.users.index') }}" class="px-4 py-2 text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">
                 {{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}
             </a>
-            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors">
+            <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                 {{ app()->getLocale() === 'ar' ? 'حفظ التغييرات' : 'Save Changes' }}
             </button>
         </div>

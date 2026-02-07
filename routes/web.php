@@ -153,6 +153,29 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     // Quotes
     Route::get('/quotes', [App\Http\Controllers\ClientQuoteController::class, 'index'])->name('quotes.index');
     Route::post('/quotes', [App\Http\Controllers\ClientQuoteController::class, 'store'])->name('quotes.store');
+
+    // Doctor / Clinic reservation (حجز المواعيد)
+    Route::get('/doctor-reservation', [App\Http\Controllers\ClientDoctorReservationController::class, 'index'])->name('doctor-reservation.index');
+    Route::get('/doctor-reservation/book/{clinic}', [App\Http\Controllers\ClientDoctorReservationController::class, 'book'])->name('doctor-reservation.book');
+    Route::post('/doctor-reservation', [App\Http\Controllers\ClientDoctorReservationController::class, 'store'])->name('doctor-reservation.store');
+    Route::get('/doctor-reservation/available-slots', [App\Http\Controllers\ClientDoctorReservationController::class, 'availableSlots'])->name('doctor-reservation.available-slots');
+});
+
+// Doctor Dashboard (auth + must have doctor profile)
+Route::middleware(['auth', 'doctor'])->prefix('doctor')->name('doctor.')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\Doctor\DoctorDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', [App\Http\Controllers\Doctor\DoctorProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [App\Http\Controllers\Doctor\DoctorProfileController::class, 'update'])->name('profile.update');
+    Route::get('/clinics', [App\Http\Controllers\Doctor\DoctorClinicController::class, 'index'])->name('clinics.index');
+    Route::get('/clinics/create', [App\Http\Controllers\Doctor\DoctorClinicController::class, 'create'])->name('clinics.create');
+    Route::post('/clinics', [App\Http\Controllers\Doctor\DoctorClinicController::class, 'store'])->name('clinics.store');
+    Route::get('/clinics/{clinic}', [App\Http\Controllers\Doctor\DoctorClinicController::class, 'show'])->name('clinics.show');
+    Route::get('/clinics/{clinic}/edit', [App\Http\Controllers\Doctor\DoctorClinicController::class, 'edit'])->name('clinics.edit');
+    Route::put('/clinics/{clinic}', [App\Http\Controllers\Doctor\DoctorClinicController::class, 'update'])->name('clinics.update');
+    Route::get('/appointments', [App\Http\Controllers\Doctor\DoctorAppointmentController::class, 'index'])->name('appointments.index');
+    Route::put('/appointments/{appointment}/status', [App\Http\Controllers\Doctor\DoctorAppointmentController::class, 'updateStatus'])->name('appointments.update-status');
+    Route::get('/calendar', [App\Http\Controllers\Doctor\DoctorCalendarController::class, 'index'])->name('calendar.index');
+    Route::post('/calendar/toggle-off', [App\Http\Controllers\Doctor\DoctorCalendarController::class, 'toggleOff'])->name('calendar.toggle-off');
 });
 
 // Offer routes
@@ -330,6 +353,25 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectLaboratoryOwner::class])
 
     // Bonus Points
     Route::get('/bonus-points', [App\Http\Controllers\Admin\BonusPointController::class, 'index'])->name('bonus-points.index');
+
+    // Charitable Organizations
+    Route::get('/charitable-organizations/data', [App\Http\Controllers\Admin\CharitableOrganizationController::class, 'data'])->name('charitable-organizations.data');
+    Route::resource('charitable-organizations', App\Http\Controllers\Admin\CharitableOrganizationController::class);
+
+    // Specializations (for doctors)
+    Route::get('/specializations/data', [App\Http\Controllers\Admin\SpecializationController::class, 'data'])->name('specializations.data');
+    Route::resource('specializations', App\Http\Controllers\Admin\SpecializationController::class);
+
+    // Doctors, Clinics, Appointments
+    Route::get('/doctors/data', [App\Http\Controllers\Admin\DoctorController::class, 'data'])->name('doctors.data');
+    Route::resource('doctors', App\Http\Controllers\Admin\DoctorController::class);
+
+    Route::get('/clinics/data', [App\Http\Controllers\Admin\ClinicController::class, 'data'])->name('clinics.data');
+    Route::resource('clinics', App\Http\Controllers\Admin\ClinicController::class);
+
+    Route::get('/appointments/data', [App\Http\Controllers\Admin\AppointmentController::class, 'data'])->name('appointments.data');
+    Route::get('/appointments/available-slots', [App\Http\Controllers\Admin\AppointmentController::class, 'availableSlots'])->name('appointments.available-slots');
+    Route::resource('appointments', App\Http\Controllers\Admin\AppointmentController::class);
 });
 // Add this after your admin routes or create a separate nurse group
 

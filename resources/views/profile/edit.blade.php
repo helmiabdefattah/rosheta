@@ -111,7 +111,7 @@
             </div>
 
             <div class="pt-6 border-t border-slate-100 flex justify-end gap-3">
-                <button type="submit" class="px-8 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-all shadow-md shadow-primary/20">
+                <button type="submit" class="px-8 py-2.5 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-all shadow-md">
                     {{ app()->getLocale() === 'ar' ? 'حفط التغييرات' : 'Save Changes' }}
                 </button>
             </div>

@@ -230,7 +230,7 @@
 
         <div class="d-flex justify-content-end gap-2 mt-4">
             <a href="{{ route('admin.laboratories.index') }}" class="btn btn-secondary">{{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}</a>
-            <button type="submit" class="btn btn-primary" id="save-btn">{{ app()->getLocale() === 'ar' ? 'حفظ التغييرات' : 'Save Changes' }}</button>
+            <button type="submit" class="btn btn-success" id="save-btn">{{ app()->getLocale() === 'ar' ? 'حفظ التغييرات' : 'Save Changes' }}</button>
         </div>
     </form>
 @endsection

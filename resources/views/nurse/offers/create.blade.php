@@ -215,7 +215,7 @@
 
                     <div class="flex justify-end gap-2">
                         <a href="{{ route('nurse.offers.index') }}" class="px-4 py-2 rounded-md border">{{ __('Cancel') }}</a>
-                        <button type="submit" class="px-4 py-2 rounded-md bg-primary text-white">{{ __('Create Offer') }}</button>
+                        <button type="submit" class="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700">{{ __('Create Offer') }}</button>
                     </div>
                 @endif
             </form>

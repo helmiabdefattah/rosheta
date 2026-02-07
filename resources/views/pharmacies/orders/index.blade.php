@@ -36,7 +36,7 @@
 						{{ app()->getLocale() === 'ar' ? 'إعادة تعيين' : 'Reset' }}
 					</a>
 				@endif
-				<button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-teal-700 text-sm font-medium">
+				<button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium">
 					{{ app()->getLocale() === 'ar' ? 'تصفية' : 'Filter' }}
 				</button>
 			</form>

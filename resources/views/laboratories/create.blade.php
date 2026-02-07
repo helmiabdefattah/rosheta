@@ -180,7 +180,7 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2">
-                <button type="submit" class="btn btn-primary">Create Laboratory</button>
+                <button type="submit" class="btn btn-success">Create Laboratory</button>
             </div>
         </form>
     </div>
