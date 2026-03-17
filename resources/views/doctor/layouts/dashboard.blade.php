@@ -88,15 +88,23 @@
         </div>
     </aside>
     <div class="flex-1 flex flex-col h-screen bg-gray-100 overflow-hidden">
-        <header class="h-16 bg-white flex items-center justify-between px-6 border-b border-gray-200 shadow-sm">
+        <header class="h-16 bg-white flex items-center justify-between px-6 border-b border-gray-200 shadow-sm transition-all duration-300">
             <div class="flex items-center gap-4">
-                <button id="open-sidebar" class="lg:hidden text-slate-600"><i class="bi bi-list text-2xl"></i></button>
+                <button id="open-sidebar" class="lg:hidden text-slate-600 hover:text-primary transition-colors" aria-label="Menu">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-800">@yield('page-title', app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard')</h1>
-                    @hasSection('page-description')<p class="text-sm text-slate-500">@yield('page-description')</p>@endif
+                    <h1 class="text-base md:text-xl font-bold text-slate-800">@yield('page-title', app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard')</h1>
+                    <p class="text-sm text-slate-500 hidden sm:block">@yield('page-description', app()->getLocale() === 'ar' ? 'نظرة عامة على عياداتك ومواعيدك' : 'Overview of your clinics and appointments')</p>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-4">
+                <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" class="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
+                </a>
                 <x-notification-dropdown />
                 <span class="doctor-badge"><i class="bi bi-heart-pulse text-xs me-1"></i>{{ app()->getLocale() === 'ar' ? 'طبيب' : 'Doctor' }}</span>
             </div>

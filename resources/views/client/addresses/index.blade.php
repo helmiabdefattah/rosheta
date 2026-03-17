@@ -11,8 +11,8 @@
         <h2 class="text-2xl font-bold text-slate-900">
             {{ app()->getLocale() === 'ar' ? 'عناويني' : 'My Addresses' }}
         </h2>
-        <a href="{{ route('client.addresses.create') }}" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-teal-700 transition duration-200 font-medium">
-            <i class="bi bi-plus-circle me-2"></i>
+        <a href="{{ route('client.addresses.create') }}" class="inline-flex items-center gap-1.5 shrink-0 px-3 py-1.5 text-sm font-medium bg-primary text-white rounded-md hover:bg-teal-700 transition duration-200">
+            <i class="bi bi-plus-circle text-base"></i>
             {{ app()->getLocale() === 'ar' ? 'إضافة عنوان جديد' : 'Add New Address' }}
         </a>
     </div>
@@ -76,8 +76,8 @@
                     ? 'لم تقم بإضافة أي عناوين بعد. أضف عنوانًا جديدًا للبدء.' 
                     : 'You haven\'t added any addresses yet. Add a new address to get started.' }}
             </p>
-            <a href="{{ route('client.addresses.create') }}" class="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-teal-700 transition duration-200 font-medium">
-                <i class="bi bi-plus-circle me-2"></i>
+            <a href="{{ route('client.addresses.create') }}" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium bg-primary text-white rounded-md hover:bg-teal-700 transition duration-200">
+                <i class="bi bi-plus-circle text-base"></i>
                 {{ app()->getLocale() === 'ar' ? 'إضافة عنوان جديد' : 'Add New Address' }}
             </a>
         </div>

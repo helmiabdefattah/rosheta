@@ -3,6 +3,17 @@
 @section('title', __('My Nursing Requests'))
 @section('page-title', __('My Nursing Requests'))
 
+@php
+	$visitPeriodLabels = [
+		'daily' => __('Daily'),
+		'every_two_days' => __('Every two days'),
+		'once_weekly' => __('Once weekly'),
+		'twice_weekly' => __('Twice weekly'),
+		'weekly' => __('Weekly'),
+		'custom' => __('Custom'),
+	];
+@endphp
+
 @section('content')
 	<div class="flex justify-end mb-4">
 		<a href="{{ route('client.nurse-requests.create') }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">{{ __('New Request') }}</a>
@@ -14,7 +25,7 @@
 				<div class="flex-1">
 					<div class="flex items-center gap-3">
 						<span class="text-sm text-slate-500">#{{ $r->id }}</span>
-						<span class="px-2 py-1 text-xs rounded bg-slate-100 text-slate-700">{{ ucfirst($r->status) }}</span>
+						<span class="px-2 py-1 text-xs rounded bg-slate-100 text-slate-700">{{ __(strtolower((string) $r->status)) }}</span>
 					</div>
 					<h3 class="text-lg font-semibold text-slate-900 mt-2">{{ $r->getTranslatedServiceType() }}</h3>
 					<div class="mt-2 text-sm text-slate-600">
@@ -22,26 +33,26 @@
 							<strong>{{ __('Start') }}:</strong> {{ optional($r->visit_start_date)->format('Y-m-d') }} {{ $r->visit_time }}
 						</div>
 						<div class="mb-1">
-							<strong>{{ __('Visits') }}:</strong> {{ $r->visits_count }} / {{ $r->visit_frequency }}
+							<strong>{{ __('Visits') }}:</strong> {{ $r->visits_count }} / {{ $visitPeriodLabels[$r->visit_frequency] ?? $r->visit_frequency }}
 						</div>
 						@if(!empty($r->preferred_gender))
 							<div class="mb-1">
-								<strong>{{ app()->getLocale() === 'ar' ? 'تفضيل النوع' : 'Preferred gender' }}:</strong>
+								<strong>{{ __('Preferred gender') }}:</strong>
 								@switch($r->preferred_gender)
-									@case('male') {{ app()->getLocale() === 'ar' ? 'ذكر' : 'Male' }} @break
-									@case('female') {{ app()->getLocale() === 'ar' ? 'أنثى' : 'Female' }} @break
+									@case('male') {{ __('Male') }} @break
+									@case('female') {{ __('Female') }} @break
 									@default -
 								@endswitch
 							</div>
 						@endif
 						@if($r->patient_age)
 							<div class="mb-1">
-								<strong>{{ app()->getLocale() === 'ar' ? 'عمر المريض' : 'Patient age' }}:</strong> {{ $r->patient_age }} {{ app()->getLocale() === 'ar' ? 'سنة' : 'years' }}
+								<strong>{{ __('Patient age') }}:</strong> {{ $r->patient_age }} {{ __('years') }}
 							</div>
 						@endif
 						@if($r->medical_condition)
 							<div class="mb-1">
-								<strong>{{ app()->getLocale() === 'ar' ? 'الحالة الطبية' : 'Medical condition' }}:</strong> {{ $r->medical_condition }}
+								<strong>{{ __('Medical condition') }}:</strong> {{ $r->medical_condition }}
 							</div>
 						@endif
 						@if($r->address)
@@ -61,11 +72,11 @@
 
 			<div class="mt-4 border-t pt-4">
 				<div class="flex items-center justify-between mb-2">
-					<h4 class="text-sm font-semibold text-slate-800">{{ app()->getLocale() === 'ar' ? 'عروض التمريض' : 'Nurse Offers' }}</h4>
+					<h4 class="text-sm font-semibold text-slate-800">{{ __('Nurse Offers') }}</h4>
 				</div>
 
 				@if($r->offers->isEmpty())
-					<p class="text-sm text-slate-500">{{ app()->getLocale() === 'ar' ? 'لا توجد عروض بعد.' : 'No offers yet.' }}</p>
+					<p class="text-sm text-slate-500">{{ __('No offers yet.') }}</p>
 				@else
 					<div class="space-y-2">
 						@foreach($r->offers as $offer)
@@ -74,50 +85,42 @@
 								<div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
 									<div>
 										<div class="font-medium">
-											{{ $offer->nurse?->user?->name ?? (app()->getLocale() === 'ar' ? 'ممرض/ـة' : 'Nurse') }}
+											{{ $offer->nurse?->user?->name ?? __('Nurse') }}
 										</div>
 										<div class="text-sm text-slate-600">
-											<strong>{{ app()->getLocale() === 'ar' ? 'السعر' : 'Price' }}:</strong>
-											{{ number_format($offer->price, 2) }} {{ app()->getLocale() === 'ar' ? 'ج.م' : 'EGP' }}
+											<strong>{{ __('Price') }}:</strong>
+											{{ number_format($offer->price, 2) }} {{ __('EGP') }}
 										</div>
-										@php
-											$periodMap = [
-												'daily' => app()->getLocale() === 'ar' ? 'يوميًا' : 'Daily',
-												'every_two_days' => app()->getLocale() === 'ar' ? 'كل يومين' : 'Every two days',
-												'once_weekly' => app()->getLocale() === 'ar' ? 'مرة أسبوعيًا' : 'Once weekly',
-												'twice_weekly' => app()->getLocale() === 'ar' ? 'مرتان أسبوعيًا' : 'Twice weekly',
-											];
-										@endphp
 										<div class="text-sm text-slate-600 mt-1">
-											<strong>{{ app()->getLocale() === 'ar' ? 'الزيارة' : 'Visit' }}:</strong>
+											<strong>{{ __('Visit') }}:</strong>
 											<span class="inline-block">
-												{{ $periodMap[$offer->visit_period] ?? '-' }}
+												{{ $visitPeriodLabels[$offer->visit_period] ?? '-' }}
 											</span>
 											<span class="inline-block">
 												@ {{ $offer->visit_start_time ? substr($offer->visit_start_time, 0, 5) : '-' }}
 											</span>
 											<span class="inline-block">
-												( {{ $offer->visit_duration ? $offer->visit_duration . ' ' . (app()->getLocale() === 'ar' ? 'ساعة' : 'hrs') : '-' }} )
+												( {{ $offer->visit_duration ? $offer->visit_duration . ' ' . __('hrs') : '-' }} )
 											</span>
 										</div>
 									</div>
 									<div class="flex flex-col md:flex-row items-start md:items-center gap-2">
 										<div class="flex items-center gap-2">
 											<button type="button" class="px-3 py-1 text-sm bg-slate-100 text-slate-800 rounded"
-											        data-modal-open="{{ $modalId }}">{{ app()->getLocale() === 'ar' ? 'الملف' : 'Profile' }}</button>
-											<span class="px-2 py-1 text-xs rounded bg-slate-100 text-slate-700">{{ ucfirst($offer->status) }}</span>
+											        data-modal-open="{{ $modalId }}">{{ __('Profile') }}</button>
+											<span class="px-2 py-1 text-xs rounded bg-slate-100 text-slate-700">{{ __(strtolower((string) $offer->status)) }}</span>
 										</div>
 										@if($offer->status === 'pending')
 											<div class="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-												<form action="{{ route('client.nurse-offers.accept', $offer) }}" method="POST" onsubmit="return confirm('{{ app()->getLocale() === 'ar' ? 'تأكيد قبول العرض؟' : 'Accept this offer?' }}');" class="w-full md:w-auto">
+												<form action="{{ route('client.nurse-offers.accept', $offer) }}" method="POST" onsubmit="return confirm(@json(__('Accept this offer?')));" class="w-full md:w-auto">
 													@csrf
 													@method('PUT')
-													<button type="submit" class="w-full md:w-auto px-3 py-1 text-sm bg-green-600 text-white rounded">{{ app()->getLocale() === 'ar' ? 'قبول' : 'Accept' }}</button>
+													<button type="submit" class="w-full md:w-auto px-3 py-1 text-sm bg-green-600 text-white rounded">{{ __('Accept') }}</button>
 												</form>
-												<form action="{{ route('client.nurse-offers.reject', $offer) }}" method="POST" onsubmit="return confirm('{{ app()->getLocale() === 'ar' ? 'تأكيد رفض العرض؟' : 'Reject this offer?' }}');" class="w-full md:w-auto">
+												<form action="{{ route('client.nurse-offers.reject', $offer) }}" method="POST" onsubmit="return confirm(@json(__('Reject this offer?')));" class="w-full md:w-auto">
 													@csrf
 													@method('PUT')
-													<button type="submit" class="w-full md:w-auto px-3 py-1 text-sm bg-red-600 text-white rounded">{{ app()->getLocale() === 'ar' ? 'رفض' : 'Reject' }}</button>
+													<button type="submit" class="w-full md:w-auto px-3 py-1 text-sm bg-red-600 text-white rounded">{{ __('Reject') }}</button>
 												</form>
 											</div>
 										@endif
@@ -129,14 +132,14 @@
 									<div class="bg-white rounded-lg shadow max-w-xl w-full mx-4">
 										<div class="flex items-center justify-between p-4 border-b">
 											<h5 class="font-semibold text-slate-800">
-												{{ app()->getLocale() === 'ar' ? 'ملف الممرض/ـة' : 'Nurse Profile' }}
+												{{ __('Nurse Profile') }}
 											</h5>
 											<button type="button" class="text-slate-500 hover:text-slate-700" data-modal-close="{{ $modalId }}">&times;</button>
 										</div>
 										<div class="p-4 space-y-3">
                                             <div class="flex items-center gap-3">
                                                 @if($offer->nurse?->user?->hasMedia('avatar'))
-                                                    <img src="{{ $offer->nurse->user->getFirstMediaUrl('avatar') }}" class="w-12 h-12 rounded-full object-cover border" alt="avatar">
+                                                    <img src="{{ $offer->nurse->user->getFirstMediaUrl('avatar') }}" class="w-12 h-12 rounded-full object-cover border" alt="{{ __('Avatar') }}">
                                                 @else
                                                     <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg text-gray-600">
                                                         {{ strtoupper(mb_substr($offer->nurse?->user?->name ?? 'N', 0, 1)) }}
@@ -151,33 +154,33 @@
                                             </div>
 											<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
 												<div>
-													<div class="text-slate-500">{{ app()->getLocale() === 'ar' ? 'النوع' : 'Gender' }}</div>
+													<div class="text-slate-500">{{ __('Gender') }}</div>
 													<div class="font-medium">
 														@switch($offer->nurse?->gender)
-															@case('male') {{ app()->getLocale() === 'ar' ? 'ذكر' : 'Male' }} @break
-															@case('female') {{ app()->getLocale() === 'ar' ? 'أنثى' : 'Female' }} @break
+															@case('male') {{ __('Male') }} @break
+															@case('female') {{ __('Female') }} @break
 															@default -
 														@endswitch
 													</div>
 												</div>
 												<div>
-													<div class="text-slate-500">{{ app()->getLocale() === 'ar' ? 'سنوات الخبرة' : 'Experience (years)' }}</div>
+													<div class="text-slate-500">{{ __('Experience (years)') }}</div>
 													<div class="font-medium">{{ $offer->nurse?->years_of_experience ?? '-' }}</div>
 												</div>
 												<div class="md:col-span-2">
-													<div class="text-slate-500">{{ app()->getLocale() === 'ar' ? 'العنوان' : 'Address' }}</div>
+													<div class="text-slate-500">{{ __('Address') }}</div>
 													<div class="font-medium">{{ $offer->nurse?->address ?? '-' }}</div>
 												</div>
 												<div>
-													<div class="text-slate-500">{{ app()->getLocale() === 'ar' ? 'المؤهل' : 'Qualification' }}</div>
+													<div class="text-slate-500">{{ __('Qualification') }}</div>
 													<div class="font-medium">{{ ucfirst(str_replace('_',' ', $offer->nurse?->qualification ?? '-')) }}</div>
 												</div>
 												<div>
-													<div class="text-slate-500">{{ app()->getLocale() === 'ar' ? 'جهة التعليم' : 'Education place' }}</div>
+													<div class="text-slate-500">{{ __('Education place') }}</div>
 													<div class="font-medium">{{ $offer->nurse?->education_place ?? '-' }}</div>
 												</div>
 												<div class="md:col-span-2">
-													<div class="text-slate-500">{{ app()->getLocale() === 'ar' ? 'المناطق المغطاة' : 'Covered Areas' }}</div>
+													<div class="text-slate-500">{{ __('Covered Areas') }}</div>
 													@php
 														$ids = is_array($offer->nurse?->area_ids ?? null) ? $offer->nurse->area_ids : [];
 														$labels = collect($ids)->map(function($id) use ($areaMap) {
@@ -199,14 +202,14 @@
 													@endif
 												</div>
 												<div class="md:col-span-2">
-													<div class="text-slate-500">{{ app()->getLocale() === 'ar' ? 'الشهادات' : 'Certifications' }}</div>
+													<div class="text-slate-500">{{ __('Certifications') }}</div>
 													<div class="font-medium">
 														@php $certs = (array)($offer->nurse?->certifications ?? []); @endphp
 														{{ empty($certs) ? '-' : implode('، ', $certs) }}
 													</div>
 												</div>
 												<div class="md:col-span-2">
-													<div class="text-slate-500">{{ app()->getLocale() === 'ar' ? 'المهارات' : 'Skills' }}</div>
+													<div class="text-slate-500">{{ __('Skills') }}</div>
 													<div class="font-medium">
 														@php $skills = (array)($offer->nurse?->skills ?? []); @endphp
 														{{ empty($skills) ? '-' : implode('، ', $skills) }}
@@ -215,32 +218,33 @@
 											</div>
 											<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
 												<div>
-													<div class="text-slate-500">{{ app()->getLocale() === 'ar' ? 'دورية الزيارة' : 'Visit Period' }}</div>
+													<div class="text-slate-500">{{ __('Visit Period') }}</div>
 													<div class="font-medium">
-														{{ $periodMap[$offer->visit_period] ?? '-' }}
+														{{ $visitPeriodLabels[$offer->visit_period] ?? '-' }}
 													</div>
 												</div>
 												<div>
-													<div class="text-slate-500">{{ app()->getLocale() === 'ar' ? 'وقت البدء' : 'Start Time' }}</div>
+													<div class="text-slate-500">{{ __('Start Time') }}</div>
 													<div class="font-medium">
 														{{ $offer->visit_start_time ? substr($offer->visit_start_time, 0, 5) : '-' }}
 													</div>
 												</div>
 												<div>
-													<div class="text-slate-500">{{ app()->getLocale() === 'ar' ? 'مدة الزيارة' : 'Visit Duration' }}</div>
+													<div class="text-slate-500">{{ __('Visit Duration') }}</div>
 													<div class="font-medium">
-														{{ $offer->visit_duration ? $offer->visit_duration . ' ' . (app()->getLocale() === 'ar' ? 'ساعة' : 'hrs') : '-' }}
+														{{ $offer->visit_duration ? $offer->visit_duration . ' ' . __('hrs') : '-' }}
 													</div>
 												</div>
 											</div>
 										</div>
 										<div class="p-4 border-t flex justify-end">
 											<button type="button" class="px-4 py-2 bg-slate-800 text-white rounded" data-modal-close="{{ $modalId }}">
-												{{ app()->getLocale() === 'ar' ? 'إغلاق' : 'Close' }}
+												{{ __('Close') }}
 											</button>
 										</div>
 									</div>
 								</div>
+							</div>
 							@endforeach
 						</div>
 				@endif
@@ -287,4 +291,3 @@
 	}, false);
 </script>
 @endpush
-

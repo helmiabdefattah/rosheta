@@ -1,7 +1,7 @@
 @extends('client.layouts.dashboard')
 
-@section('title', __('Nursing Request #') . $request->id)
-@section('page-title', __('Nursing Request #') . $request->id)
+@section('title', __('Nursing Request #:id', ['id' => $request->id]))
+@section('page-title', __('Nursing Request #:id', ['id' => $request->id]))
 
 @section('content')
 	<div class="space-y-6">
@@ -15,7 +15,7 @@
 				</div>
 				<div>
 					<div class="text-xs text-slate-500">{{ __('Status') }}</div>
-					<div><span class="px-2 py-1 text-xs rounded bg-slate-100">{{ ucfirst($request->status) }}</span></div>
+					<div><span class="px-2 py-1 text-xs rounded bg-slate-100">{{ __(strtolower((string) $request->status)) }}</span></div>
 				</div>
 				<div>
 					<div class="text-xs text-slate-500">{{ __('Start') }}</div>
@@ -31,13 +31,13 @@
 				</div>
 				@if($request->patient_age)
 				<div>
-					<div class="text-xs text-slate-500">{{ app()->getLocale() === 'ar' ? 'عمر المريض' : 'Patient age' }}</div>
-					<div>{{ $request->patient_age }} {{ app()->getLocale() === 'ar' ? 'سنة' : 'years' }}</div>
+					<div class="text-xs text-slate-500">{{ __('Patient age') }}</div>
+					<div>{{ $request->patient_age }} {{ __('years') }}</div>
 				</div>
 				@endif
 				@if($request->medical_condition)
 				<div>
-					<div class="text-xs text-slate-500">{{ app()->getLocale() === 'ar' ? 'الحالة الطبية' : 'Medical condition' }}</div>
+					<div class="text-xs text-slate-500">{{ __('Medical condition') }}</div>
 					<div>{{ $request->medical_condition }}</div>
 				</div>
 				@endif
@@ -62,7 +62,7 @@
                         <td class="px-4 py-3">{{ $idx + 1 }}</td>
                         <td class="px-4 py-3">{{ $v->visit_datetime->format('Y-m-d H:i') }}</td>
                         <td class="px-4 py-3">{{ optional($v->nurse?->client)->name ?? '-' }}</td>
-                        <td class="px-4 py-3"><span class="px-2 py-1 text-xs rounded bg-slate-100">{{ ucfirst($v->status) }}</span></td>
+                        <td class="px-4 py-3"><span class="px-2 py-1 text-xs rounded bg-slate-100">{{ __(strtolower((string) $v->status)) }}</span></td>
                         <td class="px-4 py-3">{{ $v->notes ?? '-' }}</td>
                     </tr>
                 @empty
