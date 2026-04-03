@@ -538,7 +538,7 @@
             console.error('FCM: Error initializing Firebase SDK:', error);
         }
     </script>
-    <script src="{{ asset('js/fcm-token-manager.js') }}?v=1.0.2"></script>
+    <script src="{{ asset('js/fcm-token-manager.js') }}?v=1.0.3"></script>
     @endif
     
     <!-- Notification Manager -->

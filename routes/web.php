@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\NurseOfferController;
+use App\Http\Controllers\WebviewBridgeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\LocaleController;
@@ -30,6 +31,10 @@ Route::get('/feedback', function () {
 })->name('feedback');
 
 Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale');
+
+// Mobile app WebView: one-time session bridge (signed URL from POST /api/webview-bridge)
+Route::get('/app/webview-bridge', [WebviewBridgeController::class, 'establish'])
+    ->name('webview.bridge.establish');
 
 // FCM Token Management (for authenticated users - works for both web auth and client auth)
 Route::post('/fcm-token', [App\Http\Controllers\FcmTokenController::class, 'update'])->name('fcm-token.update');

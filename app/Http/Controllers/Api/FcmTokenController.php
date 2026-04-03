@@ -51,4 +51,36 @@ class FcmTokenController extends Controller
             'platform' => $request->platform,
         ]);
     }
+
+    /**
+     * Remove FCM token for mobile or web (API - Sanctum client).
+     */
+    public function remove(Request $request)
+    {
+        $validated = Validator::make($request->all(), [
+            'platform' => 'required|in:web,mobile',
+        ])->validate();
+
+        $user = Auth::guard('sanctum')->user();
+
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        if ($validated['platform'] === 'web') {
+            $user->fcm_token_web = null;
+        } else {
+            $user->fcm_token_mobile = null;
+        }
+
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'FCM token removed successfully',
+        ]);
+    }
 }

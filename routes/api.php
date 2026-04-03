@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClientRequestController;
+use App\Http\Controllers\WebviewBridgeController;
 
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -72,5 +73,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // FCM Token Management
     Route::post('/fcm-token', [\App\Http\Controllers\Api\FcmTokenController::class, 'update']);
     Route::delete('/fcm-token', [\App\Http\Controllers\Api\FcmTokenController::class, 'remove']);
+
+    // Mobile WebView: one-time signed URL to sync Sanctum session with web session
+    Route::post('/webview-bridge', [WebviewBridgeController::class, 'issue']);
 });
 

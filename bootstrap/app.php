@@ -20,7 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
-            ]);
+            \App\Http\Middleware\MostashfaOnClientContext::class,
+        ]);
+
+        $middleware->api(append: [
+            \App\Http\Middleware\MostashfaOnClientContext::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
