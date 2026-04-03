@@ -167,10 +167,12 @@ class FcmChannel
                 return is_array($value) ? json_encode($value) : (string) $value;
             }, $data);
 
-            // Create cloud message
-            // We use ->withData() to allow the Service Worker and Foreground handler to handle 
-            // localization and display logic using the AR/EN versions in the data payload.
+            // Include both notification + data:
+            // - Android/iOS native apps need a notification payload to show the system tray when the app is backgrounded or killed.
+            // - Data-only messages often deliver without a visible notification on Android.
+            // - Web still receives the same data payload for the service worker / foreground handlers.
             $message = CloudMessage::withTarget('token', $token)
+                ->withNotification($firebaseNotification)
                 ->withData($stringData);
 
             // Send the message
