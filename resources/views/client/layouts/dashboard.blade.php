@@ -56,6 +56,16 @@
             background: #f1f5f9;
         }
 
+        /* Main area background */
+        .main-content-scroll {
+            background-color: #f1f5f9;
+            background-image: url("{{ asset('assets/backgrounds/me.png') }}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: local;
+        }
+
         /* Navigation Item Styles */
         .nav-item {
             display: flex;
@@ -160,7 +170,7 @@
 
                         <a href="{{ route('client.nurse-requests.index') }}"
                    class="nav-item {{ request()->routeIs('client.nurse-requests.*') ? 'active' : '' }}">
-                    <span>{{ app()->getLocale() === 'ar' ? 'طلبات التمريض' : 'Nursing Requests' }}</span>
+                    <span>{{ __('Nursing Requests') }}</span>
                 </a>
                         @endif
 

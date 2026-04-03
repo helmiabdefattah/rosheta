@@ -8,6 +8,8 @@ use App\Models\CharitableOrganization;
 use App\Models\City;
 use App\Models\Client;
 use App\Models\ClientRequest;
+use App\Models\Clinic;
+use App\Models\Doctor;
 use App\Models\Governorate;
 use App\Models\Laboratory;
 use App\Models\MedicalTest;
@@ -35,6 +37,8 @@ class DashboardController extends Controller
             'cities' => City::count(),
             'areas' => Area::count(),
             'charitable_organizations' => CharitableOrganization::count(),
+            'doctors' => Doctor::count(),
+            'clinics' => Clinic::count(),
         ];
 
         // Recent activity

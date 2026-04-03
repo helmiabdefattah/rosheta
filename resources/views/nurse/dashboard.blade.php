@@ -4,10 +4,42 @@
 @section('page-title', app()->getLocale() === 'ar' ? 'لوحة تحكم الممرض' : 'Nurse Dashboard')
 
 @section('content')
-    <!-- Tabs Navigation -->
     @php
         $nurse = auth()->user()->nurse;
     @endphp
+
+    <!-- Quick action: Client nursing requests -->
+    <div class="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800">
+                        {{ app()->getLocale() === 'ar' ? 'طلبات التمريض المنزلي' : 'Client nursing requests' }}
+                    </h3>
+                    <p class="text-sm text-gray-500 mt-0.5">
+                        {{ app()->getLocale() === 'ar' ? 'اعرض طلبات العملاء وقدم عروضك عليها' : 'View client requests and make offers on them' }}
+                    </p>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ route('nurse.requests.index') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium text-sm transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    {{ app()->getLocale() === 'ar' ? 'عرض الطلبات' : 'View requests' }}
+                </a>
+                <a href="{{ route('nurse.offers.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-primary text-primary rounded-lg hover:bg-primary/5 font-medium text-sm transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    {{ app()->getLocale() === 'ar' ? 'تقديم عرض' : 'Make offer' }}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
     <div class="mb-6 border-b border-gray-200">
         <nav class="-mb-px flex space-x-8">
             <button id="profile-tab" data-tab="profile" class="tab-button py-2 px-1 border-b-2 border-primary text-sm font-medium text-primary">
