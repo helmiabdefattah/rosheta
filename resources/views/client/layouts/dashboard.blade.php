@@ -544,6 +544,9 @@
     <script src="{{ asset('js/fcm-token-manager.js') }}?v=1.0.3"></script>
     @endif
 
+    {{-- Flutter WebView: native logout + locale sync handled from Flutter on navigation --}}
+    <script src="{{ asset('js/mostashfaon-flutter-bridge.js') }}?v=1.0.0"></script>
+
     <!-- Notification Manager -->
     <script src="{{ asset('js/notification-manager.js') }}?v=1.0.2"></script>
     <script>
