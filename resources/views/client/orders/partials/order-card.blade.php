@@ -124,28 +124,23 @@
 			<div class="pt-3 mt-3 border-t border-gray-200">
 				<form method="POST" action="{{ route('client.orders.review', $order) }}" class="flex flex-col gap-3">
 					@csrf
-					<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-						<div class="flex flex-col md:flex-row md:items-center gap-2">
-							<span class="text-sm text-gray-700">
-								{{ app()->getLocale() === 'ar' ? 'تقييم الخدمة:' : 'Rate service:' }}
-							</span>
-							<div class="star-rating">
-								@for($i = 5; $i >= 1; $i--)
-									<input
-										type="radio"
-										id="star{{ $i }}-{{ $order->id }}"
-										name="rating"
-										value="{{ $i }}"
-										{{ $i == 1 ? 'checked' : '' }}
-										required
-									>
-									<label for="star{{ $i }}-{{ $order->id }}">★</label>
-								@endfor
-							</div>
+					<div class="flex flex-col sm:flex-row sm:items-center gap-2">
+						<span class="text-sm text-gray-700">
+							{{ app()->getLocale() === 'ar' ? 'تقييم الخدمة:' : 'Rate service:' }}
+						</span>
+						<div class="star-rating">
+							@for($i = 5; $i >= 1; $i--)
+								<input
+									type="radio"
+									id="star{{ $i }}-{{ $order->id }}"
+									name="rating"
+									value="{{ $i }}"
+									{{ $i == 1 ? 'checked' : '' }}
+									required
+								>
+								<label for="star{{ $i }}-{{ $order->id }}">★</label>
+							@endfor
 						</div>
-						<button type="submit" class="w-full md:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
-							{{ app()->getLocale() === 'ar' ? 'إرسال التقييم' : 'Submit Review' }}
-						</button>
 					</div>
 					<textarea
 						name="comment"
@@ -153,6 +148,11 @@
 						class="w-full border border-gray-300 rounded-lg p-2 text-sm"
 						placeholder="{{ app()->getLocale() === 'ar' ? 'اترك تعليقاً (اختياري)' : 'Leave a comment (optional)' }}"
 					>{{ old('comment') }}</textarea>
+					<div class="md:flex md:justify-end">
+						<button type="submit" class="w-full md:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
+							{{ app()->getLocale() === 'ar' ? 'إرسال التقييم' : 'Submit Review' }}
+						</button>
+					</div>
 				</form>
 			</div>
 		@endif

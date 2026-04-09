@@ -65,7 +65,7 @@
 				</div>
 				<div class="flex flex-wrap gap-2">
 					<a href="{{ route('client.nurse-requests.edit', $r) }}" class="px-3 py-1 text-sm bg-blue-600 text-white rounded">{{ __('Edit') }}</a>
-					<a href="{{ route('client.nurse-requests.create') }}" class="px-3 py-1 text-sm bg-green-600 text-white rounded">{{ __('Create') }}</a>
+{{--					<a href="{{ route('client.nurse-requests.create') }}" class="px-3 py-1 text-sm bg-green-600 text-white rounded">{{ __('Create') }}</a>--}}
 					<a href="{{ route('client.nurse-requests.show', $r) }}" class="px-3 py-1 text-sm bg-slate-200 text-slate-800 rounded">{{ __('View') }}</a>
 				</div>
 			</div>

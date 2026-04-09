@@ -86,6 +86,18 @@ Route::middleware('auth')->prefix('nurse')->name('nurse.')->group(function () {
 Route::middleware('auth:client')->prefix('client')->name('client.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\ClientDashboardController::class, 'index'])->name('dashboard');
 
+    // All requests (pharmacy / lab / nursing)
+    Route::get('/my-requests', [App\Http\Controllers\ClientMyRequestsController::class, 'index'])->name('requests.index');
+    Route::get('/requests/pharmacy-lab/{clientRequest}', [App\Http\Controllers\ClientMyRequestsController::class, 'showClientRequest'])->name('requests.pharmacy-lab.show');
+    Route::get('/requests/pharmacy-lab/{clientRequest}/edit', [App\Http\Controllers\ClientMyRequestsController::class, 'editClientRequest'])->name('requests.pharmacy-lab.edit');
+    Route::put('/requests/pharmacy-lab/{clientRequest}', [App\Http\Controllers\ClientMyRequestsController::class, 'updateClientRequest'])->name('requests.pharmacy-lab.update');
+    Route::delete('/requests/pharmacy-lab/{clientRequest}', [App\Http\Controllers\ClientMyRequestsController::class, 'destroyClientRequest'])->name('requests.pharmacy-lab.destroy');
+    Route::delete('/requests/nurse/{home_nurse_request}', [App\Http\Controllers\ClientMyRequestsController::class, 'destroyNurseRequest'])->name('requests.nurse.destroy');
+    Route::get('/requests/clinic/{appointment}', [App\Http\Controllers\ClientMyRequestsController::class, 'showAppointment'])->name('requests.clinic.show');
+    Route::get('/requests/clinic/{appointment}/edit', [App\Http\Controllers\ClientMyRequestsController::class, 'editAppointment'])->name('requests.clinic.edit');
+    Route::put('/requests/clinic/{appointment}', [App\Http\Controllers\ClientMyRequestsController::class, 'updateAppointment'])->name('requests.clinic.update');
+    Route::delete('/requests/clinic/{appointment}', [App\Http\Controllers\ClientMyRequestsController::class, 'cancelAppointment'])->name('requests.clinic.cancel');
+
     // Test Requests
     Route::get('/test-requests/create/{type}', [App\Http\Controllers\ClientTestRequestController::class, 'create'])->name('test-requests.create');
     Route::post('/test-requests/{type}', [App\Http\Controllers\ClientTestRequestController::class, 'store'])->name('test-requests.store');
