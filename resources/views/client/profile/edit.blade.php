@@ -14,14 +14,47 @@
             </h2>
             <p class="text-sm text-gray-600 mt-2">
                 {{ app()->getLocale() === 'ar' 
-                    ? 'قم بتحديث معلومات ملفك الشخصي. يمكنك تغيير الاسم ورقم الهاتف فقط.' 
-                    : 'Update your profile information. You can only change your name and phone number.' }}
+                    ? 'قم بتحديث معلومات ملفك الشخصي، بما في ذلك صورة الملف.' 
+                    : 'Update your profile information, including your profile photo.' }}
             </p>
         </div>
 
-        <form method="POST" action="{{ route('client.profile.update') }}" class="space-y-6">
+        <form method="POST" action="{{ route('client.profile.update') }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
+
+            @php
+                $avatarPreviewUrl = $client->avatar
+                    ? asset('storage/' . $client->avatar)
+                    : 'https://ui-avatars.com/api/?name=' . urlencode($client->name) . '&background=0d9488&color=fff&size=128';
+            @endphp
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">
+                    {{ app()->getLocale() === 'ar' ? 'صورة الملف الشخصي' : 'Profile photo' }}
+                </label>
+                <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div class="flex-shrink-0">
+                        <img id="client_avatar_preview" src="{{ $avatarPreviewUrl }}" alt="" class="w-24 h-24 rounded-full object-cover border-2 border-gray-200 shadow-sm">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <input
+                            type="file"
+                            id="avatar"
+                            name="avatar"
+                            accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
+                            class="block w-full text-sm text-gray-600 file:me-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+                        >
+                        <p class="mt-2 text-xs text-gray-500">
+                            {{ app()->getLocale() === 'ar' 
+                                ? 'صيغ مسموحة: JPG أو PNG أو GIF أو WebP — بحد أقصى 2 ميجابايت.' 
+                                : 'Allowed: JPG, PNG, GIF, or WebP — max 2 MB.' }}
+                        </p>
+                        @error('avatar')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </div>
 
             <div>
                 <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
@@ -154,6 +187,8 @@
                     {{ app()->getLocale() === 'ar' ? 'تشغيل صوت مميز عند استلام إشعارات جديدة' : 'Play a distinct sound when new notifications arrive' }}
                 </p>
             </div>
+
+            <div class="flex flex-wrap items-center justify-end gap-3 pt-6 border-t border-gray-200">
                 <a href="{{ route('client.dashboard') }}" class="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-200">
                     {{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}
                 </a>
@@ -239,6 +274,18 @@
 </div>
 
 @push('scripts')
+<script>
+    document.getElementById('avatar')?.addEventListener('change', function (e) {
+        const f = e.target.files && e.target.files[0];
+        if (!f || !f.type.startsWith('image/')) return;
+        const url = URL.createObjectURL(f);
+        const img = document.getElementById('client_avatar_preview');
+        if (img) {
+            img.src = url;
+            img.onload = function () { URL.revokeObjectURL(url); };
+        }
+    });
+</script>
 <script>
     $(document).ready(function() {
         // Handle insurance company selection
