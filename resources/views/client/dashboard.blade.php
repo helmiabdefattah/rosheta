@@ -1,9 +1,9 @@
 @extends('client.layouts.dashboard')
 
-@section('title', app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard')
+@section('title', app()->getLocale() === 'ar' ? 'الرئيسية' : 'Home')
 
-@section('page-title', app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard')
-@section('page-description', app()->getLocale() === 'ar' ? 'نظرة عامة على طلباتك وطلباتك' : 'Overview of your requests and orders')
+@section('page-title', app()->getLocale() === 'ar' ? 'الرئيسية' : 'Home')
+@section('page-description', app()->getLocale() === 'ar' ? 'ابحث، احجز، وتتبع طلباتك' : 'Search, book, and track your requests')
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -62,186 +62,7 @@
 @section('content')
 <div class="max-w-7xl mx-auto">
 
-        <!-- Statistics -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-600">{{ app()->getLocale() === 'ar' ? 'إجمالي الطلبات' : 'Total Requests' }}</p>
-                        <p class="text-2xl font-bold text-slate-900 mt-2">{{ $stats['total_requests'] }}</p>
-                    </div>
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="bi bi-file-text text-blue-600 text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-600">{{ app()->getLocale() === 'ar' ? 'طلبات قيد الانتظار' : 'Pending Requests' }}</p>
-                        <p class="text-2xl font-bold text-slate-900 mt-2">{{ $stats['pending_requests'] }}</p>
-                    </div>
-                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                        <i class="bi bi-clock text-yellow-600 text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-600">{{ app()->getLocale() === 'ar' ? 'إجمالي الطلبات' : 'Total Orders' }}</p>
-                        <p class="text-2xl font-bold text-slate-900 mt-2">{{ $stats['total_orders'] }}</p>
-                    </div>
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i class="bi bi-cart-check text-green-600 text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-600">{{ app()->getLocale() === 'ar' ? 'طلبات نشطة' : 'Active Orders' }}</p>
-                        <p class="text-2xl font-bold text-slate-900 mt-2">{{ $stats['active_orders'] }}</p>
-                    </div>
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="bi bi-activity text-purple-600 text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <a href="{{ route('client.test-results.index') }}" class="block group">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-gray-600">{{ app()->getLocale() === 'ar' ? 'نتائج التحاليل' : 'Test Results' }}</p>
-                            <p class="text-2xl font-bold text-slate-900 mt-2 group-hover:text-primary transition-colors">{{ $stats['test_results'] }}</p>
-                        </div>
-                        <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
-                            <i class="bi bi-file-earmark-medical text-xl"></i>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <a href="{{ route('client.doctor-reservation.index') }}" class="block group">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-gray-600">{{ app()->getLocale() === 'ar' ? 'حجز موعد طبيب' : 'Doctor Reservation' }}</p>
-                            <p class="text-lg font-bold text-slate-900 mt-2 group-hover:text-primary transition-colors">{{ app()->getLocale() === 'ar' ? 'احجز الآن' : 'Book now' }}</p>
-                        </div>
-                        <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
-                            <i class="bi bi-calendar-check text-xl"></i>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <!-- Service Provider Search Section -->
-        <div class="mb-8">
-            {{-- Collapsible Filters Section --}}
-            <div class="bg-white rounded-lg shadow">
-                <div class="p-4 border-b filter-toggle" id="filterToggle">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-semibold text-gray-800">
-                            {{ app()->getLocale() === 'ar' ? 'البحث عن مقدمي الخدمات' : 'Search Service Providers' }}
-                        </h3>
-                        <svg id="filterIcon" class="w-5 h-5 text-gray-600 transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </div>
-                </div>
-                <div class="filter-content collapsed" id="filterContent">
-                    <div class="p-6">
-                    <form method="GET" action="{{ route('client.dashboard') }}" class="space-y-4" id="filterForm">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {{-- Service Provider Type (Required) --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    {{ app()->getLocale() === 'ar' ? 'نوع مقدم الخدمة' : 'Service Provider Type' }}
-                                    <span class="text-red-500">*</span>
-                                </label>
-                                <select name="provider_type" id="provider_type" class="w-full border rounded-md p-2" required>
-                                    <option value="">{{ app()->getLocale() === 'ar' ? 'اختر النوع' : 'Select Type' }}</option>
-                                    <option value="laboratory" @selected(request('provider_type') === 'laboratory')>
-                                        {{ app()->getLocale() === 'ar' ? 'مختبر' : 'Laboratory' }}
-                                    </option>
-                                    <option value="pharmacy" @selected(request('provider_type') === 'pharmacy')>
-                                        {{ app()->getLocale() === 'ar' ? 'صيدلية' : 'Pharmacy' }}
-                                    </option>
-                                    <option value="charity" @selected(request('provider_type') === 'charity')>
-                                        {{ app()->getLocale() === 'ar' ? 'منظمة خيرية' : 'Charitable Organization' }}
-                                    </option>
-                                    <option value="doctor" @selected(request('provider_type') === 'doctor')>
-                                        {{ app()->getLocale() === 'ar' ? 'أطباء وعيادات' : 'Doctors & Clinics' }}
-                                    </option>
-                                </select>
-                            </div>
-
-                            {{-- Governorate Filter (Required) --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    {{ app()->getLocale() === 'ar' ? 'المحافظة' : 'Governorate' }}
-                                </label>
-                                <select name="governorate_id" id="governorate_id" class="w-full border rounded-md p-2">
-                                    <option value="">{{ app()->getLocale() === 'ar' ? 'اختر المحافظة' : 'Select Governorate' }}</option>
-                                    @foreach($governorates ?? [] as $governorate)
-                                        <option value="{{ $governorate->id }}" @selected(request('governorate_id') == $governorate->id)>
-                                            {{ app()->getLocale() === 'ar' ? $governorate->name_ar : $governorate->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            {{-- City Filter (Optional) --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    {{ app()->getLocale() === 'ar' ? 'المدينة' : 'City' }}
-                                    <span class="text-gray-400 text-xs">({{ app()->getLocale() === 'ar' ? 'اختياري' : 'Optional' }})</span>
-                                </label>
-                                <select name="city_id" id="city_id" class="w-full border rounded-md p-2">
-                                    <option value="">{{ app()->getLocale() === 'ar' ? 'جميع المدن' : 'All Cities' }}</option>
-                                    @foreach($cities ?? [] as $city)
-                                        <option value="{{ $city->id }}" @selected(request('city_id') == $city->id)>
-                                            {{ app()->getLocale() === 'ar' ? $city->name_ar : $city->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            {{-- Area Filter (Optional) --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    {{ app()->getLocale() === 'ar' ? 'المنطقة' : 'Area' }}
-                                    <span class="text-gray-400 text-xs">({{ app()->getLocale() === 'ar' ? 'اختياري' : 'Optional' }})</span>
-                                </label>
-                                <select name="area_id" id="area_id" class="w-full border rounded-md p-2">
-                                    <option value="">{{ app()->getLocale() === 'ar' ? 'جميع المناطق' : 'All Areas' }}</option>
-                                    @foreach($areas ?? [] as $area)
-                                        <option value="{{ $area->id }}" @selected(request('area_id') == $area->id)>
-                                            {{ app()->getLocale() === 'ar' ? $area->name_ar : $area->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="flex gap-2">
-                            <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                                {{ app()->getLocale() === 'ar' ? 'بحث' : 'Search' }}
-                            </button>
-                            <a href="{{ route('client.dashboard') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
-                                {{ app()->getLocale() === 'ar' ? 'إعادة تعيين' : 'Reset' }}
-                            </a>
-                        </div>
-                    </form>
-                    </div>
-                </div>
-            </div>
+        @include('client.partials.dashboard-landing')
 
             @if(request()->has('governorate_id') && request()->has('provider_type'))
                 {{-- Map Section (for laboratories, pharmacies, and doctors/clinics; not charity) --}}
@@ -441,7 +262,6 @@
 
                                     {{-- Action Buttons --}}
                                     <div class="mt-4 space-y-2">
-<<<<<<< HEAD
                                         @if($providerType === 'charity')
                                             {{-- Charity organizations don't have action buttons, just display info --}}
                                         @elseif($providerType === 'doctor')
@@ -505,75 +325,145 @@
                     </div>
                 @endif
             @endif
-        </div>
 
-        <!-- Recent Activity -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Recent Requests -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                <div class="p-6 border-b border-gray-200">
+        @php $isAr = app()->getLocale() === 'ar'; @endphp
+        <!-- Recent Requests -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200/90 overflow-hidden">
+            <div class="p-5 sm:p-6 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
                     <h3 class="text-lg font-semibold text-slate-900">
-                        {{ app()->getLocale() === 'ar' ? 'الطلبات الأخيرة' : 'Recent Requests' }}
+                        {{ $isAr ? 'الطلبات الأخيرة' : 'Recent Requests' }}
                     </h3>
+                    <p class="text-sm text-gray-500 mt-0.5">{{ $isAr ? 'آخر الطلبات مع التفاصيل والحالة' : 'Latest requests with details and status' }}</p>
                 </div>
-                <div class="p-6">
-                    @if($recentRequests->count() > 0)
-                        <div class="space-y-4">
-                            @foreach($recentRequests as $request)
-                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                                    <div>
-                                        <p class="font-medium text-slate-900">#{{ $request->id }}</p>
-                                        <p class="text-sm text-gray-600">{{ $request->created_at->format('M d, Y') }}</p>
-                                    </div>
-                                    <span class="px-3 py-1 text-xs font-medium rounded-full
-                                        {{ $request->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                        {{ $request->status === 'accepted' ? 'bg-green-100 text-green-800' : '' }}
-                                        {{ $request->status === 'rejected' ? 'bg-red-100 text-red-800' : '' }}">
-                                        {{ ucfirst($request->status) }}
-                                    </span>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <p class="text-gray-500 text-center py-8">
-                            {{ app()->getLocale() === 'ar' ? 'لا توجد طلبات' : 'No requests yet' }}
-                        </p>
-                    @endif
-                </div>
+                <a href="{{ route('client.requests.index') }}"
+                   class="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-primary border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors shrink-0">
+                    {{ $isAr ? 'عرض الكل' : 'View all' }}
+                    <svg class="w-4 h-4 {{ $isAr ? 'rotate-180' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
             </div>
-
-            <!-- Recent Orders -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                <div class="p-6 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-slate-900">
-                        {{ app()->getLocale() === 'ar' ? 'الطلبات الأخيرة' : 'Recent Orders' }}
-                    </h3>
-                </div>
-                <div class="p-6">
-                    @if($recentOrders->count() > 0)
-                        <div class="space-y-4">
-                            @foreach($recentOrders as $order)
-                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                                    <div>
-                                        <p class="font-medium text-slate-900">Order #{{ $order->id }}</p>
-                                        <p class="text-sm text-gray-600">
-                                            {{ $order->pharmacy->name ?? 'N/A' }}
-                                        </p>
+            <div class="p-4 sm:p-6">
+                @if($recentRequests->count() > 0)
+                    <ul class="space-y-3" role="list">
+                        @foreach($recentRequests as $request)
+                            @php
+                                $typeLabel = match ($request->type) {
+                                    'medicine' => $isAr ? 'أدوية' : 'Medicine',
+                                    'test' => $isAr ? 'تحاليل' : 'Tests',
+                                    'radiology' => $isAr ? 'أشعة' : 'Radiology',
+                                    default => $request->type ?? '—',
+                                };
+                                $cardAccent = match ($request->type) {
+                                    'medicine' => 'from-teal-500 to-emerald-600',
+                                    'test' => 'from-sky-500 to-blue-600',
+                                    'radiology' => 'from-violet-500 to-purple-600',
+                                    default => 'from-slate-400 to-slate-600',
+                                };
+                                $statusClass = match ($request->status) {
+                                    'pending' => 'bg-amber-100 text-amber-800 ring-1 ring-amber-200/60',
+                                    'approved', 'accepted', 'confirmed' => 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200/60',
+                                    'rejected' => 'bg-red-100 text-red-800 ring-1 ring-red-200/60',
+                                    default => 'bg-gray-100 text-gray-800 ring-1 ring-gray-200/60',
+                                };
+                                $statusLabel = match ($request->status) {
+                                    'pending' => $isAr ? 'قيد الانتظار' : 'Pending',
+                                    'approved' => $isAr ? 'مقبول' : 'Approved',
+                                    'accepted' => $isAr ? 'مقبول' : 'Accepted',
+                                    'confirmed' => $isAr ? 'مؤكد' : 'Confirmed',
+                                    'rejected' => $isAr ? 'مرفوض' : 'Rejected',
+                                    default => ucfirst(str_replace('_', ' ', (string) $request->status)),
+                                };
+                                $providerName = $request->provider?->name;
+                                $when = $request->created_at->timezone(config('app.timezone'));
+                            @endphp
+                            <li>
+                                <a href="{{ route('client.requests.pharmacy-lab.show', $request) }}"
+                                   class="group flex flex-col sm:flex-row sm:items-stretch rounded-xl border border-gray-200 bg-gray-50/40 hover:bg-white hover:border-gray-300 hover:shadow-md transition-all duration-200 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+                                    <div class="h-1.5 sm:h-auto sm:w-1.5 shrink-0 bg-gradient-to-r sm:bg-gradient-to-b {{ $cardAccent }} sm:min-h-[4.5rem]"></div>
+                                    <div class="flex-1 min-w-0 p-4 flex flex-col gap-3">
+                                        <div class="flex flex-wrap items-start justify-between gap-2">
+                                            <div class="min-w-0 space-y-1">
+                                                <div class="flex flex-wrap items-center gap-2">
+                                                    <span class="text-sm font-bold text-slate-900 tabular-nums">#{{ $request->id }}</span>
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-white text-slate-700 border border-gray-200 shadow-sm">{{ $typeLabel }}</span>
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold {{ $statusClass }}">{{ $statusLabel }}</span>
+                                                </div>
+                                                <p class="text-xs text-gray-500 flex items-center gap-1.5">
+                                                    <svg class="w-3.5 h-3.5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                    </svg>
+                                                    {{ $when->format($isAr ? 'Y-m-d H:i' : 'M d, Y · g:i A') }}
+                                                </p>
+                                            </div>
+                                            <span class="hidden sm:inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-200 bg-white text-gray-400 group-hover:text-primary group-hover:border-primary/30 transition-colors shrink-0">
+                                                <svg class="w-5 h-5 {{ $isAr ? 'rotate-180' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        @if($request->lines->isNotEmpty())
+                                            <div class="rounded-lg bg-white border border-gray-100 px-3 py-2.5 shadow-sm">
+                                                <p class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                                                    {{ $isAr ? 'محتويات الطلب' : 'Request contents' }}
+                                                </p>
+                                                <ul class="space-y-1.5 text-xs text-slate-800 leading-snug" role="list">
+                                                    @foreach($request->lines as $line)
+                                                        @php
+                                                            if ($line->item_type === 'medicine') {
+                                                                $m = $line->medicine;
+                                                                $lineLabel = $m
+                                                                    ? ($isAr ? ($m->arabic ?: $m->name) : $m->name)
+                                                                    : '—';
+                                                            } else {
+                                                                $t = $line->medicalTest;
+                                                                $lineLabel = $t
+                                                                    ? ($isAr ? ($t->test_name_ar ?: $t->test_name_en) : ($t->test_name_en ?: $t->test_name_ar))
+                                                                    : '—';
+                                                            }
+                                                        @endphp
+                                                        <li class="flex gap-2 min-w-0">
+                                                            <span class="text-primary/70 shrink-0 mt-0.5" aria-hidden="true">•</span>
+                                                            <span class="min-w-0 break-words flex-1">
+                                                                {{ $lineLabel }}
+                                                                @if($line->item_type === 'medicine' && $line->quantity !== null && $line->quantity !== '')
+                                                                    <span class="text-gray-500 font-normal"> × {{ $line->quantity }}@if($line->unit) {{ $line->unit }}@endif</span>
+                                                                @endif
+                                                            </span>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
+                                        <dl class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm">
+                                            <div class="flex items-baseline gap-1.5 text-gray-600">
+                                                <dt class="font-medium text-gray-500 shrink-0">{{ $isAr ? 'البنود' : 'Items' }}</dt>
+                                                <dd class="font-semibold text-slate-800">{{ number_format($request->lines->count()) }}</dd>
+                                            </div>
+                                            <div class="flex items-baseline gap-1.5 text-gray-600">
+                                                <dt class="font-medium text-gray-500 shrink-0">{{ $isAr ? 'العروض' : 'Offers' }}</dt>
+                                                <dd class="font-semibold text-slate-800">{{ number_format($request->offers_count) }}</dd>
+                                            </div>
+                                            <div class="flex items-start gap-1.5 text-gray-600 min-w-0 sm:col-span-1">
+                                                <dt class="font-medium text-gray-500 shrink-0">{{ $isAr ? 'المزوّد' : 'Provider' }}</dt>
+                                                <dd class="font-medium text-slate-800 truncate" title="{{ $providerName ?? '' }}">{{ $providerName ?: ($isAr ? 'غير محدد' : 'Not set') }}</dd>
+                                            </div>
+                                        </dl>
                                     </div>
-                                    <span class="px-3 py-1 text-xs font-medium rounded-full
-                                        {{ $order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                        {{ $order->status === 'completed' ? 'bg-green-100 text-green-800' : '' }}">
-                                        {{ ucfirst($order->status) }}
-                                    </span>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <p class="text-gray-500 text-center py-8">
-                            {{ app()->getLocale() === 'ar' ? 'لا توجد طلبات' : 'No orders yet' }}
-                        </p>
-                    @endif
-                </div>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <div class="text-center py-12 px-4 rounded-xl border border-dashed border-gray-200 bg-gray-50/50">
+                        <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <p class="text-gray-500 font-medium">{{ $isAr ? 'لا توجد طلبات بعد' : 'No requests yet' }}</p>
+                        <p class="text-sm text-gray-400 mt-1">{{ $isAr ? 'ابدأ بطلب أدوية أو تحاليل من الصفحة الرئيسية' : 'Start with a medicine or lab request from the home page' }}</p>
+                    </div>
+                @endif
             </div>
         </div>
 </div>
@@ -593,11 +483,12 @@
         const filterToggle = document.getElementById('filterToggle');
         const filterContent = document.getElementById('filterContent');
         const filterIcon = document.getElementById('filterIcon');
-        let isExpanded = false;
+        let isExpanded = !!(filterContent && filterContent.classList.contains('expanded'));
 
         if (filterToggle && filterContent && filterIcon) {
             filterToggle.addEventListener('click', function() {
                 isExpanded = !isExpanded;
+                filterToggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
                 if (isExpanded) {
                     filterContent.classList.remove('collapsed');
                     filterContent.classList.add('expanded');

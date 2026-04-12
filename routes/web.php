@@ -85,6 +85,8 @@ Route::middleware('auth')->prefix('nurse')->name('nurse.')->group(function () {
 // Client Dashboard
 Route::middleware('auth:client')->prefix('client')->name('client.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\ClientDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/search/medical-tests', [App\Http\Controllers\ClientDashboardController::class, 'searchMedicalTests'])->name('dashboard.search.medical-tests');
+    Route::get('/dashboard/search/laboratories', [App\Http\Controllers\ClientDashboardController::class, 'searchLaboratories'])->name('dashboard.search.laboratories');
 
     // All requests (pharmacy / lab / nursing)
     Route::get('/my-requests', [App\Http\Controllers\ClientMyRequestsController::class, 'index'])->name('requests.index');

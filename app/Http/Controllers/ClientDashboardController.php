@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\CharitableOrganization;
 use App\Models\Clinic;
 use App\Models\ClientRequest;
+use App\Models\Laboratory;
+use App\Models\MedicalTest;
 use App\Models\NurseVisit;
 use App\Models\Order;
 use App\Models\Governorate;
@@ -43,17 +45,15 @@ class ClientDashboardController extends Controller
                 ->count(),
         ];
 
-        // Recent requests
+        // Recent requests (lines with item names, offers count, provider for dashboard cards)
         $recentRequests = ClientRequest::where('client_id', $client->id)
-            ->latest()
-            ->limit(5)
-            ->get();
-
-        // Recent orders
-        $recentOrders = Order::whereHas('request', function ($query) use ($client) {
-            $query->where('client_id', $client->id);
-        })
-            ->with(['request', 'pharmacy'])
+            ->with([
+                'provider',
+                'lines' => static function ($q) {
+                    $q->with(['medicine', 'medicalTest'])->orderBy('id');
+                },
+            ])
+            ->withCount('offers')
             ->latest()
             ->limit(5)
             ->get();
@@ -233,7 +233,6 @@ class ClientDashboardController extends Controller
         return view('client.dashboard', compact(
             'stats', 
             'recentRequests', 
-            'recentOrders', 
             'visits', 
             'availableBonusPoints',
             'governorates',
@@ -247,6 +246,67 @@ class ClientDashboardController extends Controller
             'areaId',
             'providerType'
         ));
+    }
+
+    /**
+     * JSON autocomplete for medical tests (client dashboard search bar).
+     */
+    public function searchMedicalTests(Request $request)
+    {
+        $q = trim((string) $request->get('q', ''));
+        if (mb_strlen($q) < 2) {
+            return response()->json(['data' => []]);
+        }
+
+        $locale = app()->getLocale();
+        $data = MedicalTest::query()
+            ->where(function ($qq) use ($q) {
+                $qq->where('test_name_ar', 'like', '%'.$q.'%')
+                    ->orWhere('test_name_en', 'like', '%'.$q.'%');
+            })
+            ->orderBy('test_name_en')
+            ->limit(20)
+            ->get(['id', 'test_name_ar', 'test_name_en', 'type'])
+            ->map(function ($t) use ($locale) {
+                $label = $locale === 'ar'
+                    ? ($t->test_name_ar ?: $t->test_name_en)
+                    : ($t->test_name_en ?: $t->test_name_ar);
+                $type = $t->type === 'radiology' ? 'radiology' : 'test';
+
+                return [
+                    'id' => $t->id,
+                    'label' => $label,
+                    'type' => $type,
+                    'url' => route('client.test-requests.create', ['type' => $type]),
+                ];
+            });
+
+        return response()->json(['data' => $data]);
+    }
+
+    /**
+     * JSON autocomplete for laboratories (link to lab offers page).
+     */
+    public function searchLaboratories(Request $request)
+    {
+        $q = trim((string) $request->get('q', ''));
+        if (mb_strlen($q) < 2) {
+            return response()->json(['data' => []]);
+        }
+
+        $data = Laboratory::query()
+            ->where('is_active', true)
+            ->where('name', 'like', '%'.$q.'%')
+            ->orderBy('name')
+            ->limit(15)
+            ->get(['id', 'name'])
+            ->map(fn ($lab) => [
+                'id' => $lab->id,
+                'label' => $lab->name,
+                'url' => route('client.laboratories.offers', $lab),
+            ]);
+
+        return response()->json(['data' => $data]);
     }
 }
 

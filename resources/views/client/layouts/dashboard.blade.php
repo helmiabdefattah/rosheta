@@ -301,11 +301,17 @@
 
         <div class="flex-1 flex flex-col bg-gray-100 relative min-w-0 h-screen overflow-hidden">
 
-            <header class="h-16 flex items-center justify-between px-6 border-b border-black/10 shadow-sm transition-all duration-300 bg-gradient-to-r from-[#afd7e0] to-[#d9eaf1]">
+            {{-- Mobile: no top header bar (bottom tab bar handles primary nav); floating control opens the sidebar --}}
+            <div class="lg:hidden fixed z-[43] pointer-events-none top-[max(0.75rem,env(safe-area-inset-top))] start-3">
+                <button type="button"
+                        class="js-open-sidebar pointer-events-auto flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200/90 bg-white/95 text-slate-700 shadow-md backdrop-blur-sm hover:bg-white hover:text-primary transition-colors"
+                        aria-label="{{ app()->getLocale() === 'ar' ? 'فتح القائمة' : 'Open menu' }}">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+            </div>
+
+            <header class="hidden lg:flex h-16 items-center justify-between px-6 border-b border-black/10 shadow-sm transition-all duration-300 bg-gradient-to-r from-[#afd7e0] to-[#d9eaf1]">
                 <div class="flex items-center gap-4">
-                    <button id="open-sidebar" class="lg:hidden text-slate-600 hover:text-primary transition-colors">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    </button>
                     <div>
                         <h1 class="text-base md:text-xl font-bold text-slate-800">@yield('page-title', app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard')</h1>
                         @hasSection('page-description')
@@ -315,41 +321,6 @@
                 </div>
 
                 <div class="flex items-center gap-4">
-                @php
-                    $client = Auth::guard('client')->user();
-                    $availableBonusPoints = \App\Models\BonusPoint::where('client_id', $client->id)
-                                                                   ->sum('points') ?? 0;
-                @endphp
-                <div class="flex items-center gap-4">
-                    <!-- Compact Points Display -->
-                    <div class="relative hidden md:block">
-                        <div class="flex items-center bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-1 rounded-xl border border-amber-200 shadow-sm">
-                            <div class="text-right me-3">
-                                <p class="text-xs font-semibold text-amber-800 mb-0.5">
-                                    {{ app()->getLocale() === 'ar' ? 'النقاط' : 'Points' }}
-                                </p>
-                                <span class="text-2xl font-bold text-amber-600">
-                        {{ number_format($availableBonusPoints ?? 0) }}
-                    </span>
-                            </div>
-                            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 flex items-center justify-center">
-                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Mobile Points Display -->
-                    <div class="md:hidden">
-                        <div class="flex items-center bg-gradient-to-r from-amber-50 to-yellow-50 px-3 py-1.5 rounded-lg border border-amber-200">
-                            <svg class="w-4 h-4 text-amber-600 me-1.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                            </svg>
-                            <span class="text-lg font-bold text-amber-600">{{ number_format($availableBonusPoints ?? 0) }}</span>
-                        </div>
-                    </div>
-
                     <!-- Language Toggle -->
                     <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                        class="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200">
@@ -429,7 +400,7 @@
                     </div>
                 </div>
             </header>
-            <main class="flex-1 overflow-y-auto overflow-x-auto p-4 lg:p-8 main-content-scroll">
+            <main class="flex-1 overflow-y-auto overflow-x-auto p-4 pt-[calc(3.25rem+env(safe-area-inset-top,0px))] lg:pt-8 lg:p-8 main-content-scroll max-lg:pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))]">
                 @if(session('success'))
                     <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
                         <div class="flex">
@@ -469,6 +440,8 @@
 
                 @yield('content')
             </main>
+
+            @include('client.partials.mobile-bottom-nav')
         </div>
     </div>
 
@@ -485,7 +458,6 @@
         // Mobile sidebar toggle
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('mobile-overlay');
-        const openBtn = document.getElementById('open-sidebar');
         const closeBtn = document.getElementById('close-sidebar');
 
         function openSidebar() {
@@ -499,7 +471,9 @@
             overlay.classList.add('hidden');
         }
 
-        openBtn?.addEventListener('click', openSidebar);
+        document.querySelectorAll('.js-open-sidebar').forEach(function (btn) {
+            btn.addEventListener('click', openSidebar);
+        });
         closeBtn?.addEventListener('click', closeSidebar);
         overlay?.addEventListener('click', closeSidebar);
 

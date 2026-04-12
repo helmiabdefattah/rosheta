@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BonusPoint;
 use App\Models\Client;
 use App\Models\User;
 use App\Models\InsuranceCompany;
@@ -19,7 +20,10 @@ class ClientProfileController extends Controller
         $insuranceCompanies = InsuranceCompany::where('is_active', true)
             ->orderBy('name')
             ->get();
-        return view('client.profile.edit', compact('client', 'insuranceCompanies'));
+
+        $availableBonusPoints = (int) BonusPoint::where('client_id', $client->id)->sum('points');
+
+        return view('client.profile.edit', compact('client', 'insuranceCompanies', 'availableBonusPoints'));
     }
 
     public function update(Request $request)
