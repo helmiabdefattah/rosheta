@@ -56,14 +56,14 @@
             background: #f1f5f9;
         }
 
-        /* Main area background */
+        /* fixed: cover sizes to viewport; local scaled the image to full scroll height (pixelated on tall pages). */
         .main-content-scroll {
             background-color: #f1f5f9;
             background-image: url("{{ asset('assets/backgrounds/me.png') }}");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-attachment: local;
+            background-attachment: fixed;
         }
 
         /* Navigation Item Styles */
