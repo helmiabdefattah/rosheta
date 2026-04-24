@@ -2,19 +2,21 @@
 
 @section('title', app()->getLocale() === 'ar' ? 'أيام العمل والإجازة' : 'Working & Off Days')
 @section('page-title', app()->getLocale() === 'ar' ? 'أيام العمل والإجازة' : 'Working & Off Days')
-@section('page-description', app()->getLocale() === 'ar' ? 'اضغط على يوم لتعيينه إجازة أو يوم عمل (الشهر الحالي والقادم)' : 'Click a day to set it as off or working (this month and next)')
+@section('page-description', app()->getLocale() === 'ar' ? 'اضغط على يوم مستقبلي لتعيينه إجازة أو يوم عمل. يمكنك تصفح الأشهر السابقة لعرض المواعيد.' : 'Click a future day to set off or working. Browse past months to see appointments.')
 
 @section('content')
 <div class="mb-6 flex items-center justify-between flex-wrap gap-4">
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 flex-wrap">
         @if($canGoPrev)
-            <a href="{{ route('doctor.calendar.index', ['month' => $prevMonth->format('Y-m')]) }}" class="px-4 py-2 bg-white border border-slate-300 rounded-lg hover:bg-gray-50 text-sm font-medium">{{ app()->getLocale() === 'ar' ? '← الشهر السابق' : '← Previous' }}</a>
+            <a href="{{ route('doctor.calendar.index', ['month' => $prevMonth->format('Y-m')]) }}" class="px-4 py-2 bg-white border border-slate-300 rounded-lg hover:bg-gray-50 text-sm font-medium text-slate-800">{{ app()->getLocale() === 'ar' ? '← الشهر السابق' : '← Previous' }}</a>
+        @else
+            <span class="px-4 py-2 rounded-lg text-sm font-medium border border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed select-none" title="{{ app()->getLocale() === 'ar' ? 'لا يمكن الرجوع قبل آخر ٥ سنوات' : 'Cannot go further back (5-year limit)' }}" aria-disabled="true">{{ app()->getLocale() === 'ar' ? '← الشهر السابق' : '← Previous' }}</span>
         @endif
         <span class="text-lg font-bold text-slate-800">{{ $start->translatedFormat(app()->getLocale() === 'ar' ? 'F Y' : 'F Y') }}</span>
         <a href="{{ route('doctor.calendar.index', ['month' => $nextMonth->format('Y-m')]) }}" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-medium">{{ app()->getLocale() === 'ar' ? 'الشهر القادم →' : 'Next →' }}</a>
     </div>
     <p class="text-sm text-slate-500">
-        {{ app()->getLocale() === 'ar' ? 'كل يوم يعرض اسم العيادة ومواعيد العمل. أخضر = العيادة مفتوحة | رمادي = العيادة مغلقة هذا اليوم | أحمر = إجازة (اضغط للتبديل).' : 'Each day shows clinic name and hours. Green = clinic open | Gray = clinic closed this day | Red = off (click to toggle).' }}
+        {{ app()->getLocale() === 'ar' ? 'كل يوم: ساعات العمل بالعيادة، ومواعيد المرضى (غير الملغاة). أخضر = العيادة مفتوحة | رمادي = مغلقة | أحمر = إجازة (اضغط للتبديل).' : 'Each day: clinic hours and patient appointments (non-cancelled). Green = open | Gray = closed | Red = off (click to toggle).' }}
     </p>
 </div>
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -29,7 +31,7 @@
         @for($i = 0; $i < $pad; $i++)<div class="min-h-[100px]"></div>@endfor
         @foreach($days as $d)
             <div
-                class="min-h-[100px] rounded-lg flex flex-col p-2 border-2 transition-colors overflow-hidden
+                class="min-h-[120px] rounded-lg flex flex-col p-2 border-2 transition-colors overflow-hidden
                     @if($d['is_past']) bg-gray-100 border-gray-200 cursor-default
                     @elseif($d['is_off']) bg-red-50 border-red-300 hover:bg-red-100 calendar-day cursor-pointer
                     @elseif($d['has_clinic_open']) bg-teal-50/80 border-teal-200 hover:bg-teal-100 calendar-day cursor-pointer
@@ -47,7 +49,7 @@
                         <span class="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-red-200 text-red-800">{{ app()->getLocale() === 'ar' ? 'إجازة' : 'Off' }}</span>
                     @endif
                 </div>
-                <div class="flex-1 overflow-y-auto space-y-1.5 text-left">
+                <div class="flex-1 overflow-y-auto space-y-1.5 text-left min-h-0">
                     @forelse($d['schedules'] as $sch)
                         <div class="text-[10px] leading-tight">
                             <div class="font-semibold text-slate-700 truncate" title="{{ $sch['clinic_name'] }}">{{ $sch['clinic_name'] }}</div>
@@ -59,9 +61,39 @@
                         </div>
                     @empty
                         @if(!$d['is_past'])
-                            <div class="text-[10px] text-slate-400 italic">{{ app()->getLocale() === 'ar' ? 'لا مواعيد' : 'No hours' }}</div>
+                            <div class="text-[10px] text-slate-400 italic">{{ app()->getLocale() === 'ar' ? 'لا ساعات' : 'No hours' }}</div>
                         @endif
                     @endforelse
+                    @if(!empty($d['appointments']))
+                        <div class="pt-1 mt-1 border-t border-slate-200/80">
+                            <div class="text-[9px] font-bold uppercase tracking-wide text-slate-500 mb-0.5">{{ app()->getLocale() === 'ar' ? 'المواعيد' : 'Appts' }}</div>
+                            @foreach($d['appointments'] as $apt)
+                                @php
+                                    $st = $apt['status'];
+                                    $stClass = match ($st) {
+                                        'confirmed' => 'bg-emerald-100 text-emerald-800',
+                                        'pending' => 'bg-amber-100 text-amber-800',
+                                        'completed' => 'bg-slate-200 text-slate-700',
+                                        'missed' => 'bg-rose-100 text-rose-800',
+                                        default => 'bg-slate-100 text-slate-600',
+                                    };
+                                    $stLabel = app()->getLocale() === 'ar'
+                                        ? (['pending'=>'انتظار','confirmed'=>'مؤكد','completed'=>'منتهي','missed'=>'فائت'][$st] ?? $st)
+                                        : ucfirst($st);
+                                @endphp
+                                <div class="text-[10px] leading-tight mb-1 last:mb-0">
+                                    <div class="flex items-start justify-between gap-1">
+                                        <span class="font-semibold text-slate-800 shrink-0">{{ $apt['time'] }}</span>
+                                        <span class="text-[8px] px-1 py-0.5 rounded shrink-0 {{ $stClass }}">{{ $stLabel }}</span>
+                                    </div>
+                                    <div class="text-slate-700 truncate" title="{{ $apt['patient'] }}">{{ $apt['patient'] }}</div>
+                                    @if(!empty($apt['clinic']))
+                                        <div class="text-slate-500 truncate text-[9px]" title="{{ $apt['clinic'] }}">{{ $apt['clinic'] }}</div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
             </div>
         @endforeach
