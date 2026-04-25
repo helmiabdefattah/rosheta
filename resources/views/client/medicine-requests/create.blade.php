@@ -302,7 +302,7 @@
 					</div>
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
 						<div class="md:col-span-2 min-w-0">
-                <select class="medicine-select w-full" name="medicines[${medCounter - 1}][medicine_id]" required>
+                <select class="medicine-select w-full" name="medicines[${medCounter - 1}][medicine_id]">
 								<option value="">${selectMedicineText}</option>
 							</select>
 						</div>
@@ -342,8 +342,10 @@
 		}
 		$(document).on('click','#addMedicineBtn', addMedicineRow);
 		$(document).on('click','.remove-med-btn', function(){ $(this).closest('.medicine-item').remove(); });
-		// start with one row
-		addMedicineRow();
+		// Start with several empty manual rows (empty rows are ignored on submit server-side).
+		for (let i = 0; i < 3; i++) {
+			addMedicineRow();
+		}
 
 		// Basic submit validation: need address and (at least one medicine or an image)
 		$('#medicineRequestForm').on('submit', function(e){

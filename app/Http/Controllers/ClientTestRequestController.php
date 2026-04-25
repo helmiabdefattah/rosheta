@@ -79,6 +79,14 @@ class ClientTestRequestController extends Controller
         $client = Auth::guard('client')->user();
         abort_unless($client, 403);
 
+        if ($type === 'medicine' && $request->has('medicines')) {
+            $filteredMedicines = collect($request->input('medicines', []))
+                ->filter(fn ($row) => filled($row['medicine_id'] ?? null))
+                ->values()
+                ->all();
+            $request->merge(['medicines' => $filteredMedicines]);
+        }
+
         $rules = [
             'client_address_id' => ['nullable', 'exists:client_addresses,id'],
             'pregnant' => ['nullable', 'boolean'],
@@ -99,8 +107,8 @@ class ClientTestRequestController extends Controller
 
         if ($type === 'medicine') {
             $rules['medicines'] = ['nullable', 'array'];
-            $rules['medicines.*.medicine_id'] = ['required_with:medicines', 'integer'];
-            $rules['medicines.*.quantity'] = ['required_with:medicines', 'integer', 'min:1'];
+            $rules['medicines.*.medicine_id'] = ['required', 'integer'];
+            $rules['medicines.*.quantity'] = ['required', 'integer', 'min:1'];
         }
 
         $validated = $request->validate($rules);
