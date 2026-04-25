@@ -343,7 +343,7 @@
 		$(document).on('click','#addMedicineBtn', addMedicineRow);
 		$(document).on('click','.remove-med-btn', function(){ $(this).closest('.medicine-item').remove(); });
 		// Start with several empty manual rows (empty rows are ignored on submit server-side).
-		for (let i = 0; i < 3; i++) {
+		for (let i = 0; i < 1; i++) {
 			addMedicineRow();
 		}
 
