@@ -46,22 +46,38 @@ class AuthController extends Controller
     }
 
     /**
-     * Login client
+     * Login client (same identifiers as web: email or phone_number on clients table).
      */
     public function login(Request $request)
     {
         $request->validate([
-            'phone_number' => 'required|string',
+            'phone_number' => 'nullable|string',
+            'email' => 'nullable|email',
             'password' => 'required|string',
             'fcm_token' => 'nullable|string',
             'platform' => 'nullable|in:web,mobile',
         ]);
 
-        $client = Client::where('phone_number', $request->phone_number)->first();
-
-        if (!$client || !Hash::check($request->password, $client->password)) {
+        if (! $request->filled('phone_number') && ! $request->filled('email')) {
             throw ValidationException::withMessages([
-                'phone_number' => ['The provided credentials are incorrect.'],
+                'email' => [__('The email or phone number field is required.')],
+                'phone_number' => [__('The email or phone number field is required.')],
+            ]);
+        }
+
+        $client = null;
+        if ($request->filled('email')) {
+            $client = Client::where('email', $request->input('email'))->first();
+        }
+        if (! $client && $request->filled('phone_number')) {
+            $client = Client::where('phone_number', $request->input('phone_number'))->first();
+        }
+
+        if (! $client || ! Hash::check($request->password, $client->password)) {
+            $field = $request->filled('email') ? 'email' : 'phone_number';
+
+            throw ValidationException::withMessages([
+                $field => [__('The provided credentials are incorrect.')],
             ]);
         }
 
