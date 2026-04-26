@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'cors' => \App\Http\Middleware\CorsMiddleware::class,
             'doctor' => \App\Http\Middleware\EnsureUserIsDoctor::class,
+            'client.api' => \App\Http\Middleware\EnsureAuthenticatedClient::class,
         ]);
 
         $middleware->web(append: [

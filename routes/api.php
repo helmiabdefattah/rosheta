@@ -44,37 +44,38 @@ Route::get('/medicines/search', function (Request $request) {
     ]);
 })->name('medicines.search');
 
-// Protected routes (require authentication)
+// Authenticated (staff User or Client)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/verify', [AuthController::class, 'verify']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
-    Route::get('/client-requests', [ClientRequestController::class, 'index']);
-    Route::post('/client-requests', [ClientRequestController::class, 'store']);
-    Route::get('/offers/list', [OfferController::class, 'offersList']);
-    Route::get('/offers/confirmed', [OfferController::class, 'confirmedTestOffersList']);
-    Route::post('/offers/action', [OrderController::class, 'handleOffer']);
-    Route::post('/offers/direct', [OfferController::class, 'createDirectOffer']);
-    Route::get('/orders/{orderId}/track', [OrderController::class, 'trackOrder']);
-    Route::get('/client-orders', [OfferController::class, 'clientOrders']);
 
-    Route::get('/medicines', [ClientRequestController::class, 'medicineList']);
-    Route::get('/medical-tests', [ClientRequestController::class, 'testsList']);
-    Route::get('/radiology-tests', [ClientRequestController::class, 'radiologyList']);
-    Route::post('/medical-test-requests', [ClientRequestController::class, 'test_requests']);
-    Route::get('/medical-test-offers', [OfferController::class, 'medicalTestOffersList']);
-    Route::get('/labs', [OfferController::class, 'labList']);
-
-    Route::get('/client/addresses', [ClientAddressController::class, 'index']);
-    Route::post('/client-addresses', [ClientAddressController::class, 'store']);
-    Route::put('/client-addresses/{id}', [ClientAddressController::class, 'update']);
-    Route::delete('/client-addresses/{id}', [ClientAddressController::class, 'destroy']);
-
-    // FCM Token Management
     Route::post('/fcm-token', [\App\Http\Controllers\Api\FcmTokenController::class, 'update']);
     Route::delete('/fcm-token', [\App\Http\Controllers\Api\FcmTokenController::class, 'remove']);
 
-    // Mobile WebView: one-time signed URL to sync Sanctum session with web session
     Route::post('/webview-bridge', [WebviewBridgeController::class, 'issue']);
-});
 
+    // Patient (client) API only
+    Route::middleware('client.api')->group(function () {
+        Route::get('/client-requests', [ClientRequestController::class, 'index']);
+        Route::post('/client-requests', [ClientRequestController::class, 'store']);
+        Route::get('/offers/list', [OfferController::class, 'offersList']);
+        Route::get('/offers/confirmed', [OfferController::class, 'confirmedTestOffersList']);
+        Route::post('/offers/action', [OrderController::class, 'handleOffer']);
+        Route::post('/offers/direct', [OfferController::class, 'createDirectOffer']);
+        Route::get('/orders/{orderId}/track', [OrderController::class, 'trackOrder']);
+        Route::get('/client-orders', [OfferController::class, 'clientOrders']);
+
+        Route::get('/medicines', [ClientRequestController::class, 'medicineList']);
+        Route::get('/medical-tests', [ClientRequestController::class, 'testsList']);
+        Route::get('/radiology-tests', [ClientRequestController::class, 'radiologyList']);
+        Route::post('/medical-test-requests', [ClientRequestController::class, 'test_requests']);
+        Route::get('/medical-test-offers', [OfferController::class, 'medicalTestOffersList']);
+        Route::get('/labs', [OfferController::class, 'labList']);
+
+        Route::get('/client/addresses', [ClientAddressController::class, 'index']);
+        Route::post('/client-addresses', [ClientAddressController::class, 'store']);
+        Route::put('/client-addresses/{id}', [ClientAddressController::class, 'update']);
+        Route::delete('/client-addresses/{id}', [ClientAddressController::class, 'destroy']);
+    });
+});

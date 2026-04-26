@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,8 +15,8 @@ use Illuminate\Support\Str;
 class WebviewBridgeController extends Controller
 {
     /**
-     * Issue a one-time signed URL for the mobile app WebView to establish a web session.
-     * Called as POST /api/webview-bridge with Bearer token (Sanctum client).
+     * Issue a one-time signed URL for the mobile app WebView to establish a web session
+     * (client guard or web guard for staff), matching post-login redirects on the website.
      */
     public function issue(Request $request): JsonResponse
     {
@@ -23,37 +24,59 @@ class WebviewBridgeController extends Controller
             'redirect' => 'nullable|string|max:500',
         ]);
 
-        $client = $request->user();
-        if (!$client instanceof Client) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+        $auth = $request->user();
+
+        if ($auth instanceof User) {
+            $redirect = $this->sanitizeStaffRedirect($validated['redirect'] ?? null, $auth);
+            $nonce = Str::random(64);
+            Cache::put(
+                'webview_bridge:'.$nonce,
+                [
+                    'type' => 'staff',
+                    'user_id' => $auth->id,
+                    'redirect' => $redirect,
+                ],
+                now()->addMinutes(5)
+            );
+
+            return response()->json([
+                'url' => URL::temporarySignedRoute(
+                    'webview.bridge.establish',
+                    now()->addMinutes(5),
+                    ['nonce' => $nonce]
+                ),
+                'expires_in' => 300,
+            ]);
         }
 
-        $redirect = $this->sanitizeRedirect($validated['redirect'] ?? null);
+        if ($auth instanceof Client) {
+            $redirect = $this->sanitizeClientRedirect($validated['redirect'] ?? null);
+            $nonce = Str::random(64);
+            Cache::put(
+                'webview_bridge:'.$nonce,
+                [
+                    'type' => 'client',
+                    'client_id' => $auth->id,
+                    'redirect' => $redirect,
+                ],
+                now()->addMinutes(5)
+            );
 
-        $nonce = Str::random(64);
-        Cache::put(
-            'webview_bridge:'.$nonce,
-            [
-                'client_id' => $client->id,
-                'redirect' => $redirect,
-            ],
-            now()->addMinutes(5)
-        );
+            return response()->json([
+                'url' => URL::temporarySignedRoute(
+                    'webview.bridge.establish',
+                    now()->addMinutes(5),
+                    ['nonce' => $nonce]
+                ),
+                'expires_in' => 300,
+            ]);
+        }
 
-        $url = URL::temporarySignedRoute(
-            'webview.bridge.establish',
-            now()->addMinutes(5),
-            ['nonce' => $nonce]
-        );
-
-        return response()->json([
-            'url' => $url,
-            'expires_in' => 300,
-        ]);
+        return response()->json(['message' => 'Unauthorized'], 401);
     }
 
     /**
-     * Establish client web session from signed URL (opened once in WebView).
+     * Establish web session from signed URL (client or staff).
      */
     public function establish(Request $request): RedirectResponse
     {
@@ -67,7 +90,31 @@ class WebviewBridgeController extends Controller
         }
 
         $payload = Cache::pull('webview_bridge:'.$nonce);
-        if (! is_array($payload) || empty($payload['client_id'])) {
+        if (! is_array($payload)) {
+            abort(403, 'Invalid or expired bridge token');
+        }
+
+        $type = $payload['type'] ?? 'client';
+
+        if ($type === 'staff') {
+            if (empty($payload['user_id'])) {
+                abort(403, 'Invalid or expired bridge token');
+            }
+
+            $user = User::find($payload['user_id']);
+            if (! $user) {
+                abort(404, 'User not found');
+            }
+
+            Auth::guard('web')->login($user);
+            $request->session()->regenerate();
+
+            $redirect = $payload['redirect'] ?? $this->defaultStaffDashboardUrl($user);
+
+            return redirect()->to($redirect);
+        }
+
+        if (empty($payload['client_id'])) {
             abort(403, 'Invalid or expired bridge token');
         }
 
@@ -84,7 +131,49 @@ class WebviewBridgeController extends Controller
         return redirect()->to($redirect);
     }
 
-    private function sanitizeRedirect(?string $path): string
+    private function defaultStaffDashboardUrl(User $user): string
+    {
+        if ($user->laboratory_id) {
+            return route('laboratories.dashboard');
+        }
+        if ($user->pharmacy_id) {
+            return route('pharmacies.dashboard');
+        }
+        if ($user->nurse_id) {
+            return route('nurse.dashboard');
+        }
+        if ($user->doctor()->exists()) {
+            return route('doctor.dashboard');
+        }
+
+        return route('admin.dashboard');
+    }
+
+    private function sanitizeStaffRedirect(?string $path, User $user): string
+    {
+        $default = $this->defaultStaffDashboardUrl($user);
+
+        if ($path === null || $path === '') {
+            return $default;
+        }
+
+        $path = '/'.ltrim($path, '/');
+        if (str_starts_with($path, '//')) {
+            return $default;
+        }
+
+        $allowedPrefixes = ['/admin', '/laboratory', '/pharmacy', '/nurse', '/doctor', '/client'];
+
+        foreach ($allowedPrefixes as $prefix) {
+            if ($path === $prefix || str_starts_with($path, $prefix.'/')) {
+                return $path;
+            }
+        }
+
+        return $default;
+    }
+
+    private function sanitizeClientRedirect(?string $path): string
     {
         $default = '/client/dashboard';
         if ($path === null || $path === '') {
