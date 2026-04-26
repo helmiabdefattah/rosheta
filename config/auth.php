@@ -52,9 +52,11 @@ return [
             'driver' => 'session',
             'provider' => 'pharmacy_agents',
         ],
+        // null provider: accept Sanctum tokens for any tokenable using HasApiTokens (Client + User).
+        // A fixed "clients" provider rejects staff tokens and causes 401 on routes like /api/webview-bridge.
         'sanctum' => [
             'driver' => 'sanctum',
-            'provider' => 'clients',
+            'provider' => null,
         ],
     ],
 
