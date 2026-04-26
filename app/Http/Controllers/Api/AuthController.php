@@ -46,38 +46,45 @@ class AuthController extends Controller
     }
 
     /**
-     * Login client (same identifiers as web: email or phone_number on clients table).
+     * Login client: same resolution as web for clients — one identifier matched against
+     * both `email` and `phone_number` (OR), so formatting / which JSON key is used cannot break login.
      */
     public function login(Request $request)
     {
         $request->validate([
-            'phone_number' => 'nullable|string',
-            'email' => 'nullable|email',
+            'login' => 'nullable|string|max:255',
+            'phone_number' => 'nullable|string|max:255',
+            'email' => 'nullable|string|max:255',
             'password' => 'required|string',
             'fcm_token' => 'nullable|string',
             'platform' => 'nullable|in:web,mobile',
         ]);
 
-        if (! $request->filled('phone_number') && ! $request->filled('email')) {
+        $login = null;
+        if ($request->filled('login')) {
+            $login = trim((string) $request->input('login'));
+        } elseif ($request->filled('email')) {
+            $login = trim((string) $request->input('email'));
+        } elseif ($request->filled('phone_number')) {
+            $login = trim((string) $request->input('phone_number'));
+        }
+
+        if ($login === null || $login === '') {
             throw ValidationException::withMessages([
-                'email' => [__('The email or phone number field is required.')],
-                'phone_number' => [__('The email or phone number field is required.')],
+                'login' => [__('The email or phone number field is required.')],
             ]);
         }
 
-        $client = null;
-        if ($request->filled('email')) {
-            $client = Client::where('email', $request->input('email'))->first();
-        }
-        if (! $client && $request->filled('phone_number')) {
-            $client = Client::where('phone_number', $request->input('phone_number'))->first();
-        }
+        $client = Client::where(function ($query) use ($login) {
+            $query->where('email', $login)
+                ->orWhere('phone_number', $login);
+        })->first();
 
-        if (! $client || ! Hash::check($request->password, $client->password)) {
-            $field = $request->filled('email') ? 'email' : 'phone_number';
+        $password = (string) $request->input('password');
 
+        if (! $client || ! Hash::check($password, $client->password)) {
             throw ValidationException::withMessages([
-                $field => [__('The provided credentials are incorrect.')],
+                'login' => [__('The provided credentials are incorrect.')],
             ]);
         }
 
