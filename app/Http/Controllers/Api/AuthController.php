@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\ClientAddress;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -46,8 +47,9 @@ class AuthController extends Controller
     }
 
     /**
-     * Login client: same resolution as web for clients — one identifier matched against
-     * both `email` and `phone_number` (OR), so formatting / which JSON key is used cannot break login.
+     * Login client (Sanctum). Matches web order: staff User is checked first; this API only
+     * issues tokens for Client (patients). Lookup uses email OR phone with case-insensitive email
+     * and a digits-only phone fallback.
      */
     public function login(Request $request)
     {
@@ -75,12 +77,16 @@ class AuthController extends Controller
             ]);
         }
 
-        $client = Client::where(function ($query) use ($login) {
-            $query->where('email', $login)
-                ->orWhere('phone_number', $login);
-        })->first();
-
         $password = (string) $request->input('password');
+
+        $user = $this->findUserByLogin($login);
+        if ($user && Hash::check($password, $user->password)) {
+            throw ValidationException::withMessages([
+                'login' => [__('The mobile app uses a patient account. Staff and partners sign in on the website with this email or phone.')],
+            ]);
+        }
+
+        $client = $this->findClientByLogin($login);
 
         if (! $client || ! Hash::check($password, $client->password)) {
             throw ValidationException::withMessages([
@@ -196,5 +202,43 @@ class AuthController extends Controller
             'addresses' => $addresses,
             'addresses_count' => $addresses->count(),
         ]);
+    }
+
+    /**
+     * Same identifier rules as web login for users (email, case-insensitive email, phone, digits-only phone).
+     */
+    private function findUserByLogin(string $login): ?User
+    {
+        return User::where(function ($query) use ($login) {
+            $query->where('email', $login)
+                ->orWhereRaw('LOWER(email) = ?', [mb_strtolower($login, 'UTF-8')])
+                ->orWhere('phone_number', $login);
+
+            if (! str_contains($login, '@')) {
+                $digits = preg_replace('/\D/', '', $login);
+                if (strlen($digits) >= 8) {
+                    $query->orWhere('phone_number', $digits);
+                }
+            }
+        })->first();
+    }
+
+    /**
+     * Same identifier rules as web login for clients.
+     */
+    private function findClientByLogin(string $login): ?Client
+    {
+        return Client::where(function ($query) use ($login) {
+            $query->where('email', $login)
+                ->orWhereRaw('LOWER(email) = ?', [mb_strtolower($login, 'UTF-8')])
+                ->orWhere('phone_number', $login);
+
+            if (! str_contains($login, '@')) {
+                $digits = preg_replace('/\D/', '', $login);
+                if (strlen($digits) >= 8) {
+                    $query->orWhere('phone_number', $digits);
+                }
+            }
+        })->first();
     }
 }
