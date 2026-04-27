@@ -301,13 +301,21 @@
 
         <div class="flex-1 flex flex-col bg-gray-100 relative min-w-0 h-screen overflow-hidden">
 
-            {{-- Mobile: no top header bar (bottom tab bar handles primary nav); floating control opens the sidebar --}}
-            <div class="lg:hidden fixed z-[43] pointer-events-none top-[max(0.75rem,env(safe-area-inset-top))] start-3">
+            {{-- Mobile: floating menu + language (header is lg-only; sidebar language is hidden until menu opens) --}}
+            <div class="lg:hidden fixed z-[43] pointer-events-none top-[max(0.75rem,env(safe-area-inset-top))] inset-x-0 flex items-center justify-between px-3">
                 <button type="button"
                         class="js-open-sidebar pointer-events-auto flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200/90 bg-white/95 text-slate-700 shadow-md backdrop-blur-sm hover:bg-white hover:text-primary transition-colors"
                         aria-label="{{ app()->getLocale() === 'ar' ? 'فتح القائمة' : 'Open menu' }}">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
+                <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
+                   class="pointer-events-auto inline-flex h-11 items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white/95 px-3 text-sm font-semibold text-slate-700 shadow-md backdrop-blur-sm hover:bg-white hover:text-primary transition-colors"
+                   aria-label="{{ app()->getLocale() === 'ar' ? 'Switch to English' : 'التبديل إلى العربية' }}">
+                    <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
+                </a>
             </div>
 
             <header class="hidden lg:flex h-16 items-center justify-between px-6 border-b border-black/10 shadow-sm transition-all duration-300 bg-gradient-to-r from-[#afd7e0] to-[#d9eaf1]">
