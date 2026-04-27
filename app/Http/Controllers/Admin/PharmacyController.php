@@ -7,13 +7,30 @@ use App\Models\Pharmacy;
 use App\Models\Area;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
 
 class PharmacyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.pharmacies.index');
+        $query = Pharmacy::with(['user', 'area.city.governorate'])->orderByDesc('id');
+
+        if ($request->filled('search')) {
+            $term = '%' . $request->string('search') . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('id', 'like', $term)
+                    ->orWhere('name', 'like', $term)
+                    ->orWhere('phone', 'like', $term)
+                    ->orWhere('email', 'like', $term)
+                    ->orWhereHas('area', function ($q) use ($term) {
+                        $q->where('name', 'like', $term)
+                            ->orWhere('name_ar', 'like', $term);
+                    });
+            });
+        }
+
+        $pharmacies = $query->paginate(15)->withQueryString();
+
+        return view('admin.pharmacies.index', compact('pharmacies'));
     }
 
     public function create()
@@ -81,32 +98,6 @@ class PharmacyController extends Controller
 
         return redirect()->route('admin.pharmacies.index')
             ->with('success', app()->getLocale() === 'ar' ? 'تم حذف الصيدلية بنجاح' : 'Pharmacy deleted successfully');
-    }
-
-    public function data()
-    {
-        $pharmacies = Pharmacy::with(['user', 'area.city.governorate'])->select('pharmacies.*');
-
-        return DataTables::of($pharmacies)
-            ->addColumn('area_name', function ($pharmacy) {
-                return $pharmacy->area->name ?? '-';
-            })
-            ->addColumn('city_name', function ($pharmacy) {
-                return $pharmacy->area->city->name ?? '-';
-            })
-            ->addColumn('governorate_name', function ($pharmacy) {
-                return $pharmacy->area->city->governorate->name ?? '-';
-            })
-            ->addColumn('is_active', function ($pharmacy) {
-                return $pharmacy->is_active 
-                    ? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">' . (app()->getLocale() === 'ar' ? 'نشط' : 'Active') . '</span>'
-                    : '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">' . (app()->getLocale() === 'ar' ? 'غير نشط' : 'Inactive') . '</span>';
-            })
-            ->addColumn('actions', function ($pharmacy) {
-                return view('admin.pharmacies.actions', compact('pharmacy'))->render();
-            })
-            ->rawColumns(['is_active', 'actions'])
-            ->make(true);
     }
 }
 

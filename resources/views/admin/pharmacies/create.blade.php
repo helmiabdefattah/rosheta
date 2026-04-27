@@ -8,12 +8,16 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
 #pharmacyMap { height: 350px; width: 100%; border-radius: 0.5rem; border: 1px solid #e2e8f0; z-index: 0; }
+#pharmacyMap .leaflet-container { touch-action: pan-x pan-y; }
+@media (max-width: 1023px) {
+    #pharmacyMap { height: 220px; }
+}
 </style>
 @endpush
 
 @section('content')
-<div class="max-w-4xl mx-auto">
-    <form action="{{ route('admin.pharmacies.store') }}" method="POST">
+<div class="max-w-4xl mx-auto pb-6 max-lg:pb-28">
+    <form id="pharmacy-form" action="{{ route('admin.pharmacies.store') }}" method="POST">
         @csrf
 
         <x-admin.ui.form-card :title="app()->getLocale() === 'ar' ? 'معلومات الصيدلية' : 'Pharmacy Information'">
@@ -101,7 +105,7 @@
             </div>
         </x-admin.ui.form-card>
 
-        <div class="mt-8 flex items-center justify-end gap-3">
+        <div class="mt-8 hidden lg:flex items-center justify-end gap-3">
              <a href="{{ route('admin.pharmacies.index') }}" class="px-5 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-all">
                 {{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}
             </a>
@@ -110,6 +114,16 @@
             </x-admin.ui.button>
         </div>
     </form>
+</div>
+
+<div class="lg:hidden fixed bottom-0 inset-x-0 z-[45] border-t border-slate-200 bg-white/95 backdrop-blur-md shadow-[0_-4px_20px_rgba(15,23,42,0.08)] px-4 py-3 flex items-center justify-end gap-3"
+     style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));">
+    <a href="{{ route('admin.pharmacies.index') }}" class="px-4 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-xl hover:bg-slate-50">
+        {{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}
+    </a>
+    <button type="submit" form="pharmacy-form" class="inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl hover:opacity-90 shadow-sm">
+        {{ app()->getLocale() === 'ar' ? 'حفظ الصيدلية' : 'Save Pharmacy' }}
+    </button>
 </div>
 @endsection
 

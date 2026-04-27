@@ -1,4 +1,4 @@
-<div class="flex items-center gap-2">
+<div class="flex flex-wrap items-center gap-2">
     <a href="{{ route('admin.pharmacies.edit', $pharmacy) }}" class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">
         {{ app()->getLocale() === 'ar' ? 'تعديل' : 'Edit' }}
     </a>

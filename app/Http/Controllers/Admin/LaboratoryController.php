@@ -7,13 +7,44 @@ use App\Models\Laboratory;
 use App\Models\User;
 use App\Models\Area;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
 
 class LaboratoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.laboratories.index');
+        $type = $request->query('type', 'all');
+        if (! in_array($type, ['all', 'test', 'radiology'], true)) {
+            $type = 'all';
+        }
+
+        $query = Laboratory::with(['user', 'area.city.governorate'])->orderByDesc('id');
+
+        if ($type === 'test') {
+            $query->where('type', 'test');
+        } elseif ($type === 'radiology') {
+            $query->where('type', 'radiology');
+        }
+
+        if ($request->filled('search')) {
+            $term = '%' . $request->string('search') . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('id', 'like', $term)
+                    ->orWhere('name', 'like', $term)
+                    ->orWhere('phone', 'like', $term)
+                    ->orWhere('email', 'like', $term)
+                    ->orWhereHas('user', function ($q) use ($term) {
+                        $q->where('name', 'like', $term)->orWhere('email', 'like', $term);
+                    })
+                    ->orWhereHas('area', function ($q) use ($term) {
+                        $q->where('name', 'like', $term)
+                            ->orWhere('name_ar', 'like', $term);
+                    });
+            });
+        }
+
+        $laboratories = $query->paginate(15)->withQueryString();
+
+        return view('admin.laboratories.index', compact('laboratories', 'type'));
     }
 
     public function create()
@@ -101,27 +132,4 @@ class LaboratoryController extends Controller
         return redirect()->route('admin.laboratories.index')
             ->with('success', app()->getLocale() === 'ar' ? 'تم حذف المعمل بنجاح' : 'Laboratory deleted successfully');
     }
-
-
-    public function data(Request $request)
-    {
-        $query = Laboratory::query();
-
-        if ($request->type === 'test') {
-            $query->where('type', 'test');
-        } elseif ($request->type === 'radiology') {
-            $query->where('type', 'radiology');
-        }
-
-
-        return DataTables::of($query)
-            ->addColumn('user_name', fn($lab) => $lab->user->name ?? '-')
-            ->addColumn('area_name', fn($lab) => $lab->area->name ?? '-')
-            ->addColumn('city_name', fn($lab) => $lab->area->city->name ?? '-')
-            ->addColumn('governorate_name', fn($lab) => $lab->area->city->governorate->name ?? '-')
-            ->addColumn('actions', fn($lab) => view('admin.laboratories.actions', ['laboratory' => $lab])->render())
-            ->rawColumns(['actions', 'is_active'])
-            ->make(true);
-    }
-
 }

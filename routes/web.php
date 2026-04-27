@@ -323,11 +323,9 @@ Route::middleware([
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
 
     // Pharmacies
-    Route::get('/pharmacies/data', [App\Http\Controllers\Admin\PharmacyController::class, 'data'])->name('pharmacies.data');
     Route::resource('pharmacies', App\Http\Controllers\Admin\PharmacyController::class);
 
     // Laboratories
-    Route::get('/laboratories/data', [App\Http\Controllers\Admin\LaboratoryController::class, 'data'])->name('laboratories.data');
     Route::get('/laboratories', [App\Http\Controllers\Admin\LaboratoryController::class, 'index'])->name('laboratories.index');
     Route::get('/laboratories/create', [App\Http\Controllers\Admin\LaboratoryController::class, 'create'])->name('laboratories.create');
     Route::post('/laboratories', [App\Http\Controllers\Admin\LaboratoryController::class, 'store'])->name('laboratories.store');
