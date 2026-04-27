@@ -76,9 +76,10 @@
                 {{ app()->getLocale() === 'ar' ? 'عرض الكل' : 'View All' }} →
             </a>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto lg:overflow-x-visible p-2 sm:p-0">
             @if($recentRequests->count() > 0)
-                <table class="min-w-full divide-y divide-gray-200">
+                @php $l = app()->getLocale() === 'ar'; @endphp
+                <table class="min-w-full divide-y divide-gray-200 stack-table-mobile">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'رقم الطلب' : 'Request ID' }}</th>
@@ -94,21 +95,21 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($recentRequests as $request)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap" data-label="{{ $l ? 'رقم الطلب' : 'Request ID' }}">
                                     <span class="text-sm font-semibold text-slate-800">#{{ $request->id }}</span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap" data-label="{{ $l ? 'العميل' : 'Client' }}">
                                     <span class="text-sm text-slate-600">{{ $request->client->name ?? 'N/A' }}</span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap" data-label="{{ $l ? 'الهاتف' : 'Phone' }}">
                                     <span class="text-sm text-slate-600">{{ $request->client->phone_number ?? 'N/A' }}</span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap" data-label="{{ $l ? 'عدد الفحوصات' : 'Tests Count' }}">
                                     <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                        {{ $request->lines->where('item_type', 'test')->count() ?? 0 }} {{ app()->getLocale() === 'ar' ? 'فحص' : 'Test(s)' }}
+                                        {{ $request->lines->where('item_type', 'test')->count() ?? 0 }} {{ $l ? 'فحص' : 'Test(s)' }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap" data-label="{{ $l ? 'زيارة منزلية' : 'Home Visit' }}">
                                     @php
                                         $isHomeVisit = !is_null($request->client_address_id);
                                     @endphp
@@ -122,7 +123,7 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-6 py-4" data-label="{{ $l ? 'العنوان' : 'Address' }}">
                                     @if($request->address)
                                         @php
                                             $addrParts = [];
@@ -137,12 +138,12 @@
                                         <span class="text-sm text-slate-400">-</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap" data-label="{{ $l ? 'تاريخ الإنشاء' : 'Created At' }}">
                                     <span class="text-sm text-slate-600">{{ $request->created_at->format('Y-m-d H:i') }}</span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <a href="{{ route('offers.create', ['request' => $request->id]) }}" class="text-primary-600 hover:text-primary-900 mr-4">
-                                        {{ app()->getLocale() === 'ar' ? 'إنشاء عرض' : 'Make Offer' }}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium stack-td-actions" data-label="{{ $l ? 'الإجراءات' : 'Actions' }}">
+                                    <a href="{{ route('offers.create', ['request' => $request->id]) }}" class="inline-block px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-center w-full sm:w-auto">
+                                        {{ $l ? 'إنشاء عرض' : 'Make Offer' }}
                                     </a>
                                 </td>
                             </tr>

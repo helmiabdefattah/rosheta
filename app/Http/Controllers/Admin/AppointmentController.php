@@ -10,13 +10,39 @@ use App\Models\Doctor;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
 
 class AppointmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.appointments.index');
+        $query = Appointment::with(['doctor.specialization', 'clinic', 'user'])
+            ->orderByDesc('appointment_date')
+            ->orderByDesc('appointment_time')
+            ->orderByDesc('id');
+
+        if ($request->filled('search')) {
+            $term = '%' . $request->string('search') . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('id', 'like', $term)
+                    ->orWhere('status', 'like', $term)
+                    ->orWhere('type', 'like', $term)
+                    ->orWhere('appointment_date', 'like', $term)
+                    ->orWhere('appointment_time', 'like', $term)
+                    ->orWhereHas('doctor', function ($q) use ($term) {
+                        $q->where('name', 'like', $term);
+                    })
+                    ->orWhereHas('clinic', function ($q) use ($term) {
+                        $q->where('name', 'like', $term);
+                    })
+                    ->orWhereHas('user', function ($q) use ($term) {
+                        $q->where('name', 'like', $term)->orWhere('email', 'like', $term);
+                    });
+            });
+        }
+
+        $appointments = $query->paginate(15)->withQueryString();
+
+        return view('admin.appointments.index', compact('appointments'));
     }
 
     public function create()
@@ -44,7 +70,6 @@ class AppointmentController extends Controller
             ? $clinic->medical_examination_price
             : $clinic->follow_up_price;
 
-        // Ensure doctor belongs to clinic (primary or via clinic_doctor)
         $clinicDoctorIds = $clinic->doctors()->pluck('doctors.id')->toArray();
         if (empty($clinicDoctorIds)) {
             $clinicDoctorIds = $clinic->doctor_id ? [$clinic->doctor_id] : [];
@@ -111,24 +136,6 @@ class AppointmentController extends Controller
             ->with('success', app()->getLocale() === 'ar' ? 'تم حذف الموعد' : 'Appointment deleted');
     }
 
-    public function data()
-    {
-        $appointments = Appointment::with(['doctor.specialization', 'clinic', 'user'])->select('appointments.*');
-        return DataTables::of($appointments)
-            ->addColumn('doctor_name', fn ($a) => $a->doctor?->name ?? '-')
-            ->addColumn('clinic_name', fn ($a) => $a->clinic?->name ?? '-')
-            ->addColumn('patient_name', fn ($a) => $a->user?->name ?? '-')
-            ->addColumn('type_label', fn ($a) => $a->type === 'medical_examination'
-                ? (app()->getLocale() === 'ar' ? 'كشف' : 'Examination')
-                : (app()->getLocale() === 'ar' ? 'متابعة' : 'Follow-up'))
-            ->addColumn('actions', fn ($a) => view('admin.appointments.actions', ['appointment' => $a])->render())
-            ->rawColumns(['actions'])
-            ->make(true);
-    }
-
-    /**
-     * Get available time slots for a clinic on a date (AJAX).
-     */
     public function availableSlots(Request $request)
     {
         $request->validate([
@@ -138,7 +145,7 @@ class AppointmentController extends Controller
 
         $clinic = Clinic::findOrFail($request->clinic_id);
         $date = Carbon::parse($request->date);
-        $dayName = strtolower($date->format('l')); // monday, tuesday, ...
+        $dayName = strtolower($date->format('l'));
 
         $wh = ClinicWorkingHour::where('clinic_id', $clinic->id)
             ->where('day', $dayName)

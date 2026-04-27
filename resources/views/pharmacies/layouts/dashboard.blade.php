@@ -53,6 +53,9 @@
 		.sidebar-closed-rtl{transform:translateX(100%);}
 	</style>
 
+	{{-- After Tailwind so card-table rules win over CDN preflight/utilities --}}
+	<link rel="stylesheet" href="{{ asset('css/mobile-stack-tables.css') }}?v=2">
+
 	<script>
 		window.UserConfig = {
 			notificationSound: {{ (auth()->user()?->notification_sound ?? false) ? 'true' : 'false' }}
@@ -71,7 +74,7 @@
 @endphp
 <div class="flex h-screen w-full">
 	<div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden backdrop-blur-sm"></div>
-	<aside id="sidebar" class="fixed lg:static inset-y-0 z-50 w-64 bg-sidebar text-white flex flex-col shadow-2xl sidebar-transition sidebar-closed-ltr lg:translate-x-0 h-full">
+	<aside id="sidebar" class="fixed lg:static inset-y-0 z-50 w-64 bg-sidebar text-white flex flex-col shadow-2xl sidebar-transition {{ app()->getLocale() === 'ar' ? 'sidebar-closed-rtl' : 'sidebar-closed-ltr' }} lg:translate-x-0 h-full">
 		<div class="h-16 flex items-center px-6 border-b border-slate-800/50">
 			<a href="{{ route('pharmacies.dashboard') }}" class="flex items-center gap-3">
 				<img src="/images/full-logo.png" alt="Mostashfa-on Logo" class="h-12 w-auto object-contain">
@@ -151,8 +154,8 @@
 	<div class="flex-1 flex flex-col h-screen bg-gray-100 relative overflow-hidden">
 		<header class="h-16 bg-white flex items-center justify-between px-6 border-b border-gray-200 shadow-sm">
 			<div class="flex items-center gap-4">
-				<button id="open-sidebar" class="lg:hidden text-slate-600">
-					<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="" class="w-6 h-6">
+				<button type="button" id="open-sidebar" class="lg:hidden text-slate-600 p-1 rounded-lg hover:bg-slate-100" aria-label="Menu">
+					<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
 				</button>
 				<div>
 					<h1 class="text-xl font-bold text-slate-800">@yield('page-title', app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard')</h1>

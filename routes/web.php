@@ -284,7 +284,11 @@ Route::middleware('auth')->prefix('pharmacy')->name('pharmacies.')->group(functi
 });
 
 // Admin routes (Blade-based admin panel)
-Route::middleware(['auth', \App\Http\Middleware\RedirectLaboratoryOwner::class])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware([
+    'auth',
+    \App\Http\Middleware\RedirectLaboratoryOwner::class,
+    \App\Http\Middleware\RedirectPharmacyOwner::class,
+])->prefix('admin')->name('admin.')->group(function () {
     // Redirect /admin to /admin/dashboard
     Route::get('/', function () {
         return redirect()->route('admin.dashboard');
@@ -294,15 +298,12 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectLaboratoryOwner::class])
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
 
     // Areas
-    Route::get('/areas/data', [App\Http\Controllers\Admin\AreaController::class, 'data'])->name('areas.data');
     Route::resource('areas', App\Http\Controllers\Admin\AreaController::class);
 
     // Cities
-    Route::get('/cities/data', [App\Http\Controllers\Admin\CityController::class, 'data'])->name('cities.data');
     Route::resource('cities', App\Http\Controllers\Admin\CityController::class);
 
     // Governorates
-    Route::get('/governorates/data', [App\Http\Controllers\Admin\GovernorateController::class, 'data'])->name('governorates.data');
     Route::resource('governorates', App\Http\Controllers\Admin\GovernorateController::class);
 
     // Medical Tests
@@ -314,7 +315,6 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectLaboratoryOwner::class])
     Route::resource('medicines', App\Http\Controllers\Admin\MedicineController::class);
 
     // Users
-    Route::get('/users/data', [App\Http\Controllers\Admin\UserController::class, 'data'])->name('users.data');
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
 
     // Pharmacies
@@ -334,7 +334,6 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectLaboratoryOwner::class])
     Route::resource('nurses', App\Http\Controllers\Admin\NurseController::class);
 
     // Clients
-    Route::get('/clients/data', [App\Http\Controllers\Admin\ClientController::class, 'data'])->name('clients.data');
     Route::resource('clients', App\Http\Controllers\Admin\ClientController::class);
 
     // Feedback
@@ -350,15 +349,12 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectLaboratoryOwner::class])
     Route::delete('/support-tickets/{supportTicket}', [App\Http\Controllers\Admin\SupportTicketController::class, 'destroy'])->name('support-tickets.destroy');
 
     // Client Requests
-    Route::get('/client-requests/data', [App\Http\Controllers\Admin\ClientRequestController::class, 'data'])->name('client-requests.data');
     Route::resource('client-requests', App\Http\Controllers\Admin\ClientRequestController::class);
 
     // Orders
-    Route::get('/orders/data', [App\Http\Controllers\Admin\OrderController::class, 'data'])->name('orders.data');
     Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
 
     // Offers
-    Route::get('/offers/data', [App\Http\Controllers\Admin\OfferController::class, 'data'])->name('offers.data');
     Route::resource('offers', App\Http\Controllers\Admin\OfferController::class);
 
     // Medical Test Offers
@@ -369,21 +365,16 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectLaboratoryOwner::class])
     Route::get('/bonus-points', [App\Http\Controllers\Admin\BonusPointController::class, 'index'])->name('bonus-points.index');
 
     // Charitable Organizations
-    Route::get('/charitable-organizations/data', [App\Http\Controllers\Admin\CharitableOrganizationController::class, 'data'])->name('charitable-organizations.data');
     Route::resource('charitable-organizations', App\Http\Controllers\Admin\CharitableOrganizationController::class);
 
     // Specializations (for doctors)
-    Route::get('/specializations/data', [App\Http\Controllers\Admin\SpecializationController::class, 'data'])->name('specializations.data');
     Route::resource('specializations', App\Http\Controllers\Admin\SpecializationController::class);
 
     // Doctors, Clinics, Appointments
-    Route::get('/doctors/data', [App\Http\Controllers\Admin\DoctorController::class, 'data'])->name('doctors.data');
     Route::resource('doctors', App\Http\Controllers\Admin\DoctorController::class);
 
-    Route::get('/clinics/data', [App\Http\Controllers\Admin\ClinicController::class, 'data'])->name('clinics.data');
     Route::resource('clinics', App\Http\Controllers\Admin\ClinicController::class);
 
-    Route::get('/appointments/data', [App\Http\Controllers\Admin\AppointmentController::class, 'data'])->name('appointments.data');
     Route::get('/appointments/available-slots', [App\Http\Controllers\Admin\AppointmentController::class, 'availableSlots'])->name('appointments.available-slots');
     Route::resource('appointments', App\Http\Controllers\Admin\AppointmentController::class);
 });

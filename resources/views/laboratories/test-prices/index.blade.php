@@ -36,8 +36,9 @@
                 </div>
             </div>
         </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+        <div class="overflow-x-auto lg:overflow-x-visible p-2 sm:p-0">
+            @php $l = app()->getLocale() === 'ar'; @endphp
+            <table class="min-w-full divide-y divide-gray-200 stack-table-mobile">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'رقم' : 'ID' }}</th>
@@ -49,16 +50,16 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($medicalTests as $test)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap" data-label="{{ $l ? 'رقم' : 'ID' }}">
                                 <span class="text-sm font-semibold text-slate-800">#{{ $test->id }}</span>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="{{ $l ? 'اسم الفحص (EN)' : 'Test Name (EN)' }}">
                                 <span class="text-sm text-slate-800">{{ $test->test_name_en }}</span>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="{{ $l ? 'اسم الفحص (AR)' : 'Test Name (AR)' }}">
                                 <span class="text-sm text-slate-800">{{ $test->test_name_ar }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap stack-td-actions" data-label="{{ $l ? 'السعر (جنيه)' : 'Price (EGP)' }}">
                                 <div>
                                     <input 
                                         type="number" 
