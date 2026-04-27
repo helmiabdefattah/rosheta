@@ -4,6 +4,13 @@
 @section('page-title', app()->getLocale() === 'ar' ? 'تعديل الصيدلية' : 'Edit Pharmacy')
 @section('page-description', app()->getLocale() === 'ar' ? 'تحديث تفاصيل الصيدلية' : 'Update pharmacy details')
 
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+#pharmacyMap { height: 350px; width: 100%; border-radius: 0.5rem; border: 1px solid #e2e8f0; z-index: 0; }
+</style>
+@endpush
+
 @section('content')
 <div class="max-w-4xl mx-auto">
     <form action="{{ route('admin.pharmacies.update', $pharmacy) }}" method="POST">
@@ -76,16 +83,23 @@
         </x-admin.ui.form-card>
         
         <x-admin.ui.form-card :title="app()->getLocale() === 'ar' ? 'الموقع الجغرافي' : 'Location Coordinates'" class="mt-6">
-             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <div>
-                     <x-admin.ui.label for="lat">{{ app()->getLocale() === 'ar' ? 'خط العرض (Latitude)' : 'Latitude' }}</x-admin.ui.label>
-                     <x-admin.ui.input name="lat" :value="old('lat', $pharmacy->lat)" />
-                 </div>
-                 <div>
-                     <x-admin.ui.label for="lng">{{ app()->getLocale() === 'ar' ? 'خط الطول (Longitude)' : 'Longitude' }}</x-admin.ui.label>
-                     <x-admin.ui.input name="lng" :value="old('lng', $pharmacy->lng)" />
-                 </div>
-             </div>
+            <div class="space-y-6">
+                <div>
+                    <x-admin.ui.label>{{ app()->getLocale() === 'ar' ? 'موقع الصيدلية على الخريطة' : 'Location on map' }}</x-admin.ui.label>
+                    <p class="text-sm text-slate-500 mb-2">{{ app()->getLocale() === 'ar' ? 'انقر على الخريطة أو اسحب العلامة لتحديد الموقع' : 'Click on the map or drag the marker to set location' }}</p>
+                    <div id="pharmacyMap"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <x-admin.ui.label for="lat">{{ app()->getLocale() === 'ar' ? 'خط العرض (Latitude)' : 'Latitude' }}</x-admin.ui.label>
+                        <x-admin.ui.input name="lat" :value="old('lat', $pharmacy->lat)" />
+                    </div>
+                    <div>
+                        <x-admin.ui.label for="lng">{{ app()->getLocale() === 'ar' ? 'خط الطول (Longitude)' : 'Longitude' }}</x-admin.ui.label>
+                        <x-admin.ui.input name="lng" :value="old('lng', $pharmacy->lng)" />
+                    </div>
+                </div>
+            </div>
         </x-admin.ui.form-card>
 
         <div class="mt-8 flex items-center justify-end gap-3">
@@ -99,3 +113,45 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var latEl = document.getElementById('lat');
+    var lngEl = document.getElementById('lng');
+    var lat = parseFloat(latEl && latEl.value) || 30.0444;
+    var lng = parseFloat(lngEl && lngEl.value) || 31.2357;
+    var map = L.map('pharmacyMap').setView([lat, lng], 13);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap', maxZoom: 19 }).addTo(map);
+    var marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+    function updateLoc(la, ln) {
+        marker.setLatLng([la, ln]);
+        map.setView([la, ln], map.getZoom() < 14 ? 14 : map.getZoom());
+        if (latEl) latEl.value = la.toFixed(8);
+        if (lngEl) lngEl.value = ln.toFixed(8);
+    }
+    marker.on('dragend', function () {
+        var p = marker.getLatLng();
+        updateLoc(p.lat, p.lng);
+    });
+    map.on('click', function (e) {
+        updateLoc(e.latlng.lat, e.latlng.lng);
+    });
+    if (latEl && lngEl && latEl.value && lngEl.value) {
+        map.setView([lat, lng], 15);
+    }
+    function tryApplyFromInputs() {
+        var la = parseFloat(latEl && latEl.value);
+        var ln = parseFloat(lngEl && lngEl.value);
+        if (!isNaN(la) && !isNaN(ln) && la >= -90 && la <= 90 && ln >= -180 && ln <= 180) {
+            marker.setLatLng([la, ln]);
+            map.setView([la, ln], 15);
+        }
+    }
+    if (latEl) latEl.addEventListener('change', tryApplyFromInputs);
+    if (lngEl) lngEl.addEventListener('change', tryApplyFromInputs);
+    setTimeout(function () { map.invalidateSize(); }, 100);
+});
+</script>
+@endpush
