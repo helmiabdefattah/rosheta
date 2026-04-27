@@ -4,15 +4,33 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ClientRequest;
-use App\Models\Client;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
 
 class ClientRequestController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.client-requests.index');
+        $query = ClientRequest::with(['client', 'address'])
+            ->orderByDesc('id');
+
+        if ($request->filled('search')) {
+            $term = '%' . $request->string('search') . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('id', 'like', $term)
+                    ->orWhere('status', 'like', $term)
+                    ->orWhere('type', 'like', $term)
+                    ->orWhereHas('client', function ($q) use ($term) {
+                        $q->where('name', 'like', $term);
+                    })
+                    ->orWhereHas('address', function ($q) use ($term) {
+                        $q->where('address', 'like', $term);
+                    });
+            });
+        }
+
+        $clientRequests = $query->paginate(15)->withQueryString();
+
+        return view('admin.client-requests.index', compact('clientRequests'));
     }
 
     public function show(ClientRequest $clientRequest)
@@ -28,32 +46,4 @@ class ClientRequestController extends Controller
         return redirect()->route('admin.client-requests.index')
             ->with('success', app()->getLocale() === 'ar' ? 'تم حذف الطلب بنجاح' : 'Request deleted successfully');
     }
-
-    public function data()
-    {
-        $requests = ClientRequest::with(['client', 'address'])->select('client_requests.*');
-
-        return DataTables::of($requests)
-            ->addColumn('client_name', function ($request) {
-                return $request->client->name ?? '-';
-            })
-            ->addColumn('address_text', function ($request) {
-                return $request->address->address ?? '-';
-            })
-            ->addColumn('status_badge', function ($request) {
-                $colors = [
-                    'pending' => 'bg-yellow-100 text-yellow-800',
-                    'approved' => 'bg-green-100 text-green-800',
-                    'rejected' => 'bg-red-100 text-red-800',
-                ];
-                $color = $colors[$request->status] ?? 'bg-gray-100 text-gray-800';
-                return '<span class="px-2 py-1 text-xs font-semibold rounded-full ' . $color . '">' . ucfirst($request->status) . '</span>';
-            })
-            ->addColumn('actions', function ($request) {
-                return view('admin.client-requests.actions', compact('request'))->render();
-            })
-            ->rawColumns(['status_badge', 'actions'])
-            ->make(true);
-    }
 }
-

@@ -5,13 +5,26 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Governorate;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
 
 class GovernorateController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.governorates.index');
+        $query = Governorate::withCount('cities')->orderByDesc('id');
+
+        if ($request->filled('search')) {
+            $term = '%' . $request->string('search') . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('id', 'like', $term)
+                    ->orWhere('name', 'like', $term)
+                    ->orWhere('name_ar', 'like', $term)
+                    ->orWhere('sort_order', 'like', $term);
+            });
+        }
+
+        $governorates = $query->paginate(15)->withQueryString();
+
+        return view('admin.governorates.index', compact('governorates'));
     }
 
     public function create()
@@ -66,25 +79,4 @@ class GovernorateController extends Controller
         return redirect()->route('admin.governorates.index')
             ->with('success', app()->getLocale() === 'ar' ? 'تم حذف المحافظة بنجاح' : 'Governorate deleted successfully');
     }
-
-    public function data()
-    {
-        $governorates = Governorate::select('governorates.*');
-
-        return DataTables::of($governorates)
-            ->addColumn('cities_count', function ($governorate) {
-                return $governorate->cities()->count();
-            })
-            ->addColumn('is_active', function ($governorate) {
-                return $governorate->is_active 
-                    ? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">' . (app()->getLocale() === 'ar' ? 'نشط' : 'Active') . '</span>'
-                    : '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">' . (app()->getLocale() === 'ar' ? 'غير نشط' : 'Inactive') . '</span>';
-            })
-            ->addColumn('actions', function ($governorate) {
-                return view('admin.governorates.actions', compact('governorate'))->render();
-            })
-            ->rawColumns(['is_active', 'actions'])
-            ->make(true);
-    }
 }
-

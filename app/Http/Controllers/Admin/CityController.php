@@ -6,13 +6,29 @@ use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Governorate;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
 
 class CityController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.cities.index');
+        $query = City::with('governorate')->withCount('areas')->orderByDesc('id');
+
+        if ($request->filled('search')) {
+            $term = '%' . $request->string('search') . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('id', 'like', $term)
+                    ->orWhere('name', 'like', $term)
+                    ->orWhere('name_ar', 'like', $term)
+                    ->orWhere('sort_order', 'like', $term)
+                    ->orWhereHas('governorate', function ($q) use ($term) {
+                        $q->where('name', 'like', $term)->orWhere('name_ar', 'like', $term);
+                    });
+            });
+        }
+
+        $cities = $query->paginate(15)->withQueryString();
+
+        return view('admin.cities.index', compact('cities'));
     }
 
     public function create()
@@ -71,28 +87,4 @@ class CityController extends Controller
         return redirect()->route('admin.cities.index')
             ->with('success', app()->getLocale() === 'ar' ? 'تم حذف المدينة بنجاح' : 'City deleted successfully');
     }
-
-    public function data()
-    {
-        $cities = City::with('governorate')->select('cities.*');
-
-        return DataTables::of($cities)
-            ->addColumn('governorate_name', function ($city) {
-                return $city->governorate->name ?? 'N/A';
-            })
-            ->addColumn('areas_count', function ($city) {
-                return $city->areas()->count();
-            })
-            ->addColumn('is_active', function ($city) {
-                return $city->is_active 
-                    ? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">' . (app()->getLocale() === 'ar' ? 'نشط' : 'Active') . '</span>'
-                    : '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">' . (app()->getLocale() === 'ar' ? 'غير نشط' : 'Inactive') . '</span>';
-            })
-            ->addColumn('actions', function ($city) {
-                return view('admin.cities.actions', compact('city'))->render();
-            })
-            ->rawColumns(['is_active', 'actions'])
-            ->make(true);
-    }
 }
-

@@ -44,6 +44,8 @@
 
     @stack('styles')
 
+    <link rel="stylesheet" href="{{ asset('css/mobile-stack-tables.css') }}">
+
     <style>
         /* Custom Scrollbar */
         .sidebar-scroll::-webkit-scrollbar { width: 4px; }
@@ -154,7 +156,7 @@
 
         <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden backdrop-blur-sm"></div>
 
-        <aside id="sidebar" class="fixed lg:static inset-y-0 z-50 w-64 bg-sidebar text-white flex flex-col shadow-2xl sidebar-transition sidebar-closed-ltr lg:translate-x-0 lg:h-screen h-full">
+        <aside id="sidebar" class="fixed lg:static inset-y-0 z-50 w-64 bg-sidebar text-white flex flex-col shadow-2xl sidebar-transition {{ app()->getLocale() === 'ar' ? 'sidebar-closed-rtl' : 'sidebar-closed-ltr' }} lg:translate-x-0 lg:h-screen h-full">
 
             <div class="h-16 flex items-center px-6 border-b border-slate-800/50">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
@@ -493,7 +495,8 @@
             if ($.fn.DataTable) {
                 $.extend(true, $.fn.dataTable.defaults, {
                     scrollY: false,
-                    scrollX: true,
+                    scrollX: false,
+                    responsive: true,
                     scrollCollapse: false
                 });
             }

@@ -6,13 +6,31 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.users.index');
+        $query = User::with(['pharmacy', 'laboratory'])->orderByDesc('id');
+
+        if ($request->filled('search')) {
+            $term = '%' . $request->string('search') . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('id', 'like', $term)
+                    ->orWhere('name', 'like', $term)
+                    ->orWhere('email', 'like', $term)
+                    ->orWhereHas('pharmacy', function ($q) use ($term) {
+                        $q->where('name', 'like', $term);
+                    })
+                    ->orWhereHas('laboratory', function ($q) use ($term) {
+                        $q->where('name', 'like', $term);
+                    });
+            });
+        }
+
+        $users = $query->paginate(15)->withQueryString();
+
+        return view('admin.users.index', compact('users'));
     }
 
     public function create()
@@ -64,7 +82,7 @@ class UserController extends Controller
         }
 
         $validated['notification_sound'] = $request->has('notification_sound');
-        
+
         $user->update($validated);
 
         return redirect()->route('admin.users.index')
@@ -78,23 +96,4 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')
             ->with('success', app()->getLocale() === 'ar' ? 'تم حذف المستخدم بنجاح' : 'User deleted successfully');
     }
-
-    public function data()
-    {
-        $users = User::with(['pharmacy', 'laboratory'])->select('users.*');
-
-        return DataTables::of($users)
-            ->addColumn('pharmacy_name', function ($user) {
-                return $user->pharmacy->name ?? '-';
-            })
-            ->addColumn('laboratory_name', function ($user) {
-                return $user->laboratory->name ?? '-';
-            })
-            ->addColumn('actions', function ($user) {
-                return view('admin.users.actions', compact('user'))->render();
-            })
-            ->rawColumns(['actions'])
-            ->make(true);
-    }
 }
-

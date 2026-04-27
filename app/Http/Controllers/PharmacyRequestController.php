@@ -12,7 +12,7 @@ class PharmacyRequestController extends Controller
 	public function index(Request $request)
 	{
 		$user = Auth::user();
-		$pharmacy = Pharmacy::find($user->id ? $user->pharmacy_id : null);
+		$pharmacy = Pharmacy::find($user->pharmacy_id);
 		if (!$pharmacy) {
 			return redirect()->route('admin.dashboard')->with('error', __('You are not associated with any pharmacy.'));
 		}

@@ -9,9 +9,22 @@ use Illuminate\Support\Str;
 
 class SpecializationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.specializations.index');
+        $query = Specialization::withCount('doctors')->orderByDesc('id');
+
+        if ($request->filled('search')) {
+            $term = '%' . $request->string('search') . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('id', 'like', $term)
+                    ->orWhere('name', 'like', $term)
+                    ->orWhere('slug', 'like', $term);
+            });
+        }
+
+        $specializations = $query->paginate(15)->withQueryString();
+
+        return view('admin.specializations.index', compact('specializations'));
     }
 
     public function create()
@@ -67,15 +80,5 @@ class SpecializationController extends Controller
         $specialization->delete();
         return redirect()->route('admin.specializations.index')
             ->with('success', app()->getLocale() === 'ar' ? 'تم حذف التخصص' : 'Specialization deleted');
-    }
-
-    public function data()
-    {
-        $query = Specialization::query()->select('specializations.*');
-        return \Yajra\DataTables\Facades\DataTables::of($query)
-            ->addColumn('doctors_count', fn ($s) => $s->doctors()->count())
-            ->addColumn('actions', fn ($s) => view('admin.specializations.actions', ['specialization' => $s])->render())
-            ->rawColumns(['actions'])
-            ->make(true);
     }
 }

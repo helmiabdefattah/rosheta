@@ -22,29 +22,30 @@
 
 @section('content')
     <div class="bg-white rounded-lg shadow-sm mb-6 w-full">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <form method="GET" action="{{ route('laboratories.offers.accepted') }}" class="flex gap-4 items-end">
-                <div class="flex-1">
+        <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+            <form method="GET" action="{{ route('laboratories.offers.accepted') }}" class="flex flex-col sm:flex-row gap-4 sm:items-end stack-toolbar-mobile">
+                <div class="flex-1 w-full min-w-0">
                     <label class="block text-sm font-medium text-gray-700 mb-2">{{ app()->getLocale() === 'ar' ? 'البحث' : 'Search' }}</label>
                     <input type="text" name="search" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                            placeholder="{{ app()->getLocale() === 'ar' ? 'ابحث برقم العرض أو اسم العميل أو الهاتف...' : 'Search by Offer ID, Client Name, or Phone...' }}"
                            value="{{ request('search') }}">
                 </div>
-                <div>
-                    <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors w-full sm:w-auto">
                         {{ app()->getLocale() === 'ar' ? 'بحث' : 'Search' }}
                     </button>
                     @if(request('search'))
-                        <a href="{{ route('laboratories.offers.accepted') }}" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors ml-2">
+                        <a href="{{ route('laboratories.offers.accepted') }}" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-center w-full sm:w-auto">
                             {{ app()->getLocale() === 'ar' ? 'مسح' : 'Clear' }}
                         </a>
                     @endif
                 </div>
             </form>
         </div>
-        <div class="overflow-x-auto overflow-y-auto" style="max-height: calc(100vh - 300px); min-width: 100%;">
+        <div class="overflow-x-auto overflow-y-auto lg:overflow-x-visible p-2 sm:p-0" style="max-height: calc(100vh - 300px); min-width: 100%;">
             @if($offers->count() > 0)
-                <table class="w-full divide-y divide-gray-200" style="min-width: 1000px;">
+                @php $l = app()->getLocale() === 'ar'; @endphp
+                <table class="w-full divide-y divide-gray-200 stack-table-mobile lg:min-w-[1000px]">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'رقم العرض' : 'Offer ID' }}</th>
@@ -59,13 +60,13 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($offers as $offer)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap" data-label="{{ $l ? 'رقم العرض' : 'Offer ID' }}">
                                     <span class="text-sm font-semibold text-slate-800">#{{ $offer->id }}</span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap" data-label="{{ $l ? 'رقم الطلب' : 'Request ID' }}">
                                     <span class="text-sm text-slate-600">#{{ $offer->client_request_id }}</span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap" data-label="{{ $l ? 'العميل' : 'Client' }}">
                                     <div>
                                         <span class="text-sm font-medium text-slate-800">{{ $offer->request->client->name ?? 'N/A' }}</span>
                                         @if($offer->request->client)
@@ -73,10 +74,10 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-sm font-semibold text-green-600">{{ number_format($offer->total_price, 2) }} {{ app()->getLocale() === 'ar' ? 'جنيه' : 'EGP' }}</span>
+                                <td class="px-6 py-4 whitespace-nowrap" data-label="{{ $l ? 'السعر الإجمالي' : 'Total Price' }}">
+                                    <span class="text-sm font-semibold text-green-600">{{ number_format($offer->total_price, 2) }} {{ $l ? 'جنيه' : 'EGP' }}</span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap" data-label="{{ $l ? 'حالة المزود' : 'Vendor Status' }}">
                                     @php
                                         $statusClass = 'status-empty';
                                         $statusText = app()->getLocale() === 'ar' ? 'غير محدد' : 'Not Set';
@@ -92,12 +93,12 @@
                                         {{ $statusText }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap" data-label="{{ $l ? 'تاريخ القبول' : 'Accepted At' }}">
                                     <span class="text-sm text-slate-600">{{ $offer->updated_at->format('Y-m-d H:i') }}</span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button type="button" class="text-primary-600 hover:text-primary-900" data-bs-toggle="modal" data-bs-target="#offerModal{{ $offer->id }}">
-                                        {{ app()->getLocale() === 'ar' ? 'إدارة' : 'Manage' }}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium stack-td-actions" data-label="{{ $l ? 'الإجراءات' : 'Actions' }}">
+                                    <button type="button" class="w-full sm:w-auto px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-sm" data-bs-toggle="modal" data-bs-target="#offerModal{{ $offer->id }}">
+                                        {{ $l ? 'إدارة' : 'Manage' }}
                                     </button>
                                 </td>
                             </tr>
