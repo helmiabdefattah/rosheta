@@ -1,0 +1,157 @@
+/**
+ * Mobile: stack table rows as labeled cards (use class "stack-table-mobile" on <table>).
+ * Each <td> should set data-label to the column title (localized in Blade).
+ */
+
+@media (max-width: 1023px) {
+	table.stack-table-mobile {
+		border: 0;
+		width: 100%;
+	}
+
+	/* Tailwind divide-y adds row borders; remove between stacked cards */
+	table.stack-table-mobile.divide-y > tbody > tr {
+		border-top-width: 0 !important;
+	}
+
+	table.stack-table-mobile thead {
+		display: none !important;
+	}
+
+	table.stack-table-mobile tbody {
+		display: block;
+		width: 100%;
+	}
+
+	table.stack-table-mobile tbody tr {
+		display: block;
+		width: 100%;
+		margin-bottom: 1rem;
+		padding: 0.75rem 1rem;
+		border: 1px solid #e2e8f0 !important;
+		border-radius: 0.75rem;
+		background: #fff;
+		box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+	}
+
+	table.stack-table-mobile tbody tr:hover {
+		background: #fff;
+	}
+
+	table.stack-table-mobile td {
+		display: grid !important;
+		grid-template-columns: minmax(0, 38%) 1fr;
+		gap: 0.75rem;
+		align-items: start;
+		padding: 0.5rem 0 !important;
+		border: none !important;
+		white-space: normal !important;
+		text-align: inherit !important;
+	}
+
+	table.stack-table-mobile td:last-child {
+		border-bottom: none;
+	}
+
+	table.stack-table-mobile td::before {
+		content: attr(data-label);
+		font-weight: 600;
+		font-size: 0.65rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: #64748b;
+		line-height: 1.3;
+		word-break: break-word;
+	}
+
+	/* Action cells: stack controls vertically */
+	table.stack-table-mobile td.stack-td-actions > div,
+	table.stack-table-mobile td.stack-td-actions .flex {
+		flex-direction: column !important;
+		align-items: stretch !important;
+		width: 100%;
+		gap: 0.5rem !important;
+	}
+
+	table.stack-table-mobile td.stack-td-actions form {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		width: 100%;
+	}
+
+	table.stack-table-mobile td.stack-td-actions select,
+	table.stack-table-mobile td.stack-td-actions button {
+		width: 100%;
+	}
+
+	/* Filter toolbars above tables */
+	.stack-toolbar-mobile {
+		flex-direction: column !important;
+		align-items: stretch !important;
+	}
+
+	.stack-toolbar-mobile form {
+		flex-direction: column !important;
+		align-items: stretch !important;
+		width: 100%;
+	}
+
+	.stack-toolbar-mobile form > * {
+		width: 100% !important;
+	}
+}
+
+/* DataTables Responsive: child details as compact cards on small screens */
+@media (max-width: 1023px) {
+	table.dataTable > tbody > tr.child {
+		background: transparent !important;
+	}
+
+	table.dataTable > tbody > tr.child > td {
+		padding: 0.5rem 0 !important;
+		border: none !important;
+	}
+
+	table.dataTable > tbody > tr.child ul.dtr-details {
+		display: block;
+		width: 100%;
+		margin: 0 0 0.75rem;
+		padding: 0.75rem 1rem;
+		list-style: none;
+		background: #f8fafc;
+		border: 1px solid #e2e8f0;
+		border-radius: 0.75rem;
+		box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+	}
+
+	table.dataTable > tbody > tr.child ul.dtr-details > li {
+		display: grid;
+		grid-template-columns: minmax(0, 38%) 1fr;
+		gap: 0.75rem;
+		padding: 0.4rem 0;
+		border-bottom: 1px solid #e2e8f0;
+		font-size: 0.875rem;
+	}
+
+	table.dataTable > tbody > tr.child ul.dtr-details > li:last-child {
+		border-bottom: none;
+	}
+
+	table.dataTable > tbody > tr.child ul.dtr-details .dtr-title {
+		font-weight: 600;
+		font-size: 0.65rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: #64748b;
+	}
+
+	table.dataTable > tbody > tr.child ul.dtr-details .dtr-data {
+		text-align: end;
+		word-break: break-word;
+	}
+
+	[dir="rtl"] table.dataTable > tbody > tr.child ul.dtr-details .dtr-data {
+		text-align: start;
+	}
+}

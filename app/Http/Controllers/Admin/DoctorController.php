@@ -9,13 +9,31 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Yajra\DataTables\Facades\DataTables;
 
 class DoctorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.doctors.index');
+        $query = Doctor::with(['specialization', 'user', 'media'])->orderByDesc('id');
+
+        if ($request->filled('search')) {
+            $term = '%' . $request->string('search') . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('id', 'like', $term)
+                    ->orWhere('name', 'like', $term)
+                    ->orWhere('slug', 'like', $term)
+                    ->orWhereHas('specialization', function ($q) use ($term) {
+                        $q->where('name', 'like', $term);
+                    })
+                    ->orWhereHas('user', function ($q) use ($term) {
+                        $q->where('email', 'like', $term)->orWhere('name', 'like', $term);
+                    });
+            });
+        }
+
+        $doctors = $query->paginate(15)->withQueryString();
+
+        return view('admin.doctors.index', compact('doctors'));
     }
 
     public function create()
@@ -99,18 +117,5 @@ class DoctorController extends Controller
         $doctor->delete();
         return redirect()->route('admin.doctors.index')
             ->with('success', app()->getLocale() === 'ar' ? 'تم حذف الطبيب' : 'Doctor deleted');
-    }
-
-    public function data()
-    {
-        $doctors = Doctor::with(['specialization', 'user'])->select('doctors.*');
-        return DataTables::of($doctors)
-            ->addColumn('slug', fn ($d) => $d->slug ?? '-')
-            ->addColumn('specialization_name', fn ($d) => $d->specialization?->name ?? '-')
-            ->addColumn('user_email', fn ($d) => $d->user?->email ?? '-')
-            ->addColumn('image', fn ($d) => $d->getFirstMediaUrl('profile_image') ? '<img src="' . $d->getFirstMediaUrl('profile_image') . '" class="w-10 h-10 rounded-full object-cover" alt="">' : '-')
-            ->addColumn('actions', fn ($d) => view('admin.doctors.actions', ['doctor' => $d])->render())
-            ->rawColumns(['actions', 'image'])
-            ->make(true);
     }
 }

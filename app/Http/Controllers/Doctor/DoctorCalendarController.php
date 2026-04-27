@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Doctor;
 
+use App\Models\Appointment;
 use App\Models\Clinic;
 use App\Models\DoctorOffDate;
 use Carbon\Carbon;
@@ -13,9 +14,10 @@ class DoctorCalendarController extends DoctorDashboardController
     {
         $doctor = $this->doctor($request);
         $month = $request->get('month', now()->format('Y-m'));
-        $start = Carbon::parse($month . '-01');
-        if ($start->lt(now()->startOfMonth())) {
-            $start = now()->startOfMonth();
+        $minNavMonth = now()->copy()->subYears(5)->startOfMonth();
+        $start = Carbon::parse($month . '-01')->startOfMonth();
+        if ($start->lt($minNavMonth)) {
+            $start = $minNavMonth->copy();
         }
         $end = $start->copy()->endOfMonth();
 
@@ -30,6 +32,14 @@ class DoctorCalendarController extends DoctorDashboardController
             ->map(fn ($d) => $d->format('Y-m-d'))
             ->flip()
             ->all();
+
+        $appointmentsByDate = Appointment::where('doctor_id', $doctor->id)
+            ->whereBetween('appointment_date', [$start->toDateString(), $end->toDateString()])
+            ->whereNotIn('status', ['cancelled'])
+            ->with(['clinic', 'client', 'user'])
+            ->orderBy('appointment_time')
+            ->get()
+            ->groupBy(fn (Appointment $a) => $a->appointment_date->format('Y-m-d'));
 
         $days = [];
         $current = $start->copy();
@@ -57,23 +67,38 @@ class DoctorCalendarController extends DoctorDashboardController
                 ];
             }
             $has_clinic_open = collect($schedules)->contains(fn ($s) => $s['from_to'] !== null);
+            $dateKey = $current->format('Y-m-d');
+            $dayAppointments = $appointmentsByDate->get($dateKey, collect())->map(function (Appointment $a) {
+                $t = $a->appointment_time;
+                $timeStr = $t instanceof \Carbon\Carbon
+                    ? $t->format('g:i A')
+                    : Carbon::parse($t)->format('g:i A');
+
+                return [
+                    'time' => $timeStr,
+                    'patient' => $a->client?->name ?? $a->user?->name ?? '—',
+                    'clinic' => $a->clinic?->name,
+                    'status' => $a->status,
+                ];
+            })->values()->all();
             $days[] = [
-                'date' => $current->format('Y-m-d'),
+                'date' => $dateKey,
                 'day' => $current->day,
                 'weekday' => $current->format('l'),
                 'day_name' => $dayName,
-                'is_off' => isset($offDates[$current->format('Y-m-d')]),
+                'is_off' => isset($offDates[$dateKey]),
                 'is_past' => $current->lt(now()->startOfDay()),
                 'is_today' => $current->isToday(),
                 'schedules' => $schedules,
                 'has_clinic_open' => $has_clinic_open,
+                'appointments' => $dayAppointments,
             ];
             $current->addDay();
         }
 
         $prevMonth = $start->copy()->subMonth();
         $nextMonth = $start->copy()->addMonth();
-        $canGoPrev = $prevMonth->gte(now()->startOfMonth());
+        $canGoPrev = $prevMonth->gte($minNavMonth);
         return view('doctor.calendar.index', compact('doctor', 'days', 'start', 'prevMonth', 'nextMonth', 'canGoPrev', 'offDates'));
     }
 

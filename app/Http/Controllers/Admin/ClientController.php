@@ -6,13 +6,35 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Yajra\DataTables\Facades\DataTables;
 
 class ClientController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.clients.index');
+        $query = Client::with(['addresses.city', 'addresses.area'])->orderByDesc('id');
+
+        if ($request->filled('search')) {
+            $term = '%' . $request->string('search') . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('id', 'like', $term)
+                    ->orWhere('name', 'like', $term)
+                    ->orWhere('phone_number', 'like', $term)
+                    ->orWhere('email', 'like', $term)
+                    ->orWhereHas('addresses', function ($q) use ($term) {
+                        $q->where('address', 'like', $term)
+                            ->orWhereHas('city', function ($q) use ($term) {
+                                $q->where('name', 'like', $term)->orWhere('name_ar', 'like', $term);
+                            })
+                            ->orWhereHas('area', function ($q) use ($term) {
+                                $q->where('name', 'like', $term)->orWhere('name_ar', 'like', $term);
+                            });
+                    });
+            });
+        }
+
+        $clients = $query->paginate(15)->withQueryString();
+
+        return view('admin.clients.index', compact('clients'));
     }
 
     public function create()
@@ -75,26 +97,4 @@ class ClientController extends Controller
         return redirect()->route('admin.clients.index')
             ->with('success', app()->getLocale() === 'ar' ? 'تم حذف العميل بنجاح' : 'Client deleted successfully');
     }
-
-    public function data()
-    {
-        $clients = Client::with(['addresses.city', 'addresses.area'])->select('clients.*');
-
-        return DataTables::of($clients)
-            ->addColumn('addresses_list', function ($client) {
-                return $client->addresses->pluck('address')->join(', ') ?: '-';
-            })
-            ->addColumn('cities_list', function ($client) {
-                return $client->addresses->map(fn($addr) => $addr->city->name ?? null)->filter()->unique()->join(', ') ?: '-';
-            })
-            ->addColumn('areas_list', function ($client) {
-                return $client->addresses->map(fn($addr) => $addr->area->name ?? null)->filter()->unique()->join(', ') ?: '-';
-            })
-            ->addColumn('actions', function ($client) {
-                return view('admin.clients.actions', compact('client'))->render();
-            })
-            ->rawColumns(['actions'])
-            ->make(true);
-    }
 }
-

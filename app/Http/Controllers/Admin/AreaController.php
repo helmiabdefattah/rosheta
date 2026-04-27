@@ -6,13 +6,33 @@ use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\City;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
 
 class AreaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.areas.index');
+        $query = Area::with(['city.governorate'])->withCount('pharmacies')->orderByDesc('id');
+
+        if ($request->filled('search')) {
+            $term = '%' . $request->string('search') . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('id', 'like', $term)
+                    ->orWhere('name', 'like', $term)
+                    ->orWhere('name_ar', 'like', $term)
+                    ->orWhere('sort_order', 'like', $term)
+                    ->orWhereHas('city', function ($q) use ($term) {
+                        $q->where('name', 'like', $term)
+                            ->orWhere('name_ar', 'like', $term)
+                            ->orWhereHas('governorate', function ($q) use ($term) {
+                                $q->where('name', 'like', $term)->orWhere('name_ar', 'like', $term);
+                            });
+                    });
+            });
+        }
+
+        $areas = $query->paginate(15)->withQueryString();
+
+        return view('admin.areas.index', compact('areas'));
     }
 
     public function create()
@@ -71,31 +91,4 @@ class AreaController extends Controller
         return redirect()->route('admin.areas.index')
             ->with('success', app()->getLocale() === 'ar' ? 'تم حذف المنطقة بنجاح' : 'Area deleted successfully');
     }
-
-    public function data()
-    {
-        $areas = Area::with(['city.governorate'])->select('areas.*');
-
-        return DataTables::of($areas)
-            ->addColumn('city_name', function ($area) {
-                return $area->city->name ?? 'N/A';
-            })
-            ->addColumn('governorate_name', function ($area) {
-                return $area->city->governorate->name ?? 'N/A';
-            })
-            ->addColumn('pharmacies_count', function ($area) {
-                return $area->pharmacies()->count();
-            })
-            ->addColumn('is_active', function ($area) {
-                return $area->is_active 
-                    ? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">' . (app()->getLocale() === 'ar' ? 'نشط' : 'Active') . '</span>'
-                    : '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">' . (app()->getLocale() === 'ar' ? 'غير نشط' : 'Inactive') . '</span>';
-            })
-            ->addColumn('actions', function ($area) {
-                return view('admin.areas.actions', compact('area'))->render();
-            })
-            ->rawColumns(['is_active', 'actions'])
-            ->make(true);
-    }
 }
-

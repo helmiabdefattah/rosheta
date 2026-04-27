@@ -11,13 +11,38 @@ use App\Models\ClinicWorkingHour;
 use App\Models\Doctor;
 use App\Models\Governorate;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
 
 class ClinicController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.clinics.index');
+        $query = Clinic::with(['doctor.specialization', 'governorate', 'city', 'area'])->orderByDesc('id');
+
+        if ($request->filled('search')) {
+            $term = '%' . $request->string('search') . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('id', 'like', $term)
+                    ->orWhere('name', 'like', $term)
+                    ->orWhere('address', 'like', $term)
+                    ->orWhere('phone_number', 'like', $term)
+                    ->orWhereHas('doctor', function ($q) use ($term) {
+                        $q->where('name', 'like', $term);
+                    })
+                    ->orWhereHas('governorate', function ($q) use ($term) {
+                        $q->where('name', 'like', $term)->orWhere('name_ar', 'like', $term);
+                    })
+                    ->orWhereHas('city', function ($q) use ($term) {
+                        $q->where('name', 'like', $term)->orWhere('name_ar', 'like', $term);
+                    })
+                    ->orWhereHas('area', function ($q) use ($term) {
+                        $q->where('name', 'like', $term)->orWhere('name_ar', 'like', $term);
+                    });
+            });
+        }
+
+        $clinics = $query->paginate(15)->withQueryString();
+
+        return view('admin.clinics.index', compact('clinics'));
     }
 
     public function create()
@@ -190,26 +215,6 @@ class ClinicController extends Controller
             ->with('success', app()->getLocale() === 'ar' ? 'تم حذف العيادة' : 'Clinic deleted');
     }
 
-    public function data()
-    {
-        $clinics = Clinic::with(['doctor.specialization', 'governorate', 'city', 'area'])->select('clinics.*');
-        return DataTables::of($clinics)
-            ->addColumn('doctor_name', fn ($c) => $c->doctor?->name ?? '-')
-            ->addColumn('specialization', fn ($c) => $c->doctor?->specialization?->name ?? '-')
-            ->addColumn('phone_number', fn ($c) => $c->phone_number ?? '-')
-            ->addColumn('location', function ($c) {
-                $parts = array_filter([
-                    $c->governorate?->name ?? $c->governorate?->name_ar,
-                    $c->city?->name ?? $c->city?->name_ar,
-                    $c->area?->name ?? $c->area?->name_ar,
-                ]);
-                return implode(', ', $parts) ?: '-';
-            })
-            ->addColumn('actions', fn ($c) => view('admin.clinics.actions', ['clinic' => $c])->render())
-            ->rawColumns(['actions'])
-            ->make(true);
-    }
-
     protected function syncWorkingHours(Clinic $clinic, array $rows): void
     {
         $clinic->workingHours()->delete();
@@ -230,7 +235,6 @@ class ClinicController extends Controller
         }
     }
 
-    /** Sync per-doctor working hours (clinic_doctor_working_hours) when clinic has multiple doctors. */
     protected function syncClinicDoctorWorkingHours(Clinic $clinic, array $doctorOptions): void
     {
         $clinic->clinicDoctorWorkingHours()->delete();

@@ -6,6 +6,7 @@
 
 @push('styles')
     <link href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css" rel="stylesheet" />
 @endpush
 
 @section('content')
@@ -17,7 +18,7 @@
             </a>
         </div>
         <div class="p-6">
-            <table id="users-table" class="min-w-full divide-y divide-gray-200">
+            <table id="users-table" class="display nowrap w-full min-w-full divide-y divide-gray-200" style="width:100%">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'الاسم' : 'Name' }}</th>
@@ -33,11 +34,13 @@
 
 @push('scripts')
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     <script>
         $(document).ready(function() {
             $('#users-table').DataTable({
                 processing: true,
                 serverSide: true,
+                responsive: true,
                 ajax: '{{ route('laboratories.users.data') }}',
                 columns: [
                     { data: 'name', name: 'name' },
