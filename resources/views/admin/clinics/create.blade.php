@@ -238,6 +238,30 @@
             </x-admin.ui.form-card>
         </div>
 
+        <x-admin.ui.form-card :title="app()->getLocale() === 'ar' ? 'حساب مدير العيادة (تسجيل الدخول)' : 'Clinic manager login'" :description="app()->getLocale() === 'ar' ? 'يُستخدم لتسجيل الدخول إلى لوحة العيادة.' : 'Used to sign in to the clinic dashboard.'" class="mt-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <x-admin.ui.label for="manager_email" required>{{ app()->getLocale() === 'ar' ? 'البريد الإلكتروني' : 'Email' }}</x-admin.ui.label>
+                    <x-admin.ui.input type="email" name="manager_email" :value="old('manager_email')" required autocomplete="off" />
+                    @error('manager_email')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <x-admin.ui.label for="manager_phone" required>{{ app()->getLocale() === 'ar' ? 'رقم الهاتف' : 'Phone' }}</x-admin.ui.label>
+                    <x-admin.ui.input name="manager_phone" :value="old('manager_phone')" required placeholder="01xxxxxxxxx" autocomplete="off" />
+                    @error('manager_phone')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <x-admin.ui.label for="manager_password" required>{{ app()->getLocale() === 'ar' ? 'كلمة المرور' : 'Password' }}</x-admin.ui.label>
+                    <x-admin.ui.input type="password" name="manager_password" required autocomplete="new-password" />
+                    @error('manager_password')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <x-admin.ui.label for="manager_password_confirmation" required>{{ app()->getLocale() === 'ar' ? 'تأكيد كلمة المرور' : 'Confirm password' }}</x-admin.ui.label>
+                    <x-admin.ui.input type="password" name="manager_password_confirmation" required autocomplete="new-password" />
+                </div>
+            </div>
+        </x-admin.ui.form-card>
+
         <div class="mt-8 flex items-center justify-end gap-3">
             <a href="{{ route('admin.clinics.index') }}" class="px-5 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-xl hover:bg-slate-50">{{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}</a>
             <x-admin.ui.button type="submit">{{ app()->getLocale() === 'ar' ? 'حفظ العيادة' : 'Save Clinic' }}</x-admin.ui.button>

@@ -271,6 +271,11 @@ Route::middleware('auth')->prefix('laboratory')->name('laboratories.')->group(fu
     Route::get('/support-tickets/history', [App\Http\Controllers\LaboratorySupportTicketController::class, 'index'])->name('support-tickets.index');
 });
 
+// Clinic staff dashboard (clinic manager account)
+Route::middleware(['auth', 'clinic_staff'])->prefix('clinic')->name('clinic.')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\Clinic\ClinicDashboardController::class, 'index'])->name('dashboard');
+});
+
 // Pharmacy Dashboard Routes
 Route::middleware('auth')->prefix('pharmacy')->name('pharmacies.')->group(function () {
 	Route::get('/dashboard', [App\Http\Controllers\PharmacyDashboardController::class, 'index'])->name('dashboard');
@@ -293,6 +298,7 @@ Route::middleware([
     'auth',
     \App\Http\Middleware\RedirectLaboratoryOwner::class,
     \App\Http\Middleware\RedirectPharmacyOwner::class,
+    \App\Http\Middleware\RedirectClinicStaff::class,
 ])->prefix('admin')->name('admin.')->group(function () {
     // Redirect /admin to /admin/dashboard
     Route::get('/', function () {

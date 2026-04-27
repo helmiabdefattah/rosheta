@@ -141,6 +141,24 @@
             </div>
         </div>
 
+        <div class="card">
+            <div class="card-header">{{ app()->getLocale() === 'ar' ? 'تغيير كلمة مرور المالك' : 'Change owner password' }}</div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">{{ app()->getLocale() === 'ar' ? 'اترك فارغًا للإبقاء على كلمة المرور الحالية.' : 'Leave blank to keep the current password.' }}</p>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ app()->getLocale() === 'ar' ? 'كلمة المرور الجديدة' : 'New password' }}</label>
+                        <input type="password" name="password" class="form-control" autocomplete="new-password">
+                        @error('password')<div class="text-danger small">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ app()->getLocale() === 'ar' ? 'تأكيد كلمة المرور' : 'Confirm password' }}</label>
+                        <input type="password" name="password_confirmation" class="form-control" autocomplete="new-password">
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Location Information -->
         <div class="card">
             <div class="card-header">{{ app()->getLocale() === 'ar' ? 'معلومات الموقع' : 'Location Information' }}</div>

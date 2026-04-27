@@ -85,6 +85,20 @@
                 </div>
             </div>
         </x-admin.ui.form-card>
+
+        <x-admin.ui.form-card :title="app()->getLocale() === 'ar' ? 'تغيير كلمة مرور المالك' : 'Change owner password'" :description="app()->getLocale() === 'ar' ? 'اترك الحقول فارغة إن لم ترد تغيير كلمة المرور.' : 'Leave blank to keep the current password.'" class="mt-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <x-admin.ui.label for="password">{{ app()->getLocale() === 'ar' ? 'كلمة المرور الجديدة' : 'New password' }}</x-admin.ui.label>
+                    <x-admin.ui.input type="password" name="password" autocomplete="new-password" />
+                    @error('password')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <x-admin.ui.label for="password_confirmation">{{ app()->getLocale() === 'ar' ? 'تأكيد كلمة المرور' : 'Confirm password' }}</x-admin.ui.label>
+                    <x-admin.ui.input type="password" name="password_confirmation" autocomplete="new-password" />
+                </div>
+            </div>
+        </x-admin.ui.form-card>
         
         <x-admin.ui.form-card :title="app()->getLocale() === 'ar' ? 'الموقع الجغرافي' : 'Location Coordinates'" class="mt-6">
             <div class="space-y-6">

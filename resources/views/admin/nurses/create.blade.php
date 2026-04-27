@@ -26,6 +26,15 @@
 				@error('email') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
 			</div>
 			<div>
+				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'كلمة المرور' : 'Password' }}</label>
+				<input type="password" name="password" class="w-full border border-gray-300 rounded-lg p-2" autocomplete="new-password" required>
+				@error('password') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+			</div>
+			<div>
+				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'تأكيد كلمة المرور' : 'Confirm password' }}</label>
+				<input type="password" name="password_confirmation" class="w-full border border-gray-300 rounded-lg p-2" autocomplete="new-password" required>
+			</div>
+			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">{{ app()->getLocale() === 'ar' ? 'الصورة' : 'Avatar' }}</label>
 				<input type="file" name="avatar" accept="image/*" class="w-full border border-gray-300 rounded-lg p-2">
 				@error('avatar') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror

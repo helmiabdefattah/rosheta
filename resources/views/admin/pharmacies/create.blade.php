@@ -84,6 +84,30 @@
                 </div>
             </div>
         </x-admin.ui.form-card>
+
+        <x-admin.ui.form-card :title="app()->getLocale() === 'ar' ? 'حساب تسجيل الدخول للمالك' : 'Owner login account'" :description="app()->getLocale() === 'ar' ? 'إذا لم تختر مستخدمًا موجودًا كمالك، يُنشأ حساب جديد بالبريد والهاتف وكلمة المرور أدناه.' : 'If you do not pick an existing user as owner, a new account is created with the email, phone, and password below.'" class="mt-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <x-admin.ui.label for="account_email">{{ app()->getLocale() === 'ar' ? 'بريد الحساب' : 'Account email' }}</x-admin.ui.label>
+                    <x-admin.ui.input type="email" name="account_email" :value="old('account_email')" autocomplete="off" />
+                    @error('account_email')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <x-admin.ui.label for="account_phone">{{ app()->getLocale() === 'ar' ? 'هاتف الحساب' : 'Account phone' }}</x-admin.ui.label>
+                    <x-admin.ui.input name="account_phone" :value="old('account_phone')" placeholder="01xxxxxxxxx" autocomplete="off" />
+                    @error('account_phone')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <x-admin.ui.label for="password">{{ app()->getLocale() === 'ar' ? 'كلمة المرور' : 'Password' }}</x-admin.ui.label>
+                    <x-admin.ui.input type="password" name="password" autocomplete="new-password" />
+                    @error('password')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <x-admin.ui.label for="password_confirmation">{{ app()->getLocale() === 'ar' ? 'تأكيد كلمة المرور' : 'Confirm password' }}</x-admin.ui.label>
+                    <x-admin.ui.input type="password" name="password_confirmation" autocomplete="new-password" />
+                </div>
+            </div>
+        </x-admin.ui.form-card>
         
         <x-admin.ui.form-card :title="app()->getLocale() === 'ar' ? 'الموقع الجغرافي' : 'Location Coordinates'" class="mt-6">
             <div class="space-y-6">

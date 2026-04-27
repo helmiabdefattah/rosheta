@@ -93,6 +93,14 @@ class User extends Authenticatable implements FilamentUser, HasMedia
     }
 
     /**
+     * Clinic this user manages (staff portal), when set on clinics.user_id.
+     */
+    public function managedClinic(): HasOne
+    {
+        return $this->hasOne(Clinic::class, 'user_id');
+    }
+
+    /**
      * Appointments (as patient).
      */
     public function appointments(): HasMany
@@ -109,6 +117,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia
     {
         return $this->laboratory_id === null
             && $this->pharmacy_id === null
-            && !$this->nurse()->exists();
+            && ! $this->nurse()->exists()
+            && ! $this->managedClinic()->exists();
     }
 }

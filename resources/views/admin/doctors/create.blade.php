@@ -37,14 +37,38 @@
                 </div>
                 <div>
                     <x-admin.ui.label for="user_id">{{ app()->getLocale() === 'ar' ? 'ربط بحساب مستخدم (اختياري)' : 'Link to user account (optional)' }}</x-admin.ui.label>
-                    <p class="text-sm text-slate-500 mb-1">{{ app()->getLocale() === 'ar' ? 'إن تركت "إنشاء حساب جديد" سيُنشأ مستخدم جديد بكلمة المرور: password' : 'If you leave "Create new account" selected, a new user will be created with password: password' }}</p>
+                    <p class="text-sm text-slate-500 mb-1">{{ app()->getLocale() === 'ar' ? 'إن لم تختر مستخدمًا، أدخل بيانات الحساب أدناه لإنشاء مستخدم جديد يمكنه تسجيل الدخول.' : 'If you do not select a user, fill in the login fields below to create a new user.' }}</p>
                     <select name="user_id" id="user_id" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                        <option value="">{{ app()->getLocale() === 'ar' ? 'إنشاء حساب جديد (كلمة المرور: password)' : 'Create new account (password: password)' }}</option>
+                        <option value="">{{ app()->getLocale() === 'ar' ? 'إنشاء حساب جديد' : 'Create new account' }}</option>
                         @foreach($users as $u)
                             <option value="{{ $u->id }}" {{ old('user_id') == $u->id ? 'selected' : '' }}>{{ $u->name }} ({{ $u->email }})</option>
                         @endforeach
                     </select>
                     @error('user_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div class="rounded-lg border border-slate-200 bg-slate-50/80 p-4 space-y-4">
+                    <p class="text-sm font-medium text-slate-700">{{ app()->getLocale() === 'ar' ? 'بيانات الحساب الجديد (عند عدم اختيار مستخدم)' : 'New account (when no user is selected)' }}</p>
+                    <div>
+                        <x-admin.ui.label for="account_email">{{ app()->getLocale() === 'ar' ? 'البريد الإلكتروني' : 'Email' }}</x-admin.ui.label>
+                        <x-admin.ui.input type="email" name="account_email" :value="old('account_email')" autocomplete="off" />
+                        @error('account_email')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <x-admin.ui.label for="account_phone">{{ app()->getLocale() === 'ar' ? 'رقم الهاتف' : 'Phone' }}</x-admin.ui.label>
+                        <x-admin.ui.input name="account_phone" :value="old('account_phone')" placeholder="01xxxxxxxxx" autocomplete="off" />
+                        @error('account_phone')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <x-admin.ui.label for="password">{{ app()->getLocale() === 'ar' ? 'كلمة المرور' : 'Password' }}</x-admin.ui.label>
+                            <x-admin.ui.input type="password" name="password" autocomplete="new-password" />
+                            @error('password')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <x-admin.ui.label for="password_confirmation">{{ app()->getLocale() === 'ar' ? 'تأكيد كلمة المرور' : 'Confirm password' }}</x-admin.ui.label>
+                            <x-admin.ui.input type="password" name="password_confirmation" autocomplete="new-password" />
+                        </div>
+                    </div>
                 </div>
                 <div>
                     <x-admin.ui.label for="profile_image">{{ app()->getLocale() === 'ar' ? 'صورة الطبيب (اختياري)' : 'Doctor photo (optional)' }}</x-admin.ui.label>

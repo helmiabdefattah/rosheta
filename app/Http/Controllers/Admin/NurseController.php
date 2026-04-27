@@ -8,9 +8,6 @@ use App\Models\Nurse;
 use App\Models\Area;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-
 class NurseController extends Controller
 {
     public function index()
@@ -51,6 +48,7 @@ class NurseController extends Controller
             'name'         => 'required|string|max:255',
             'phone_number' => 'required|string|max:50|unique:users,phone_number',
             'email'        => 'nullable|email|max:255|unique:users,email',
+            'password'     => 'required|string|min:8|confirmed',
             'avatar'       => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:2048',
         ]);
 
@@ -77,7 +75,7 @@ class NurseController extends Controller
                 'name'         => $validatedUser['name'],
                 'phone_number' => $validatedUser['phone_number'],
                 'email'        => $validatedUser['email'] ?? null,
-                'password'     => Hash::make('password'),
+                'password'     => $validatedUser['password'],
             ]);
 
             // 2️⃣ Avatar (Spatie)
@@ -142,6 +140,7 @@ class NurseController extends Controller
             'name'         => 'required|string|max:255',
             'phone_number' => 'required|string|max:50|unique:users,phone_number,' . $user->id,
             'email'        => 'nullable|email|max:255|unique:users,email,' . $user->id,
+            'password'     => 'nullable|string|min:8|confirmed',
             'avatar'       => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:2048',
         ]);
 
@@ -163,12 +162,15 @@ class NurseController extends Controller
 
         DB::transaction(function () use ($request, $user, $nurse, $validatedUser, $validatedNurse) {
 
-            // Update User
-            $user->update([
+            $userData = [
                 'name'         => $validatedUser['name'],
                 'phone_number' => $validatedUser['phone_number'],
                 'email'        => $validatedUser['email'] ?? null,
-            ]);
+            ];
+            if ($request->filled('password')) {
+                $userData['password'] = $validatedUser['password'];
+            }
+            $user->update($userData);
 
             // Update avatar (Spatie)
             if ($request->hasFile('avatar')) {
