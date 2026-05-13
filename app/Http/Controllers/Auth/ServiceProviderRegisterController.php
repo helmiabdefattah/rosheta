@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\CharitableOrganization;
 use App\Models\Doctor;
 use App\Models\Laboratory;
 use App\Models\Nurse;
@@ -19,7 +20,7 @@ use Illuminate\Validation\Rules\Password;
 
 class ServiceProviderRegisterController extends Controller
 {
-    private const TYPES = ['pharmacy', 'laboratory', 'radiology', 'nurse', 'doctor'];
+    private const TYPES = ['pharmacy', 'laboratory', 'radiology', 'nurse', 'doctor', 'charitable_organization'];
 
     private function documentValidationRules(): array
     {
@@ -31,9 +32,6 @@ class ServiceProviderRegisterController extends Controller
         ];
     }
 
-    /**
-     * @param  array<int, mixed>  $papersInput
-     */
     protected function attachRegistrationPapers(User $user, Request $request): void
     {
         foreach ($request->input('papers', []) as $idx => $row) {
@@ -76,7 +74,7 @@ class ServiceProviderRegisterController extends Controller
             abort(404);
         }
 
-        $governorates = in_array($type, ['pharmacy', 'laboratory', 'radiology', 'nurse'], true)
+        $governorates = in_array($type, ['pharmacy', 'laboratory', 'radiology', 'nurse', 'charitable_organization'], true)
             ? Governorate::where('is_active', true)->orderBy('name')->get()
             : collect();
         $specializations = $type === 'doctor'
@@ -132,6 +130,20 @@ class ServiceProviderRegisterController extends Controller
                 'specialization_id' => 'required|exists:specializations,id',
                 'brief' => 'nullable|string|max:5000',
             ], $docRules));
+        } elseif ($type === 'charitable_organization') {
+            $validated = $request->validate(array_merge([
+                'account_name' => 'required|string|max:255',
+                'phone_number' => 'required|string|max:50|unique:users,phone_number',
+                'email' => 'nullable|email|max:255|unique:users,email',
+                'password' => ['required', 'confirmed', Password::defaults()],
+                'organization_name' => 'required|string|max:255',
+                'governorate_id' => 'required|exists:governorates,id',
+                'city_id' => 'required|exists:cities,id',
+                'area_id' => 'required|exists:areas,id',
+                'address' => 'required|string',
+                'organization_phone' => 'nullable|string|max:20',
+                'services_text' => 'nullable|string|max:5000',
+            ], $docRules));
         } else {
             $base = [
                 'account_name' => 'required|string|max:255',
@@ -160,7 +172,7 @@ class ServiceProviderRegisterController extends Controller
                 'email' => ! empty($validated['email'] ?? null) ? $validated['email'] : null,
                 'password' => Hash::make($validated['password']),
                 'is_active' => false,
-                'registration_license_number' => in_array($type, ['nurse', 'doctor'], true)
+                'registration_license_number' => in_array($type, ['nurse', 'doctor', 'charitable_organization'], true)
                     ? ($validated['license_number'] ?? null)
                     : null,
             ]);
@@ -218,6 +230,29 @@ class ServiceProviderRegisterController extends Controller
                     'slug' => $slug,
                     'brief' => $validated['brief'] ?? null,
                 ]);
+            } elseif ($type === 'charitable_organization') {
+                $phones = [];
+                if (! empty(trim((string) ($validated['organization_phone'] ?? '')))) {
+                    $phones[] = trim($validated['organization_phone']);
+                }
+                $services = null;
+                if (! empty(trim((string) ($validated['services_text'] ?? '')))) {
+                    $lines = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $validated['services_text']))));
+                    $services = $lines !== [] ? $lines : null;
+                }
+
+                $organization = CharitableOrganization::create([
+                    'user_id' => $user->id,
+                    'name' => $validated['organization_name'],
+                    'governorate_id' => $validated['governorate_id'],
+                    'city_id' => $validated['city_id'],
+                    'area_id' => $validated['area_id'],
+                    'address' => $validated['address'],
+                    'phone_numbers' => $phones !== [] ? $phones : null,
+                    'services' => $services,
+                    'is_active' => false,
+                ]);
+                $user->update(['charitable_organization_id' => $organization->id]);
             }
 
             $this->attachRegistrationPapers($user, $request);

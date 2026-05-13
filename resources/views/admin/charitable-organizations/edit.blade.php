@@ -122,6 +122,11 @@
                         {{ app()->getLocale() === 'ar' ? '+ إضافة خدمة' : '+ Add Service' }}
                     </button>
                 </div>
+
+                <div class="flex items-center gap-3 pt-2">
+                    <input type="checkbox" name="is_active" id="is_active" value="1" class="rounded border-slate-300 text-primary focus:ring-primary" {{ old('is_active', $charitableOrganization->is_active) ? 'checked' : '' }}>
+                    <label for="is_active" class="text-sm font-medium text-slate-700">{{ app()->getLocale() === 'ar' ? 'منظمة نشطة (تظهر في البحث للعملاء)' : 'Active (visible to clients in search)' }}</label>
+                </div>
             </div>
         </x-admin.ui.form-card>
 

@@ -40,7 +40,8 @@ class ClientServiceProviderController extends Controller
             $areaId = $request->area_id;
 
         if ($providerType === 'charity') {
-            $query = CharitableOrganization::with(['governorate', 'city', 'area']);
+            $query = CharitableOrganization::with(['governorate', 'city', 'area'])
+                ->where('is_active', true);
 
             // Filter by governorate (required)
             $query->where('governorate_id', $governorateId);

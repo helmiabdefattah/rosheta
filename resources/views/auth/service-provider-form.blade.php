@@ -38,7 +38,8 @@
                 @elseif($type === 'laboratory') {{ $ar ? 'تسجيل معمل تحاليل' : 'Register laboratory' }}
                 @elseif($type === 'radiology') {{ $ar ? 'تسجيل مركز أشعة' : 'Register radiology lab' }}
                 @elseif($type === 'nurse') {{ $ar ? 'تسجيل ممرض / ممرضة' : 'Register nurse' }}
-                @else {{ $ar ? 'تسجيل طبيب' : 'Register doctor' }}
+                @elseif($type === 'doctor') {{ $ar ? 'تسجيل طبيب' : 'Register doctor' }}
+                @elseif($type === 'charitable_organization') {{ $ar ? 'تسجيل منظمة خيرية' : 'Register charitable organization' }}
                 @endif
             </h1>
         </div>
@@ -149,6 +150,58 @@
                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none">
                     </div>
                 @endif
+            @endif
+
+            @if($type === 'charitable_organization')
+                <div class="border-t border-slate-100 pt-4 mt-4">
+                    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wide mb-3">{{ $ar ? 'بيانات المنظمة' : 'Organization details' }}</h2>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'اسم المنظمة' : 'Organization name' }}</label>
+                    <input type="text" name="organization_name" value="{{ old('organization_name') }}" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'هاتف المنظمة (للجمهور)' : 'Organization public phone' }} <span class="text-gray-400 font-normal">({{ $ar ? 'اختياري' : 'optional' }})</span></label>
+                    <input type="text" name="organization_phone" value="{{ old('organization_phone') }}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'الخدمات (سطر لكل خدمة)' : 'Services (one per line)' }} <span class="text-gray-400 font-normal">({{ $ar ? 'اختياري' : 'optional' }})</span></label>
+                    <textarea name="services_text" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none">{{ old('services_text') }}</textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'المحافظة' : 'Governorate' }} <span class="text-red-500">*</span></label>
+                    <select id="governorate_id" name="governorate_id" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none">
+                        <option value="">{{ $ar ? 'اختر المحافظة' : 'Select governorate' }}</option>
+                        @foreach($governorates as $g)
+                            <option value="{{ $g->id }}" @selected(old('governorate_id') == $g->id)>{{ $ar ? ($g->name_ar ?? $g->name) : $g->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'المدينة' : 'City' }} <span class="text-red-500">*</span></label>
+                    <select id="city_id" name="city_id" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none">
+                        <option value="">{{ $ar ? 'اختر المدينة' : 'Select city' }}</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'المنطقة' : 'Area' }} <span class="text-red-500">*</span></label>
+                    <select id="area_id" name="area_id" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none">
+                        <option value="">{{ $ar ? 'اختر المنطقة' : 'Select area' }}</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'العنوان التفصيلي' : 'Full address' }} <span class="text-red-500">*</span></label>
+                    <textarea name="address" rows="2" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none">{{ old('address') }}</textarea>
+                </div>
             @endif
 
             @if($type === 'nurse')
@@ -329,7 +382,7 @@
                 });
             }
 
-            if (['pharmacy', 'laboratory', 'radiology'].indexOf(type) !== -1) {
+            if (['pharmacy', 'laboratory', 'radiology', 'charitable_organization'].indexOf(type) !== -1) {
                 $('#governorate_id').on('change', function() {
                     loadCities($(this).val(), '#city_id', function() {
                         $('#area_id').empty().append('<option value="">' + (isAr ? 'اختر المنطقة' : 'Select area') + '</option>');

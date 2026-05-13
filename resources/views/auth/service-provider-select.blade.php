@@ -42,7 +42,7 @@
             </p>
         </div>
 
-        <div class="grid sm:grid-cols-2 gap-4">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             @php
                 $cards = [
                     'pharmacy' => ['en' => 'Pharmacy', 'ar' => 'صيدلية', 'icon' => '💊'],
@@ -50,6 +50,7 @@
                     'radiology' => ['en' => 'Radiology lab', 'ar' => 'مركز أشعة', 'icon' => '📷'],
                     'nurse' => ['en' => 'Nurse', 'ar' => 'تمريض منزلي', 'icon' => '🩺'],
                     'doctor' => ['en' => 'Doctor', 'ar' => 'طبيب', 'icon' => '👨‍⚕️'],
+                    'charitable_organization' => ['en' => 'Charitable organization', 'ar' => 'منظمة خيرية', 'icon' => '❤️'],
                 ];
                 $ar = app()->getLocale() === 'ar';
             @endphp

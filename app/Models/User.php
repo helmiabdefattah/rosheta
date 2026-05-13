@@ -32,6 +32,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia
         'pharmacy_id',
         'laboratory_id',
         'nurse_id',
+        'charitable_organization_id',
         'fcm_token_web',
         'fcm_token_mobile',
         'notification_sound',
@@ -87,6 +88,14 @@ class User extends Authenticatable implements FilamentUser, HasMedia
     }
 
     /**
+     * Charitable organization this user represents (if any).
+     */
+    public function charitableOrganization(): BelongsTo
+    {
+        return $this->belongsTo(CharitableOrganization::class);
+    }
+
+    /**
      * The doctor profile associated with this user (if any).
      */
     public function doctor(): HasOne
@@ -111,6 +120,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia
     {
         return $this->laboratory_id === null
             && $this->pharmacy_id === null
+            && $this->charitable_organization_id === null
             && !$this->nurse()->exists()
             && !$this->doctor()->exists();
     }

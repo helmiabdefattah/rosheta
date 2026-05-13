@@ -58,6 +58,8 @@ class CharitableOrganizationController extends Controller
             'services.*' => 'nullable|string|max:255',
         ]);
 
+        $validated['is_active'] = $request->boolean('is_active', true);
+
         if (isset($validated['phone_numbers'])) {
             $validated['phone_numbers'] = array_values(array_filter($validated['phone_numbers'], function ($phone) {
                 return !empty(trim((string) $phone));
@@ -84,11 +86,12 @@ class CharitableOrganizationController extends Controller
 
     public function edit(CharitableOrganization $charitableOrganization)
     {
+        $governorates = Governorate::where('is_active', true)->orderBy('name')->get();
         $cities = City::where('is_active', true)->orderBy('name')->get();
         $areas = $charitableOrganization->city_id
             ? Area::where('city_id', $charitableOrganization->city_id)->where('is_active', true)->orderBy('name')->get()
             : collect();
-        return view('admin.charitable-organizations.edit', compact('charitableOrganization', 'cities', 'areas'));
+        return view('admin.charitable-organizations.edit', compact('charitableOrganization', 'governorates', 'cities', 'areas'));
     }
 
     public function update(Request $request, CharitableOrganization $charitableOrganization)
@@ -104,6 +107,8 @@ class CharitableOrganizationController extends Controller
             'services' => 'nullable|array',
             'services.*' => 'nullable|string|max:255',
         ]);
+
+        $validated['is_active'] = $request->boolean('is_active');
 
         if (isset($validated['phone_numbers'])) {
             $validated['phone_numbers'] = array_values(array_filter($validated['phone_numbers'], function ($phone) {
