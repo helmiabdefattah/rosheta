@@ -27,6 +27,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia
         'name',
         'email',
         'phone_number',
+        'registration_license_number',
         'password',
         'pharmacy_id',
         'laboratory_id',
@@ -34,6 +35,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia
         'fcm_token_web',
         'fcm_token_mobile',
         'notification_sound',
+        'is_active',
     ];
 
     /**
@@ -56,6 +58,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -108,6 +111,19 @@ class User extends Authenticatable implements FilamentUser, HasMedia
     {
         return $this->laboratory_id === null
             && $this->pharmacy_id === null
-            && !$this->nurse()->exists();
+            && !$this->nurse()->exists()
+            && !$this->doctor()->exists();
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('service_registration_documents')
+            ->acceptsMimeTypes([
+                'application/pdf',
+                'image/jpeg',
+                'image/png',
+                'image/webp',
+                'image/gif',
+            ]);
     }
 }

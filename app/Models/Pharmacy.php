@@ -10,6 +10,32 @@ class Pharmacy extends Model
 {
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        static::saved(function (Pharmacy $pharmacy) {
+            $pharmacy->syncLinkedUsersActiveState();
+        });
+    }
+
+    /**
+     * Keep pharmacy owner login (users.is_active) aligned with pharmacy visibility flag.
+     */
+    public function syncLinkedUsersActiveState(): void
+    {
+        $active = (bool) $this->is_active;
+        $ids = collect([$this->user_id])
+            ->merge(User::where('pharmacy_id', $this->id)->pluck('id'))
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return;
+        }
+
+        User::whereIn('id', $ids)->update(['is_active' => $active]);
+    }
+
     protected $fillable = [
         'user_id',
         'area_id',

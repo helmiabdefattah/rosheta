@@ -1,3 +1,4 @@
+
 <?php
 
 use App\Http\Controllers\NurseOfferController;
@@ -57,6 +58,11 @@ Route::post('/admin/logout', [App\Http\Controllers\Auth\LoginController::class, 
 // Registration routes
 Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
+
+// Service provider self-registration (pending admin activation)
+Route::get('/service-provider/register', [App\Http\Controllers\Auth\ServiceProviderRegisterController::class, 'select'])->name('service-provider.register');
+Route::get('/service-provider/register/{type}', [App\Http\Controllers\Auth\ServiceProviderRegisterController::class, 'create'])->name('service-provider.register.create');
+Route::post('/service-provider/register/{type}', [App\Http\Controllers\Auth\ServiceProviderRegisterController::class, 'store'])->name('service-provider.register.store');
 
 Route::prefix('nurse')->name('nurse.')->middleware(['auth'])->group(function () {
 

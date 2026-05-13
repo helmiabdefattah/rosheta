@@ -66,6 +66,16 @@ class LoginController extends Controller
                 ->orWhere('phone_number', $login);
         })->first();
         if ($user && Hash::check($password, $user->password)) {
+            if (! $user->is_active) {
+                throw ValidationException::withMessages([
+                    'email' => [
+                        app()->getLocale() === 'ar'
+                            ? 'حسابك غير مفعّل بعد. يرجى انتظار موافقة الإدارة.'
+                            : 'Your account is not active yet. Please wait for administrator approval.',
+                    ],
+                ]);
+            }
+
             Auth::login($user, $remember);
             $request->session()->regenerate();
 

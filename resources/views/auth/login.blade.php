@@ -62,6 +62,12 @@
                 </div>
             </div>
 
+            @if (session('info'))
+                <div class="mb-6 p-4 bg-sky-50 border-s-4 border-sky-500 rounded-lg">
+                    <p class="text-sm font-medium text-sky-900">{{ session('info') }}</p>
+                </div>
+            @endif
+
             @if ($errors->any())
                 <div class="mb-6 p-4 bg-red-50 border-s-4 border-red-500 rounded-lg">
                     <div class="flex">
@@ -151,11 +157,16 @@
                     </button>
                 </div>
 
-                <div class="text-center">
+                <div class="text-center space-y-3">
                     <p class="text-sm text-gray-600">
                         {{ app()->getLocale() === 'ar' ? 'ليس لديك حساب؟' : "Don't have an account?" }}
                         <a href="{{ route('register') }}" class="font-bold text-sky-600 hover:text-sky-500 underline decoration-sky-100 underline-offset-4 decoration-2 hover:decoration-sky-500 transition-all">
                             {{ app()->getLocale() === 'ar' ? 'سجل هنا' : 'Register here' }}
+                        </a>
+                    </p>
+                    <p class="text-sm text-gray-600">
+                        <a href="{{ route('service-provider.register') }}" class="font-bold text-emerald-600 hover:text-emerald-500 underline decoration-emerald-100 underline-offset-4 decoration-2 hover:decoration-emerald-500 transition-all">
+                            {{ app()->getLocale() === 'ar' ? 'تسجيل كمقدم خدمة (صيدلية، معمل، أشعة، تمريض، طبيب)' : 'Register as a service provider (pharmacy, lab, radiology, nurse, doctor)' }}
                         </a>
                     </p>
                 </div>
