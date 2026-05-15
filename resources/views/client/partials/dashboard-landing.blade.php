@@ -4,7 +4,7 @@
 	$clientName = $client?->name ?? ($isAr ? 'عميلنا العزيز' : 'Guest');
 @endphp
 
-{{-- Landing: greeting, search, ads, promos, services, facts, contact --}}
+{{-- Landing: greeting, ads, promos, search, results, services, facts, contact --}}
 <div class="mb-10 space-y-8">
 	{{-- Header --}}
 	<div class="px-1">
@@ -13,6 +13,77 @@
 			<span aria-hidden="true">👋</span>
 		</div>
 		<h2 class="mt-1 text-xl md:text-2xl font-bold text-slate-900 truncate" title="{{ $clientName }}">{{ $clientName }}</h2>
+	</div>
+
+	{{-- Ads: mobile = one full-width slide; scroll-snap; auto-advance --}}
+	<div class="space-y-2">
+		<p class="text-sm font-semibold text-slate-800">{{ $isAr ? 'إعلانات' : 'Ads' }}</p>
+		<div
+			id="client-dashboard-ads"
+			dir="ltr"
+			class="flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth touch-pan-x pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+			aria-roledescription="carousel"
+		>
+			<a href="{{ route('client.test-requests.create', 'test') }}" data-ad-slide class="snap-start shrink-0 min-w-full md:min-w-[calc((100%-0.75rem)/2)] lg:min-w-[calc((100%-1.5rem)/3)] rounded-2xl overflow-hidden shadow-md border border-white/20 bg-gradient-to-br from-[#1976D2] to-[#1565C0] text-white p-5 flex flex-col justify-between min-h-[132px] hover:opacity-95 transition-opacity">
+				<div>
+					<p class="text-xs font-semibold uppercase tracking-wide text-white/80">{{ $isAr ? 'إعلان' : 'Ad' }}</p>
+					<p class="font-bold text-lg leading-tight mt-1">{{ $isAr ? 'خصم على التحاليل الطبية' : 'Save on lab tests' }}</p>
+					<p class="text-sm text-white/90 mt-1">{{ $isAr ? 'احجز تحليلك الآن' : 'Book your tests today' }}</p>
+				</div>
+				<span class="inline-flex self-start px-3 py-1.5 rounded-lg bg-white text-[#1976D2] text-sm font-semibold">{{ $isAr ? 'تصفح' : 'Browse' }}</span>
+			</a>
+			<a href="{{ route('client.medicine-requests.create') }}" data-ad-slide class="snap-start shrink-0 min-w-full md:min-w-[calc((100%-0.75rem)/2)] lg:min-w-[calc((100%-1.5rem)/3)] rounded-2xl overflow-hidden shadow-md border border-white/20 bg-gradient-to-br from-[#9C27B0] to-[#7B1FA2] text-white p-5 flex flex-col justify-between min-h-[132px] hover:opacity-95 transition-opacity">
+				<div>
+					<p class="text-xs font-semibold uppercase tracking-wide text-white/80">{{ $isAr ? 'إعلان' : 'Ad' }}</p>
+					<p class="font-bold text-lg leading-tight mt-1">{{ $isAr ? 'توصيل أدوية سريع' : 'Fast medicine delivery' }}</p>
+					<p class="text-sm text-white/90 mt-1">{{ $isAr ? 'اطلب من أقرب صيدلية' : 'Order from nearby pharmacies' }}</p>
+				</div>
+				<span class="inline-flex self-start px-3 py-1.5 rounded-lg bg-white text-[#9C27B0] text-sm font-semibold">{{ $isAr ? 'اطلب' : 'Order' }}</span>
+			</a>
+			<a href="{{ route('client.doctor-reservation.index') }}" data-ad-slide class="snap-start shrink-0 min-w-full md:min-w-[calc((100%-0.75rem)/2)] lg:min-w-[calc((100%-1.5rem)/3)] rounded-2xl overflow-hidden shadow-md border border-white/20 bg-gradient-to-br from-[#00897B] to-[#00695C] text-white p-5 flex flex-col justify-between min-h-[132px] hover:opacity-95 transition-opacity">
+				<div>
+					<p class="text-xs font-semibold uppercase tracking-wide text-white/80">{{ $isAr ? 'إعلان' : 'Ad' }}</p>
+					<p class="font-bold text-lg leading-tight mt-1">{{ $isAr ? 'حجز موعد طبيب' : 'Book a doctor' }}</p>
+					<p class="text-sm text-white/90 mt-1">{{ $isAr ? 'عيادات موثوقة' : 'Trusted clinics' }}</p>
+				</div>
+				<span class="inline-flex self-start px-3 py-1.5 rounded-lg bg-white text-[#00897B] text-sm font-semibold">{{ $isAr ? 'احجز' : 'Book' }}</span>
+			</a>
+			<a href="{{ route('client.offers.index') }}" data-ad-slide class="snap-start shrink-0 min-w-full md:min-w-[calc((100%-0.75rem)/2)] lg:min-w-[calc((100%-1.5rem)/3)] rounded-2xl overflow-hidden shadow-md border border-white/20 bg-gradient-to-br from-[#F57C00] to-[#E65100] text-white p-5 flex flex-col justify-between min-h-[132px] hover:opacity-95 transition-opacity">
+				<div>
+					<p class="text-xs font-semibold uppercase tracking-wide text-white/80">{{ $isAr ? 'إعلان' : 'Ad' }}</p>
+					<p class="font-bold text-lg leading-tight mt-1">{{ $isAr ? 'عروض حصرية' : 'Exclusive offers' }}</p>
+					<p class="text-sm text-white/90 mt-1">{{ $isAr ? 'وفر على طلباتك' : 'Save on your orders' }}</p>
+				</div>
+				<span class="inline-flex self-start px-3 py-1.5 rounded-lg bg-white text-[#E65100] text-sm font-semibold">{{ $isAr ? 'اكتشف' : 'Discover' }}</span>
+			</a>
+		</div>
+	</div>
+
+	{{-- Promo carousel --}}
+	<div>
+		<p class="text-base font-bold text-slate-900 mb-3">{{ $isAr ? 'عروض مميزة' : 'Featured offers' }}</p>
+		<div class="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+			<a href="{{ route('client.test-requests.create', 'test') }}" class="snap-start shrink-0 w-[min(100%,320px)] rounded-2xl overflow-hidden shadow-md border border-white/20 bg-gradient-to-br from-[#1976D2] to-[#1565C0] text-white p-5 flex flex-col justify-between min-h-[140px] hover:opacity-95 transition-opacity">
+				<div>
+					<p class="font-bold text-lg leading-tight">{{ $isAr ? 'خصم 25% على التحاليل' : '25% off lab tests' }}</p>
+					<p class="text-sm text-white/90 mt-1">{{ $isAr ? 'لفترة محدودة' : 'Limited time' }}</p>
+				</div>
+				<span class="inline-flex self-start px-3 py-1.5 rounded-lg bg-white text-[#1976D2] text-sm font-semibold">{{ $isAr ? 'اطلب الآن' : 'Order now' }}</span>
+			</a>
+			<div class="snap-start shrink-0 w-[min(100%,320px)] rounded-2xl overflow-hidden shadow-md border border-white/20 bg-gradient-to-br from-[#4CAF50] to-[#388E3C] text-white p-5 flex flex-col justify-between min-h-[140px]">
+				<div>
+					<p class="font-bold text-lg leading-tight">{{ $isAr ? 'توصيل مجاني للأدوية' : 'Free medicine delivery' }}</p>
+					<p class="text-sm text-white/90 mt-1">{{ $isAr ? 'للطلبات فوق 500 جنيه' : 'On orders over 500 EGP' }}</p>
+				</div>
+			</div>
+			<a href="{{ route('client.medicine-requests.create') }}" class="snap-start shrink-0 w-[min(100%,320px)] rounded-2xl overflow-hidden shadow-md border border-white/20 bg-gradient-to-br from-[#9C27B0] to-[#7B1FA2] text-white p-5 flex flex-col justify-between min-h-[140px] hover:opacity-95 transition-opacity">
+				<div>
+					<p class="font-bold text-lg leading-tight">{{ $isAr ? 'خصم 20% على الأدوية' : '20% off medicines' }}</p>
+					<p class="text-sm text-white/90 mt-1">{{ $isAr ? 'عروض الأسبوع' : 'Weekly deals' }}</p>
+				</div>
+				<span class="inline-flex self-start px-3 py-1.5 rounded-lg bg-white text-[#9C27B0] text-sm font-semibold">{{ $isAr ? 'تسوق الآن' : 'Shop now' }}</span>
+			</a>
+		</div>
 	</div>
 
 	{{-- Search: service + location — collapsed by default; opens when filters were submitted --}}
@@ -105,76 +176,7 @@
 		</div>
 	</div>
 
-	{{-- Ads: mobile = one full-width slide; scroll-snap; auto-advance --}}
-	<div class="space-y-2">
-		<p class="text-sm font-semibold text-slate-800">{{ $isAr ? 'إعلانات' : 'Ads' }}</p>
-		<div
-			id="client-dashboard-ads"
-			dir="ltr"
-			class="flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth touch-pan-x pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-			aria-roledescription="carousel"
-		>
-			<a href="{{ route('client.test-requests.create', 'test') }}" data-ad-slide class="snap-start shrink-0 min-w-full md:min-w-[calc((100%-0.75rem)/2)] lg:min-w-[calc((100%-1.5rem)/3)] rounded-2xl overflow-hidden shadow-md border border-white/20 bg-gradient-to-br from-[#1976D2] to-[#1565C0] text-white p-5 flex flex-col justify-between min-h-[132px] hover:opacity-95 transition-opacity">
-				<div>
-					<p class="text-xs font-semibold uppercase tracking-wide text-white/80">{{ $isAr ? 'إعلان' : 'Ad' }}</p>
-					<p class="font-bold text-lg leading-tight mt-1">{{ $isAr ? 'خصم على التحاليل الطبية' : 'Save on lab tests' }}</p>
-					<p class="text-sm text-white/90 mt-1">{{ $isAr ? 'احجز تحليلك الآن' : 'Book your tests today' }}</p>
-				</div>
-				<span class="inline-flex self-start px-3 py-1.5 rounded-lg bg-white text-[#1976D2] text-sm font-semibold">{{ $isAr ? 'تصفح' : 'Browse' }}</span>
-			</a>
-			<a href="{{ route('client.medicine-requests.create') }}" data-ad-slide class="snap-start shrink-0 min-w-full md:min-w-[calc((100%-0.75rem)/2)] lg:min-w-[calc((100%-1.5rem)/3)] rounded-2xl overflow-hidden shadow-md border border-white/20 bg-gradient-to-br from-[#9C27B0] to-[#7B1FA2] text-white p-5 flex flex-col justify-between min-h-[132px] hover:opacity-95 transition-opacity">
-				<div>
-					<p class="text-xs font-semibold uppercase tracking-wide text-white/80">{{ $isAr ? 'إعلان' : 'Ad' }}</p>
-					<p class="font-bold text-lg leading-tight mt-1">{{ $isAr ? 'توصيل أدوية سريع' : 'Fast medicine delivery' }}</p>
-					<p class="text-sm text-white/90 mt-1">{{ $isAr ? 'اطلب من أقرب صيدلية' : 'Order from nearby pharmacies' }}</p>
-				</div>
-				<span class="inline-flex self-start px-3 py-1.5 rounded-lg bg-white text-[#9C27B0] text-sm font-semibold">{{ $isAr ? 'اطلب' : 'Order' }}</span>
-			</a>
-			<a href="{{ route('client.doctor-reservation.index') }}" data-ad-slide class="snap-start shrink-0 min-w-full md:min-w-[calc((100%-0.75rem)/2)] lg:min-w-[calc((100%-1.5rem)/3)] rounded-2xl overflow-hidden shadow-md border border-white/20 bg-gradient-to-br from-[#00897B] to-[#00695C] text-white p-5 flex flex-col justify-between min-h-[132px] hover:opacity-95 transition-opacity">
-				<div>
-					<p class="text-xs font-semibold uppercase tracking-wide text-white/80">{{ $isAr ? 'إعلان' : 'Ad' }}</p>
-					<p class="font-bold text-lg leading-tight mt-1">{{ $isAr ? 'حجز موعد طبيب' : 'Book a doctor' }}</p>
-					<p class="text-sm text-white/90 mt-1">{{ $isAr ? 'عيادات موثوقة' : 'Trusted clinics' }}</p>
-				</div>
-				<span class="inline-flex self-start px-3 py-1.5 rounded-lg bg-white text-[#00897B] text-sm font-semibold">{{ $isAr ? 'احجز' : 'Book' }}</span>
-			</a>
-			<a href="{{ route('client.offers.index') }}" data-ad-slide class="snap-start shrink-0 min-w-full md:min-w-[calc((100%-0.75rem)/2)] lg:min-w-[calc((100%-1.5rem)/3)] rounded-2xl overflow-hidden shadow-md border border-white/20 bg-gradient-to-br from-[#F57C00] to-[#E65100] text-white p-5 flex flex-col justify-between min-h-[132px] hover:opacity-95 transition-opacity">
-				<div>
-					<p class="text-xs font-semibold uppercase tracking-wide text-white/80">{{ $isAr ? 'إعلان' : 'Ad' }}</p>
-					<p class="font-bold text-lg leading-tight mt-1">{{ $isAr ? 'عروض حصرية' : 'Exclusive offers' }}</p>
-					<p class="text-sm text-white/90 mt-1">{{ $isAr ? 'وفر على طلباتك' : 'Save on your orders' }}</p>
-				</div>
-				<span class="inline-flex self-start px-3 py-1.5 rounded-lg bg-white text-[#E65100] text-sm font-semibold">{{ $isAr ? 'اكتشف' : 'Discover' }}</span>
-			</a>
-		</div>
-	</div>
-
-	{{-- Promo carousel --}}
-	<div>
-		<p class="text-base font-bold text-slate-900 mb-3">{{ $isAr ? 'عروض مميزة' : 'Featured offers' }}</p>
-		<div class="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-			<a href="{{ route('client.test-requests.create', 'test') }}" class="snap-start shrink-0 w-[min(100%,320px)] rounded-2xl overflow-hidden shadow-md border border-white/20 bg-gradient-to-br from-[#1976D2] to-[#1565C0] text-white p-5 flex flex-col justify-between min-h-[140px] hover:opacity-95 transition-opacity">
-				<div>
-					<p class="font-bold text-lg leading-tight">{{ $isAr ? 'خصم 25% على التحاليل' : '25% off lab tests' }}</p>
-					<p class="text-sm text-white/90 mt-1">{{ $isAr ? 'لفترة محدودة' : 'Limited time' }}</p>
-				</div>
-				<span class="inline-flex self-start px-3 py-1.5 rounded-lg bg-white text-[#1976D2] text-sm font-semibold">{{ $isAr ? 'اطلب الآن' : 'Order now' }}</span>
-			</a>
-			<div class="snap-start shrink-0 w-[min(100%,320px)] rounded-2xl overflow-hidden shadow-md border border-white/20 bg-gradient-to-br from-[#4CAF50] to-[#388E3C] text-white p-5 flex flex-col justify-between min-h-[140px]">
-				<div>
-					<p class="font-bold text-lg leading-tight">{{ $isAr ? 'توصيل مجاني للأدوية' : 'Free medicine delivery' }}</p>
-					<p class="text-sm text-white/90 mt-1">{{ $isAr ? 'للطلبات فوق 500 جنيه' : 'On orders over 500 EGP' }}</p>
-				</div>
-			</div>
-			<a href="{{ route('client.medicine-requests.create') }}" class="snap-start shrink-0 w-[min(100%,320px)] rounded-2xl overflow-hidden shadow-md border border-white/20 bg-gradient-to-br from-[#9C27B0] to-[#7B1FA2] text-white p-5 flex flex-col justify-between min-h-[140px] hover:opacity-95 transition-opacity">
-				<div>
-					<p class="font-bold text-lg leading-tight">{{ $isAr ? 'خصم 20% على الأدوية' : '20% off medicines' }}</p>
-					<p class="text-sm text-white/90 mt-1">{{ $isAr ? 'عروض الأسبوع' : 'Weekly deals' }}</p>
-				</div>
-				<span class="inline-flex self-start px-3 py-1.5 rounded-lg bg-white text-[#9C27B0] text-sm font-semibold">{{ $isAr ? 'تسوق الآن' : 'Shop now' }}</span>
-			</a>
-		</div>
-	</div>
+	@include('client.partials.dashboard-service-provider-results')
 
 	{{-- Services grid --}}
 	<div>
