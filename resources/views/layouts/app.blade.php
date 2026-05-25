@@ -106,9 +106,9 @@
                             {{ app()->getLocale() === 'ar' ? 'تسجيل الدخول' : 'Login' }}
                         </a>
                     @endauth
-                    <button class="px-5 py-2.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 font-medium text-sm">
+                    <a href="https://play.google.com/store/apps/details?id=com.helmi.mostashfaon" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 font-medium text-sm">
                         {{ app()->getLocale() === 'ar' ? 'احصل على التطبيق' : 'Get the App' }}
-                    </button>
+                    </a>
                 </div>
 
                 <button id="mobile-menu-btn" class="md:hidden p-2 text-slate-600">
@@ -127,6 +127,9 @@
             @endauth
             <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" class="block py-2 text-primary font-bold">
                 {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
+            </a>
+            <a href="https://play.google.com/store/apps/details?id=com.helmi.mostashfaon" target="_blank" rel="noopener noreferrer" class="block w-full text-center py-3 bg-slate-900 text-white rounded-lg font-bold">
+                {{ app()->getLocale() === 'ar' ? 'احصل على التطبيق' : 'Get the App' }}
             </a>
         </div>
     </nav>

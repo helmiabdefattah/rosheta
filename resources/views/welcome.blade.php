@@ -11,6 +11,10 @@
 
 @section('content')
 
+    @php
+        $playStoreUrl = 'https://play.google.com/store/apps/details?id=com.helmi.mostashfaon';
+    @endphp
+
     <section class="relative min-h-screen flex items-center pt-28 pb-20 overflow-hidden">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
@@ -86,7 +90,7 @@
                                 </div>
                             </div>
 
-                            <div class="p-6 space-y-6">
+                            <div class="p-6 pb-20 space-y-6">
                                 <div class="flex gap-4 overflow-x-hidden">
                                     <div class="w-20 h-24 bg-white rounded-xl shadow-sm flex flex-col items-center justify-center gap-2 p-2">
                                         <div class="w-10 h-10 bg-blue-50 rounded-full text-blue-500 flex items-center justify-center">🩺</div>
@@ -118,6 +122,14 @@
                                         <div class="flex-1 h-9 bg-primary text-white rounded-lg text-xs flex items-center justify-center font-bold">Book</div>
                                     </div>
                                 </div>
+
+                                <a href="{{ $playStoreUrl }}" target="_blank" rel="noopener noreferrer"
+                                   class="flex w-full items-center justify-center gap-2 py-4 px-4 bg-slate-900 text-white rounded-2xl font-black text-base sm:text-lg text-center shadow-lg shadow-slate-900/25 hover:bg-slate-800 transition-all hover:-translate-y-0.5">
+                                    <svg class="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                        <path d="M3.609 1.814L13.792 12 3.61 22.186a1.003 1.003 0 0 1-.61-.92V2.734a1.003 1.003 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 9.99l-2.302 2.302-8.634-8.634z"/>
+                                    </svg>
+                                    <span>{{ app()->getLocale() === 'ar' ? 'احصل على التطبيق' : 'Get the App' }}</span>
+                                </a>
                             </div>
                             
                             <div class="absolute bottom-0 w-full h-16 bg-white border-t border-slate-100 flex justify-around items-center px-6">
