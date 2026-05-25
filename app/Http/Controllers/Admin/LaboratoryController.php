@@ -7,19 +7,51 @@ use App\Models\Laboratory;
 use App\Models\User;
 use App\Models\Area;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
-
+use Illuminate\Support\Facades\DB;
 class LaboratoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.laboratories.index');
+        $type = $request->query('type', 'all');
+        if (! in_array($type, ['all', 'test', 'radiology'], true)) {
+            $type = 'all';
+        }
+
+        $query = Laboratory::with(['user', 'area.city.governorate'])->orderByDesc('id');
+
+        if ($type === 'test') {
+            $query->where('type', 'test');
+        } elseif ($type === 'radiology') {
+            $query->where('type', 'radiology');
+        }
+
+        if ($request->filled('search')) {
+            $term = '%' . $request->string('search') . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('id', 'like', $term)
+                    ->orWhere('name', 'like', $term)
+                    ->orWhere('phone', 'like', $term)
+                    ->orWhere('email', 'like', $term)
+                    ->orWhereHas('user', function ($q) use ($term) {
+                        $q->where('name', 'like', $term)->orWhere('email', 'like', $term);
+                    })
+                    ->orWhereHas('area', function ($q) use ($term) {
+                        $q->where('name', 'like', $term)
+                            ->orWhere('name_ar', 'like', $term);
+                    });
+            });
+        }
+
+        $laboratories = $query->paginate(15)->withQueryString();
+
+        return view('admin.laboratories.index', compact('laboratories', 'type'));
     }
 
     public function create()
     {
-        $users = User::all();
+        $users = User::orderBy('name')->get();
         $areas = Area::with('city.governorate')->where('is_active', true)->get();
+
         return view('laboratories.create', compact('users', 'areas'));
     }
 
@@ -42,14 +74,57 @@ class LaboratoryController extends Controller
             'closing_time' => 'nullable|date_format:H:i',
             'is_active' => 'boolean',
             'notes' => 'nullable|string',
+            'account_email' => 'nullable|email|unique:users,email',
+            'account_phone' => 'nullable|string|max:50|unique:users,phone_number',
+            'password' => 'nullable|string|min:8|confirmed',
         ]);
 
-        // Handle location array if provided
-        if ($request->has('location') && is_array($request->location)) {
-            $validated['location'] = $request->location;
+        if (empty($validated['user_id'])) {
+            $request->validate([
+                'account_email' => 'required|email|unique:users,email',
+                'account_phone' => 'required|string|max:50|unique:users,phone_number',
+                'password' => 'required|string|min:8|confirmed',
+            ]);
         }
 
-        Laboratory::create($validated);
+        DB::transaction(function () use ($request, $validated) {
+            $labData = [
+                'name' => $validated['name'],
+                'type' => $validated['type'],
+                'phone' => $validated['phone'] ?? null,
+                'email' => $validated['email'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'area_id' => $validated['area_id'] ?? null,
+                'lat' => $validated['lat'] ?? null,
+                'lng' => $validated['lng'] ?? null,
+                'license_number' => $validated['license_number'] ?? null,
+                'manager_name' => $validated['manager_name'] ?? null,
+                'manager_license' => $validated['manager_license'] ?? null,
+                'opening_time' => $validated['opening_time'] ?? null,
+                'closing_time' => $validated['closing_time'] ?? null,
+                'is_active' => $request->boolean('is_active'),
+                'notes' => $validated['notes'] ?? null,
+                'user_id' => null,
+            ];
+            if ($request->has('location') && is_array($request->location)) {
+                $labData['location'] = $request->location;
+            }
+            $laboratory = Laboratory::create($labData);
+
+            if (! empty($validated['user_id'])) {
+                User::whereKey($validated['user_id'])->update(['laboratory_id' => $laboratory->id]);
+                $laboratory->update(['user_id' => $validated['user_id']]);
+            } else {
+                $user = User::create([
+                    'name' => $validated['name'],
+                    'email' => $validated['account_email'],
+                    'phone_number' => $validated['account_phone'],
+                    'password' => $validated['password'],
+                    'laboratory_id' => $laboratory->id,
+                ]);
+                $laboratory->update(['user_id' => $user->id]);
+            }
+        });
 
         return redirect()->route('admin.laboratories.index')
             ->with('success', app()->getLocale() === 'ar' ? 'تم إنشاء المعمل بنجاح' : 'Laboratory created successfully');
@@ -57,8 +132,9 @@ class LaboratoryController extends Controller
 
     public function edit(Laboratory $laboratory)
     {
-        $users = User::all();
+        $users = User::orderBy('name')->get();
         $areas = Area::with('city.governorate')->where('is_active', true)->get();
+
         return view('laboratories.edit', compact('laboratory', 'users', 'areas'));
     }
 
@@ -81,14 +157,35 @@ class LaboratoryController extends Controller
             'closing_time' => 'nullable|date_format:H:i',
             'is_active' => 'boolean',
             'notes' => 'nullable|string',
+            'password' => 'nullable|string|min:8|confirmed',
         ]);
 
-        // Handle location array if provided
-        if ($request->has('location') && is_array($request->location)) {
-            $validated['location'] = $request->location;
-        }
+        $oldUserId = $laboratory->user_id;
 
-        $laboratory->update($validated);
+        DB::transaction(function () use ($request, $validated, $laboratory, $oldUserId) {
+            $data = collect($validated)->except(['password'])->all();
+            $data['is_active'] = $request->boolean('is_active');
+            if ($request->has('location') && is_array($request->location)) {
+                $data['location'] = $request->location;
+            }
+            $laboratory->update($data);
+
+            $newUserId = $laboratory->fresh()->user_id;
+            if ((int) $oldUserId !== (int) $newUserId) {
+                if ($oldUserId) {
+                    User::whereKey($oldUserId)->where('laboratory_id', $laboratory->id)->update(['laboratory_id' => null]);
+                }
+                if ($newUserId) {
+                    User::whereKey($newUserId)->update(['laboratory_id' => $laboratory->id]);
+                }
+            }
+
+            if ($request->filled('password') && $laboratory->user_id) {
+                optional(User::find($laboratory->user_id))->update([
+                    'password' => $validated['password'],
+                ]);
+            }
+        });
 
         return redirect()->route('admin.laboratories.index')
             ->with('success', app()->getLocale() === 'ar' ? 'تم تحديث المعمل بنجاح' : 'Laboratory updated successfully');
@@ -101,27 +198,4 @@ class LaboratoryController extends Controller
         return redirect()->route('admin.laboratories.index')
             ->with('success', app()->getLocale() === 'ar' ? 'تم حذف المعمل بنجاح' : 'Laboratory deleted successfully');
     }
-
-
-    public function data(Request $request)
-    {
-        $query = Laboratory::query();
-
-        if ($request->type === 'test') {
-            $query->where('type', 'test');
-        } elseif ($request->type === 'radiology') {
-            $query->where('type', 'radiology');
-        }
-
-
-        return DataTables::of($query)
-            ->addColumn('user_name', fn($lab) => $lab->user->name ?? '-')
-            ->addColumn('area_name', fn($lab) => $lab->area->name ?? '-')
-            ->addColumn('city_name', fn($lab) => $lab->area->city->name ?? '-')
-            ->addColumn('governorate_name', fn($lab) => $lab->area->city->governorate->name ?? '-')
-            ->addColumn('actions', fn($lab) => view('admin.laboratories.actions', ['laboratory' => $lab])->render())
-            ->rawColumns(['actions', 'is_active'])
-            ->make(true);
-    }
-
 }

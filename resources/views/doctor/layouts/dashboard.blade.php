@@ -146,7 +146,7 @@ try {
     }
 } catch (e) { console.error('FCM init error', e); }
 </script>
-<script src="{{ asset('js/fcm-token-manager.js') }}?v=1.0.2"></script>
+<script src="{{ asset('js/fcm-token-manager.js') }}?v=1.0.3"></script>
 @endif
 <script src="{{ asset('js/notification-manager.js') }}?v=1.0.2"></script>
 @stack('scripts')

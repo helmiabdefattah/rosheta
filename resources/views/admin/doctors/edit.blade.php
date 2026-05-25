@@ -45,6 +45,19 @@
                     </select>
                     @error('user_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                 </div>
+                @if($doctor->user_id)
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <x-admin.ui.label for="password">{{ app()->getLocale() === 'ar' ? 'كلمة مرور الحساب المرتبط (اختياري)' : 'Linked account password (optional)' }}</x-admin.ui.label>
+                        <x-admin.ui.input type="password" name="password" autocomplete="new-password" />
+                        @error('password')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <x-admin.ui.label for="password_confirmation">{{ app()->getLocale() === 'ar' ? 'تأكيد كلمة المرور' : 'Confirm password' }}</x-admin.ui.label>
+                        <x-admin.ui.input type="password" name="password_confirmation" autocomplete="new-password" />
+                    </div>
+                </div>
+                @endif
                 <div>
                     <x-admin.ui.label for="profile_image">{{ app()->getLocale() === 'ar' ? 'صورة الطبيب (اختياري)' : 'Doctor photo (optional)' }}</x-admin.ui.label>
                     @if($doctor->getFirstMediaUrl('profile_image'))

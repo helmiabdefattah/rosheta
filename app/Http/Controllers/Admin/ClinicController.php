@@ -10,7 +10,9 @@ use App\Models\ClinicDoctorWorkingHour;
 use App\Models\ClinicWorkingHour;
 use App\Models\Doctor;
 use App\Models\Governorate;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ClinicController extends Controller
 {
@@ -73,6 +75,9 @@ class ClinicController extends Controller
             'working_hours.*.from' => 'nullable|date_format:H:i',
             'working_hours.*.to' => 'nullable|date_format:H:i',
             'working_hours.*.is_closed' => 'nullable|boolean',
+            'manager_email' => 'required|email|unique:users,email',
+            'manager_phone' => 'required|string|max:50|unique:users,phone_number',
+            'manager_password' => 'required|string|min:8|confirmed',
         ];
 
         if (count($doctorIds) > 1) {
@@ -92,53 +97,64 @@ class ClinicController extends Controller
 
         $validated = $request->validate($rules);
 
-        $primaryDoctorId = $doctorIds[0];
-        $examPrice = 0.0;
-        $followUpPrice = 0.0;
+        DB::transaction(function () use ($request, $validated, $doctorIds) {
+            $primaryDoctorId = $doctorIds[0];
+            $examPrice = 0.0;
+            $followUpPrice = 0.0;
 
-        if (count($doctorIds) > 1) {
-            $firstOptions = $request->input("doctor_options.{$primaryDoctorId}", []);
-            $examPrice = (float) ($firstOptions['medical_examination_price'] ?? 0);
-            $followUpPrice = (float) ($firstOptions['follow_up_price'] ?? 0);
-        } else {
-            $examPrice = (float) ($validated['medical_examination_price'] ?? 0);
-            $followUpPrice = (float) ($validated['follow_up_price'] ?? 0);
-        }
-
-        $clinic = Clinic::create([
-            'doctor_id' => $primaryDoctorId,
-            'name' => $validated['name'],
-            'address' => $validated['address'] ?? null,
-            'governorate_id' => $validated['governorate_id'] ?? null,
-            'city_id' => $validated['city_id'] ?? null,
-            'area_id' => $validated['area_id'] ?? null,
-            'latitude' => $validated['latitude'] ?? null,
-            'longitude' => $validated['longitude'] ?? null,
-            'medical_examination_price' => $examPrice,
-            'follow_up_price' => $followUpPrice,
-        ]);
-
-        $syncData = [];
-        foreach ($doctorIds as $id) {
             if (count($doctorIds) > 1) {
-                $opts = $request->input("doctor_options.{$id}", []);
-                $syncData[$id] = [
-                    'medical_examination_price' => (float) ($opts['medical_examination_price'] ?? 0),
-                    'follow_up_price' => (float) ($opts['follow_up_price'] ?? 0),
-                ];
+                $firstOptions = $request->input("doctor_options.{$primaryDoctorId}", []);
+                $examPrice = (float) ($firstOptions['medical_examination_price'] ?? 0);
+                $followUpPrice = (float) ($firstOptions['follow_up_price'] ?? 0);
             } else {
-                $syncData[$id] = [];
+                $examPrice = (float) ($validated['medical_examination_price'] ?? 0);
+                $followUpPrice = (float) ($validated['follow_up_price'] ?? 0);
             }
-        }
-        $clinic->doctors()->sync($syncData);
 
-        if (count($doctorIds) > 1) {
-            $this->syncClinicDoctorWorkingHours($clinic, $request->input('doctor_options', []));
-            $firstWh = $request->input("doctor_options.{$primaryDoctorId}.working_hours", []);
-            $this->syncWorkingHours($clinic, $firstWh);
-        } else {
-            $this->syncWorkingHours($clinic, $request->input('working_hours', []));
-        }
+            $clinic = Clinic::create([
+                'doctor_id' => $primaryDoctorId,
+                'name' => $validated['name'],
+                'address' => $validated['address'] ?? null,
+                'phone_number' => $validated['phone_number'] ?? null,
+                'governorate_id' => $validated['governorate_id'] ?? null,
+                'city_id' => $validated['city_id'] ?? null,
+                'area_id' => $validated['area_id'] ?? null,
+                'latitude' => $validated['latitude'] ?? null,
+                'longitude' => $validated['longitude'] ?? null,
+                'medical_examination_price' => $examPrice,
+                'follow_up_price' => $followUpPrice,
+            ]);
+
+            $manager = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['manager_email'],
+                'phone_number' => $validated['manager_phone'],
+                'password' => $validated['manager_password'],
+            ]);
+            $clinic->update(['user_id' => $manager->id]);
+
+            $syncData = [];
+            foreach ($doctorIds as $id) {
+                if (count($doctorIds) > 1) {
+                    $opts = $request->input("doctor_options.{$id}", []);
+                    $syncData[$id] = [
+                        'medical_examination_price' => (float) ($opts['medical_examination_price'] ?? 0),
+                        'follow_up_price' => (float) ($opts['follow_up_price'] ?? 0),
+                    ];
+                } else {
+                    $syncData[$id] = [];
+                }
+            }
+            $clinic->doctors()->sync($syncData);
+
+            if (count($doctorIds) > 1) {
+                $this->syncClinicDoctorWorkingHours($clinic, $request->input('doctor_options', []));
+                $firstWh = $request->input("doctor_options.{$primaryDoctorId}.working_hours", []);
+                $this->syncWorkingHours($clinic, $firstWh);
+            } else {
+                $this->syncWorkingHours($clinic, $request->input('working_hours', []));
+            }
+        });
 
         return redirect()->route('admin.clinics.index')
             ->with('success', app()->getLocale() === 'ar' ? 'تم إنشاء العيادة بنجاح' : 'Clinic created successfully');
@@ -152,7 +168,7 @@ class ClinicController extends Controller
 
     public function edit(Clinic $clinic)
     {
-        $clinic->load(['workingHours', 'doctors']);
+        $clinic->load(['workingHours', 'doctors', 'manager']);
         $doctors = Doctor::with('specialization')->orderBy('name')->get();
         $governorates = Governorate::where('is_active', true)->orderBy('name')->get();
         $cities = $clinic->governorate_id
@@ -184,6 +200,7 @@ class ClinicController extends Controller
             'working_hours.*.from' => 'nullable|date_format:H:i',
             'working_hours.*.to' => 'nullable|date_format:H:i',
             'working_hours.*.is_closed' => 'nullable|boolean',
+            'manager_password' => 'nullable|string|min:8|confirmed',
         ]);
 
         $doctorIds = array_values(array_unique($validated['doctor_ids']));
@@ -192,6 +209,7 @@ class ClinicController extends Controller
             'doctor_id' => $primaryDoctorId,
             'name' => $validated['name'],
             'address' => $validated['address'] ?? null,
+            'phone_number' => $validated['phone_number'] ?? null,
             'governorate_id' => $validated['governorate_id'] ?? null,
             'city_id' => $validated['city_id'] ?? null,
             'area_id' => $validated['area_id'] ?? null,
@@ -203,6 +221,12 @@ class ClinicController extends Controller
 
         $clinic->doctors()->sync($doctorIds);
         $this->syncWorkingHours($clinic, $request->input('working_hours', []));
+
+        if ($request->filled('manager_password') && $clinic->user_id) {
+            optional(User::find($clinic->user_id))->update([
+                'password' => $validated['manager_password'],
+            ]);
+        }
 
         return redirect()->route('admin.clinics.index')
             ->with('success', app()->getLocale() === 'ar' ? 'تم تحديث العيادة بنجاح' : 'Clinic updated successfully');

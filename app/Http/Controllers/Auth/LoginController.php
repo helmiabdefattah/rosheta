@@ -37,6 +37,8 @@ class LoginController extends Controller
             }
             if ($user->charitable_organization_id) {
                 return redirect()->route('user.profile.edit');
+            if ($user->managedClinic) {
+                return redirect()->route('clinic.dashboard');
             }
             if ($user->doctor()->exists()) {
                 return redirect()->route('doctor.dashboard');
@@ -97,6 +99,8 @@ class LoginController extends Controller
             }
             if ($user->charitable_organization_id) {
                 return redirect()->route('user.profile.edit');
+            if ($user->managedClinic) {
+                return redirect()->route('clinic.dashboard');
             }
             if ($user->doctor()->exists()) {
                 return redirect()->route('doctor.dashboard');

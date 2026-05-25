@@ -1,94 +1,168 @@
 @extends('admin.layouts.admin')
 
-@section('title', 'Laboratories')
-@section('page-title', app()->getLocale() === 'ar' ? 'المعامل' : 'Laboratories')
-@section('page-description', app()->getLocale() === 'ar' ? 'إدارة المعامل' : 'Manage Laboratories')
+@php
+    $l = app()->getLocale() === 'ar';
+    $type = $type ?? 'all';
+@endphp
+
+@section('title', $l ? 'المعامل' : 'Laboratories')
+@section('page-title', $l ? 'المعامل' : 'Laboratories')
+@section('page-description', $l ? 'إدارة المعامل' : 'Manage laboratories')
 
 @section('header-actions')
     <x-admin.ui.button href="{{ route('admin.laboratories.create') }}" icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>'>
-        {{ app()->getLocale() === 'ar' ? 'إضافة معمل' : 'Add Laboratory' }}
+        {{ $l ? 'إضافة معمل' : 'Add Laboratory' }}
     </x-admin.ui.button>
 @endsection
 
 @section('content')
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow duration-300 p-6">
+<div class="bg-white rounded-2xl shadow-sm border border-slate-100 max-lg:overflow-visible lg:overflow-hidden hover:shadow-md transition-shadow duration-300">
+    <div class="p-4 sm:p-6 border-b border-slate-100 space-y-4">
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('admin.laboratories.index', array_filter(['search' => request('search')])) }}"
+               class="px-4 py-2 rounded-lg text-sm font-medium {{ $type === 'all' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">{{ $l ? 'الكل' : 'All' }}</a>
+            <a href="{{ route('admin.laboratories.index', array_filter(['type' => 'test', 'search' => request('search')])) }}"
+               class="px-4 py-2 rounded-lg text-sm font-medium {{ $type === 'test' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">{{ $l ? 'معامل التحاليل' : 'Tests' }}</a>
+            <a href="{{ route('admin.laboratories.index', array_filter(['type' => 'radiology', 'search' => request('search')])) }}"
+               class="px-4 py-2 rounded-lg text-sm font-medium {{ $type === 'radiology' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">{{ $l ? 'معامل الأشعة' : 'Radiology' }}</a>
+        </div>
+        <form method="GET" action="{{ route('admin.laboratories.index') }}" class="flex flex-col sm:flex-row gap-3 sm:items-end sm:justify-between">
+            @if($type !== 'all')
+                <input type="hidden" name="type" value="{{ $type }}">
+            @endif
+            <div class="flex-1 w-full min-w-0">
+                <label for="labs-search" class="block text-xs font-medium text-slate-500 mb-1">{{ $l ? 'بحث' : 'Search' }}</label>
+                <input type="search" name="search" id="labs-search" value="{{ request('search') }}"
+                       placeholder="{{ $l ? 'المعرف، الاسم، المستخدم، المنطقة…' : 'ID, name, user, area…' }}"
+                       class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary">
+            </div>
+            <div class="flex gap-2 w-full sm:w-auto">
+                <button type="submit" class="flex-1 sm:flex-none px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:opacity-90">{{ $l ? 'بحث' : 'Search' }}</button>
+                @if(request()->filled('search'))
+                    <a href="{{ route('admin.laboratories.index', $type === 'all' ? [] : ['type' => $type]) }}" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm text-center">{{ $l ? 'مسح' : 'Clear' }}</a>
+                @endif
+            </div>
+        </form>
+    </div>
 
-        <!-- Toggle Buttons -->
-        <div class="mb-4 flex gap-2">
-            <button class="filter-btn px-4 py-2 rounded-lg bg-primary text-white" data-type="all">
-                {{ app()->getLocale() === 'ar' ? 'الكل' : 'All' }}
-            </button>
-            <button class="filter-btn px-4 py-2 rounded-lg bg-gray-200 text-gray-700" data-type="test">
-                {{ app()->getLocale() === 'ar' ? 'معامل التحاليل' : 'medical test' }}
-            </button>
-            <button class="filter-btn px-4 py-2 rounded-lg bg-gray-200 text-gray-700" data-type="radiology">
-                {{ app()->getLocale() === 'ar' ? 'معامل الاشعة' : 'radiology' }}
-            </button>
+    @if($laboratories->count() === 0)
+        <div class="p-10 text-center text-slate-500">{{ $l ? 'لا توجد معامل.' : 'No laboratories found.' }}</div>
+    @else
+        <div class="lg:hidden space-y-3 p-4">
+            @foreach($laboratories as $laboratory)
+                @php
+                    $areaLabel = '—';
+                    if ($laboratory->area) {
+                        $areaLabel = $l
+                            ? ($laboratory->area->name_ar ?? $laboratory->area->name ?? '—')
+                            : ($laboratory->area->name ?? $laboratory->area->name_ar ?? '—');
+                    }
+                    $cityLabel = $laboratory->area?->city
+                        ? ($l ? ($laboratory->area->city->name_ar ?? $laboratory->area->city->name) : ($laboratory->area->city->name ?? $laboratory->area->city->name_ar))
+                        : '—';
+                    $govLabel = $laboratory->area?->city?->governorate
+                        ? ($l ? ($laboratory->area->city->governorate->name_ar ?? $laboratory->area->city->governorate->name) : ($laboratory->area->city->governorate->name ?? $laboratory->area->city->governorate->name_ar))
+                        : '—';
+                    $typeLabel = $laboratory->type === 'radiology' ? ($l ? 'أشعة' : 'Radiology') : ($l ? 'تحاليل' : 'Tests');
+                @endphp
+                <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div class="mb-3 flex items-start justify-between gap-2">
+                        <div class="min-w-0">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">#{{ $laboratory->id }}</p>
+                            <p class="text-lg font-bold text-slate-900">{{ $laboratory->name }}</p>
+                        </div>
+                        <span class="shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-700">{{ $typeLabel }}</span>
+                    </div>
+                    <dl class="space-y-2 text-sm">
+                        <div class="flex justify-between gap-3 border-b border-slate-100 pb-2">
+                            <dt class="text-slate-500 shrink-0">{{ $l ? 'المستخدم' : 'User' }}</dt>
+                            <dd class="text-slate-800 text-end text-xs break-all">{{ $laboratory->user->name ?? '—' }}</dd>
+                        </div>
+                        <div class="flex justify-between gap-3 border-b border-slate-100 pb-2">
+                            <dt class="text-slate-500 shrink-0">{{ $l ? 'المنطقة' : 'Area' }}</dt>
+                            <dd class="text-slate-800 text-end">{{ $areaLabel }}</dd>
+                        </div>
+                        <div class="flex justify-between gap-3 border-b border-slate-100 pb-2">
+                            <dt class="text-slate-500 shrink-0">{{ $l ? 'المدينة' : 'City' }}</dt>
+                            <dd class="text-slate-800 text-end">{{ $cityLabel }}</dd>
+                        </div>
+                        <div class="flex justify-between gap-3 border-b border-slate-100 pb-2">
+                            <dt class="text-slate-500 shrink-0">{{ $l ? 'المحافظة' : 'Governorate' }}</dt>
+                            <dd class="text-slate-800 text-end">{{ $govLabel }}</dd>
+                        </div>
+                        <div class="flex justify-between gap-3 pt-1">
+                            <dt class="text-slate-500">{{ $l ? 'الحالة' : 'Status' }}</dt>
+                            <dd>
+                                @if($laboratory->is_active)
+                                    <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">{{ $l ? 'نشط' : 'Active' }}</span>
+                                @else
+                                    <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">{{ $l ? 'غير نشط' : 'Inactive' }}</span>
+                                @endif
+                            </dd>
+                        </div>
+                    </dl>
+                    <div class="mt-4 pt-3 border-t border-slate-100">
+                        @include('admin.laboratories.actions', ['laboratory' => $laboratory])
+                    </div>
+                </div>
+            @endforeach
         </div>
 
-        <table id="laboratories-table" class="display nowrap w-full" style="width:100%">
-            <thead>
-            <tr>
-                <th>{{ app()->getLocale() === 'ar' ? 'ID' : 'ID' }}</th>
-                <th>{{ app()->getLocale() === 'ar' ? 'الاسم' : 'Name' }}</th>
-                <th>{{ app()->getLocale() === 'ar' ? 'المستخدم' : 'User' }}</th>
-                <th>{{ app()->getLocale() === 'ar' ? 'المنطقة' : 'Area' }}</th>
-                <th>{{ app()->getLocale() === 'ar' ? 'المدينة' : 'City' }}</th>
-                <th>{{ app()->getLocale() === 'ar' ? 'المحافظة' : 'Governorate' }}</th>
-                <th>{{ app()->getLocale() === 'ar' ? 'الحالة' : 'Status' }}</th>
-                <th>{{ app()->getLocale() === 'ar' ? 'الإجراءات' : 'Actions' }}</th>
-            </tr>
-            </thead>
-        </table>
-    </div>
+        <div class="hidden lg:block overflow-x-auto p-4 sm:p-6 pt-0">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $l ? 'الاسم' : 'Name' }}</th>
+                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $l ? 'النوع' : 'Type' }}</th>
+                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $l ? 'المستخدم' : 'User' }}</th>
+                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $l ? 'المنطقة' : 'Area' }}</th>
+                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $l ? 'المدينة' : 'City' }}</th>
+                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $l ? 'المحافظة' : 'Governorate' }}</th>
+                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $l ? 'الحالة' : 'Status' }}</th>
+                        <th class="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $l ? 'إجراءات' : 'Actions' }}</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach($laboratories as $laboratory)
+                        @php
+                            $areaLabel = '—';
+                            if ($laboratory->area) {
+                                $areaLabel = $l
+                                    ? ($laboratory->area->name_ar ?? $laboratory->area->name ?? '—')
+                                    : ($laboratory->area->name ?? $laboratory->area->name_ar ?? '—');
+                            }
+                            $cityLabel = $laboratory->area?->city
+                                ? ($l ? ($laboratory->area->city->name_ar ?? $laboratory->area->city->name) : ($laboratory->area->city->name ?? $laboratory->area->city->name_ar))
+                                : '—';
+                            $govLabel = $laboratory->area?->city?->governorate
+                                ? ($l ? ($laboratory->area->city->governorate->name_ar ?? $laboratory->area->city->governorate->name) : ($laboratory->area->city->governorate->name ?? $laboratory->area->city->governorate->name_ar))
+                                : '—';
+                            $typeLabel = $laboratory->type === 'radiology' ? ($l ? 'أشعة' : 'Radiology') : ($l ? 'تحاليل' : 'Tests');
+                        @endphp
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 text-sm font-medium text-slate-800">#{{ $laboratory->id }}</td>
+                            <td class="px-4 py-3 text-sm text-slate-700">{{ $laboratory->name }}</td>
+                            <td class="px-4 py-3 text-sm text-slate-600">{{ $typeLabel }}</td>
+                            <td class="px-4 py-3 text-sm text-slate-700">{{ $laboratory->user->name ?? '—' }}</td>
+                            <td class="px-4 py-3 text-sm text-slate-700">{{ $areaLabel }}</td>
+                            <td class="px-4 py-3 text-sm text-slate-700">{{ $cityLabel }}</td>
+                            <td class="px-4 py-3 text-sm text-slate-700">{{ $govLabel }}</td>
+                            <td class="px-4 py-3 text-sm">
+                                @if($laboratory->is_active)
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">{{ $l ? 'نشط' : 'Active' }}</span>
+                                @else
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">{{ $l ? 'غير نشط' : 'Inactive' }}</span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-3 text-sm text-end">@include('admin.laboratories.actions', ['laboratory' => $laboratory])</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        <div class="px-4 sm:px-6 pb-6 border-t border-slate-100 pt-4">{{ $laboratories->links() }}</div>
+    @endif
+</div>
 @endsection
-
-@push('scripts')
-    <script>
-        $(document).ready(function() {
-            let currentType = 'all'; // default
-
-            const table = $('#laboratories-table').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: {
-                    url: "{{ route('admin.laboratories.data') }}",
-                    data: function(d) {
-                        d.type = currentType; // send current filter type to server
-                    }
-                },
-                columns: [
-                    { data: 'id', name: 'id' },
-                    { data: 'name', name: 'name' },
-                    { data: 'user_name', name: 'user.name' },
-                    { data: 'area_name', name: 'area.name' },
-                    { data: 'city_name', name: 'area.city.name' },
-                    { data: 'governorate_name', name: 'area.city.governorate.name' },
-                    { data: 'is_active', name: 'is_active', render: function(data) {
-                            return data
-                                ? '<span class="text-green-600 font-semibold">' + ( "{{ app()->getLocale() === 'ar' ? 'نشطة' : 'Active' }}" ) + '</span>'
-                                : '<span class="text-red-600 font-semibold">' + ( "{{ app()->getLocale() === 'ar' ? 'غير نشطة' : 'Inactive' }}" ) + '</span>';
-                        }},
-                    { data: 'actions', name: 'actions', orderable: false, searchable: false, className: 'text-center' }
-                ],
-                order: [[0, 'desc']],
-                language: {
-                    @if(app()->getLocale() === 'ar')
-                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/ar.json'
-                    @endif
-                }
-            });
-
-            // Toggle filter buttons
-            $('.filter-btn').click(function() {
-                currentType = $(this).data('type');
-
-                // Update button styles
-                $('.filter-btn').removeClass('bg-primary text-white').addClass('bg-gray-200 text-gray-700');
-                $(this).removeClass('bg-gray-200 text-gray-700').addClass('bg-primary text-white');
-
-                table.ajax.reload();
-            });
-        });
-    </script>
-@endpush

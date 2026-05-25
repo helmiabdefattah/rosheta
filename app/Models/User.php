@@ -11,12 +11,13 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 class User extends Authenticatable implements FilamentUser, HasMedia
 {
-    use HasFactory, Notifiable, InteractsWithMedia;
+    use HasApiTokens, HasFactory, Notifiable, InteractsWithMedia;
 
     /**
      * The attributes that are mass assignable.
@@ -101,6 +102,14 @@ class User extends Authenticatable implements FilamentUser, HasMedia
     public function doctor(): HasOne
     {
         return $this->hasOne(Doctor::class, 'user_id');
+    }
+
+    /**
+     * Clinic this user manages (staff portal), when set on clinics.user_id.
+     */
+    public function managedClinic(): HasOne
+    {
+        return $this->hasOne(Clinic::class, 'user_id');
     }
 
     /**

@@ -191,6 +191,27 @@
         </x-admin.ui.form-card>
         </div>
 
+        @if($clinic->manager)
+        <x-admin.ui.form-card :title="app()->getLocale() === 'ar' ? 'حساب مدير العيادة' : 'Clinic manager account'" class="mt-6">
+            <p class="text-sm text-slate-600 mb-4">{{ app()->getLocale() === 'ar' ? 'البريد والهاتف الحاليان للمدير (للتسجيل). لتغيير كلمة المرور فقط، استخدم الحقول في الأسفل.' : 'Current manager email and phone (for login). To change password only, use the fields below.' }}</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div><span class="font-medium text-slate-700">{{ app()->getLocale() === 'ar' ? 'البريد' : 'Email' }}:</span> {{ $clinic->manager->email }}</div>
+                <div><span class="font-medium text-slate-700">{{ app()->getLocale() === 'ar' ? 'الهاتف' : 'Phone' }}:</span> {{ $clinic->manager->phone_number ?? '—' }}</div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-slate-100">
+                <div>
+                    <x-admin.ui.label for="manager_password">{{ app()->getLocale() === 'ar' ? 'كلمة مرور جديدة (اختياري)' : 'New password (optional)' }}</x-admin.ui.label>
+                    <x-admin.ui.input type="password" name="manager_password" autocomplete="new-password" />
+                    @error('manager_password')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <x-admin.ui.label for="manager_password_confirmation">{{ app()->getLocale() === 'ar' ? 'تأكيد كلمة المرور' : 'Confirm password' }}</x-admin.ui.label>
+                    <x-admin.ui.input type="password" name="manager_password_confirmation" autocomplete="new-password" />
+                </div>
+            </div>
+        </x-admin.ui.form-card>
+        @endif
+
         <div class="mt-8 flex items-center justify-end gap-3">
             <a href="{{ route('admin.clinics.index') }}" class="px-5 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-xl hover:bg-slate-50">{{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}</a>
             <x-admin.ui.button type="submit">{{ app()->getLocale() === 'ar' ? 'تحديث العيادة' : 'Update Clinic' }}</x-admin.ui.button>

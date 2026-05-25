@@ -2,6 +2,7 @@
 <?php
 
 use App\Http\Controllers\NurseOfferController;
+use App\Http\Controllers\WebviewBridgeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\LocaleController;
@@ -31,6 +32,10 @@ Route::get('/feedback', function () {
 })->name('feedback');
 
 Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale');
+
+// Mobile app WebView: one-time session bridge (signed URL from POST /api/webview-bridge)
+Route::get('/app/webview-bridge', [WebviewBridgeController::class, 'establish'])
+    ->name('webview.bridge.establish');
 
 // FCM Token Management (for authenticated users - works for both web auth and client auth)
 Route::post('/fcm-token', [App\Http\Controllers\FcmTokenController::class, 'update'])->name('fcm-token.update');
@@ -272,6 +277,11 @@ Route::middleware('auth')->prefix('laboratory')->name('laboratories.')->group(fu
     Route::get('/support-tickets/history', [App\Http\Controllers\LaboratorySupportTicketController::class, 'index'])->name('support-tickets.index');
 });
 
+// Clinic staff dashboard (clinic manager account)
+Route::middleware(['auth', 'clinic_staff'])->prefix('clinic')->name('clinic.')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\Clinic\ClinicDashboardController::class, 'index'])->name('dashboard');
+});
+
 // Pharmacy Dashboard Routes
 Route::middleware('auth')->prefix('pharmacy')->name('pharmacies.')->group(function () {
 	Route::get('/dashboard', [App\Http\Controllers\PharmacyDashboardController::class, 'index'])->name('dashboard');
@@ -294,6 +304,7 @@ Route::middleware([
     'auth',
     \App\Http\Middleware\RedirectLaboratoryOwner::class,
     \App\Http\Middleware\RedirectPharmacyOwner::class,
+    \App\Http\Middleware\RedirectClinicStaff::class,
 ])->prefix('admin')->name('admin.')->group(function () {
     // Redirect /admin to /admin/dashboard
     Route::get('/', function () {
@@ -324,11 +335,9 @@ Route::middleware([
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
 
     // Pharmacies
-    Route::get('/pharmacies/data', [App\Http\Controllers\Admin\PharmacyController::class, 'data'])->name('pharmacies.data');
     Route::resource('pharmacies', App\Http\Controllers\Admin\PharmacyController::class);
 
     // Laboratories
-    Route::get('/laboratories/data', [App\Http\Controllers\Admin\LaboratoryController::class, 'data'])->name('laboratories.data');
     Route::get('/laboratories', [App\Http\Controllers\Admin\LaboratoryController::class, 'index'])->name('laboratories.index');
     Route::get('/laboratories/create', [App\Http\Controllers\Admin\LaboratoryController::class, 'create'])->name('laboratories.create');
     Route::post('/laboratories', [App\Http\Controllers\Admin\LaboratoryController::class, 'store'])->name('laboratories.store');

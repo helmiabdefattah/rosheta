@@ -12,21 +12,23 @@ class FcmTokenManager {
     }
 
     /**
-     * Detect if running on web or mobile
+     * Platform for web push tokens registered from JavaScript.
+     * Always "web" — native Android/iOS FCM tokens are sent via POST /api/fcm-token with platform=mobile.
      */
     detectPlatform() {
-        // Check if running in mobile app (you can customize this detection)
-        const isMobileApp = window.navigator.userAgent.includes('Mobile') ||
-            window.navigator.standalone ||
-            window.matchMedia('(display-mode: standalone)').matches;
-
-        return isMobileApp ? 'mobile' : 'web';
+        return 'web';
     }
 
     /**
      * Initialize Firebase Messaging
      */
     async init() {
+        // Flutter WebView sets this before page scripts; native FCM handles push — do not register web push here
+        if (typeof window !== 'undefined' && window.MostashfaOnFlutterWebView === true) {
+            console.log('FCM: Skipping web FCM inside Flutter WebView (native app handles notifications)');
+            return;
+        }
+
         // Check if Firebase is available
         if (typeof firebase === 'undefined') {
             console.warn('FCM: Firebase is not available. Make sure Firebase SDK is loaded and FCM_API_KEY is set in .env');
@@ -331,6 +333,9 @@ class FcmTokenManager {
 let fcmManager = null;
 
 function initializeFcm() {
+    if (typeof window !== 'undefined' && window.MostashfaOnFlutterWebView === true) {
+        return false;
+    }
     // Only initialize if Firebase is loaded
     if (typeof firebase !== 'undefined' && firebase.messaging) {
         try {

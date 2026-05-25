@@ -92,6 +92,34 @@
                 </div>
             </div>
 
+            <div class="card">
+                <div class="card-header">{{ app()->getLocale() === 'ar' ? 'حساب تسجيل الدخول للمالك' : 'Owner login account' }}</div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">{{ app()->getLocale() === 'ar' ? 'مطلوب عند عدم اختيار مالك موجود.' : 'Required when no existing owner user is selected.' }}</p>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ app()->getLocale() === 'ar' ? 'بريد الحساب' : 'Account email' }}</label>
+                            <input type="email" name="account_email" class="form-control" value="{{ old('account_email') }}" autocomplete="off">
+                            @error('account_email')<div class="text-danger small">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ app()->getLocale() === 'ar' ? 'هاتف الحساب' : 'Account phone' }}</label>
+                            <input type="text" name="account_phone" class="form-control" value="{{ old('account_phone') }}" autocomplete="off">
+                            @error('account_phone')<div class="text-danger small">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ app()->getLocale() === 'ar' ? 'كلمة المرور' : 'Password' }}</label>
+                            <input type="password" name="password" class="form-control" autocomplete="new-password">
+                            @error('password')<div class="text-danger small">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ app()->getLocale() === 'ar' ? 'تأكيد كلمة المرور' : 'Confirm password' }}</label>
+                            <input type="password" name="password_confirmation" class="form-control" autocomplete="new-password">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Location Information -->
             <div class="card">
                 <div class="card-header">Location Information</div>
