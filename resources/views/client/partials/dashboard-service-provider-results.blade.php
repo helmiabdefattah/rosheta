@@ -1,6 +1,6 @@
             @if(request()->has('governorate_id') && request()->has('provider_type'))
                 {{-- Map Section (for laboratories, pharmacies, and doctors/clinics; not charity) --}}
-                @if(!in_array(request('provider_type'), ['charity']) && isset($markers) && count($markers) > 0)
+                @if(!in_array(request('provider_type'), ['charity', 'nursing']) && isset($markers) && count($markers) > 0)
                     <div class="bg-white rounded-lg shadow p-6 mt-6">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">
                             {{ app()->getLocale() === 'ar' ? 'الخريطة' : 'Map' }}
@@ -47,6 +47,8 @@
                                         @if($providerType === 'doctor')
                                             {{ $item->doctor?->name ?? $item->name }}
                                             @if($item->name && $item->doctor) <span class="text-sm font-normal text-gray-600">— {{ $item->name }}</span> @endif
+                                        @elseif($providerType === 'nursing')
+                                            {{ $item->user?->name ?? (app()->getLocale() === 'ar' ? 'ممرض/ة' : 'Nurse') }}
                                         @else
                                             {{ $item->name }}
                                         @endif
@@ -54,17 +56,26 @@
 
                                     {{-- Type Badge --}}
                                     <div class="mb-2">
-                                        <span class="px-2 py-1 text-xs rounded-full
-                                            {{ $providerType === 'laboratory' ? 'bg-blue-100 text-blue-800' : ($providerType === 'pharmacy' ? 'bg-green-100 text-green-800' : ($providerType === 'doctor' ? 'bg-teal-100 text-teal-800' : 'bg-rose-100 text-rose-800')) }}">
-                                            @if($providerType === 'laboratory')
-                                                {{ app()->getLocale() === 'ar' ? 'مختبر' : 'Laboratory' }}
-                                            @elseif($providerType === 'pharmacy')
-                                                {{ app()->getLocale() === 'ar' ? 'صيدلية' : 'Pharmacy' }}
-                                            @elseif($providerType === 'doctor')
-                                                {{ app()->getLocale() === 'ar' ? 'عيادة / طبيب' : 'Clinic / Doctor' }}
-                                            @else
-                                                {{ app()->getLocale() === 'ar' ? 'منظمة خيرية' : 'Charitable Organization' }}
-                                            @endif
+                                        @php
+                                            $badgeClass = match ($providerType) {
+                                                'radiology_lab', 'test_lab', 'laboratory' => 'bg-blue-100 text-blue-800',
+                                                'pharmacy' => 'bg-green-100 text-green-800',
+                                                'doctor' => 'bg-teal-100 text-teal-800',
+                                                'nursing' => 'bg-violet-100 text-violet-800',
+                                                default => 'bg-rose-100 text-rose-800',
+                                            };
+                                            $badgeLabel = match ($providerType) {
+                                                'radiology_lab' => app()->getLocale() === 'ar' ? 'معمل أشعة' : 'Radiology lab',
+                                                'test_lab' => app()->getLocale() === 'ar' ? 'معمل تحاليل' : 'Test lab',
+                                                'laboratory' => app()->getLocale() === 'ar' ? 'مختبر' : 'Laboratory',
+                                                'pharmacy' => app()->getLocale() === 'ar' ? 'صيدلية' : 'Pharmacy',
+                                                'doctor' => app()->getLocale() === 'ar' ? 'عيادة / طبيب' : 'Clinic / Doctor',
+                                                'nursing' => app()->getLocale() === 'ar' ? 'تمريض منزلي' : 'Home nursing',
+                                                default => app()->getLocale() === 'ar' ? 'منظمة خيرية' : 'Charitable Organization',
+                                            };
+                                        @endphp
+                                        <span class="px-2 py-1 text-xs rounded-full {{ $badgeClass }}">
+                                            {{ $badgeLabel }}
                                         </span>
                                     </div>
                                     @if($providerType === 'doctor' && $item->doctor?->specialization)
@@ -86,6 +97,16 @@
                                                     @if($item->area), @endif
                                                     {{ app()->getLocale() === 'ar' ? ($item->city->name_ar ?? $item->city->name) : ($item->city->name ?? $item->city->name_ar) }}
                                                 @endif
+                                            </div>
+                                        @endif
+                                    @elseif($providerType === 'nursing')
+                                        @if($item->address)
+                                            <div class="text-sm text-gray-600 mb-2">
+                                                <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                </svg>
+                                                {{ Str::limit($item->address, 100) }}
                                             </div>
                                         @endif
                                     @elseif($providerType === 'doctor')
@@ -187,8 +208,8 @@
                                         @endif
                                     </div>
 
-                                    {{-- Address (for non-doctor: lab/pharmacy) --}}
-                                    @if($providerType !== 'doctor' && $item->address)
+                                    {{-- Address (for non-doctor: lab/pharmacy; nursing shown above) --}}
+                                    @if(!in_array($providerType, ['doctor', 'nursing'], true) && $item->address)
                                         <div class="mt-2 text-sm text-gray-500">
                                             {{ Str::limit($item->address, 100) }}
                                         </div>
@@ -206,15 +227,8 @@
                                                 </svg>
                                                 {{ app()->getLocale() === 'ar' ? 'حجز موعد' : 'Book Appointment' }}
                                             </a>
-                                        @elseif($providerType === 'laboratory')
-{{--                                            <a href="{{ route('client.laboratories.offers', $item->id) }}" --}}
-{{--                                               class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center mb-2">--}}
-{{--                                                <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">--}}
-{{--                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 011 12V7a4 4 0 014-4z"/>--}}
-{{--                                                </svg>--}}
-{{--                                                {{ app()->getLocale() === 'ar' ? 'عرض العروض' : 'View Offers' }}--}}
-{{--                                            </a> -->--}}
-                                            @if($item->type === 'test' || $item->type === 'both')
+                                        @elseif(in_array($providerType, ['radiology_lab', 'test_lab', 'laboratory'], true))
+                                            @if($providerType === 'test_lab' || ($providerType === 'laboratory' && in_array($item->type, ['test', 'both'], true)))
                                                 <a href="{{ route('client.test-requests.create', ['type' => 'test', 'laboratory_id' => $item->id]) }}"
                                                    class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center mb-2">
                                                     <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -223,7 +237,7 @@
                                                     {{ app()->getLocale() === 'ar' ? 'طلب تحاليل طبية' : 'Request Medical Tests' }}
                                                 </a>
                                             @endif
-                                            @if($item->type === 'radiology' || $item->type === 'both')
+                                            @if($providerType === 'radiology_lab' || ($providerType === 'laboratory' && in_array($item->type, ['radiology', 'both'], true)))
                                                 <a href="{{ route('client.test-requests.create', ['type' => 'radiology', 'laboratory_id' => $item->id]) }}"
                                                    class="block w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-center">
                                                     <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -232,6 +246,14 @@
                                                     {{ app()->getLocale() === 'ar' ? 'طلب أشعة' : 'Request Radiology' }}
                                                 </a>
                                             @endif
+                                        @elseif($providerType === 'nursing')
+                                            <a href="{{ route('client.nurse-requests.create') }}"
+                                               class="block w-full px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors text-center">
+                                                <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                                </svg>
+                                                {{ app()->getLocale() === 'ar' ? 'طلب تمريض منزلي' : 'Request Home Nursing' }}
+                                            </a>
                                         @else
                                             <a href="{{ route('client.medicine-requests.create', ['pharmacy_id' => $item->id]) }}"
                                                class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center">

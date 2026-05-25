@@ -115,8 +115,10 @@
 							</label>
 							<select name="provider_type" id="provider_type" class="w-full border border-gray-300 rounded-md p-2 text-sm" required>
 								<option value="">{{ $isAr ? 'اختر النوع' : 'Select type' }}</option>
-								<option value="laboratory" @selected(request('provider_type') === 'laboratory')>{{ $isAr ? 'مختبر' : 'Laboratory' }}</option>
+								<option value="radiology_lab" @selected(request('provider_type') === 'radiology_lab')>{{ $isAr ? 'معمل أشعة' : 'Radiology lab' }}</option>
+								<option value="test_lab" @selected(request('provider_type') === 'test_lab')>{{ $isAr ? 'معمل تحاليل' : 'Test lab' }}</option>
 								<option value="pharmacy" @selected(request('provider_type') === 'pharmacy')>{{ $isAr ? 'صيدلية' : 'Pharmacy' }}</option>
+								<option value="nursing" @selected(request('provider_type') === 'nursing')>{{ $isAr ? 'تمريض منزلي' : 'Home nursing' }}</option>
 								<option value="charity" @selected(request('provider_type') === 'charity')>{{ $isAr ? 'منظمة خيرية' : 'Charitable organization' }}</option>
 								<option value="doctor" @selected(request('provider_type') === 'doctor')>{{ $isAr ? 'أطباء وعيادات' : 'Doctors & clinics' }}</option>
 							</select>

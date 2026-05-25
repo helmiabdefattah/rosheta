@@ -12,6 +12,7 @@ use App\Models\Order;
 use App\Models\Governorate;
 use App\Models\City;
 use App\Models\Area;
+use App\Models\Nurse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -140,16 +141,33 @@ class ClientDashboardController extends Controller
                         ];
                     }
                 }
-            } elseif ($providerType === 'laboratory') {
-                $query = \App\Models\Laboratory::with(['area.city.governorate'])
+            } elseif (in_array($providerType, ['radiology_lab', 'test_lab', 'laboratory'], true)) {
+                $labTypes = $providerType === 'radiology_lab'
+                    ? ['radiology', 'both']
+                    : ($providerType === 'test_lab' ? ['test', 'both'] : ['radiology', 'test', 'both']);
+
+                $query = Laboratory::with(['area.city.governorate'])
                     ->where('is_active', true)
+                    ->whereIn('type', $labTypes)
                     ->whereNotNull('lat')
                     ->whereNotNull('lng');
+
                 if ($governorateId) {
-                $query = $query->whereHas('area.city', function ($q) use ($governorateId) {
+                    $query->whereHas('area.city', function ($q) use ($governorateId) {
                         $q->where('governorate_id', $governorateId);
                     });
                 }
+
+                if ($cityId) {
+                    $query->whereHas('area', function ($q) use ($cityId) {
+                        $q->where('city_id', $cityId);
+                    });
+                }
+
+                if ($areaId) {
+                    $query->where('area_id', $areaId);
+                }
+
                 $results = $query->get();
 
                 foreach ($results as $lab) {
@@ -157,8 +175,8 @@ class ClientDashboardController extends Controller
                         $markers[] = [
                             'id' => $lab->id,
                             'name' => $lab->name,
-                            'lat' => (float)$lab->lat,
-                            'lng' => (float)$lab->lng,
+                            'lat' => (float) $lab->lat,
+                            'lng' => (float) $lab->lng,
                             'type' => 'laboratory',
                             'phone' => $lab->phone,
                             'address' => $lab->address,
@@ -166,6 +184,30 @@ class ClientDashboardController extends Controller
                         ];
                     }
                 }
+            } elseif ($providerType === 'nursing') {
+                $areaIdsQuery = Area::where('is_active', true);
+
+                if ($areaId) {
+                    $areaIdsQuery->where('id', $areaId);
+                } elseif ($cityId) {
+                    $areaIdsQuery->where('city_id', $cityId);
+                } elseif ($governorateId) {
+                    $areaIdsQuery->whereHas('city', function ($q) use ($governorateId) {
+                        $q->where('governorate_id', $governorateId);
+                    });
+                }
+
+                $matchingAreaIds = $areaIdsQuery->pluck('id')->all();
+
+                $results = Nurse::with('user')
+                    ->where('status', 'active')
+                    ->get()
+                    ->filter(function (Nurse $nurse) use ($matchingAreaIds) {
+                        $nurseAreaIds = is_array($nurse->area_ids) ? $nurse->area_ids : [];
+
+                        return count(array_intersect($nurseAreaIds, $matchingAreaIds)) > 0;
+                    })
+                    ->values();
             } else {
                 $query = \App\Models\Pharmacy::with(['area.city.governorate'])
                     ->where('is_active', true)
