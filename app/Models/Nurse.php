@@ -13,6 +13,32 @@ class Nurse extends Model
 
     protected $table = 'nurses';
 
+    protected static function booted(): void
+    {
+        static::saved(function (Nurse $nurse) {
+            $nurse->syncLinkedUsersActiveState();
+        });
+    }
+
+    /**
+     * Keep nurse account login (users.is_active) aligned with nurse status.
+     */
+    public function syncLinkedUsersActiveState(): void
+    {
+        $active = $this->status === 'active';
+        $ids = collect([$this->user_id])
+            ->merge(User::where('nurse_id', $this->id)->pluck('id'))
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return;
+        }
+
+        User::whereIn('id', $ids)->update(['is_active' => $active]);
+    }
+
     protected $fillable = [
         'user_id',
         'gender',

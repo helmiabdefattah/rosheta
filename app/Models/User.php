@@ -28,13 +28,16 @@ class User extends Authenticatable implements FilamentUser, HasMedia
         'name',
         'email',
         'phone_number',
+        'registration_license_number',
         'password',
         'pharmacy_id',
         'laboratory_id',
         'nurse_id',
+        'charitable_organization_id',
         'fcm_token_web',
         'fcm_token_mobile',
         'notification_sound',
+        'is_active',
     ];
 
     /**
@@ -57,6 +60,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -82,6 +86,14 @@ class User extends Authenticatable implements FilamentUser, HasMedia
     public function nurse(): HasOne
     {
         return $this->hasOne(Nurse::class, 'user_id');
+    }
+
+    /**
+     * Charitable organization this user represents (if any).
+     */
+    public function charitableOrganization(): BelongsTo
+    {
+        return $this->belongsTo(CharitableOrganization::class);
     }
 
     /**
@@ -117,7 +129,20 @@ class User extends Authenticatable implements FilamentUser, HasMedia
     {
         return $this->laboratory_id === null
             && $this->pharmacy_id === null
-            && ! $this->nurse()->exists()
-            && ! $this->managedClinic()->exists();
+            && $this->charitable_organization_id === null
+            && !$this->nurse()->exists()
+            && !$this->doctor()->exists();
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('service_registration_documents')
+            ->acceptsMimeTypes([
+                'application/pdf',
+                'image/jpeg',
+                'image/png',
+                'image/webp',
+                'image/gif',
+            ]);
     }
 }

@@ -4,7 +4,7 @@
 	$clientName = $client?->name ?? ($isAr ? 'عميلنا العزيز' : 'Guest');
 @endphp
 
-{{-- Landing: greeting, search, ads, promos, services, facts, contact --}}
+{{-- Landing: greeting, ads, promos, search, results, services, facts, contact --}}
 <div class="mb-10 space-y-8">
 	{{-- Header --}}
 	<div class="px-1">
@@ -13,96 +13,6 @@
 			<span aria-hidden="true">👋</span>
 		</div>
 		<h2 class="mt-1 text-xl md:text-2xl font-bold text-slate-900 truncate" title="{{ $clientName }}">{{ $clientName }}</h2>
-	</div>
-
-	{{-- Search: service + location — collapsed by default; opens when filters were submitted --}}
-	@php
-		$searchPanelOpen = request()->filled('provider_type');
-	@endphp
-	<div class="bg-white rounded-lg shadow border border-gray-200">
-		<div class="p-4 border-b border-gray-200 filter-toggle cursor-pointer select-none" id="filterToggle" role="button" tabindex="0" aria-expanded="{{ $searchPanelOpen ? 'true' : 'false' }}" aria-controls="filterContent">
-			<div class="flex justify-between items-center gap-3">
-				<div class="min-w-0">
-					<h3 class="text-lg font-semibold text-gray-800">
-						{{ $isAr ? 'البحث عن مقدمي الخدمات' : 'Search service providers' }}
-					</h3>
-					<p class="text-sm text-gray-500 mt-0.5">{{ $isAr ? 'اختر نوع الخدمة والمحافظة والمدينة ثم اضغط بحث.' : 'Choose service type, governorate, and city, then search.' }}</p>
-				</div>
-				<svg id="filterIcon" class="w-5 h-5 text-gray-600 shrink-0 transition-transform duration-200 {{ $searchPanelOpen ? 'rotate-180' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-				</svg>
-			</div>
-		</div>
-		<div class="filter-content {{ $searchPanelOpen ? 'expanded' : 'collapsed' }}" id="filterContent">
-			<div class="p-6">
-				<form method="GET" action="{{ route('client.dashboard') }}" class="space-y-4" id="filterForm">
-					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1" for="provider_type">
-								{{ $isAr ? 'نوع مقدم الخدمة' : 'Service provider type' }}
-								<span class="text-red-500">*</span>
-							</label>
-							<select name="provider_type" id="provider_type" class="w-full border border-gray-300 rounded-md p-2 text-sm" required>
-								<option value="">{{ $isAr ? 'اختر النوع' : 'Select type' }}</option>
-								<option value="laboratory" @selected(request('provider_type') === 'laboratory')>{{ $isAr ? 'مختبر' : 'Laboratory' }}</option>
-								<option value="pharmacy" @selected(request('provider_type') === 'pharmacy')>{{ $isAr ? 'صيدلية' : 'Pharmacy' }}</option>
-								<option value="charity" @selected(request('provider_type') === 'charity')>{{ $isAr ? 'منظمة خيرية' : 'Charitable organization' }}</option>
-								<option value="doctor" @selected(request('provider_type') === 'doctor')>{{ $isAr ? 'أطباء وعيادات' : 'Doctors & clinics' }}</option>
-							</select>
-						</div>
-						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1" for="governorate_id">
-								{{ $isAr ? 'المحافظة' : 'Governorate' }}
-							</label>
-							<select name="governorate_id" id="governorate_id" class="w-full border border-gray-300 rounded-md p-2 text-sm">
-								<option value="">{{ $isAr ? 'اختر المحافظة' : 'Select governorate' }}</option>
-								@foreach($governorates ?? [] as $governorate)
-									<option value="{{ $governorate->id }}" @selected(request('governorate_id') == $governorate->id)>
-										{{ $isAr ? ($governorate->name_ar ?? $governorate->name) : ($governorate->name ?? $governorate->name_ar) }}
-									</option>
-								@endforeach
-							</select>
-						</div>
-						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1" for="city_id">
-								{{ $isAr ? 'المدينة' : 'City' }}
-								<span class="text-gray-400 text-xs">({{ $isAr ? 'اختياري' : 'Optional' }})</span>
-							</label>
-							<select name="city_id" id="city_id" class="w-full border border-gray-300 rounded-md p-2 text-sm">
-								<option value="">{{ $isAr ? 'جميع المدن' : 'All cities' }}</option>
-								@foreach($cities ?? [] as $city)
-									<option value="{{ $city->id }}" @selected(request('city_id') == $city->id)>
-										{{ $isAr ? ($city->name_ar ?? $city->name) : ($city->name ?? $city->name_ar) }}
-									</option>
-								@endforeach
-							</select>
-						</div>
-						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1" for="area_id">
-								{{ $isAr ? 'المنطقة' : 'Area' }}
-								<span class="text-gray-400 text-xs">({{ $isAr ? 'اختياري' : 'Optional' }})</span>
-							</label>
-							<select name="area_id" id="area_id" class="w-full border border-gray-300 rounded-md p-2 text-sm">
-								<option value="">{{ $isAr ? 'جميع المناطق' : 'All areas' }}</option>
-								@foreach($areas ?? [] as $area)
-									<option value="{{ $area->id }}" @selected(request('area_id') == $area->id)>
-										{{ $isAr ? ($area->name_ar ?? $area->name) : ($area->name ?? $area->name_ar) }}
-									</option>
-								@endforeach
-							</select>
-						</div>
-					</div>
-					<div class="flex flex-wrap gap-2">
-						<button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium">
-							{{ $isAr ? 'بحث' : 'Search' }}
-						</button>
-						<a href="{{ route('client.dashboard') }}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 text-sm font-medium">
-							{{ $isAr ? 'إعادة تعيين' : 'Reset' }}
-						</a>
-					</div>
-				</form>
-			</div>
-		</div>
 	</div>
 
 	{{-- Ads: mobile = one full-width slide; scroll-snap; auto-advance --}}
@@ -175,6 +85,100 @@
 			</a>
 		</div>
 	</div>
+
+	{{-- Search: service + location — collapsed by default; opens when filters were submitted --}}
+	@php
+		$searchPanelOpen = request()->filled('provider_type');
+	@endphp
+	<div class="bg-white rounded-lg shadow border border-gray-200">
+		<div class="p-4 border-b border-gray-200 filter-toggle cursor-pointer select-none" id="filterToggle" role="button" tabindex="0" aria-expanded="{{ $searchPanelOpen ? 'true' : 'false' }}" aria-controls="filterContent">
+			<div class="flex justify-between items-center gap-3">
+				<div class="min-w-0">
+					<h3 class="text-lg font-semibold text-gray-800">
+						{{ $isAr ? 'البحث عن مقدمي الخدمات' : 'Search service providers' }}
+					</h3>
+					<p class="text-sm text-gray-500 mt-0.5">{{ $isAr ? 'اختر نوع الخدمة والمحافظة والمدينة ثم اضغط بحث.' : 'Choose service type, governorate, and city, then search.' }}</p>
+				</div>
+				<svg id="filterIcon" class="w-5 h-5 text-gray-600 shrink-0 transition-transform duration-200 {{ $searchPanelOpen ? 'rotate-180' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+				</svg>
+			</div>
+		</div>
+		<div class="filter-content {{ $searchPanelOpen ? 'expanded' : 'collapsed' }}" id="filterContent">
+			<div class="p-6">
+				<form method="GET" action="{{ route('client.dashboard') }}" class="space-y-4" id="filterForm">
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-1" for="provider_type">
+								{{ $isAr ? 'نوع مقدم الخدمة' : 'Service provider type' }}
+								<span class="text-red-500">*</span>
+							</label>
+							<select name="provider_type" id="provider_type" class="w-full border border-gray-300 rounded-md p-2 text-sm" required>
+								<option value="">{{ $isAr ? 'اختر النوع' : 'Select type' }}</option>
+								<option value="radiology_lab" @selected(request('provider_type') === 'radiology_lab')>{{ $isAr ? 'معمل أشعة' : 'Radiology lab' }}</option>
+								<option value="test_lab" @selected(request('provider_type') === 'test_lab')>{{ $isAr ? 'معمل تحاليل' : 'Test lab' }}</option>
+								<option value="pharmacy" @selected(request('provider_type') === 'pharmacy')>{{ $isAr ? 'صيدلية' : 'Pharmacy' }}</option>
+								<option value="nursing" @selected(request('provider_type') === 'nursing')>{{ $isAr ? 'تمريض منزلي' : 'Home nursing' }}</option>
+								<option value="charity" @selected(request('provider_type') === 'charity')>{{ $isAr ? 'منظمة خيرية' : 'Charitable organization' }}</option>
+								<option value="doctor" @selected(request('provider_type') === 'doctor')>{{ $isAr ? 'أطباء وعيادات' : 'Doctors & clinics' }}</option>
+							</select>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-1" for="governorate_id">
+								{{ $isAr ? 'المحافظة' : 'Governorate' }}
+							</label>
+							<select name="governorate_id" id="governorate_id" class="w-full border border-gray-300 rounded-md p-2 text-sm">
+								<option value="">{{ $isAr ? 'اختر المحافظة' : 'Select governorate' }}</option>
+								@foreach($governorates ?? [] as $governorate)
+									<option value="{{ $governorate->id }}" @selected(request('governorate_id') == $governorate->id)>
+										{{ $isAr ? ($governorate->name_ar ?? $governorate->name) : ($governorate->name ?? $governorate->name_ar) }}
+									</option>
+								@endforeach
+							</select>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-1" for="city_id">
+								{{ $isAr ? 'المدينة' : 'City' }}
+								<span class="text-gray-400 text-xs">({{ $isAr ? 'اختياري' : 'Optional' }})</span>
+							</label>
+							<select name="city_id" id="city_id" class="w-full border border-gray-300 rounded-md p-2 text-sm">
+								<option value="">{{ $isAr ? 'جميع المدن' : 'All cities' }}</option>
+								@foreach($cities ?? [] as $city)
+									<option value="{{ $city->id }}" @selected(request('city_id') == $city->id)>
+										{{ $isAr ? ($city->name_ar ?? $city->name) : ($city->name ?? $city->name_ar) }}
+									</option>
+								@endforeach
+							</select>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-1" for="area_id">
+								{{ $isAr ? 'المنطقة' : 'Area' }}
+								<span class="text-gray-400 text-xs">({{ $isAr ? 'اختياري' : 'Optional' }})</span>
+							</label>
+							<select name="area_id" id="area_id" class="w-full border border-gray-300 rounded-md p-2 text-sm">
+								<option value="">{{ $isAr ? 'جميع المناطق' : 'All areas' }}</option>
+								@foreach($areas ?? [] as $area)
+									<option value="{{ $area->id }}" @selected(request('area_id') == $area->id)>
+										{{ $isAr ? ($area->name_ar ?? $area->name) : ($area->name ?? $area->name_ar) }}
+									</option>
+								@endforeach
+							</select>
+						</div>
+					</div>
+					<div class="flex flex-wrap gap-2">
+						<button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium">
+							{{ $isAr ? 'بحث' : 'Search' }}
+						</button>
+						<a href="{{ route('client.dashboard') }}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 text-sm font-medium">
+							{{ $isAr ? 'إعادة تعيين' : 'Reset' }}
+						</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	@include('client.partials.dashboard-service-provider-results')
 
 	{{-- Services grid --}}
 	<div>

@@ -8,6 +8,7 @@ use App\Models\Pharmacy;
 use App\Models\Area;
 use App\Models\City;
 use App\Models\Governorate;
+use App\Models\Nurse;
 use Illuminate\Http\Request;
 
 class ClientServiceProviderController extends Controller
@@ -31,7 +32,7 @@ class ClientServiceProviderController extends Controller
             // Validate required fields
             $request->validate([
                 'governorate_id' => 'required|exists:governorates,id',
-                'provider_type' => 'required|in:laboratory,pharmacy,charity',
+                'provider_type' => 'required|in:radiology_lab,test_lab,pharmacy,nursing,charity',
             ]);
 
             $governorateId = $request->governorate_id;
@@ -40,7 +41,8 @@ class ClientServiceProviderController extends Controller
             $areaId = $request->area_id;
 
         if ($providerType === 'charity') {
-            $query = CharitableOrganization::with(['governorate', 'city', 'area']);
+            $query = CharitableOrganization::with(['governorate', 'city', 'area'])
+                ->where('is_active', true);
 
             // Filter by governorate (required)
             $query->where('governorate_id', $governorateId);
@@ -58,39 +60,38 @@ class ClientServiceProviderController extends Controller
             $results = $query->get();
 
             // Note: Charity organizations don't have lat/lng, so they won't appear on map
-        } elseif ($providerType === 'laboratory') {
+        } elseif (in_array($providerType, ['radiology_lab', 'test_lab'], true)) {
+            $labTypes = $providerType === 'radiology_lab' ? ['radiology', 'both'] : ['test', 'both'];
+
             $query = Laboratory::with(['area.city.governorate'])
                 ->where('is_active', true)
+                ->whereIn('type', $labTypes)
                 ->whereNotNull('lat')
                 ->whereNotNull('lng');
 
-            // Filter by governorate (required)
             $query->whereHas('area.city', function ($q) use ($governorateId) {
                 $q->where('governorate_id', $governorateId);
             });
 
-            // Filter by city (optional)
             if ($cityId) {
                 $query->whereHas('area', function ($q) use ($cityId) {
                     $q->where('city_id', $cityId);
                 });
             }
 
-            // Filter by area (optional)
             if ($areaId) {
                 $query->where('area_id', $areaId);
             }
 
             $results = $query->get();
 
-            // Prepare markers for map
             foreach ($results as $lab) {
                 if ($lab->lat && $lab->lng) {
                     $markers[] = [
                         'id' => $lab->id,
                         'name' => $lab->name,
-                        'lat' => (float)$lab->lat,
-                        'lng' => (float)$lab->lng,
+                        'lat' => (float) $lab->lat,
+                        'lng' => (float) $lab->lng,
                         'type' => 'laboratory',
                         'phone' => $lab->phone,
                         'address' => $lab->address,
@@ -98,6 +99,30 @@ class ClientServiceProviderController extends Controller
                     ];
                 }
             }
+        } elseif ($providerType === 'nursing') {
+            $areaIdsQuery = Area::where('is_active', true);
+
+            if ($areaId) {
+                $areaIdsQuery->where('id', $areaId);
+            } elseif ($cityId) {
+                $areaIdsQuery->where('city_id', $cityId);
+            } else {
+                $areaIdsQuery->whereHas('city', function ($q) use ($governorateId) {
+                    $q->where('governorate_id', $governorateId);
+                });
+            }
+
+            $matchingAreaIds = $areaIdsQuery->pluck('id')->all();
+
+            $results = Nurse::with('user')
+                ->where('status', 'active')
+                ->get()
+                ->filter(function (Nurse $nurse) use ($matchingAreaIds) {
+                    $nurseAreaIds = is_array($nurse->area_ids) ? $nurse->area_ids : [];
+
+                    return count(array_intersect($nurseAreaIds, $matchingAreaIds)) > 0;
+                })
+                ->values();
         } else {
             $query = Pharmacy::with(['area.city.governorate'])
                 ->where('is_active', true)

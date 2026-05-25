@@ -101,6 +101,32 @@ class Laboratory extends Model implements HasMedia
 		return $this->morphMany(SupportTicket::class, 'ticketable');
 	}
 
+	protected static function booted(): void
+	{
+		static::saved(function (Laboratory $laboratory) {
+			$laboratory->syncLinkedUsersActiveState();
+		});
+	}
+
+	/**
+	 * Keep laboratory owner login (users.is_active) aligned with laboratory visibility flag.
+	 */
+	public function syncLinkedUsersActiveState(): void
+	{
+		$active = (bool) $this->is_active;
+		$ids = collect([$this->user_id])
+			->merge(User::where('laboratory_id', $this->id)->pluck('id'))
+			->filter()
+			->unique()
+			->values();
+
+		if ($ids->isEmpty()) {
+			return;
+		}
+
+		User::whereIn('id', $ids)->update(['is_active' => $active]);
+	}
+
 	public function quotes()
 	{
 		return $this->morphMany(Quote::class, 'model');

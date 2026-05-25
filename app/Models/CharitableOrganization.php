@@ -10,7 +10,34 @@ class CharitableOrganization extends Model
 {
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        static::saved(function (CharitableOrganization $organization) {
+            $organization->syncLinkedUsersActiveState();
+        });
+    }
+
+    /**
+     * When the organization is activated in admin, allow linked owner accounts to log in.
+     */
+    public function syncLinkedUsersActiveState(): void
+    {
+        $active = (bool) $this->is_active;
+        $ids = collect([$this->user_id])
+            ->merge(User::where('charitable_organization_id', $this->id)->pluck('id'))
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return;
+        }
+
+        User::whereIn('id', $ids)->update(['is_active' => $active]);
+    }
+
     protected $fillable = [
+        'user_id',
         'name',
         'address',
         'governorate_id',
@@ -18,15 +45,22 @@ class CharitableOrganization extends Model
         'area_id',
         'phone_numbers',
         'services',
+        'is_active',
     ];
 
     protected $casts = [
         'phone_numbers' => 'array',
         'services' => 'array',
+        'is_active' => 'boolean',
     ];
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     /**
-     * Get the governorate that owns the charitable organization.
+     * Governorate for this organization.
      */
     public function governorate(): BelongsTo
     {
