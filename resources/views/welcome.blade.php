@@ -49,6 +49,12 @@
                         <a href="{{ route('login') }}" class="px-8 py-4 bg-white text-slate-700 border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-all hover:-translate-y-1">
                             {{ app()->getLocale() === 'ar' ? 'تسجيل الدخول' : 'Login' }}
                         </a>
+                        <a href="{{ $playStoreUrl }}" target="_blank" rel="noopener noreferrer" class="lg:hidden px-8 py-4 bg-primary text-white rounded-xl font-bold hover:bg-blue-600 transition-all shadow-xl shadow-primary/20 hover:-translate-y-1 flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M3.609 1.814L13.792 12 3.61 22.186a1.003 1.003 0 0 1-.61-.92V2.734a1.003 1.003 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 9.99l-2.302 2.302-8.634-8.634z"/>
+                            </svg>
+                            <span>{{ app()->getLocale() === 'ar' ? 'حمّل التطبيق' : 'Download App' }}</span>
+                        </a>
                     </div>
 
                     <div class="pt-8 border-t border-slate-200/60 flex items-center justify-center lg:justify-start gap-8">
@@ -106,21 +112,16 @@
                                     </div>
                                 </div>
 
-                                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                                    <div class="flex gap-4">
-                                        <div class="w-16 h-16 bg-slate-200 rounded-xl"></div>
-                                        <div>
-                                            <h4 class="font-bold text-slate-800">Dr. Sarah Ali</h4>
-                                            <p class="text-xs text-slate-500">Cardiologist • Cairo Hospital</p>
-                                            <div class="flex gap-1 mt-2">
-                                                <span class="text-yellow-400 text-xs">★★★★★</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-4 flex gap-2">
-                                        <div class="flex-1 h-9 bg-slate-100 rounded-lg text-xs flex items-center justify-center font-bold text-slate-600">10:00 AM</div>
-                                        <div class="flex-1 h-9 bg-primary text-white rounded-lg text-xs flex items-center justify-center font-bold">Book</div>
-                                    </div>
+                                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center gap-3">
+                                    <img src="/images/mo-logo.png" alt="Mostashfa-on" class="w-14 h-14 rounded-xl object-contain">
+                                    <p class="text-sm font-bold text-slate-800">{{ app()->getLocale() === 'ar' ? 'حمّل تطبيق مستشفى-أون' : 'Get the Mostashfa-on app' }}</p>
+                                    <a href="{{ $playStoreUrl }}" target="_blank" rel="noopener noreferrer"
+                                       class="flex w-full items-center justify-center gap-2 h-10 bg-primary text-white rounded-lg text-sm font-bold hover:bg-blue-600 transition-colors">
+                                        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                            <path d="M3.609 1.814L13.792 12 3.61 22.186a1.003 1.003 0 0 1-.61-.92V2.734a1.003 1.003 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 9.99l-2.302 2.302-8.634-8.634z"/>
+                                        </svg>
+                                        <span>{{ app()->getLocale() === 'ar' ? 'تحميل' : 'Download' }}</span>
+                                    </a>
                                 </div>
 
                                 <a href="{{ $playStoreUrl }}" target="_blank" rel="noopener noreferrer"
