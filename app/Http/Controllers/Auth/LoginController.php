@@ -37,6 +37,7 @@ class LoginController extends Controller
             }
             if ($user->charitable_organization_id) {
                 return redirect()->route('user.profile.edit');
+            }
             if ($user->managedClinic) {
                 return redirect()->route('clinic.dashboard');
             }
@@ -99,6 +100,7 @@ class LoginController extends Controller
             }
             if ($user->charitable_organization_id) {
                 return redirect()->route('user.profile.edit');
+            }
             if ($user->managedClinic) {
                 return redirect()->route('clinic.dashboard');
             }
