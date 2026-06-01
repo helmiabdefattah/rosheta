@@ -14,6 +14,24 @@
             <div>
                 <h3 class="text-lg font-semibold text-slate-900 mb-4">{{ app()->getLocale() === 'ar' ? 'التفاصيل' : 'Details' }}</h3>
                 
+                <div class="mb-4">
+                    <label for="type" class="block text-sm font-medium text-slate-700 mb-2">
+                        {{ app()->getLocale() === 'ar' ? 'نوع الفحص' : 'Test type' }} <span class="text-red-500">*</span>
+                    </label>
+                    <select name="type" id="type" required
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="test" {{ old('type', $medicalTest->type ?? 'test') === 'test' ? 'selected' : '' }}>
+                            {{ app()->getLocale() === 'ar' ? 'فحص تحاليل' : 'Medical test' }}
+                        </option>
+                        <option value="radiology" {{ old('type', $medicalTest->type) === 'radiology' ? 'selected' : '' }}>
+                            {{ app()->getLocale() === 'ar' ? 'أشعة' : 'Radiology' }}
+                        </option>
+                    </select>
+                    @error('type')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="test_name_en" class="block text-sm font-medium text-slate-700 mb-2">

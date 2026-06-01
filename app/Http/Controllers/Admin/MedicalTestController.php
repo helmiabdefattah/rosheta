@@ -25,6 +25,7 @@ class MedicalTestController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'type' => 'required|in:test,radiology',
             'test_name_en' => 'required|string|max:255',
             'test_name_ar' => 'required|string|max:255',
             'test_description' => 'nullable|string',
@@ -50,6 +51,7 @@ class MedicalTestController extends Controller
     public function update(Request $request, MedicalTest $medicalTest)
     {
         $validated = $request->validate([
+            'type' => 'required|in:test,radiology',
             'test_name_en' => 'required|string|max:255',
             'test_name_ar' => 'required|string|max:255',
             'test_description' => 'nullable|string',
