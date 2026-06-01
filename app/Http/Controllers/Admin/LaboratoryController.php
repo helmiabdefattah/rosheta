@@ -52,7 +52,7 @@ class LaboratoryController extends Controller
         $users = User::orderBy('name')->get();
         $areas = Area::with('city.governorate')->where('is_active', true)->get();
 
-        return view('laboratories.create', compact('users', 'areas'));
+        return view('admin.laboratories.create', compact('users', 'areas'));
     }
 
     public function store(Request $request)
