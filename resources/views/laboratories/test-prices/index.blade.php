@@ -1,8 +1,15 @@
 @extends('laboratories.layouts.dashboard')
 
-@section('title', app()->getLocale() === 'ar' ? 'أسعار الفحوصات' : 'Test Prices')
+@php
+    $l = app()->getLocale() === 'ar';
+    $isRadiology = ($labType ?? $laboratory->type ?? 'test') === 'radiology';
+@endphp
 
-@section('page-description', app()->getLocale() === 'ar' ? 'إدارة أسعار الفحوصات الطبية' : 'Manage medical test prices')
+@section('title', $l ? ($isRadiology ? 'أسعار الأشعة' : 'أسعار الفحوصات') : ($isRadiology ? 'Radiology Prices' : 'Test Prices'))
+
+@section('page-description', $l
+    ? ($isRadiology ? 'إدارة أسعار فحوصات الأشعة لمعملك' : 'إدارة أسعار التحاليل الطبية لمعملك')
+    : ($isRadiology ? 'Manage radiology exam prices for your lab' : 'Manage medical test prices for your lab'))
 
 @push('styles')
     <style>
@@ -31,19 +38,32 @@
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-800">{{ app()->getLocale() === 'ar' ? 'أسعار الفحوصات الطبية' : 'Medical Test Prices' }}</h2>
-                    <p class="text-sm text-slate-500 mt-1">{{ app()->getLocale() === 'ar' ? 'أدخل أو عدّل سعر كل فحص طبي' : 'Enter or update the price for each medical test' }}</p>
+                    <h2 class="text-xl font-bold text-slate-800">
+                        {{ $l ? ($isRadiology ? 'أسعار الأشعة' : 'أسعار التحاليل الطبية') : ($isRadiology ? 'Radiology Prices' : 'Medical Test Prices') }}
+                    </h2>
+                    <p class="text-sm text-slate-500 mt-1">
+                        {{ $l ? ($isRadiology ? 'أدخل أو عدّل سعر كل فحص أشعة' : 'أدخل أو عدّل سعر كل تحليل طبي') : ($isRadiology ? 'Enter or update the price for each radiology exam' : 'Enter or update the price for each medical test') }}
+                    </p>
+                    <span class="inline-flex mt-2 px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $isRadiology ? 'bg-violet-100 text-violet-800' : 'bg-teal-100 text-teal-800' }}">
+                        {{ $l ? ($isRadiology ? 'نوع المعمل: أشعة' : 'نوع المعمل: تحاليل') : ($isRadiology ? 'Lab type: Radiology' : 'Lab type: Tests') }}
+                    </span>
                 </div>
             </div>
         </div>
         <div class="overflow-x-auto lg:overflow-x-visible p-2 sm:p-0">
-            @php $l = app()->getLocale() === 'ar'; @endphp
+            @if($medicalTests->isEmpty())
+                <p class="px-6 py-10 text-center text-slate-500 text-sm">
+                    {{ $l
+                        ? ($isRadiology ? 'لا توجد فحوصات أشعة في الكتالوج بعد.' : 'لا توجد تحاليل في الكتالوج بعد.')
+                        : ($isRadiology ? 'No radiology exams in the catalog yet.' : 'No medical tests in the catalog yet.') }}
+                </p>
+            @else
             <table class="min-w-full divide-y divide-gray-200 stack-table-mobile">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'رقم' : 'ID' }}</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'اسم الفحص (EN)' : 'Test Name (EN)' }}</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'اسم الفحص (AR)' : 'Test Name (AR)' }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $l ? ($isRadiology ? 'اسم الأشعة (EN)' : 'اسم التحليل (EN)') : ($isRadiology ? 'Exam name (EN)' : 'Test name (EN)') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $l ? ($isRadiology ? 'اسم الأشعة (AR)' : 'اسم التحليل (AR)') : ($isRadiology ? 'Exam name (AR)' : 'Test name (AR)') }}</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ app()->getLocale() === 'ar' ? 'السعر (جنيه)' : 'Price (EGP)' }}</th>
                     </tr>
                 </thead>
@@ -53,10 +73,10 @@
                             <td class="px-6 py-4 whitespace-nowrap" data-label="{{ $l ? 'رقم' : 'ID' }}">
                                 <span class="text-sm font-semibold text-slate-800">#{{ $test->id }}</span>
                             </td>
-                            <td class="px-6 py-4" data-label="{{ $l ? 'اسم الفحص (EN)' : 'Test Name (EN)' }}">
+                            <td class="px-6 py-4" data-label="{{ $l ? ($isRadiology ? 'اسم الأشعة (EN)' : 'اسم التحليل (EN)') : ($isRadiology ? 'Exam name (EN)' : 'Test name (EN)') }}">
                                 <span class="text-sm text-slate-800">{{ $test->test_name_en }}</span>
                             </td>
-                            <td class="px-6 py-4" data-label="{{ $l ? 'اسم الفحص (AR)' : 'Test Name (AR)' }}">
+                            <td class="px-6 py-4" data-label="{{ $l ? ($isRadiology ? 'اسم الأشعة (AR)' : 'اسم التحليل (AR)') : ($isRadiology ? 'Exam name (AR)' : 'Test name (AR)') }}">
                                 <span class="text-sm text-slate-800">{{ $test->test_name_ar }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap stack-td-actions" data-label="{{ $l ? 'السعر (جنيه)' : 'Price (EGP)' }}">
@@ -77,6 +97,7 @@
                     @endforeach
                 </tbody>
             </table>
+            @endif
         </div>
     </div>
 @endsection
