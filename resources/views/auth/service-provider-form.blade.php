@@ -62,33 +62,42 @@
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'الاسم' : 'Your name' }}</label>
-                <input type="text" name="account_name" value="{{ old('account_name') }}" required
+                <label for="account_name" class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'الاسم' : 'Your name' }}</label>
+                <input type="text" id="account_name" name="account_name" value="{{ old('account_name') }}" required
+                       autocomplete="name"
                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none">
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'رقم الهاتف' : 'Phone number' }}</label>
-                <input type="text" name="phone_number" value="{{ old('phone_number') }}" required
+                <label for="phone_number" class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'رقم الهاتف' : 'Phone number' }}</label>
+                <input type="tel" id="phone_number" name="phone_number" value="{{ old('phone_number') }}" required
+                       autocomplete="tel"
                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none">
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'البريد الإلكتروني (اختياري)' : 'Email (optional)' }}</label>
-                <input type="email" name="email" value="{{ old('email') }}"
+                <label for="email" class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'البريد الإلكتروني (اختياري)' : 'Email (optional)' }}</label>
+                <input type="email" id="email" name="email" value="{{ old('email') }}"
+                       autocomplete="username"
                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none">
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'كلمة المرور' : 'Password' }}</label>
-                <input type="password" name="password" required
-                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none">
+                <label for="password" class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'كلمة المرور' : 'Password' }}</label>
+                <input type="password" id="password" name="password" required minlength="8"
+                       autocomplete="new-password"
+                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none @error('password') border-red-400 @enderror">
+                @error('password')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'تأكيد كلمة المرور' : 'Confirm password' }}</label>
-                <input type="password" name="password_confirmation" required
-                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none">
+                <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'تأكيد كلمة المرور' : 'Confirm password' }}</label>
+                <input type="password" id="password_confirmation" name="password_confirmation" required minlength="8"
+                       autocomplete="new-password"
+                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none @error('password') border-red-400 @enderror">
+                <p class="mt-1 text-xs text-slate-500">{{ $ar ? 'أعد إدخال كلمة المرور يدوياً في الحقلين (8 أحرف على الأقل). عطّل الحفظ التلقائي إذا ظهر خطأ التطابق.' : 'Re-enter the same password in both fields (min. 8 characters). Turn off autofill if you see a mismatch error.' }}</p>
             </div>
 
             @if(in_array($type, ['pharmacy', 'laboratory', 'radiology'], true))
@@ -111,6 +120,7 @@
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">{{ $ar ? 'بريد المنشأة' : 'Facility email' }} <span class="text-gray-400 font-normal">({{ $ar ? 'اختياري' : 'optional' }})</span></label>
                     <input type="email" name="business_email" value="{{ old('business_email') }}"
+                           autocomplete="off"
                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none">
                 </div>
 

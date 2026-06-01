@@ -107,6 +107,19 @@ class ServiceProviderRegisterController extends Controller
             abort(404);
         }
 
+        $passwordRule = ['required', 'string', 'confirmed', Password::min(8)];
+        $passwordMessages = app()->getLocale() === 'ar'
+            ? [
+                'password.required' => 'كلمة المرور مطلوبة.',
+                'password.confirmed' => 'تأكيد كلمة المرور غير مطابق. أعد كتابة الحقلين يدوياً.',
+                'password.min' => 'كلمة المرور يجب أن تكون 8 أحرف على الأقل.',
+            ]
+            : [
+                'password.required' => 'Password is required.',
+                'password.confirmed' => 'Password confirmation does not match. Re-type both password fields manually.',
+                'password.min' => 'Password must be at least 8 characters.',
+            ];
+
         $docRules = $this->documentValidationRules();
 
         if ($type === 'nurse') {
@@ -114,28 +127,28 @@ class ServiceProviderRegisterController extends Controller
                 'account_name' => 'required|string|max:255',
                 'phone_number' => 'required|string|max:50|unique:users,phone_number',
                 'email' => 'nullable|email|max:255|unique:users,email',
-                'password' => ['required', 'confirmed', Password::defaults()],
+                'password' => $passwordRule,
                 'gender' => 'nullable|in:male,female',
                 'address' => 'nullable|string',
                 'area_ids' => 'required|array|min:1',
                 'area_ids.*' => 'integer|exists:areas,id',
-            ], $docRules));
+            ], $docRules), $passwordMessages);
         } elseif ($type === 'doctor') {
             $validated = $request->validate(array_merge([
                 'account_name' => 'required|string|max:255',
                 'phone_number' => 'required|string|max:50|unique:users,phone_number',
                 'email' => 'nullable|email|max:255|unique:users,email',
-                'password' => ['required', 'confirmed', Password::defaults()],
+                'password' => $passwordRule,
                 'doctor_name' => 'required|string|max:255',
                 'specialization_id' => 'required|exists:specializations,id',
                 'brief' => 'nullable|string|max:5000',
-            ], $docRules));
+            ], $docRules), $passwordMessages);
         } elseif ($type === 'charitable_organization') {
             $validated = $request->validate(array_merge([
                 'account_name' => 'required|string|max:255',
                 'phone_number' => 'required|string|max:50|unique:users,phone_number',
                 'email' => 'nullable|email|max:255|unique:users,email',
-                'password' => ['required', 'confirmed', Password::defaults()],
+                'password' => $passwordRule,
                 'organization_name' => 'required|string|max:255',
                 'governorate_id' => 'required|exists:governorates,id',
                 'city_id' => 'required|exists:cities,id',
@@ -143,13 +156,13 @@ class ServiceProviderRegisterController extends Controller
                 'address' => 'required|string',
                 'organization_phone' => 'nullable|string|max:20',
                 'services_text' => 'nullable|string|max:5000',
-            ], $docRules));
+            ], $docRules), $passwordMessages);
         } else {
             $base = [
                 'account_name' => 'required|string|max:255',
                 'phone_number' => 'required|string|max:50|unique:users,phone_number',
                 'email' => 'nullable|email|max:255|unique:users,email',
-                'password' => ['required', 'confirmed', Password::defaults()],
+                'password' => $passwordRule,
                 'business_name' => 'required|string|max:255',
                 'business_phone' => 'nullable|string|max:255',
                 'business_email' => 'nullable|email|max:255',
@@ -162,7 +175,7 @@ class ServiceProviderRegisterController extends Controller
             if (in_array($type, ['laboratory', 'radiology'], true)) {
                 $rules['manager_name'] = 'nullable|string|max:255';
             }
-            $validated = $request->validate($rules);
+            $validated = $request->validate($rules, $passwordMessages);
         }
 
         DB::transaction(function () use ($type, $validated, $request) {
