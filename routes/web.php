@@ -343,6 +343,7 @@ Route::middleware([
     Route::post('/laboratories', [App\Http\Controllers\Admin\LaboratoryController::class, 'store'])->name('laboratories.store');
     Route::get('/laboratories/{laboratory}/edit', [App\Http\Controllers\Admin\LaboratoryController::class, 'edit'])->name('laboratories.edit');
     Route::put('/laboratories/{laboratory}', [App\Http\Controllers\Admin\LaboratoryController::class, 'update'])->name('laboratories.update');
+    Route::patch('/laboratories/{laboratory}/toggle-active', [App\Http\Controllers\Admin\LaboratoryController::class, 'toggleActive'])->name('laboratories.toggle-active');
     Route::delete('/laboratories/{laboratory}', [App\Http\Controllers\Admin\LaboratoryController::class, 'destroy'])->name('laboratories.destroy');
 
     // Nurses

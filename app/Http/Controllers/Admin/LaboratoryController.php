@@ -191,6 +191,22 @@ class LaboratoryController extends Controller
             ->with('success', app()->getLocale() === 'ar' ? 'تم تحديث المعمل بنجاح' : 'Laboratory updated successfully');
     }
 
+    public function toggleActive(Laboratory $laboratory)
+    {
+        $laboratory->update(['is_active' => ! $laboratory->is_active]);
+        $laboratory->refresh();
+
+        $ar = app()->getLocale() === 'ar';
+
+        return response()->json([
+            'success' => true,
+            'is_active' => $laboratory->is_active,
+            'message' => $laboratory->is_active
+                ? ($ar ? 'تم تفعيل المعمل بنجاح' : 'Laboratory activated successfully')
+                : ($ar ? 'تم إيقاف المعمل بنجاح' : 'Laboratory deactivated successfully'),
+        ]);
+    }
+
     public function destroy(Laboratory $laboratory)
     {
         $laboratory->delete();

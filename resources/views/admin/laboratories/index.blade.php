@@ -90,15 +90,9 @@
                             <dt class="text-slate-500 shrink-0">{{ $l ? 'المحافظة' : 'Governorate' }}</dt>
                             <dd class="text-slate-800 text-end">{{ $govLabel }}</dd>
                         </div>
-                        <div class="flex justify-between gap-3 pt-1">
+                        <div class="flex justify-between items-center gap-3 pt-1">
                             <dt class="text-slate-500">{{ $l ? 'الحالة' : 'Status' }}</dt>
-                            <dd>
-                                @if($laboratory->is_active)
-                                    <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">{{ $l ? 'نشط' : 'Active' }}</span>
-                                @else
-                                    <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">{{ $l ? 'غير نشط' : 'Inactive' }}</span>
-                                @endif
-                            </dd>
+                            <dd>@include('admin.laboratories.partials.status-toggle', ['laboratory' => $laboratory])</dd>
                         </div>
                     </dl>
                     <div class="mt-4 pt-3 border-t border-slate-100">
@@ -149,11 +143,7 @@
                             <td class="px-4 py-3 text-sm text-slate-700">{{ $cityLabel }}</td>
                             <td class="px-4 py-3 text-sm text-slate-700">{{ $govLabel }}</td>
                             <td class="px-4 py-3 text-sm">
-                                @if($laboratory->is_active)
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">{{ $l ? 'نشط' : 'Active' }}</span>
-                                @else
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">{{ $l ? 'غير نشط' : 'Inactive' }}</span>
-                                @endif
+                                @include('admin.laboratories.partials.status-toggle', ['laboratory' => $laboratory])
                             </td>
                             <td class="px-4 py-3 text-sm text-end">@include('admin.laboratories.actions', ['laboratory' => $laboratory])</td>
                         </tr>
@@ -166,3 +156,56 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    const isAr = @json($l);
+    const activeLabel = isAr ? 'نشط' : 'Active';
+    const inactiveLabel = isAr ? 'غير نشط' : 'Inactive';
+    const errorMsg = isAr ? 'تعذر تحديث الحالة. حاول مرة أخرى.' : 'Could not update status. Please try again.';
+
+    $(document).on('change', '.lab-active-toggle-input', function () {
+        const $input = $(this);
+        const $wrap = $input.closest('.lab-active-toggle');
+        const $label = $wrap.find('.lab-active-toggle-label');
+        const url = $wrap.data('toggle-url');
+        const previousChecked = !$input.is(':checked');
+
+        $input.prop('disabled', true);
+
+        $.ajax({
+            url: url,
+            method: 'PATCH',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                Accept: 'application/json',
+            },
+        })
+            .done(function (res) {
+                if (!res.success) {
+                    $input.prop('checked', previousChecked);
+                    toastr.error(res.message || errorMsg);
+                    return;
+                }
+
+                const on = !!res.is_active;
+                $input.prop('checked', on);
+                $label
+                    .text(on ? activeLabel : inactiveLabel)
+                    .toggleClass('text-emerald-700', on)
+                    .toggleClass('text-red-600', !on);
+                toastr.success(res.message);
+            })
+            .fail(function (xhr) {
+                $input.prop('checked', previousChecked);
+                const msg = xhr.responseJSON?.message || errorMsg;
+                toastr.error(msg);
+            })
+            .always(function () {
+                $input.prop('disabled', false);
+            });
+    });
+})();
+</script>
+@endpush
