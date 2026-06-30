@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClientRequestController;
+use App\Http\Controllers\Api\IntegrationController;
 use App\Http\Controllers\WebviewBridgeController;
 
 // Public routes
@@ -43,6 +44,17 @@ Route::get('/medicines/search', function (Request $request) {
         'next_page_url' => $medicines->nextPageUrl()
     ]);
 })->name('medicines.search');
+
+// ---- Integration API (external clinic-management system, key-authenticated) ----
+Route::middleware('integration')->prefix('integration')->name('integration.')->group(function () {
+    Route::get('/clinic', [IntegrationController::class, 'clinic_'])->name('clinic');
+    Route::put('/clinic', [IntegrationController::class, 'updateClinic'])->name('clinic.update');
+    Route::get('/doctors', [IntegrationController::class, 'doctors'])->name('doctors');
+    Route::get('/patients', [IntegrationController::class, 'patients'])->name('patients');
+    Route::get('/appointments', [IntegrationController::class, 'appointments'])->name('appointments');
+    Route::post('/appointments/{appointment}/status', [IntegrationController::class, 'updateAppointmentStatus'])->name('appointments.status');
+    Route::post('/auth', [IntegrationController::class, 'authenticateDoctor'])->name('auth');
+});
 
 // Authenticated (staff User or Client)
 Route::middleware('auth:sanctum')->group(function () {

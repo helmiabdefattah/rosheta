@@ -27,6 +27,7 @@ class Clinic extends Model
         'medical_examination_price',
         'follow_up_price',
         'slots_per_interval',
+        'integration_key',
     ];
 
     /** Max number of reservations per 30-min slot (default 1). */

@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'doctor' => \App\Http\Middleware\EnsureUserIsDoctor::class,
             'clinic_staff' => \App\Http\Middleware\EnsureUserIsClinicStaff::class,
             'client.api' => \App\Http\Middleware\EnsureAuthenticatedClient::class,
+            'integration' => \App\Http\Middleware\VerifyIntegrationKey::class,
         ]);
 
         $middleware->web(append: [
