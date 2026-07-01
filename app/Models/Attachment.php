@@ -12,6 +12,9 @@ class Attachment extends Model
     protected $fillable = [
         'attachable_id',
         'attachable_type',
+        'uploaded_by',
+        'appointment_id',
+        'title',
         'file_name',
         'file_path',
         'file_type',
@@ -25,11 +28,23 @@ class Attachment extends Model
     ];
 
     /**
-     * Get the parent attachable model (Offer, etc.)
+     * Get the parent attachable model (Offer, Client, etc.)
      */
     public function attachable()
     {
         return $this->morphTo();
+    }
+
+    /** The clinic staff user who uploaded this file (if any). */
+    public function uploader()
+    {
+        return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    /** Optional appointment this file was captured during. */
+    public function appointment()
+    {
+        return $this->belongsTo(Appointment::class);
     }
 
     /**

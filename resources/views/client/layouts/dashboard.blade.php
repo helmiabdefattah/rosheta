@@ -203,6 +203,13 @@
                     <span>{{ app()->getLocale() === 'ar' ? 'نتائج التحاليل' : 'Test Results' }}</span>
                 </a>
 
+                <a href="{{ route('client.prescriptions.index') }}" class="nav-item {{ request()->routeIs('client.prescriptions.*') ? 'active' : '' }}">
+                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'روشتاتي' : 'My Prescriptions' }}</span>
+                </a>
+
                 <a href="{{ route('client.doctor-reservation.index') }}" class="nav-item {{ request()->routeIs('client.doctor-reservation.*') ? 'active' : '' }}">
                     <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -329,6 +336,8 @@
                 </div>
 
                 <div class="flex items-center gap-4">
+                    @yield('header-actions')
+
                     <!-- Language Toggle -->
                     <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                        class="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200">

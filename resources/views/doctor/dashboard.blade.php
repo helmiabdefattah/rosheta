@@ -6,6 +6,21 @@
 
 @section('content')
 <div class="space-y-6">
+    {{-- Clinic Management System (in-clinic workspace: queue, kiosk, examination) --}}
+    <a href="{{ route('practice.doctor.dashboard') }}"
+       class="block bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl shadow-sm p-5 text-white hover:from-indigo-700 hover:to-violet-700 transition">
+        <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-2xl">🩺</div>
+                <div>
+                    <p class="text-lg font-bold">{{ app()->getLocale() === 'ar' ? 'صفحة العمل داخل العيادة' : 'Open my clinic workspace' }}</p>
+                    <p class="text-sm text-white/80">{{ app()->getLocale() === 'ar' ? 'الطابور والكشف والروشتات وشاشة الانتظار' : 'Queue, examination, prescriptions & waiting-room display' }}</p>
+                </div>
+            </div>
+            <span class="text-2xl">{{ app()->getLocale() === 'ar' ? '←' : '→' }}</span>
+        </div>
+    </a>
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div class="flex items-center gap-4">

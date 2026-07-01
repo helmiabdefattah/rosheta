@@ -48,6 +48,24 @@ class Doctor extends Model implements HasMedia
         return $this->hasMany(Appointment::class);
     }
 
+    /** Users who are this doctor's assistants (users.doctor_id → doctors.id). */
+    public function assistants(): HasMany
+    {
+        return $this->hasMany(User::class, 'doctor_id');
+    }
+
+    /** Diagnoses recorded by this doctor in the clinic system. */
+    public function diagnoses(): HasMany
+    {
+        return $this->hasMany(Diagnosis::class);
+    }
+
+    /** Prescriptions issued by this doctor in the clinic system. */
+    public function prescriptions(): HasMany
+    {
+        return $this->hasMany(Prescription::class);
+    }
+
     /** Per-doctor working hours at a clinic (when clinic has multiple doctors). */
     public function clinicDoctorWorkingHours(): HasMany
     {

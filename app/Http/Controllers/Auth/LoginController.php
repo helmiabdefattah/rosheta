@@ -45,6 +45,10 @@ class LoginController extends Controller
                 return redirect()->route('doctor.dashboard');
             }
 
+            // Doctor's assistant → clinic (design) system assistant workspace
+            if ($user->doctor_id) {
+                return redirect()->route('practice.assistant.dashboard');
+            }
             // Redirect other users to admin dashboard
             return redirect()->route('admin.dashboard');
         }
@@ -106,6 +110,10 @@ class LoginController extends Controller
             }
             if ($user->doctor()->exists()) {
                 return redirect()->route('doctor.dashboard');
+            }
+            // Doctor's assistant → clinic (design) system assistant workspace
+            if ($user->doctor_id) {
+                return redirect()->route('practice.assistant.dashboard');
             }
             // Redirect other users to admin dashboard
             return redirect()->route('admin.dashboard');

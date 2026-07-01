@@ -273,10 +273,19 @@ class ClientDashboardController extends Controller
             }
         }
 
+        // The patient's upcoming clinic appointments — used by the quick-attach
+        // modal to (optionally) tie an uploaded file to a specific visit.
+        $clinicAppointments = \App\Models\Appointment::where('client_id', $client->id)
+            ->whereDate('scheduled_at', '>=', today())
+            ->whereNotIn('status', ['cancelled', 'completed'])
+            ->with('clinic')
+            ->orderBy('scheduled_at')
+            ->get();
+
         return view('client.dashboard', compact(
-            'stats', 
-            'recentRequests', 
-            'visits', 
+            'stats',
+            'recentRequests',
+            'visits',
             'availableBonusPoints',
             'governorates',
             'cities',
@@ -287,7 +296,8 @@ class ClientDashboardController extends Controller
             'governorateId',
             'cityId',
             'areaId',
-            'providerType'
+            'providerType',
+            'clinicAppointments'
         ));
     }
 

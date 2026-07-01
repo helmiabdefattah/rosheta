@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'cors' => \App\Http\Middleware\CorsMiddleware::class,
             'doctor' => \App\Http\Middleware\EnsureUserIsDoctor::class,
             'clinic_staff' => \App\Http\Middleware\EnsureUserIsClinicStaff::class,
+            'clinic.role' => \App\Http\Middleware\EnsureClinicRole::class,
             'client.api' => \App\Http\Middleware\EnsureAuthenticatedClient::class,
         ]);
 

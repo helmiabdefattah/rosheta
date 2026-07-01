@@ -167,5 +167,9 @@ class DoctorClinicController extends DoctorDashboardController
                 'is_closed' => $isClosed,
             ]);
         }
+
+        // Mirror the schedule into the clinic-system opening_hours JSON so the
+        // "practice" clinic page and calendar show the same working days.
+        $clinic->syncOpeningHoursFromWorkingHours();
     }
 }

@@ -33,6 +33,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia
         'pharmacy_id',
         'laboratory_id',
         'nurse_id',
+        'doctor_id',
         'charitable_organization_id',
         'fcm_token_web',
         'fcm_token_mobile',
@@ -110,6 +111,36 @@ class User extends Authenticatable implements FilamentUser, HasMedia
     public function managedClinic(): HasOne
     {
         return $this->hasOne(Clinic::class, 'user_id');
+    }
+
+    /**
+     * When this user is a doctor's assistant, the doctor they work for.
+     * (users.doctor_id → doctors.id)
+     */
+    public function assistantDoctor(): BelongsTo
+    {
+        return $this->belongsTo(Doctor::class, 'doctor_id');
+    }
+
+    /** True when this user owns a doctor profile. */
+    public function isDoctor(): bool
+    {
+        return $this->doctor()->exists();
+    }
+
+    /** True when this user is a doctor's assistant. */
+    public function isAssistant(): bool
+    {
+        return $this->doctor_id !== null;
+    }
+
+    /**
+     * The Doctor this user operates as in the clinic system: their own doctor
+     * profile, or the doctor they assist. Null for anyone else.
+     */
+    public function clinicDoctor(): ?Doctor
+    {
+        return $this->doctor ?: $this->assistantDoctor;
     }
 
     /**

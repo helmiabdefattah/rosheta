@@ -27,7 +27,17 @@ class Clinic extends Model
         'medical_examination_price',
         'follow_up_price',
         'slots_per_interval',
+        // Clinic (design) system fields.
+        'opening_hours',
+        'appointment_duration',
+        'display_show_next_button',
     ];
+
+    /**
+     * Days of the week in display order (Egyptian week starts on Saturday,
+     * Friday is the usual weekend / closing day). Used by the clinic system.
+     */
+    public const DAYS = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 
     /** Max number of reservations per 30-min slot (default 1). */
     public function getSlotsPerInterval(): int
@@ -41,7 +51,101 @@ class Clinic extends Model
         'longitude' => 'decimal:8',
         'medical_examination_price' => 'decimal:2',
         'follow_up_price' => 'decimal:2',
+        'opening_hours' => 'array',
+        'appointment_duration' => 'integer',
+        'display_show_next_button' => 'boolean',
     ];
+
+    /**
+     * Clinic-system opening hours for a weekday name (e.g. "monday"), with
+     * sane defaults so a freshly created clinic still renders a complete form.
+     */
+    public function hoursFor(string $day): array
+    {
+        $hours = $this->opening_hours[strtolower($day)] ?? null;
+
+        return [
+            'open' => $hours['open'] ?? '09:00',
+            'close' => $hours['close'] ?? '17:00',
+            'closed' => $hours['closed'] ?? false,
+        ];
+    }
+
+    /** Is the clinic open on a given calendar date (clinic-system hours)? */
+    public function isOpenOnDay(Carbon $date): bool
+    {
+        return ! $this->hoursFor($date->englishDayOfWeek)['closed'];
+    }
+
+    /**
+     * The clinic's weekly schedule lives in two places for two UIs: the rosheta
+     * booking side stores it in the workingHours table, the clinic ("practice")
+     * side mirrors it in the opening_hours JSON. These two keep them in step so
+     * both editors show the same days. workingHours is treated as canonical.
+     */
+    public function syncOpeningHoursFromWorkingHours(): void
+    {
+        $rows = $this->workingHours()->get()->keyBy('day');
+
+        $hours = [];
+        foreach (self::DAYS as $day) {
+            $wh = $rows->get($day);
+            $closed = ! $wh || (bool) $wh->is_closed || ! $wh->from || ! $wh->to;
+
+            $hours[$day] = [
+                'open' => $closed ? null : Carbon::parse($wh->from)->format('H:i'),
+                'close' => $closed ? null : Carbon::parse($wh->to)->format('H:i'),
+                'closed' => $closed,
+            ];
+        }
+
+        $this->update(['opening_hours' => $hours]);
+    }
+
+    /** Rebuild the workingHours rows from the opening_hours JSON (reverse sync). */
+    public function syncWorkingHoursFromOpeningHours(): void
+    {
+        $hours = $this->opening_hours ?? [];
+
+        $this->workingHours()->delete();
+        foreach (self::DAYS as $day) {
+            $h = $hours[$day] ?? null;
+            $closed = $h ? (bool) ($h['closed'] ?? false) : true;
+
+            $this->workingHours()->create([
+                'day' => $day,
+                'from' => $closed ? null : ($h['open'] ?? null),
+                'to' => $closed ? null : ($h['close'] ?? null),
+                'is_closed' => $closed,
+            ]);
+        }
+    }
+
+    /**
+     * How many appointment slots fit on a given weekday, based on its open
+     * window and the configured appointment duration. Returns 0 when closed.
+     */
+    public function slotsForDay(string $day): int
+    {
+        $hours = $this->hoursFor($day);
+
+        if ($hours['closed'] || ! $hours['open'] || ! $hours['close']) {
+            return 0;
+        }
+
+        $minutes = abs(Carbon::parse($hours['open'])->diffInMinutes(Carbon::parse($hours['close'])));
+        $duration = max(1, (int) $this->appointment_duration);
+
+        return (int) floor($minutes / $duration);
+    }
+
+    /** Roughly how many appointments fit in one hour at this clinic. */
+    public function slotsPerHour(): float
+    {
+        $duration = max(1, (int) $this->appointment_duration);
+
+        return round(60 / $duration, 1);
+    }
 
     public function doctor(): BelongsTo
     {
