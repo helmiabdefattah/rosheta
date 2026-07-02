@@ -5,6 +5,14 @@
 @section('page-title', app()->getLocale() === 'ar' ? 'الرئيسية' : 'Home')
 @section('page-description', app()->getLocale() === 'ar' ? 'ابحث، احجز، وتتبع طلباتك' : 'Search, book, and track your requests')
 
+@section('header-actions')
+    <button type="button"
+            onclick="var m=document.getElementById('quick-attach-modal'); m.classList.remove('hidden'); m.classList.add('flex');"
+            class="text-sm bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-lg whitespace-nowrap">
+        📎 {{ app()->getLocale() === 'ar' ? 'إرفاق ملف' : 'Attach file' }}
+    </button>
+@endsection
+
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -66,6 +74,50 @@
 
 
         @php $isAr = app()->getLocale() === 'ar'; @endphp
+
+        {{-- Quick attach modal --}}
+        <div id="quick-attach-modal"
+             class="{{ $errors->has('file') ? 'flex' : 'hidden' }} fixed inset-0 z-50 items-center justify-center bg-slate-900/50 p-4">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
+                <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+                    <h2 class="font-semibold text-slate-800">📎 {{ $isAr ? 'إرفاق ملف' : 'Attach file' }}</h2>
+                    <button type="button"
+                            onclick="var m=document.getElementById('quick-attach-modal'); m.classList.add('hidden'); m.classList.remove('flex');"
+                            class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
+                </div>
+                <form method="POST" action="{{ route('client.attachments.store') }}" enctype="multipart/form-data" class="p-5 space-y-3">
+                    @csrf
+                    <input type="text" name="title" value="{{ old('title') }}"
+                           placeholder="{{ $isAr ? 'عنوان (اختياري)' : 'Title (optional)' }}"
+                           class="w-full border rounded px-2 py-1.5 text-sm">
+
+                    @if ($clinicAppointments->count())
+                        <select name="appointment_id" class="w-full border rounded px-2 py-1.5 text-sm">
+                            <option value="">{{ $isAr ? 'لكل مواعيدي (ملف عام)' : 'For all my visits (general file)' }}</option>
+                            @foreach ($clinicAppointments as $appt)
+                                <option value="{{ $appt->id }}" @selected(old('appointment_id') == $appt->id)>
+                                    {{ $appt->clinic->name ?? ($isAr ? 'العيادة' : 'Clinic') }}
+                                    — {{ optional($appt->scheduled_at)->translatedFormat('d M Y • H:i') }}
+                                </option>
+                            @endforeach
+                        </select>
+                    @endif
+
+                    {{-- On mobile this lets the patient choose a file OR take a photo. --}}
+                    <input type="file" name="file" required accept="image/*,application/pdf" class="w-full text-sm">
+                    <p class="text-[11px] text-slate-400">
+                        {{ $isAr ? 'يمكنك اختيار ملف أو التقاط صورة بالكاميرا (صور أو PDF حتى 10 ميجابايت)' : 'Choose a file or take a photo with your camera (images or PDF, up to 10 MB)' }}
+                    </p>
+
+                    <div class="flex items-center justify-between gap-2 pt-1">
+                        <a href="{{ route('client.profile.edit') }}" class="text-xs text-teal-700 hover:underline">
+                            {{ $isAr ? 'إدارة كل ملفاتي' : 'Manage all my files' }}
+                        </a>
+                        <button class="bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-4 py-2 rounded-lg">{{ $isAr ? 'رفع' : 'Upload' }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
         <!-- Recent Requests -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200/90 overflow-hidden">
             <div class="p-5 sm:p-6 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

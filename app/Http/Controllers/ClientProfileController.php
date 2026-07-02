@@ -23,7 +23,16 @@ class ClientProfileController extends Controller
 
         $availableBonusPoints = (int) BonusPoint::where('client_id', $client->id)->sum('points');
 
-        return view('client.profile.edit', compact('client', 'insuranceCompanies', 'availableBonusPoints'));
+        // Medical files on the patient's record + upcoming visits to tag them to.
+        $myAttachments = $client->attachments()->with('appointment.clinic')->latest()->get();
+        $clinicAppointments = \App\Models\Appointment::where('client_id', $client->id)
+            ->whereDate('scheduled_at', '>=', today())
+            ->whereNotIn('status', ['cancelled', 'completed'])
+            ->with('clinic')
+            ->orderBy('scheduled_at')
+            ->get();
+
+        return view('client.profile.edit', compact('client', 'insuranceCompanies', 'availableBonusPoints', 'myAttachments', 'clinicAppointments'));
     }
 
     public function update(Request $request)

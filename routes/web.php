@@ -99,6 +99,11 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     Route::get('/dashboard/search/medical-tests', [App\Http\Controllers\ClientDashboardController::class, 'searchMedicalTests'])->name('dashboard.search.medical-tests');
     Route::get('/dashboard/search/laboratories', [App\Http\Controllers\ClientDashboardController::class, 'searchLaboratories'])->name('dashboard.search.laboratories');
 
+    // Patient-uploaded files for their medical record (optionally tied to an appointment)
+    Route::post('/attachments', [App\Http\Controllers\ClientAttachmentController::class, 'store'])->name('attachments.store');
+    Route::put('/attachments/{attachment}', [App\Http\Controllers\ClientAttachmentController::class, 'update'])->name('attachments.update');
+    Route::delete('/attachments/{attachment}', [App\Http\Controllers\ClientAttachmentController::class, 'destroy'])->name('attachments.destroy');
+
     // All requests (pharmacy / lab / nursing)
     Route::get('/my-requests', [App\Http\Controllers\ClientMyRequestsController::class, 'index'])->name('requests.index');
     Route::get('/requests/pharmacy-lab/{clientRequest}', [App\Http\Controllers\ClientMyRequestsController::class, 'showClientRequest'])->name('requests.pharmacy-lab.show');
@@ -163,6 +168,10 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
 
     // Test Results
     Route::get('/test-results', [App\Http\Controllers\ClientTestResultController::class, 'index'])->name('test-results.index');
+
+    // Prescriptions (written by doctors during clinic visits)
+    Route::get('/prescriptions', [App\Http\Controllers\ClientPrescriptionController::class, 'index'])->name('prescriptions.index');
+    Route::get('/prescriptions/{prescription}/print', [App\Http\Controllers\ClientPrescriptionController::class, 'print'])->name('prescriptions.print');
 
     // Orders
     Route::get('/orders', [App\Http\Controllers\ClientOrderController::class, 'index'])->name('orders.index');
@@ -395,5 +404,67 @@ Route::middleware([
     Route::resource('appointments', App\Http\Controllers\Admin\AppointmentController::class);
 });
 // Add this after your admin routes or create a separate nurse group
+
+/*
+|--------------------------------------------------------------------------
+| Clinic Management System ("design" system, embedded)
+|--------------------------------------------------------------------------
+| A doctor's in-clinic workspace: kiosk check-in, waiting-room display, queue
+| management, examination (diagnosis / prescription / medical requests). Shares
+| rosheta's database. URL prefix "practice", route names "practice.*".
+*/
+Route::prefix('practice')->name('practice.')->group(function () {
+    // ---- Public: self-service kiosk (per clinic) ----
+    Route::prefix('kiosk/{clinic}')->name('kiosk.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Clinic\KioskController::class, 'welcome'])->name('welcome');
+        Route::post('/lookup', [App\Http\Controllers\Clinic\KioskController::class, 'lookup'])->name('lookup');
+        Route::get('/register', [App\Http\Controllers\Clinic\KioskController::class, 'register'])->name('register');
+        Route::post('/register', [App\Http\Controllers\Clinic\KioskController::class, 'store'])->name('store');
+        Route::post('/book', [App\Http\Controllers\Clinic\KioskController::class, 'book'])->name('book');
+        Route::get('/ticket/{appointment}', [App\Http\Controllers\Clinic\KioskController::class, 'ticket'])->name('ticket');
+    });
+
+    // ---- Public: waiting-room display (per clinic) ----
+    Route::prefix('display/{clinic}')->name('display.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Clinic\DisplayController::class, 'screen'])->name('screen');
+        Route::get('/current', [App\Http\Controllers\Clinic\DisplayController::class, 'current'])->name('current');
+        Route::post('/next', [App\Http\Controllers\Clinic\DisplayController::class, 'next'])->name('next');
+    });
+
+    // ---- Shared clinic staff (doctor or assistant) ----
+    Route::middleware(['auth', 'clinic.role:doctor,assistant'])->group(function () {
+        Route::get('/patients/{patient}', [App\Http\Controllers\Clinic\PatientController::class, 'show'])->name('patients.show');
+        Route::put('/patients/{patient}', [App\Http\Controllers\Clinic\PatientController::class, 'update'])->name('patients.update');
+        Route::post('/appointments/{appointment}/status', [App\Http\Controllers\Clinic\AppointmentController::class, 'updateStatus'])->name('appointments.status');
+        Route::get('/appointments/{appointment}/ticket', [App\Http\Controllers\Clinic\AppointmentController::class, 'ticket'])->name('appointments.ticket');
+        Route::post('/appointments/{appointment}/attachments', [App\Http\Controllers\Clinic\AttachmentController::class, 'store'])->name('attachments.store');
+        Route::delete('/attachments/{attachment}', [App\Http\Controllers\Clinic\AttachmentController::class, 'destroy'])->name('attachments.destroy');
+        Route::get('/prescriptions/{prescription}/print', [App\Http\Controllers\Clinic\PrescriptionController::class, 'print'])->name('prescriptions.print');
+        Route::post('/notifications/broadcast', [App\Http\Controllers\Clinic\ClinicNotificationController::class, 'broadcast'])->name('notifications.broadcast');
+    });
+
+    // ---- Doctor's Assistant area ----
+    Route::middleware(['auth', 'clinic.role:assistant'])->prefix('assistant')->name('assistant.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'index'])->name('dashboard');
+        Route::post('/display-next-button', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'toggleDisplayNextButton'])->name('display.next-button.toggle');
+        Route::post('/appointments', [App\Http\Controllers\Clinic\AppointmentController::class, 'store'])->name('appointments.store');
+        Route::post('/pending/confirm', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'confirmPending'])->name('pending.confirm');
+        Route::post('/pending/cancel', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'cancelPending'])->name('pending.cancel');
+    });
+
+    // ---- Doctor area ----
+    Route::middleware(['auth', 'clinic.role:doctor'])->prefix('doctor')->name('doctor.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Clinic\DoctorDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/clinic', [App\Http\Controllers\Clinic\ClinicController::class, 'edit'])->name('clinic.edit');
+        Route::put('/clinic', [App\Http\Controllers\Clinic\ClinicController::class, 'update'])->name('clinic.update');
+        Route::get('/appointments/{appointment}/examine', [App\Http\Controllers\Clinic\DoctorDashboardController::class, 'examine'])->name('examine');
+        Route::put('/appointments/{appointment}/allergies', [App\Http\Controllers\Clinic\PatientController::class, 'updateAllergies'])->name('allergies.update');
+        Route::put('/appointments/{appointment}/chronic-diseases', [App\Http\Controllers\Clinic\PatientController::class, 'updateChronicDiseases'])->name('chronic.update');
+        Route::post('/appointments/{appointment}/diagnosis', [App\Http\Controllers\Clinic\DiagnosisController::class, 'store'])->name('diagnosis.store');
+        Route::post('/appointments/{appointment}/prescriptions', [App\Http\Controllers\Clinic\PrescriptionController::class, 'store'])->name('prescriptions.store');
+        Route::post('/appointments/{appointment}/requests', [App\Http\Controllers\Clinic\MedicalRequestController::class, 'store'])->name('requests.store');
+        Route::delete('/requests/{medicalRequest}', [App\Http\Controllers\Clinic\MedicalRequestController::class, 'destroy'])->name('requests.destroy');
+    });
+});
 
 

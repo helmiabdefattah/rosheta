@@ -30,9 +30,12 @@ class DoctorDashboardController extends Controller
             ->orderBy('appointment_time')
             ->limit(10)
             ->get();
+        // Count every appointment scheduled for today (any active status), not
+        // just pending/confirmed — the clinic workflow moves them on to
+        // scheduled/under_examination/completed, which should still count.
         $todayCount = Appointment::where('doctor_id', $doctor->id)
-            ->where('appointment_date', today())
-            ->whereIn('status', ['pending', 'confirmed'])
+            ->whereDate('appointment_date', today())
+            ->where('status', '!=', 'cancelled')
             ->count();
         return view('doctor.dashboard', compact('doctor', 'clinicsWhereDoctor', 'upcomingAppointments', 'todayCount'));
     }

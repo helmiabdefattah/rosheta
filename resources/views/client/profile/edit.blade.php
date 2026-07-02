@@ -214,6 +214,106 @@
             </div>
         </form>
 
+        {{-- My medical files: view / add / edit / delete --}}
+        @php $isAr = app()->getLocale() === 'ar'; @endphp
+        <div class="mt-8 pt-8 border-t border-gray-200">
+            <div class="bg-white rounded-lg border border-gray-200 p-6">
+                <div class="flex items-center justify-between gap-2 mb-1">
+                    <h3 class="text-lg font-bold text-slate-900">{{ $isAr ? 'ملفاتي الطبية' : 'My medical files' }}</h3>
+                    <button type="button"
+                            onclick="document.getElementById('client-attach-form').classList.toggle('hidden')"
+                            class="text-sm bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-lg whitespace-nowrap">
+                        📎 {{ $isAr ? 'إرفاق ملف' : 'Attach file' }}
+                    </button>
+                </div>
+                <p class="text-xs text-slate-500 mb-4">
+                    {{ $isAr ? 'أرفق تحاليل أو أشعة أو صوراً ليطّلع عليها الطبيب أثناء الكشف' : 'Attach lab results, scans or photos for the doctor to review during your visit' }}
+                </p>
+
+                {{-- Add file --}}
+                <form id="client-attach-form" method="POST" action="{{ route('client.attachments.store') }}" enctype="multipart/form-data"
+                      class="{{ $errors->has('file') ? '' : 'hidden' }} mb-4 space-y-2 border border-slate-200 rounded-lg p-3 bg-slate-50">
+                    @csrf
+                    <input type="text" name="title" value="{{ old('title') }}"
+                           placeholder="{{ $isAr ? 'عنوان (اختياري)' : 'Title (optional)' }}"
+                           class="w-full border rounded px-2 py-1.5 text-sm">
+
+                    @if ($clinicAppointments->count())
+                        <select name="appointment_id" class="w-full border rounded px-2 py-1.5 text-sm">
+                            <option value="">{{ $isAr ? 'لكل مواعيدي (ملف عام)' : 'For all my visits (general file)' }}</option>
+                            @foreach ($clinicAppointments as $appt)
+                                <option value="{{ $appt->id }}" @selected(old('appointment_id') == $appt->id)>
+                                    {{ $appt->clinic->name ?? ($isAr ? 'العيادة' : 'Clinic') }}
+                                    — {{ optional($appt->scheduled_at)->translatedFormat('d M Y • H:i') }}
+                                </option>
+                            @endforeach
+                        </select>
+                    @endif
+
+                    {{-- On mobile this lets the patient choose a file OR take a photo. --}}
+                    <input type="file" name="file" required accept="image/*,application/pdf" class="w-full text-sm">
+                    <p class="text-[11px] text-slate-400">
+                        {{ $isAr ? 'يمكنك اختيار ملف أو التقاط صورة بالكاميرا (صور أو PDF حتى 10 ميجابايت)' : 'Choose a file or take a photo with your camera (images or PDF, up to 10 MB)' }}
+                    </p>
+                    <button class="w-full bg-teal-600 hover:bg-teal-700 text-white text-sm py-1.5 rounded-lg">{{ $isAr ? 'رفع' : 'Upload' }}</button>
+                </form>
+
+                {{-- Existing files --}}
+                @if ($myAttachments->count())
+                    <div class="space-y-2">
+                        @foreach ($myAttachments as $att)
+                            <div class="rounded-lg border border-slate-100 p-2">
+                                <div class="flex items-center gap-3">
+                                    <a href="{{ $att->url }}" target="_blank" class="shrink-0">
+                                        @if ($att->isImage())
+                                            <img src="{{ $att->url }}" alt="" class="w-12 h-12 rounded object-cover border border-slate-200">
+                                        @else
+                                            <span class="w-12 h-12 rounded bg-slate-100 flex items-center justify-center text-xl">{{ $att->isPdf() ? '📄' : '📎' }}</span>
+                                        @endif
+                                    </a>
+                                    <div class="flex-1 min-w-0">
+                                        <a href="{{ $att->url }}" target="_blank" class="block text-sm text-teal-700 hover:underline truncate">
+                                            {{ $att->title ?? $att->file_name }}
+                                        </a>
+                                        @if ($att->appointment)
+                                            <div class="text-[11px] text-slate-400 truncate">
+                                                {{ $att->appointment->clinic->name ?? '' }}
+                                                · {{ optional($att->appointment->scheduled_at)->translatedFormat('d M Y') }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                    @if (is_null($att->uploaded_by))
+                                        <button type="button" onclick="document.getElementById('edit-att-{{ $att->id }}').classList.toggle('hidden')"
+                                                class="text-slate-500 hover:text-slate-700 px-2 py-1" title="{{ $isAr ? 'تعديل' : 'Edit' }}">✏️</button>
+                                        <form method="POST" action="{{ route('client.attachments.destroy', $att) }}"
+                                              onsubmit="return confirm('{{ $isAr ? 'حذف هذا الملف؟' : 'Remove this file?' }}')">
+                                            @csrf @method('DELETE')
+                                            <button class="text-red-500 hover:text-red-700 px-2 py-1" title="{{ $isAr ? 'حذف' : 'Remove' }}">🗑️</button>
+                                        </form>
+                                    @else
+                                        <span class="text-[10px] text-slate-400 px-2 whitespace-nowrap">{{ $isAr ? 'من العيادة' : 'By clinic' }}</span>
+                                    @endif
+                                </div>
+
+                                {{-- Inline rename (patient uploads only) --}}
+                                @if (is_null($att->uploaded_by))
+                                    <form id="edit-att-{{ $att->id }}" method="POST" action="{{ route('client.attachments.update', $att) }}"
+                                          class="hidden mt-2 flex items-center gap-2">
+                                        @csrf @method('PUT')
+                                        <input type="text" name="title" value="{{ $att->title ?? $att->file_name }}"
+                                               class="flex-1 border rounded px-2 py-1 text-sm">
+                                        <button class="text-sm bg-teal-600 hover:bg-teal-700 text-white px-3 py-1 rounded">{{ $isAr ? 'حفظ' : 'Save' }}</button>
+                                    </form>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-sm text-slate-400 italic">{{ $isAr ? 'لا توجد ملفات بعد.' : 'No files yet.' }}</p>
+                @endif
+            </div>
+        </div>
+
         <!-- Delete Account Section -->
         <div class="mt-8 pt-8 border-t border-red-200">
             <div class="bg-red-50 border border-red-200 rounded-lg p-6">

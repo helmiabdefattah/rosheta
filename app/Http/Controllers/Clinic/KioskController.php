@@ -1,0 +1,142 @@
+<?php
+
+namespace App\Http\Controllers\Clinic;
+
+use App\Http\Controllers\Controller;
+use App\Models\Appointment;
+use App\Models\Client;
+use App\Models\Clinic;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\View\View;
+
+/**
+ * Self-service Kiosk for a single clinic (public, no login). A patient
+ * identifies themselves by phone; the kiosk finds their file, prints today's
+ * ticket if they already have an appointment, books a new one, or registers a
+ * brand-new patient. Scoped to a clinic via the route parameter.
+ */
+class KioskController extends Controller
+{
+    public function welcome(Clinic $clinic): View
+    {
+        return view('clinic.kiosk.welcome', compact('clinic'));
+    }
+
+    public function lookup(Request $request, Clinic $clinic): RedirectResponse|View
+    {
+        $data = $request->validate(['phone' => ['required', 'string', 'max:50']]);
+        $phone = trim($data['phone']);
+        $patient = $this->findLocalPatient($phone);
+
+        if (! $patient) {
+            return redirect()->route('clinic.kiosk.register', ['clinic' => $clinic->id, 'phone' => $phone]);
+        }
+
+        if ($appointment = $this->todaysAppointment($clinic, $patient)) {
+            return redirect()->route('clinic.kiosk.ticket', ['clinic' => $clinic->id, 'appointment' => $appointment->id]);
+        }
+
+        return view('clinic.kiosk.found', compact('patient', 'clinic'));
+    }
+
+    public function register(Request $request, Clinic $clinic): View
+    {
+        $phone = (string) $request->query('phone', '');
+
+        return view('clinic.kiosk.register', compact('phone', 'clinic'));
+    }
+
+    public function store(Request $request, Clinic $clinic): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:50'],
+            'gender' => ['nullable', 'in:male,female'],
+            'dob' => ['nullable', 'date', 'before:today'],
+            'type' => ['required', 'in:examination,consultation'],
+        ]);
+
+        $patient = Client::create([
+            'name' => $data['name'],
+            'phone_number' => $data['phone'],
+            'gender' => $data['gender'] ?? null,
+            'dob' => $data['dob'] ?? null,
+        ]);
+
+        $appointment = $this->bookAppointment($clinic, $patient, $data['type']);
+
+        return redirect()->route('clinic.kiosk.ticket', ['clinic' => $clinic->id, 'appointment' => $appointment->id]);
+    }
+
+    public function book(Request $request, Clinic $clinic): RedirectResponse
+    {
+        $data = $request->validate([
+            'client_id' => ['required', 'exists:clients,id'],
+            'type' => ['required', 'in:examination,consultation'],
+        ]);
+
+        $patient = Client::findOrFail($data['client_id']);
+
+        $appointment = $this->todaysAppointment($clinic, $patient)
+            ?? $this->bookAppointment($clinic, $patient, $data['type']);
+
+        return redirect()->route('clinic.kiosk.ticket', ['clinic' => $clinic->id, 'appointment' => $appointment->id]);
+    }
+
+    public function ticket(Clinic $clinic, Appointment $appointment): View
+    {
+        $appointment->load(['client', 'doctor', 'clinic']);
+
+        return view('clinic.appointments.ticket', compact('appointment'));
+    }
+
+    /** Match a local patient by phone, comparing digits only. */
+    private function findLocalPatient(string $phone): ?Client
+    {
+        $digits = preg_replace('/\D/', '', $phone);
+
+        if ($digits === '') {
+            return null;
+        }
+
+        return Client::whereNotNull('phone_number')
+            ->get()
+            ->first(fn (Client $c) => preg_replace('/\D/', '', (string) $c->phone_number) === $digits);
+    }
+
+    /** Today's still-active appointment for a patient at this clinic, if any. */
+    private function todaysAppointment(Clinic $clinic, Client $patient): ?Appointment
+    {
+        return Appointment::where('clinic_id', $clinic->id)
+            ->where('client_id', $patient->id)
+            ->whereDate('scheduled_at', today())
+            ->whereNotIn('status', ['cancelled', 'completed'])
+            ->orderBy('queue_number')
+            ->first();
+    }
+
+    /** Create a walk-in appointment for today with the next queue number. */
+    private function bookAppointment(Clinic $clinic, Client $patient, string $type): Appointment
+    {
+        $now = Carbon::now();
+        $doctorId = $clinic->doctor_id;
+
+        $queue = (Appointment::where('doctor_id', $doctorId)
+            ->whereDate('scheduled_at', $now->toDateString())
+            ->max('queue_number') ?? 0) + 1;
+
+        return Appointment::create([
+            'client_id' => $patient->id,
+            'doctor_id' => $doctorId,
+            'clinic_id' => $clinic->id,
+            'type' => $type,
+            'status' => 'scheduled',
+            'source' => 'system',
+            'scheduled_at' => $now,
+            'queue_number' => $queue,
+            'reason' => __('app.kiosk.walk_in'),
+        ]);
+    }
+}
