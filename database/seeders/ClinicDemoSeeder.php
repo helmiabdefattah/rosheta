@@ -72,6 +72,7 @@ class ClinicDemoSeeder extends Seeder
                 'follow_up_price' => 100,
                 'appointment_duration' => 30,
                 'display_show_next_button' => true,
+                'display_show_kiosk_button' => true,
             ]
         );
 

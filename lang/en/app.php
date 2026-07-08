@@ -95,6 +95,8 @@ return [
         'title' => "Today's Appointments",
         'display_next_on' => '⏭ Display button: On',
         'display_next_off' => '⏭ Display button: Off',
+        'display_kiosk_on' => '🎫 Check-in button: On',
+        'display_kiosk_off' => '🎫 Check-in button: Off',
         'stats' => [
             'total' => 'Total today',
             'waiting' => 'Waiting',
@@ -327,6 +329,7 @@ return [
         'waiting' => 'Please wait — calling the next patient shortly',
         'tap_to_start' => 'Tap anywhere to start',
         'next' => 'Call next patient',
+        'check_in' => 'Check in',
         'announce' => 'Case number :patient, queue number for this case :queue',
     ],
 ];

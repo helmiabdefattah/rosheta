@@ -31,11 +31,11 @@ class KioskController extends Controller
         $patient = $this->findLocalPatient($phone);
 
         if (! $patient) {
-            return redirect()->route('clinic.kiosk.register', ['clinic' => $clinic->id, 'phone' => $phone]);
+            return redirect()->route('practice.kiosk.register', ['clinic' => $clinic->id, 'phone' => $phone]);
         }
 
         if ($appointment = $this->todaysAppointment($clinic, $patient)) {
-            return redirect()->route('clinic.kiosk.ticket', ['clinic' => $clinic->id, 'appointment' => $appointment->id]);
+            return redirect()->route('practice.kiosk.ticket', ['clinic' => $clinic->id, 'appointment' => $appointment->id]);
         }
 
         return view('clinic.kiosk.found', compact('patient', 'clinic'));
@@ -67,7 +67,7 @@ class KioskController extends Controller
 
         $appointment = $this->bookAppointment($clinic, $patient, $data['type']);
 
-        return redirect()->route('clinic.kiosk.ticket', ['clinic' => $clinic->id, 'appointment' => $appointment->id]);
+        return redirect()->route('practice.kiosk.ticket', ['clinic' => $clinic->id, 'appointment' => $appointment->id]);
     }
 
     public function book(Request $request, Clinic $clinic): RedirectResponse
@@ -82,7 +82,7 @@ class KioskController extends Controller
         $appointment = $this->todaysAppointment($clinic, $patient)
             ?? $this->bookAppointment($clinic, $patient, $data['type']);
 
-        return redirect()->route('clinic.kiosk.ticket', ['clinic' => $clinic->id, 'appointment' => $appointment->id]);
+        return redirect()->route('practice.kiosk.ticket', ['clinic' => $clinic->id, 'appointment' => $appointment->id]);
     }
 
     public function ticket(Clinic $clinic, Appointment $appointment): View

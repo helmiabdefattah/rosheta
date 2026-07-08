@@ -63,6 +63,20 @@
         </div>
     </div>
 
+    {{-- Open the self-service kiosk to check a patient in. Remembers this
+         display so the printed ticket can return here (see the ticket view).
+         Revealed once the starter overlay is dismissed. Shown only when enabled
+         from the assistant dashboard. --}}
+    @if (! $clinic || $clinic->display_show_kiosk_button)
+    <button id="kiosk-btn" type="button"
+            class="hidden fixed bottom-8 start-8 z-40 px-6 py-4 rounded-2xl
+                   bg-indigo-500 hover:bg-indigo-400 active:scale-95 transition
+                   text-white text-2xl md:text-3xl font-bold shadow-lg shadow-indigo-900/40"
+            style="cursor: pointer;">
+        🎫 {{ __('app.display.check_in') }}
+    </button>
+    @endif
+
     {{-- Advance the queue: complete the current patient, call the next one,
          and play the same Arabic announcement the dashboard uses. Shown only
          when enabled from the assistant dashboard. --}}
@@ -83,6 +97,7 @@
             var VOICE_PREFIX = LANG === 'ar' ? 'ar' : 'en';
             var CURRENT_URL = @json(route('practice.display.current', $clinic));
             var NEXT_URL = @json(route('practice.display.next', $clinic));
+            var KIOSK_URL = @json(route('practice.kiosk.welcome', $clinic));
             var VOICES_BASE = @json(asset('storage/voices/ar'));
             var CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
@@ -102,6 +117,7 @@
                 queue: document.getElementById('queue'),
                 clock: document.getElementById('clock'),
                 nextBtn: document.getElementById('next-btn'),
+                kioskBtn: document.getElementById('kiosk-btn'),
             };
 
             var lastId = null;     // appointment id last shown — change => re-announce
@@ -208,10 +224,21 @@
                 if (el.requestFullscreen) { el.requestFullscreen().catch(function () {}); }
                 els.starter.style.display = 'none';
                 if (els.nextBtn) { els.nextBtn.classList.remove('hidden'); }   // reveal once audio is unlocked
+                if (els.kioskBtn) { els.kioskBtn.classList.remove('hidden'); }
                 poll();
             });
 
             if (els.nextBtn) { els.nextBtn.addEventListener('click', advance); }
+
+            // Go to the kiosk, remembering this display so the printed ticket
+            // returns here afterwards (sessionStorage survives the same-tab
+            // navigation through the kiosk flow; read by the ticket view).
+            if (els.kioskBtn) {
+                els.kioskBtn.addEventListener('click', function () {
+                    try { sessionStorage.setItem('kioskReturnUrl', location.href); } catch (e) {}
+                    location.href = KIOSK_URL;
+                });
+            }
 
             setInterval(poll, 3000);
         })();
