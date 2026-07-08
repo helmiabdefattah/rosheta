@@ -39,6 +39,15 @@
                 {{ $showNext ? __('app.assistant.display_next_on') : __('app.assistant.display_next_off') }}
             </button>
         </form>
+        {{-- Show/hide the self-service "check in" button on the waiting-room display --}}
+        @php $showKiosk = ! $clinic || $clinic->display_show_kiosk_button; @endphp
+        <form method="POST" action="{{ route('practice.assistant.display.kiosk-button.toggle') }}">
+            @csrf
+            <button class="text-sm font-medium px-4 py-2 rounded-lg border
+                {{ $showKiosk ? 'bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-500 border-slate-300' }}">
+                {{ $showKiosk ? __('app.assistant.display_kiosk_on') : __('app.assistant.display_kiosk_off') }}
+            </button>
+        </form>
     </div>
 </div>
 
@@ -201,9 +210,9 @@
     @endunless
 </div>
 
-<div class="bg-white rounded-xl shadow-sm overflow-x-auto">
-    <table class="w-full text-sm min-w-[760px]">
-        <thead class="bg-slate-50 text-slate-500 text-left">
+<div class="md:bg-white md:rounded-xl md:shadow-sm md:overflow-x-auto">
+    <table class="w-full text-sm block md:table">
+        <thead class="bg-slate-50 text-slate-500 text-left hidden md:table-header-group">
             <tr>
                 <th class="px-4 py-3 w-12">{{ __('app.table.num') }}</th>
                 <th class="px-4 py-3">{{ __('app.table.patient') }}</th>
@@ -213,25 +222,34 @@
                 <th class="px-4 py-3 text-end">{{ __('app.table.actions') }}</th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100">
+        <tbody class="block md:table-row-group md:divide-y md:divide-slate-100">
             @forelse ($appointments as $appt)
-                <tr class="{{ $appt->status === 'under_examination' ? 'bg-amber-50' : '' }}">
-                    <td class="px-4 py-3 font-bold text-slate-400">{{ $loop->iteration }}</td>
-                    <td class="px-4 py-3">
-                        <div class="font-semibold text-slate-900">
+                <tr class="block md:table-row rounded-xl shadow-sm md:shadow-none border md:border-x-0 md:border-t-0 border-slate-200 mb-3 md:mb-0 p-3 md:p-0 {{ $appt->status === 'under_examination' ? 'bg-amber-50' : 'bg-white md:bg-transparent' }}">
+                    <td class="block md:table-cell md:px-4 md:py-3 font-bold text-slate-400">
+                        <span class="md:hidden text-xs uppercase text-slate-400">{{ __('app.table.num') }}: </span>{{ $loop->iteration }}
+                    </td>
+                    <td class="block md:table-cell md:px-4 md:py-3">
+                        <div class="font-semibold text-slate-900 text-base md:text-sm">
                             {{ $appt->client->name }}
                         </div>
                         <div class="text-xs text-slate-400">{{ $appt->client->phone_number }}</div>
                     </td>
-                    <td class="px-4 py-3">{{ $appt->typeLabel() }}</td>
-                    <td class="px-4 py-3">{{ $appt->scheduled_at->format('H:i') }}</td>
-                    <td class="px-4 py-3">
+                    <td class="flex justify-between md:table-cell md:px-4 md:py-3 border-t border-slate-100 mt-2 pt-2 md:border-0 md:mt-0 md:pt-0">
+                        <span class="md:hidden text-xs uppercase text-slate-400">{{ __('app.table.type') }}</span>
+                        <span>{{ $appt->typeLabel() }}</span>
+                    </td>
+                    <td class="flex justify-between md:table-cell md:px-4 md:py-3">
+                        <span class="md:hidden text-xs uppercase text-slate-400">{{ __('app.table.time') }}</span>
+                        <span>{{ $appt->scheduled_at->format('H:i') }}</span>
+                    </td>
+                    <td class="flex justify-between items-center md:table-cell md:px-4 md:py-3">
+                        <span class="md:hidden text-xs uppercase text-slate-400">{{ __('app.table.status') }}</span>
                         <span class="text-xs px-2 py-1 rounded-full {{ $statusColors[$appt->status] ?? 'bg-slate-100 text-slate-700' }}">
                             {{ $appt->statusLabel() }}
                         </span>
                     </td>
-                    <td class="px-4 py-3">
-                        <div class="flex items-center justify-end gap-1 flex-wrap">
+                    <td class="block md:table-cell md:px-4 md:py-3 border-t border-slate-100 mt-2 pt-3 md:border-0 md:mt-0 md:pt-3">
+                        <div class="flex items-center justify-start md:justify-end gap-1 flex-wrap">
                             {{-- View profile --}}
                             <a href="{{ route('practice.patients.show', $appt->client) }}"
                                class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700" title="{{ __('app.assistant.view_profile') }}">👤</a>
@@ -295,7 +313,7 @@
 
                 {{-- Upload modal --}}
                 <tr id="upload-{{ $appt->id }}" class="hidden">
-                    <td colspan="6" class="px-4 py-4 bg-slate-50">
+                    <td colspan="6" class="block md:table-cell px-4 py-4 bg-slate-50 rounded-xl md:rounded-none mb-3 md:mb-0">
                         <form method="POST" action="{{ route('practice.attachments.store', $appt) }}" enctype="multipart/form-data"
                               class="flex flex-wrap items-end gap-3">
                             @csrf
@@ -326,7 +344,7 @@
 
                 {{-- Edit patient file --}}
                 <tr id="edit-{{ $appt->id }}" class="hidden">
-                    <td colspan="6" class="px-4 py-4 bg-indigo-50/50">
+                    <td colspan="6" class="block md:table-cell px-4 py-4 bg-indigo-50/50 rounded-xl md:rounded-none mb-3 md:mb-0">
                         @php $ep = $appt->client; @endphp
                         <form method="POST" action="{{ route('practice.patients.update', $ep) }}" class="space-y-3">
                             @csrf @method('PUT')
@@ -398,8 +416,8 @@
                     </td>
                 </tr>
             @empty
-                <tr>
-                    <td colspan="6" class="px-4 py-10 text-center text-slate-400">
+                <tr class="block md:table-row">
+                    <td colspan="6" class="block md:table-cell px-4 py-10 text-center text-slate-400 bg-white rounded-xl md:rounded-none">
                         {{ __('app.assistant.empty') }}
                     </td>
                 </tr>
@@ -409,7 +427,7 @@
 </div>
 
 {{-- Month calendar: green = clinic open, badge = booked appointments. Click a day to view it. --}}
-<div class="bg-white rounded-xl shadow-sm p-5 mt-6">
+<div class="bg-white rounded-xl shadow-sm p-3 sm:p-5 mt-6">
     <div class="flex items-center justify-between mb-4">
         <h2 class="font-semibold text-slate-800">{{ $calendar['month']->translatedFormat('F Y') }}</h2>
         <div class="flex items-center gap-2 text-sm">
@@ -422,35 +440,35 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-slate-400 mb-1">
+    <div class="grid grid-cols-7 gap-0.5 sm:gap-1 text-center text-[10px] sm:text-xs font-semibold text-slate-400 mb-1">
         @foreach ($calendar['dayHeaders'] as $dh)
-            <div class="py-1">{{ $dh }}</div>
+            <div class="py-1 truncate">{{ $dh }}</div>
         @endforeach
     </div>
 
-    <div class="grid grid-cols-7 gap-1">
+    <div class="grid grid-cols-7 gap-0.5 sm:gap-1">
         @foreach ($calendar['weeks'] as $week)
             @foreach ($week as $day)
                 @php $closedWithAppts = ! $day['isOpen'] && $day['count'] > 0; @endphp
                 <a href="{{ route('practice.assistant.dashboard', ['month' => $calendar['month']->format('Y-m'), 'date' => $day['date']->format('Y-m-d')]) }}"
-                   class="relative block min-h-[76px] rounded-lg border p-1.5 transition hover:shadow-sm hover:border-indigo-300
+                   class="relative block min-h-[46px] sm:min-h-[76px] rounded-md sm:rounded-lg border p-1 sm:p-1.5 transition hover:shadow-sm hover:border-indigo-300
                     {{ $day['isOpen'] ? 'bg-emerald-50 border-emerald-200' : ($closedWithAppts ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-100') }}
                     {{ $day['inMonth'] ? '' : 'opacity-40' }}
                     {{ $day['isSelected'] ? 'ring-2 ring-indigo-600 border-indigo-400' : ($day['isToday'] ? 'ring-2 ring-indigo-300' : '') }}">
-                    <span class="absolute top-1 start-2 text-xs {{ $day['isOpen'] ? 'text-emerald-700 font-semibold' : ($closedWithAppts ? 'text-red-700 font-semibold' : 'text-slate-400') }}">
+                    <span class="absolute top-0.5 start-1 sm:top-1 sm:start-2 text-[10px] sm:text-xs {{ $day['isOpen'] ? 'text-emerald-700 font-semibold' : ($closedWithAppts ? 'text-red-700 font-semibold' : 'text-slate-400') }}">
                         {{ $day['date']->day }}
                     </span>
                     @if ($day['pending'] > 0)
-                        <span class="absolute top-1 end-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 text-white text-[10px] font-bold leading-none"
+                        <span class="absolute top-0.5 end-0.5 sm:top-1 sm:end-1 inline-flex items-center justify-center min-w-[14px] h-[14px] sm:min-w-[18px] sm:h-[18px] px-1 rounded-full bg-amber-500 text-white text-[8px] sm:text-[10px] font-bold leading-none"
                               title="{{ $day['pending'] }} {{ __('app.mostashfa.pending_title') }}">
                             {{ $day['pending'] }}
                         </span>
                     @endif
                     @if ($day['count'] > 0)
-                        <div class="absolute inset-0 flex flex-col items-center justify-center pt-2"
+                        <div class="absolute inset-0 flex flex-col items-center justify-center pt-3 sm:pt-2"
                              title="{{ $day['count'] }} {{ __('app.clinic.appointments') }}{{ $closedWithAppts ? ' — '.__('app.calendar.closed_with_appointments') : '' }}">
-                            <span class="text-3xl font-extrabold leading-none {{ $closedWithAppts ? 'text-red-600' : 'text-indigo-600' }}">{{ $day['count'] }}</span>
-                            <span class="text-[10px] uppercase tracking-wide mt-0.5 {{ $closedWithAppts ? 'text-red-400' : 'text-indigo-400' }}">{{ __('app.clinic.appointments') }}</span>
+                            <span class="text-base sm:text-3xl font-extrabold leading-none {{ $closedWithAppts ? 'text-red-600' : 'text-indigo-600' }}">{{ $day['count'] }}</span>
+                            <span class="hidden md:block text-[10px] uppercase tracking-wide mt-0.5 {{ $closedWithAppts ? 'text-red-400' : 'text-indigo-400' }}">{{ __('app.clinic.appointments') }}</span>
                         </div>
                     @endif
                 </a>
@@ -458,7 +476,7 @@
         @endforeach
     </div>
 
-    <div class="flex items-center gap-4 mt-4 text-xs text-slate-500">
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-4 text-xs text-slate-500">
         <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-emerald-100 border border-emerald-300"></span> {{ __('app.calendar.open') }}</span>
         <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-slate-100 border border-slate-200"></span> {{ __('app.calendar.closed') }}</span>
         <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-red-50 border border-red-200"></span> {{ __('app.calendar.closed_with_appointments') }}</span>
@@ -479,8 +497,8 @@
             <p class="text-xs text-teal-600">{{ __('app.mostashfa.pending_subtitle') }}</p>
         </div>
     </div>
-    <table class="w-full text-sm min-w-[640px]">
-        <thead class="bg-slate-50 text-slate-500 text-left">
+    <table class="w-full text-sm block md:table">
+        <thead class="bg-slate-50 text-slate-500 text-left hidden md:table-header-group">
             <tr>
                 <th class="px-4 py-2">{{ __('app.table.patient') }}</th>
                 <th class="px-4 py-2">{{ __('app.table.type') }}</th>
@@ -490,28 +508,38 @@
             </tr>
         </thead>
         @php $pendingLimit = 10; @endphp
-        <tbody class="divide-y divide-slate-100">
+        <tbody class="block md:table-row-group md:divide-y md:divide-slate-100">
             @foreach ($pendingRequests as $req)
-                <tr @class(['hidden pending-extra' => $loop->iteration > $pendingLimit])>
-                    <td class="px-4 py-3">
+                <tr @class([
+                        'block md:table-row border md:border-x-0 md:border-t-0 border-slate-200 p-3 md:p-0 mb-3 md:mb-0 bg-white md:bg-transparent',
+                        'hidden pending-extra' => $loop->iteration > $pendingLimit,
+                    ])>
+                    <td class="block md:table-cell md:px-4 md:py-3">
                         <div class="font-semibold text-slate-900">{{ $req->client->name }}</div>
                         @if ($req->client->phone_number)
                             <div class="text-xs text-slate-400">{{ $req->client->phone_number }}</div>
                         @endif
                     </td>
-                    <td class="px-4 py-3">
-                        {{ $req->typeLabel() }}
+                    <td class="flex justify-between md:table-cell md:px-4 md:py-3 border-t border-slate-100 mt-2 pt-2 md:border-0 md:mt-0 md:pt-0">
+                        <span class="md:hidden text-xs uppercase text-slate-400">{{ __('app.table.type') }}</span>
+                        <span>{{ $req->typeLabel() }}</span>
                     </td>
-                    <td class="px-4 py-3 text-slate-600">
+                    <td class="flex justify-between md:table-cell md:px-4 md:py-3 text-slate-600">
+                        <span class="md:hidden text-xs uppercase text-slate-400">{{ __('app.mostashfa.requested_for') }}</span>
+                        <span>
                         @if ($req->scheduled_at)
                             {{ $req->scheduled_at->translatedFormat('d M') }} &middot; {{ $req->scheduled_at->format('H:i') }}
                         @else
                             —
                         @endif
+                        </span>
                     </td>
-                    <td class="px-4 py-3 text-slate-500">{{ $req->reason }}</td>
-                    <td class="px-4 py-3">
-                        <div class="flex items-center justify-end gap-2">
+                    <td class="flex justify-between md:table-cell md:px-4 md:py-3 text-slate-500">
+                        <span class="md:hidden text-xs uppercase text-slate-400">{{ __('app.appointment.reason') }}</span>
+                        <span>{{ $req->reason }}</span>
+                    </td>
+                    <td class="block md:table-cell md:px-4 md:py-3 border-t border-slate-100 mt-2 pt-3 md:border-0 md:mt-0 md:pt-3">
+                        <div class="flex items-center justify-start md:justify-end gap-2">
                             <form method="POST" action="{{ route('practice.assistant.pending.confirm') }}">
                                 @csrf
                                 <input type="hidden" name="appointment_id" value="{{ $req->id }}">

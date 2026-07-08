@@ -112,8 +112,23 @@
     </div>
 
     <script>
-        // Auto-open the print dialog (skip with ?auto=0).
-        if (new URLSearchParams(location.search).get('auto') !== '0') window.print();
+        // If we arrived here from the waiting-room display's check-in button,
+        // return to that display once the ticket has been printed (or the print
+        // dialog dismissed). The URL was stashed in sessionStorage before the
+        // kiosk flow started; consume it so a manual reprint won't redirect.
+        (function () {
+            var returnUrl = null;
+            try { returnUrl = sessionStorage.getItem('kioskReturnUrl'); } catch (e) {}
+            if (returnUrl) {
+                try { sessionStorage.removeItem('kioskReturnUrl'); } catch (e) {}
+                window.addEventListener('afterprint', function () {
+                    location.href = returnUrl;
+                });
+            }
+
+            // Auto-open the print dialog (skip with ?auto=0).
+            if (new URLSearchParams(location.search).get('auto') !== '0') window.print();
+        })();
     </script>
 </body>
 </html>
