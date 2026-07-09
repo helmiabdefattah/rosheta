@@ -289,6 +289,7 @@ return [
         'new_patient' => 'Create your file',
         'register_intro' => "We couldn't find your number. Fill in your details to register.",
         'dob' => 'Date of birth',
+        'age' => 'Age',
         'register_book' => 'Register & book',
         'walk_in' => 'Kiosk check-in',
     ],

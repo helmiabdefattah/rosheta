@@ -34,8 +34,8 @@
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-semibold text-slate-600 mb-1">{{ __('app.kiosk.dob') }}</label>
-                <input type="date" name="dob" value="{{ old('dob') }}" max="{{ date('Y-m-d') }}"
+                <label class="block text-sm font-semibold text-slate-600 mb-1">{{ __('app.kiosk.age') }}</label>
+                <input type="number" name="age" value="{{ old('age') }}" min="0" max="150" inputmode="numeric"
                        class="w-full text-xl py-4 px-4 rounded-2xl border-2 border-slate-200 focus:border-indigo-500 focus:ring-0 outline-none">
             </div>
         </div>
