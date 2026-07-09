@@ -31,7 +31,6 @@ class Clinic extends Model
         'opening_hours',
         'appointment_duration',
         'display_show_next_button',
-        'display_show_kiosk_button',
     ];
 
     /**
@@ -55,7 +54,6 @@ class Clinic extends Model
         'opening_hours' => 'array',
         'appointment_duration' => 'integer',
         'display_show_next_button' => 'boolean',
-        'display_show_kiosk_button' => 'boolean',
     ];
 
     /**

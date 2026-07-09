@@ -95,8 +95,6 @@ return [
         'title' => "Today's Appointments",
         'display_next_on' => '⏭ Display button: On',
         'display_next_off' => '⏭ Display button: Off',
-        'display_kiosk_on' => '🎫 Check-in button: On',
-        'display_kiosk_off' => '🎫 Check-in button: Off',
         'stats' => [
             'total' => 'Total today',
             'waiting' => 'Waiting',
@@ -324,6 +322,7 @@ return [
     'display' => [
         'title' => 'Now Serving',
         'open' => 'Open waiting-room display',
+        'open_checkin' => 'Open display with check-in',
         'queue_label' => 'Queue number',
         'patient_number' => 'Patient number',
         'waiting' => 'Please wait — calling the next patient shortly',

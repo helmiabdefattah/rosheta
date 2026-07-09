@@ -39,6 +39,9 @@
                     <a href="{{ route('practice.display.screen', $displayClinic) }}" target="_blank"
                        class="text-sm px-3 py-1 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 whitespace-nowrap"
                        title="{{ __('app.display.open') }}">📺 {{ __('app.display.title') }}</a>
+                    <a href="{{ route('practice.display.screen', ['clinic' => $displayClinic, 'checkin' => 1]) }}" target="_blank"
+                       class="text-sm px-3 py-1 rounded-lg border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 whitespace-nowrap"
+                       title="{{ __('app.display.open_checkin') }}">🎫 {{ __('app.display.check_in') }}</a>
                 @endif
                 <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                    class="text-sm px-3 py-1 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 whitespace-nowrap">

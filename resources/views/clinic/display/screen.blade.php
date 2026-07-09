@@ -65,9 +65,9 @@
 
     {{-- Open the self-service kiosk to check a patient in. Remembers this
          display so the printed ticket can return here (see the ticket view).
-         Revealed once the starter overlay is dismissed. Shown only when enabled
-         from the assistant dashboard. --}}
-    @if (! $clinic || $clinic->display_show_kiosk_button)
+         Revealed once the starter overlay is dismissed. Shown only when the
+         display is opened with ?checkin=1 (the "check-in" launch button). --}}
+    @if (request()->boolean('checkin'))
     <button id="kiosk-btn" type="button"
             class="hidden fixed bottom-8 start-8 z-40 px-6 py-4 rounded-2xl
                    bg-indigo-500 hover:bg-indigo-400 active:scale-95 transition
@@ -79,8 +79,9 @@
 
     {{-- Advance the queue: complete the current patient, call the next one,
          and play the same Arabic announcement the dashboard uses. Shown only
-         when enabled from the assistant dashboard. --}}
-    @if (! $clinic || $clinic->display_show_next_button)
+         when enabled from the assistant dashboard, and never on the check-in
+         display (that screen is for patients, not staff). --}}
+    @if ((! $clinic || $clinic->display_show_next_button) && ! request()->boolean('checkin'))
     <button id="next-btn" type="button"
             class="hidden fixed bottom-8 inset-x-0 mx-auto w-fit z-40 px-8 py-4 rounded-2xl
                    bg-amber-500 hover:bg-amber-400 active:scale-95 transition
