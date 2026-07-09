@@ -39,15 +39,6 @@
                 {{ $showNext ? __('app.assistant.display_next_on') : __('app.assistant.display_next_off') }}
             </button>
         </form>
-        {{-- Show/hide the self-service "check in" button on the waiting-room display --}}
-        @php $showKiosk = ! $clinic || $clinic->display_show_kiosk_button; @endphp
-        <form method="POST" action="{{ route('practice.assistant.display.kiosk-button.toggle') }}">
-            @csrf
-            <button class="text-sm font-medium px-4 py-2 rounded-lg border
-                {{ $showKiosk ? 'bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-500 border-slate-300' }}">
-                {{ $showKiosk ? __('app.assistant.display_kiosk_on') : __('app.assistant.display_kiosk_off') }}
-            </button>
-        </form>
     </div>
 </div>
 

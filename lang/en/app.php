@@ -95,8 +95,6 @@ return [
         'title' => "Today's Appointments",
         'display_next_on' => '⏭ Display button: On',
         'display_next_off' => '⏭ Display button: Off',
-        'display_kiosk_on' => '🎫 Check-in button: On',
-        'display_kiosk_off' => '🎫 Check-in button: Off',
         'stats' => [
             'total' => 'Total today',
             'waiting' => 'Waiting',
@@ -291,6 +289,7 @@ return [
         'new_patient' => 'Create your file',
         'register_intro' => "We couldn't find your number. Fill in your details to register.",
         'dob' => 'Date of birth',
+        'age' => 'Age',
         'register_book' => 'Register & book',
         'walk_in' => 'Kiosk check-in',
     ],
@@ -324,6 +323,7 @@ return [
     'display' => [
         'title' => 'Now Serving',
         'open' => 'Open waiting-room display',
+        'open_checkin' => 'Open display with check-in',
         'queue_label' => 'Queue number',
         'patient_number' => 'Patient number',
         'waiting' => 'Please wait — calling the next patient shortly',

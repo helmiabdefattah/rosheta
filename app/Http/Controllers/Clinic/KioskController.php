@@ -9,6 +9,7 @@ use App\Models\Clinic;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
@@ -54,15 +55,24 @@ class KioskController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:50'],
             'gender' => ['nullable', 'in:male,female'],
-            'dob' => ['nullable', 'date', 'before:today'],
+            'age' => ['nullable', 'integer', 'min:0', 'max:150'],
             'type' => ['required', 'in:examination,consultation'],
         ]);
+
+        // Patients give their age at the kiosk; store it as a 1 Jan birth date
+        // of the implied year so the file still carries a usable date of birth.
+        $dob = $request->filled('age')
+            ? Carbon::create(Carbon::now()->year - (int) $data['age'], 1, 1)->toDateString()
+            : null;
 
         $patient = Client::create([
             'name' => $data['name'],
             'phone_number' => $data['phone'],
             'gender' => $data['gender'] ?? null,
-            'dob' => $data['dob'] ?? null,
+            'dob' => $dob,
+            // Walk-in patients aren't app users; give them a random password so
+            // the non-nullable clients.password column is satisfied.
+            'password' => Str::random(40),
         ]);
 
         $appointment = $this->bookAppointment($clinic, $patient, $data['type']);
