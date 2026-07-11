@@ -240,18 +240,6 @@
 {{--                </a>--}}
 
                 <div class="menu-header">{{ app()->getLocale() === 'ar' ? 'الإعدادات' : 'SETTINGS' }}</div>
-
-                {{-- Mobile app only: open native Bluetooth printer screen via the Flutter JS bridge --}}
-                @if(str_contains(request()->userAgent() ?? '', 'MostashfaOnApp'))
-                <a href="javascript:void(0)" class="nav-item"
-                   onclick="if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) { window.flutter_inappwebview.callHandler('mostashfaon', JSON.stringify({action: 'connect_printer'})); } return false;">
-                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-                    </svg>
-                    <span>{{ app()->getLocale() === 'ar' ? 'توصيل الطابعة' : 'Connect Printer' }}</span>
-                </a>
-                @endif
-
                         @if(Auth::guard('client')->user()->nurse_id == null)
 
                 <a href="{{ route('client.profile.edit') }}" class="nav-item {{ request()->routeIs('client.profile.*') ? 'active' : '' }}">
