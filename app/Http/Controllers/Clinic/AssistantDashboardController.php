@@ -7,6 +7,7 @@ use App\Http\Controllers\Clinic\Concerns\ClinicContext;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Client;
+use App\Notifications\PrintQueueTicketNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,26 @@ use Illuminate\View\View;
 class AssistantDashboardController extends Controller
 {
     use BuildsClinicCalendar, ClinicContext;
+
+    /**
+     * Send the appointment's queue ticket to the clinic's Bluetooth printer:
+     * an FCM data message picked up by staff mobile apps with a printer connected.
+     */
+    public function printTicket(Request $request, Appointment $appointment): JsonResponse
+    {
+        $doctor = $this->clinicDoctor($request);
+        abort_unless($appointment->doctor_id === $doctor->id, 403);
+
+        try {
+            PrintQueueTicketNotification::sendToClinicStaff($appointment);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json(['ok' => false], 500);
+        }
+
+        return response()->json(['ok' => true]);
+    }
 
     public function index(Request $request): View
     {

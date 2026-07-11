@@ -448,6 +448,7 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'index'])->name('dashboard');
         Route::post('/display-next-button', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'toggleDisplayNextButton'])->name('display.next-button.toggle');
         Route::post('/appointments', [App\Http\Controllers\Clinic\AppointmentController::class, 'store'])->name('appointments.store');
+        Route::post('/appointments/{appointment}/print-ticket', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'printTicket'])->name('appointments.print-ticket');
         Route::post('/pending/confirm', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'confirmPending'])->name('pending.confirm');
         Route::post('/pending/cancel', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'cancelPending'])->name('pending.cancel');
     });

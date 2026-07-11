@@ -304,6 +304,10 @@ return [
         'time' => 'Time',
         'doctor' => 'Doctor',
         'thanks' => 'Please keep this ticket. Thank you.',
+        'print_bt' => 'Print on ticket printer',
+        'print_bt_sent' => 'Ticket sent to the printer',
+        'print_bt_failed' => 'Could not send the ticket to the printer',
+        'connect_printer' => 'Connect Printer',
     ],
 
     // Prescription print

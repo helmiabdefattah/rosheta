@@ -40,13 +40,14 @@ class FcmChannel
                 ]);
             }
             
-            // Get FCM tokens (web and mobile)
+            // Get FCM tokens (web and mobile). Some messages (e.g. printer
+            // instructions) only make sense on the mobile app.
             $tokens = [];
-            
-            if ($notifiable->fcm_token_web) {
+
+            if (empty($fcmData['mobile_only']) && $notifiable->fcm_token_web) {
                 $tokens[] = $notifiable->fcm_token_web;
             }
-            
+
             if ($notifiable->fcm_token_mobile) {
                 $tokens[] = $notifiable->fcm_token_mobile;
             }
@@ -171,9 +172,22 @@ class FcmChannel
             // - Android/iOS native apps need a notification payload to show the system tray when the app is backgrounded or killed.
             // - Data-only messages often deliver without a visible notification on Android.
             // - Web still receives the same data payload for the service worker / foreground handlers.
-            $message = CloudMessage::withTarget('token', $token)
-                ->withNotification($firebaseNotification)
-                ->withData($stringData);
+            //
+            // Exception: silent machine-to-machine messages (e.g. print_ticket)
+            // set data_only — Android only runs the app's background handler
+            // for data-only messages, so no notification payload is attached.
+            if (!empty($fcmData['data_only'])) {
+                $message = CloudMessage::withTarget('token', $token)
+                    ->withData($stringData);
+            } else {
+                $message = CloudMessage::withTarget('token', $token)
+                    ->withNotification($firebaseNotification)
+                    ->withData($stringData);
+            }
+
+            if (($fcmData['priority'] ?? null) === 'high') {
+                $message = $message->withAndroidConfig(['priority' => 'high']);
+            }
 
             // Send the message
             $messaging->send($message);

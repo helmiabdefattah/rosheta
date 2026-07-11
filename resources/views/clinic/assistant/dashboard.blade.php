@@ -22,6 +22,14 @@
         </p>
     </div>
     <div class="flex flex-wrap items-center gap-2">
+        {{-- Mobile app only: open the native Bluetooth printer screen via the Flutter JS bridge --}}
+        @if (str_contains(request()->userAgent() ?? '', 'MostashfaOnApp'))
+        <button type="button"
+                onclick="if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) { window.flutter_inappwebview.callHandler('mostashfaon', JSON.stringify({action: 'connect_printer'})); }"
+                class="bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
+            🖨️ {{ __('app.ticket.connect_printer') }}
+        </button>
+        @endif
         <button type="button" onclick="toggle('broadcast-modal')"
                 class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
             📣 {{ __('app.notify.button') }}
@@ -248,6 +256,10 @@
                             {{-- Print queue ticket/receipt --}}
                             <a href="{{ route('practice.appointments.ticket', $appt) }}" target="_blank"
                                class="px-2 py-1 rounded bg-teal-100 hover:bg-teal-200 text-teal-700" title="{{ __('app.ticket.print') }}">🧾</a>
+
+                            {{-- Print on the clinic's Bluetooth ticket printer (via staff mobile app) --}}
+                            <button type="button" onclick="printTicketBt({{ $appt->id }}, this)"
+                               class="px-2 py-1 rounded bg-cyan-100 hover:bg-cyan-200 text-cyan-700" title="{{ __('app.ticket.print_bt') }}">🎫</button>
 
                             {{-- Edit patient file --}}
                             <button onclick="toggle('edit-{{ $appt->id }}')"
@@ -578,6 +590,32 @@
     </script>
     @endpush
 @endif
+
+{{-- Send a queue ticket to the clinic's Bluetooth printer (FCM → staff mobile app). --}}
+@push('scripts')
+<script>
+    function printTicketBt(appointmentId, btn) {
+        btn.disabled = true;
+        fetch(`{{ url('practice/assistant/appointments') }}/${appointmentId}/print-ticket`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            },
+        })
+        .then(res => res.ok ? res.json() : Promise.reject(res))
+        .then(() => {
+            btn.textContent = '✅';
+            setTimeout(() => { btn.textContent = '🎫'; btn.disabled = false; }, 2000);
+        })
+        .catch(() => {
+            btn.disabled = false;
+            alert(@json(__('app.ticket.print_bt_failed')));
+        });
+    }
+</script>
+@endpush
 
 {{-- Confirm / decline pending requests without a full page reload. --}}
 @push('scripts')

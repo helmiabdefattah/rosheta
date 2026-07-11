@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Client;
 use App\Models\Clinic;
+use App\Notifications\PrintQueueTicketNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -137,7 +138,7 @@ class KioskController extends Controller
             ->whereDate('scheduled_at', $now->toDateString())
             ->max('queue_number') ?? 0) + 1;
 
-        return Appointment::create([
+        $appointment = Appointment::create([
             'client_id' => $patient->id,
             'doctor_id' => $doctorId,
             'clinic_id' => $clinic->id,
@@ -148,5 +149,15 @@ class KioskController extends Controller
             'queue_number' => $queue,
             'reason' => __('app.kiosk.walk_in'),
         ]);
+
+        // Auto-print the queue ticket on the clinic's Bluetooth printer via
+        // the staff mobile app (best effort — check-in must never fail on it).
+        try {
+            PrintQueueTicketNotification::sendToClinicStaff($appointment);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        return $appointment;
     }
 }
