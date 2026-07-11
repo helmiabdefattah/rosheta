@@ -78,7 +78,7 @@ class KioskController extends Controller
 
         $appointment = $this->bookAppointment($clinic, $patient, $data['type']);
 
-        return redirect()->route('practice.kiosk.ticket', ['clinic' => $clinic->id, 'appointment' => $appointment->id]);
+        return $this->afterCheckIn($clinic, $appointment);
     }
 
     public function book(Request $request, Clinic $clinic): RedirectResponse
@@ -92,6 +92,22 @@ class KioskController extends Controller
 
         $appointment = $this->todaysAppointment($clinic, $patient)
             ?? $this->bookAppointment($clinic, $patient, $data['type']);
+
+        return $this->afterCheckIn($clinic, $appointment);
+    }
+
+    /**
+     * When the clinic has a connected Bluetooth printer, the ticket is printed
+     * automatically by the staff app (FCM), so skip the browser print page and
+     * return to the kiosk welcome screen. Otherwise fall back to browser print.
+     */
+    private function afterCheckIn(Clinic $clinic, Appointment $appointment): RedirectResponse
+    {
+        if ($clinic->hasConnectedPrinter()) {
+            return redirect()
+                ->route('practice.kiosk.welcome', ['clinic' => $clinic->id])
+                ->with('kiosk_ticket_number', $appointment->queue_number);
+        }
 
         return redirect()->route('practice.kiosk.ticket', ['clinic' => $clinic->id, 'appointment' => $appointment->id]);
     }

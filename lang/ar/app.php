@@ -279,6 +279,8 @@ return [
         'age' => 'العمر',
         'register_book' => 'تسجيل وحجز',
         'walk_in' => 'تسجيل حضور عبر الكشك',
+        'printed_title' => 'تم تسجيل حضورك',
+        'printed_number' => 'رقم تذكرتك',
     ],
 
     'ticket' => [

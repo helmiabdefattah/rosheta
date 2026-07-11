@@ -19,6 +19,14 @@
             </a>
         </div>
     @else
+    @if (session()->has('kiosk_ticket_number'))
+        {{-- Check-in succeeded and the ticket was sent to the clinic's printer. --}}
+        <div class="mb-6 rounded-2xl bg-emerald-50 border-2 border-emerald-200 p-6 text-center">
+            <div class="text-2xl font-extrabold text-emerald-800">{{ __('app.kiosk.printed_title') }}</div>
+            <div class="mt-2 text-lg text-emerald-700">{{ __('app.kiosk.printed_number') }}</div>
+            <div class="mt-1 text-6xl font-black text-emerald-900">{{ session('kiosk_ticket_number') }}</div>
+        </div>
+    @endif
     {{-- Step 2: phone check-in (shown once a language has been chosen) --}}
     <div class="text-center mb-8">
         <h1 class="text-3xl font-extrabold text-slate-900">{{ __('app.kiosk.welcome') }}</h1>

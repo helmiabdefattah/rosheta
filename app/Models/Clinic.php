@@ -31,6 +31,7 @@ class Clinic extends Model
         'opening_hours',
         'appointment_duration',
         'display_show_next_button',
+        'printer_connected_at',
     ];
 
     /**
@@ -54,7 +55,18 @@ class Clinic extends Model
         'opening_hours' => 'array',
         'appointment_duration' => 'integer',
         'display_show_next_button' => 'boolean',
+        'printer_connected_at' => 'datetime',
     ];
+
+    /**
+     * Whether a staff mobile app with a connected Bluetooth printer has sent a
+     * heartbeat recently (within [$minutes]). Used to auto-print queue tickets.
+     */
+    public function hasConnectedPrinter(int $minutes = 10): bool
+    {
+        return $this->printer_connected_at !== null
+            && $this->printer_connected_at->gt(now()->subMinutes($minutes));
+    }
 
     /**
      * Clinic-system opening hours for a weekday name (e.g. "monday"), with

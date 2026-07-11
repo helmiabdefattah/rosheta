@@ -292,6 +292,8 @@ return [
         'age' => 'Age',
         'register_book' => 'Register & book',
         'walk_in' => 'Kiosk check-in',
+        'printed_title' => 'You are checked in',
+        'printed_number' => 'Your ticket number',
     ],
 
     'ticket' => [

@@ -53,6 +53,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/fcm-token', [\App\Http\Controllers\Api\FcmTokenController::class, 'update']);
     Route::delete('/fcm-token', [\App\Http\Controllers\Api\FcmTokenController::class, 'remove']);
 
+    // Staff app reports Bluetooth ticket-printer connection state for its clinics.
+    Route::post('/printer-status', [\App\Http\Controllers\Api\PrinterStatusController::class, 'update']);
+
     Route::post('/webview-bridge', [WebviewBridgeController::class, 'issue']);
 
     // Patient (client) API only
