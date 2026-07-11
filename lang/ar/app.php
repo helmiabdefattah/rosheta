@@ -281,6 +281,9 @@ return [
         'walk_in' => 'تسجيل حضور عبر الكشك',
         'printed_title' => 'تم تسجيل حضورك',
         'printed_number' => 'رقم تذكرتك',
+        'cancel' => 'إلغاء',
+        'idle_return' => 'العودة إلى البداية خلال',
+        'seconds' => 'ثانية',
     ],
 
     'ticket' => [

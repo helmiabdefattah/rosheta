@@ -68,6 +68,17 @@
         </button>
     </form>
 
+    {{-- Manual reset + idle auto-return to the main kiosk screen --}}
+    <button type="button" id="kioskCancelBtn"
+            class="w-full mt-6 py-4 text-xl font-bold rounded-2xl bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-95 transition">
+        {{ __('app.kiosk.cancel') }}
+    </button>
+    <p class="mt-3 text-center text-sm text-slate-400">
+        {{ __('app.kiosk.idle_return') }}
+        <span id="kioskIdleCount" class="font-bold text-slate-500">30</span>
+        {{ __('app.kiosk.seconds') }}
+    </p>
+
     <script>
         const input = document.getElementById('phone');
         document.getElementById('keypad').addEventListener('click', (e) => {
@@ -78,6 +89,24 @@
             else if (btn.dataset.action === 'clear') input.value = '';
             input.focus();
         });
+
+        // Return to a fresh kiosk screen after 30s of no interaction.
+        (function () {
+            const HOME = @json(route('practice.kiosk.welcome', $clinic));
+            const SECONDS = 30;
+            let remaining = SECONDS;
+            const label = document.getElementById('kioskIdleCount');
+            const go = () => { window.location.href = HOME; };
+            const reset = () => { remaining = SECONDS; if (label) label.textContent = remaining; };
+            setInterval(() => {
+                remaining -= 1;
+                if (label) label.textContent = Math.max(remaining, 0);
+                if (remaining <= 0) go();
+            }, 1000);
+            ['pointerdown', 'keydown', 'input', 'touchstart', 'scroll'].forEach((ev) =>
+                document.addEventListener(ev, reset, { passive: true }));
+            document.getElementById('kioskCancelBtn').addEventListener('click', go);
+        })();
     </script>
     @endunless
 @endsection

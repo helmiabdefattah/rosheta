@@ -17,11 +17,8 @@
                    class="w-full text-xl py-4 px-4 rounded-2xl border-2 border-slate-200 focus:border-indigo-500 focus:ring-0 outline-none">
         </div>
 
-        <div>
-            <label class="block text-sm font-semibold text-slate-600 mb-1">{{ __('app.common.phone') }}</label>
-            <input type="tel" name="phone" value="{{ old('phone', $phone) }}" required dir="ltr"
-                   class="w-full text-xl py-4 px-4 rounded-2xl border-2 border-slate-200 focus:border-indigo-500 focus:ring-0 outline-none">
-        </div>
+        {{-- Phone was already entered on the previous step; keep it but hidden. --}}
+        <input type="hidden" name="phone" value="{{ old('phone', $phone) }}">
 
         <div class="grid grid-cols-2 gap-4">
             <div>

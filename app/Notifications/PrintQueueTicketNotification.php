@@ -87,6 +87,7 @@ class PrintQueueTicketNotification extends BaseNotification
             'clinic_name' => (string) ($a->clinic->name ?? ''),
             'doctor_name' => (string) ($a->doctor->name ?? ''),
             'patient_name' => (string) ($a->client->name ?? ''),
+            'visit_type' => (string) $a->typeLabel(),
             'time' => optional($a->scheduled_at)->format('Y-m-d H:i') ?? '',
         ];
     }

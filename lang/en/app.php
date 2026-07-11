@@ -294,6 +294,9 @@ return [
         'walk_in' => 'Kiosk check-in',
         'printed_title' => 'You are checked in',
         'printed_number' => 'Your ticket number',
+        'cancel' => 'Cancel',
+        'idle_return' => 'Returning to the start in',
+        'seconds' => 'seconds',
     ],
 
     'ticket' => [
