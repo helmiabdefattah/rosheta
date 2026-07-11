@@ -101,6 +101,8 @@
             var KIOSK_URL = @json(route('practice.kiosk.welcome', $clinic));
             var VOICES_BASE = @json(asset('storage/voices/ar'));
             var CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            // Returning from the kiosk: skip the "tap to start" overlay.
+            var AUTO_START = @json(request()->boolean('started'));
 
             // Setting .lang isn't enough — pick a voice whose language matches,
             // otherwise the browser falls back to its default (English) voice.
@@ -213,21 +215,29 @@
                     .catch(function () { /* keep showing last value on transient errors */ });
             }
 
-            // Unlock audio + go full-screen on first interaction (browser policy).
-            els.starter.addEventListener('click', function () {
+            // Reveal the display: unlock audio, go full-screen, show buttons,
+            // start polling. On a real tap [userGesture] audio/fullscreen work;
+            // on AUTO_START (return from kiosk) audio stays muted until the next
+            // tap, but the screen is ready without asking to tap again.
+            function startDisplay(userGesture) {
                 audioReady = true;
-                if ('speechSynthesis' in window) {
+                if (userGesture && 'speechSynthesis' in window) {
                     // A muted utterance primes the engine on some browsers.
                     var warm = new SpeechSynthesisUtterance(' ');
                     warm.volume = 0; window.speechSynthesis.speak(warm);
                 }
-                var el = document.documentElement;
-                if (el.requestFullscreen) { el.requestFullscreen().catch(function () {}); }
+                if (userGesture) {
+                    var el = document.documentElement;
+                    if (el.requestFullscreen) { el.requestFullscreen().catch(function () {}); }
+                }
                 els.starter.style.display = 'none';
-                if (els.nextBtn) { els.nextBtn.classList.remove('hidden'); }   // reveal once audio is unlocked
+                if (els.nextBtn) { els.nextBtn.classList.remove('hidden'); }
                 if (els.kioskBtn) { els.kioskBtn.classList.remove('hidden'); }
                 poll();
-            });
+            }
+
+            els.starter.addEventListener('click', function () { startDisplay(true); });
+            if (AUTO_START) { startDisplay(false); }
 
             if (els.nextBtn) { els.nextBtn.addEventListener('click', advance); }
 

@@ -104,11 +104,16 @@ class KioskController extends Controller
     private function afterCheckIn(Clinic $clinic, Appointment $appointment): RedirectResponse
     {
         if ($clinic->hasConnectedPrinter()) {
-            return redirect()
-                ->route('practice.kiosk.welcome', ['clinic' => $clinic->id])
-                ->with('kiosk_ticket_number', $appointment->queue_number);
+            // Ticket auto-prints on the clinic's Bluetooth printer (FCM); send
+            // the patient straight back to the waiting-room check-in display.
+            return redirect()->route('practice.display.screen', [
+                'clinic' => $clinic->id,
+                'checkin' => 1,
+                'started' => 1,
+            ]);
         }
 
+        // No printer online: fall back to the browser-printable ticket page.
         return redirect()->route('practice.kiosk.ticket', ['clinic' => $clinic->id, 'appointment' => $appointment->id]);
     }
 

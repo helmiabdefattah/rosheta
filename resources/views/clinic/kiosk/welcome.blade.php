@@ -90,9 +90,9 @@
             input.focus();
         });
 
-        // Return to a fresh kiosk screen after 30s of no interaction.
+        // Return to the waiting-room display (check-in kiosk) after 30s idle.
         (function () {
-            const HOME = @json(route('practice.kiosk.welcome', $clinic));
+            const HOME = @json(route('practice.display.screen', ['clinic' => $clinic->id, 'checkin' => 1, 'started' => 1]));
             const SECONDS = 30;
             let remaining = SECONDS;
             const label = document.getElementById('kioskIdleCount');
