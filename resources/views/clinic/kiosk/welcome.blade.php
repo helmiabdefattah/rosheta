@@ -68,6 +68,10 @@
         </button>
     </form>
 
+    @php
+        $displayUrl = route('practice.display.screen', ['clinic' => $clinic->id, 'checkin' => 1, 'started' => 1]);
+    @endphp
+
     {{-- Manual reset + idle auto-return to the main kiosk screen --}}
     <button type="button" id="kioskCancelBtn"
             class="w-full mt-6 py-4 text-xl font-bold rounded-2xl bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-95 transition">
@@ -92,7 +96,7 @@
 
         // Return to the waiting-room display (check-in kiosk) after 30s idle.
         (function () {
-            const HOME = @json(route('practice.display.screen', ['clinic' => $clinic->id, 'checkin' => 1, 'started' => 1]));
+            const HOME = @json($displayUrl);
             const SECONDS = 30;
             let remaining = SECONDS;
             const label = document.getElementById('kioskIdleCount');
