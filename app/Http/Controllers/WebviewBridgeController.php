@@ -131,6 +131,7 @@ class WebviewBridgeController extends Controller
         return redirect()->to($redirect);
     }
 
+    /** Mirrors the post-login redirects in Auth\LoginController. */
     private function defaultStaffDashboardUrl(User $user): string
     {
         if ($user->laboratory_id) {
@@ -142,8 +143,18 @@ class WebviewBridgeController extends Controller
         if ($user->nurse_id) {
             return route('nurse.dashboard');
         }
+        if ($user->charitable_organization_id) {
+            return route('user.profile.edit');
+        }
+        if ($user->managedClinic) {
+            return route('clinic.dashboard');
+        }
         if ($user->doctor()->exists()) {
             return route('doctor.dashboard');
+        }
+        // Doctor's assistant → clinic (design) system assistant workspace
+        if ($user->doctor_id) {
+            return route('practice.assistant.dashboard');
         }
 
         return route('admin.dashboard');
@@ -162,7 +173,7 @@ class WebviewBridgeController extends Controller
             return $default;
         }
 
-        $allowedPrefixes = ['/admin', '/laboratory', '/pharmacy', '/nurse', '/doctor', '/client'];
+        $allowedPrefixes = ['/admin', '/laboratory', '/pharmacy', '/nurse', '/doctor', '/client', '/practice', '/clinic', '/user'];
 
         foreach ($allowedPrefixes as $prefix) {
             if ($path === $prefix || str_starts_with($path, $prefix.'/')) {
