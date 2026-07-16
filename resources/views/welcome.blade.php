@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', app()->getLocale() === 'ar' ? 'مستشفي اون - قريباً' : 'Mostashfa-on - Coming Soon')
+@section('title', app()->getLocale() === 'ar' ? 'مستشفي اون - الجيل القادم من الرعاية الصحية' : 'Mostashfa-on - Next Gen Healthcare')
 
 @push('background-blobs')
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
