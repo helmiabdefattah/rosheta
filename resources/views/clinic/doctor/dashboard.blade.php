@@ -71,60 +71,6 @@
     </div>
 @endif
 
-{{-- Month calendar: green = clinic open, badge = booked appointments --}}
-<div class="bg-white rounded-xl shadow-sm p-3 sm:p-5 mb-6">
-    <div class="flex items-center justify-between mb-4">
-        <h2 class="font-semibold text-slate-800">{{ $calendar['month']->translatedFormat('F Y') }}</h2>
-        <div class="flex items-center gap-2 text-sm">
-            <a href="{{ route('practice.doctor.dashboard', ['month' => $calendar['prev']]) }}"
-               class="px-3 py-1 rounded border border-slate-300 hover:bg-slate-50">‹</a>
-            <a href="{{ route('practice.doctor.dashboard') }}"
-               class="px-3 py-1 rounded border border-slate-300 hover:bg-slate-50">{{ __('app.calendar.today') }}</a>
-            <a href="{{ route('practice.doctor.dashboard', ['month' => $calendar['next']]) }}"
-               class="px-3 py-1 rounded border border-slate-300 hover:bg-slate-50">›</a>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-7 gap-0.5 sm:gap-1 text-center text-[10px] sm:text-xs font-semibold text-slate-400 mb-1">
-        @foreach ($calendar['dayHeaders'] as $dh)
-            <div class="py-1 truncate">{{ $dh }}</div>
-        @endforeach
-    </div>
-
-    <div class="grid grid-cols-7 gap-0.5 sm:gap-1">
-        @foreach ($calendar['weeks'] as $week)
-            @foreach ($week as $day)
-                @php $closedWithAppts = ! $day['isOpen'] && $day['count'] > 0; @endphp
-                <a href="{{ route('practice.doctor.dashboard', ['month' => $calendar['month']->format('Y-m'), 'date' => $day['date']->format('Y-m-d')]) }}"
-                   class="relative block min-h-[46px] sm:min-h-[76px] rounded-md sm:rounded-lg border p-1 sm:p-1.5 transition hover:shadow-sm hover:border-indigo-300
-                    {{ $day['isOpen'] ? 'bg-emerald-50 border-emerald-200' : ($closedWithAppts ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-100') }}
-                    {{ $day['inMonth'] ? '' : 'opacity-40' }}
-                    {{ $day['isSelected'] ? 'ring-2 ring-indigo-600 border-indigo-400' : ($day['isToday'] ? 'ring-2 ring-indigo-300' : '') }}">
-                    {{-- Day number, small, in the corner --}}
-                    <span class="absolute top-0.5 start-1 sm:top-1 sm:start-2 text-[10px] sm:text-xs {{ $day['isOpen'] ? 'text-emerald-700 font-semibold' : ($closedWithAppts ? 'text-red-700 font-semibold' : 'text-slate-400') }}">
-                        {{ $day['date']->day }}
-                    </span>
-                    {{-- Appointment count, large and centered --}}
-                    @if ($day['count'] > 0)
-                        <div class="absolute inset-0 flex flex-col items-center justify-center pt-3 sm:pt-2"
-                             title="{{ $day['count'] }} {{ __('app.clinic.appointments') }}{{ $closedWithAppts ? ' — '.__('app.calendar.closed_with_appointments') : '' }}">
-                            <span class="text-base sm:text-3xl font-extrabold leading-none {{ $closedWithAppts ? 'text-red-600' : 'text-indigo-600' }}">{{ $day['count'] }}</span>
-                            <span class="hidden md:block text-[10px] uppercase tracking-wide mt-0.5 {{ $closedWithAppts ? 'text-red-400' : 'text-indigo-400' }}">{{ __('app.clinic.appointments') }}</span>
-                        </div>
-                    @endif
-                </a>
-            @endforeach
-        @endforeach
-    </div>
-
-    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-4 text-xs text-slate-500">
-        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-emerald-100 border border-emerald-300"></span> {{ __('app.calendar.open') }}</span>
-        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-slate-100 border border-slate-200"></span> {{ __('app.calendar.closed') }}</span>
-        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-red-50 border border-red-200"></span> {{ __('app.calendar.closed_with_appointments') }}</span>
-        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-indigo-600"></span> {{ __('app.calendar.has_appointments') }}</span>
-    </div>
-</div>
-
 {{-- Appointments for the selected day --}}
 <div class="flex items-center justify-between mb-3">
     <h2 class="font-semibold text-slate-800">
@@ -189,6 +135,60 @@
             @endforelse
         </tbody>
     </table>
+</div>
+
+{{-- Month calendar: green = clinic open, badge = booked appointments --}}
+<div class="bg-white rounded-xl shadow-sm p-3 sm:p-5 mb-6">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="font-semibold text-slate-800">{{ $calendar['month']->translatedFormat('F Y') }}</h2>
+        <div class="flex items-center gap-2 text-sm">
+            <a href="{{ route('practice.doctor.dashboard', ['month' => $calendar['prev']]) }}"
+               class="px-3 py-1 rounded border border-slate-300 hover:bg-slate-50">‹</a>
+            <a href="{{ route('practice.doctor.dashboard') }}"
+               class="px-3 py-1 rounded border border-slate-300 hover:bg-slate-50">{{ __('app.calendar.today') }}</a>
+            <a href="{{ route('practice.doctor.dashboard', ['month' => $calendar['next']]) }}"
+               class="px-3 py-1 rounded border border-slate-300 hover:bg-slate-50">›</a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-7 gap-0.5 sm:gap-1 text-center text-[10px] sm:text-xs font-semibold text-slate-400 mb-1">
+        @foreach ($calendar['dayHeaders'] as $dh)
+            <div class="py-1 truncate">{{ $dh }}</div>
+        @endforeach
+    </div>
+
+    <div class="grid grid-cols-7 gap-0.5 sm:gap-1">
+        @foreach ($calendar['weeks'] as $week)
+            @foreach ($week as $day)
+                @php $closedWithAppts = ! $day['isOpen'] && $day['count'] > 0; @endphp
+                <a href="{{ route('practice.doctor.dashboard', ['month' => $calendar['month']->format('Y-m'), 'date' => $day['date']->format('Y-m-d')]) }}"
+                   class="relative block min-h-[46px] sm:min-h-[76px] rounded-md sm:rounded-lg border p-1 sm:p-1.5 transition hover:shadow-sm hover:border-indigo-300
+                    {{ $day['isOpen'] ? 'bg-emerald-50 border-emerald-200' : ($closedWithAppts ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-100') }}
+                    {{ $day['inMonth'] ? '' : 'opacity-40' }}
+                    {{ $day['isSelected'] ? 'ring-2 ring-indigo-600 border-indigo-400' : ($day['isToday'] ? 'ring-2 ring-indigo-300' : '') }}">
+                    {{-- Day number, small, in the corner --}}
+                    <span class="absolute top-0.5 start-1 sm:top-1 sm:start-2 text-[10px] sm:text-xs {{ $day['isOpen'] ? 'text-emerald-700 font-semibold' : ($closedWithAppts ? 'text-red-700 font-semibold' : 'text-slate-400') }}">
+                        {{ $day['date']->day }}
+                    </span>
+                    {{-- Appointment count, large and centered --}}
+                    @if ($day['count'] > 0)
+                        <div class="absolute inset-0 flex flex-col items-center justify-center pt-3 sm:pt-2"
+                             title="{{ $day['count'] }} {{ __('app.clinic.appointments') }}{{ $closedWithAppts ? ' — '.__('app.calendar.closed_with_appointments') : '' }}">
+                            <span class="text-base sm:text-3xl font-extrabold leading-none {{ $closedWithAppts ? 'text-red-600' : 'text-indigo-600' }}">{{ $day['count'] }}</span>
+                            <span class="hidden md:block text-[10px] uppercase tracking-wide mt-0.5 {{ $closedWithAppts ? 'text-red-400' : 'text-indigo-400' }}">{{ __('app.clinic.appointments') }}</span>
+                        </div>
+                    @endif
+                </a>
+            @endforeach
+        @endforeach
+    </div>
+
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-4 text-xs text-slate-500">
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-emerald-100 border border-emerald-300"></span> {{ __('app.calendar.open') }}</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-slate-100 border border-slate-200"></span> {{ __('app.calendar.closed') }}</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-red-50 border border-red-200"></span> {{ __('app.calendar.closed_with_appointments') }}</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-indigo-600"></span> {{ __('app.calendar.has_appointments') }}</span>
+    </div>
 </div>
 
 @include('clinic.partials.broadcast-modal')

@@ -117,6 +117,39 @@ class Appointment extends Model
         return $this->hasMany(MedicalRequest::class);
     }
 
+    /** Payments taken from the patient for this visit. */
+    public function collections(): HasMany
+    {
+        return $this->hasMany(Collection::class);
+    }
+
+    /**
+     * Price due for this visit. Falls back to the clinic's current price for
+     * the visit type, so appointments created before prices were configured
+     * (price left null) still show something to collect.
+     */
+    public function dueAmount(): float
+    {
+        return (float) ($this->price ?? $this->clinic?->priceFor($this->type) ?? 0);
+    }
+
+    /** Total already taken from the patient. */
+    public function collectedAmount(): float
+    {
+        return (float) $this->collections->sum('amount');
+    }
+
+    /** What's still owed; never negative, so an overpayment reads as settled. */
+    public function remainingAmount(): float
+    {
+        return max(0, round($this->dueAmount() - $this->collectedAmount(), 2));
+    }
+
+    public function isFullyCollected(): bool
+    {
+        return $this->dueAmount() > 0 && $this->remainingAmount() <= 0;
+    }
+
     public function attachments(): HasMany
     {
         return $this->hasMany(Attachment::class, 'appointment_id');

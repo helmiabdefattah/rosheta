@@ -440,6 +440,10 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::get('/patients/{patient}', [App\Http\Controllers\Clinic\PatientController::class, 'show'])->name('patients.show');
         Route::put('/patients/{patient}', [App\Http\Controllers\Clinic\PatientController::class, 'update'])->name('patients.update');
         Route::post('/appointments/{appointment}/status', [App\Http\Controllers\Clinic\AppointmentController::class, 'updateStatus'])->name('appointments.status');
+        // Front-desk money: record payments and correct the visit type.
+        Route::post('/appointments/{appointment}/collections', [App\Http\Controllers\Clinic\CollectionController::class, 'store'])->name('collections.store');
+        Route::delete('/collections/{collection}', [App\Http\Controllers\Clinic\CollectionController::class, 'destroy'])->name('collections.destroy');
+        Route::post('/appointments/{appointment}/type', [App\Http\Controllers\Clinic\CollectionController::class, 'updateType'])->name('appointments.type');
         Route::get('/appointments/{appointment}/ticket', [App\Http\Controllers\Clinic\AppointmentController::class, 'ticket'])->name('appointments.ticket');
         Route::post('/appointments/{appointment}/attachments', [App\Http\Controllers\Clinic\AttachmentController::class, 'store'])->name('attachments.store');
         Route::delete('/attachments/{attachment}', [App\Http\Controllers\Clinic\AttachmentController::class, 'destroy'])->name('attachments.destroy');
