@@ -59,6 +59,7 @@ class AppointmentController extends Controller
             'source' => 'system',
             'scheduled_at' => $scheduledAt,
             'queue_number' => $this->nextQueueNumber($doctor->id, $scheduledAt),
+            'price' => $clinic->priceFor($data['type']),
             'reason' => $data['reason'] ?? null,
         ]);
 

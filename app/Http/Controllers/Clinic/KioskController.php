@@ -181,6 +181,7 @@ class KioskController extends Controller
             'source' => 'system',
             'scheduled_at' => $now,
             'queue_number' => $queue,
+            'price' => $clinic->priceFor($type),
             'reason' => __('app.kiosk.walk_in'),
         ]);
     }

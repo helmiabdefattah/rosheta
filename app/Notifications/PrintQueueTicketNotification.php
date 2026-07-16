@@ -79,6 +79,12 @@ class PrintQueueTicketNotification extends BaseNotification
     {
         $a = $this->appointment;
 
+        // Print in the clinic's configured printer language, not the locale of
+        // whoever triggered the print (kiosk patient, assistant, doctor) —
+        // otherwise one clinic gets mixed-language tickets. `printer_language`
+        // is sent too so the app localises its own printed labels to match.
+        $lang = $a->clinic?->printerLanguage() ?? config('app.locale');
+
         return [
             'type' => 'print_ticket',
             'appointment_id' => (string) $a->id,
@@ -87,7 +93,8 @@ class PrintQueueTicketNotification extends BaseNotification
             'clinic_name' => (string) ($a->clinic->name ?? ''),
             'doctor_name' => (string) ($a->doctor->name ?? ''),
             'patient_name' => (string) ($a->client->name ?? ''),
-            'visit_type' => (string) $a->typeLabel(),
+            'visit_type' => (string) $a->typeLabel($lang),
+            'printer_language' => (string) $lang,
             'time' => optional($a->scheduled_at)->format('Y-m-d H:i') ?? '',
         ];
     }

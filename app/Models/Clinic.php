@@ -32,7 +32,11 @@ class Clinic extends Model
         'appointment_duration',
         'display_show_next_button',
         'printer_connected_at',
+        'printer_language',
     ];
+
+    /** Languages the Bluetooth ticket printer can print in. */
+    public const PRINTER_LANGUAGES = ['ar', 'en'];
 
     /**
      * Days of the week in display order (Egyptian week starts on Saturday,
@@ -66,6 +70,31 @@ class Clinic extends Model
     {
         return $this->printer_connected_at !== null
             && $this->printer_connected_at->gt(now()->subMinutes($minutes));
+    }
+
+    /**
+     * This clinic's default price for a visit type. Examination types bill at
+     * medical_examination_price; consultation / follow-up at follow_up_price —
+     * the same mapping the admin booking screen uses. Null when unpriced.
+     */
+    public function priceFor(?string $type): ?float
+    {
+        $price = in_array($type, ['examination', 'medical_examination'], true)
+            ? $this->medical_examination_price
+            : $this->follow_up_price;
+
+        return $price === null ? null : (float) $price;
+    }
+
+    /**
+     * Language the ticket printer prints in. Falls back to the app locale so
+     * clinics that never chose one keep today's behaviour.
+     */
+    public function printerLanguage(): string
+    {
+        return in_array($this->printer_language, self::PRINTER_LANGUAGES, true)
+            ? $this->printer_language
+            : config('app.locale');
     }
 
     /**

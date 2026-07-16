@@ -140,6 +140,18 @@ return [
         'switch' => 'تبديل العيادة',
         'switched' => 'تم التبديل إلى :name.',
         'current' => 'العيادة الحالية',
+
+        'prices_heading' => 'الأسعار الافتراضية',
+        'prices_hint' => 'السعر الافتراضي لكل نوع زيارة. يُستخدم للمواعيد الجديدة ويظهر للمرضى عند الحجز أونلاين.',
+        'price_examination' => 'كشف طبي',
+        'price_consultation' => 'استشارة طبية',
+        'currency' => 'ج.م',
+        'price_empty_hint' => 'اتركه فارغًا لعدم تحديد سعر افتراضي.',
+
+        'printer_heading' => 'طابعة التذاكر',
+        'printer_hint' => 'اللغة المستخدمة لطباعة تذاكر الدور على طابعة البلوتوث الخاصة بالعيادة.',
+        'printer_language' => 'لغة الطابعة',
+        'printer_language_default' => 'حسب لغة التطبيق (:lang)',
     ],
 
     'mostashfa' => [

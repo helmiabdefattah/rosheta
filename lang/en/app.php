@@ -147,6 +147,18 @@ return [
         'switch' => 'Switch clinic',
         'switched' => 'Switched to :name.',
         'current' => 'Current clinic',
+
+        'prices_heading' => 'Default prices',
+        'prices_hint' => 'Charged by default for each visit type. Used for new appointments and shown to patients booking online.',
+        'price_examination' => 'Medical Examination',
+        'price_consultation' => 'Medical Consultation',
+        'currency' => 'EGP',
+        'price_empty_hint' => 'Leave empty for no default price.',
+
+        'printer_heading' => 'Ticket printer',
+        'printer_hint' => 'Language used to print queue tickets on the clinic\'s Bluetooth printer.',
+        'printer_language' => 'Printer language',
+        'printer_language_default' => 'Follow app language (:lang)',
     ],
 
     // Rosheta booking requests awaiting the front desk's confirmation

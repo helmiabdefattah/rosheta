@@ -30,6 +30,56 @@
         </div>
     </div>
 
+    {{-- Default prices per visit type --}}
+    <div class="bg-white rounded-xl shadow-sm p-5">
+        <h2 class="font-semibold text-slate-800 mb-1">{{ __('app.clinic.prices_heading') }}</h2>
+        <p class="text-xs text-slate-500 mb-4">{{ __('app.clinic.prices_hint') }}</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+            <div>
+                <label for="price-exam" class="block text-sm font-medium text-slate-700 mb-1">
+                    {{ __('app.clinic.price_examination') }}
+                </label>
+                <div class="flex items-center gap-2">
+                    <input type="number" name="medical_examination_price" id="price-exam" min="0" step="0.01"
+                           value="{{ old('medical_examination_price', $clinic->medical_examination_price) }}"
+                           class="w-32 border rounded px-3 py-2 text-sm">
+                    <span class="text-sm text-slate-500">{{ __('app.clinic.currency') }}</span>
+                </div>
+            </div>
+            <div>
+                <label for="price-consult" class="block text-sm font-medium text-slate-700 mb-1">
+                    {{ __('app.clinic.price_consultation') }}
+                </label>
+                <div class="flex items-center gap-2">
+                    <input type="number" name="follow_up_price" id="price-consult" min="0" step="0.01"
+                           value="{{ old('follow_up_price', $clinic->follow_up_price) }}"
+                           class="w-32 border rounded px-3 py-2 text-sm">
+                    <span class="text-sm text-slate-500">{{ __('app.clinic.currency') }}</span>
+                </div>
+            </div>
+        </div>
+        <p class="text-xs text-slate-400 mt-3">{{ __('app.clinic.price_empty_hint') }}</p>
+    </div>
+
+    {{-- Ticket printer language --}}
+    <div class="bg-white rounded-xl shadow-sm p-5">
+        <h2 class="font-semibold text-slate-800 mb-1">🖨️ {{ __('app.clinic.printer_heading') }}</h2>
+        <p class="text-xs text-slate-500 mb-4">{{ __('app.clinic.printer_hint') }}</p>
+        <label for="printer-language" class="block text-sm font-medium text-slate-700 mb-1">
+            {{ __('app.clinic.printer_language') }}
+        </label>
+        <select name="printer_language" id="printer-language" class="w-full sm:w-64 border rounded px-3 py-2 text-sm">
+            <option value="">
+                {{ __('app.clinic.printer_language_default', ['lang' => strtoupper(config('app.locale'))]) }}
+            </option>
+            @foreach (Clinic::PRINTER_LANGUAGES as $lang)
+                <option value="{{ $lang }}" @selected(old('printer_language', $clinic->printer_language) === $lang)>
+                    {{ $lang === 'ar' ? 'العربية' : 'English' }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
     {{-- Opening days & hours --}}
     <div class="bg-white rounded-xl shadow-sm p-5">
         <h2 class="font-semibold text-slate-800 mb-4">{{ __('app.clinic.hours_heading') }}</h2>

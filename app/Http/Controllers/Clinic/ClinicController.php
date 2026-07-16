@@ -8,6 +8,7 @@ use App\Models\Clinic;
 use App\Models\Doctor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ClinicController extends Controller
@@ -47,6 +48,9 @@ class ClinicController extends Controller
 
         $data = $request->validate([
             'appointment_duration' => ['required', 'integer', 'min:5', 'max:240'],
+            'medical_examination_price' => ['nullable', 'numeric', 'min:0', 'max:999999'],
+            'follow_up_price' => ['nullable', 'numeric', 'min:0', 'max:999999'],
+            'printer_language' => ['nullable', Rule::in(Clinic::PRINTER_LANGUAGES)],
             'days' => ['required', 'array'],
             'days.*.open' => ['nullable', 'date_format:H:i'],
             'days.*.close' => ['nullable', 'date_format:H:i', 'after:days.*.open'],
@@ -67,6 +71,9 @@ class ClinicController extends Controller
         $clinic->update([
             'opening_hours' => $hours,
             'appointment_duration' => $data['appointment_duration'],
+            'medical_examination_price' => $data['medical_examination_price'] ?? null,
+            'follow_up_price' => $data['follow_up_price'] ?? null,
+            'printer_language' => $data['printer_language'] ?? null,
         ]);
 
         // Mirror the schedule into the rosheta workingHours table so the other

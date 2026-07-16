@@ -127,11 +127,16 @@ class Appointment extends Model
         return $query->whereDate('scheduled_at', today());
     }
 
-    public function typeLabel(): string
+    /**
+     * Human label for the visit type. Pass $locale to force a language — the
+     * ticket printer does, so tickets print in the clinic's configured language
+     * rather than the locale of whoever happened to trigger the print.
+     */
+    public function typeLabel(?string $locale = null): string
     {
         return match ($this->type) {
-            'examination', 'medical_examination' => __('app.types.examination'),
-            default => __('app.types.consultation'),
+            'examination', 'medical_examination' => __('app.types.examination', [], $locale),
+            default => __('app.types.consultation', [], $locale),
         };
     }
 
