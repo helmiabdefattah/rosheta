@@ -14,12 +14,38 @@
     ];
 @endphp
 
-<div class="flex items-center justify-between mb-6">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
     <div>
         <h1 class="text-2xl font-bold text-slate-900">{{ __('app.doctor.title') }}</h1>
-        <p class="text-slate-500 text-sm">{{ now()->translatedFormat('l, d M Y') }}</p>
+        <p class="text-slate-500 text-sm">
+            {{ now()->translatedFormat('l, d M Y') }} @if ($clinic) &middot; {{ $clinic->name }} @endif
+        </p>
     </div>
     <div class="flex flex-wrap items-center gap-2">
+        {{-- Clinic switcher: only worth a menu when there's more than one. --}}
+        @if ($clinics->count() > 1)
+            <details data-menu class="relative">
+                <summary class="list-none cursor-pointer select-none inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700">
+                    🏥 <span class="max-w-[12rem] truncate">{{ $clinic?->name }}</span>
+                    <span class="text-[10px] text-slate-400">▼</span>
+                </summary>
+                <div class="absolute end-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50 text-start">
+                    <div class="px-4 py-1.5 text-xs uppercase tracking-wide text-slate-400">{{ __('app.clinic.switch') }}</div>
+                    @foreach ($clinics as $c)
+                        <form method="POST" action="{{ route('practice.doctor.clinic.switch') }}">
+                            @csrf
+                            <input type="hidden" name="clinic_id" value="{{ $c->id }}">
+                            <button class="w-full flex items-center justify-between gap-2 px-4 py-2 text-sm text-start hover:bg-slate-50
+                                           {{ $c->id === $clinic?->id ? 'font-semibold text-indigo-700 bg-indigo-50/60' : 'text-slate-700' }}">
+                                <span class="truncate">{{ $c->name }}</span>
+                                @if ($c->id === $clinic?->id)<span class="text-indigo-600">✓</span>@endif
+                            </button>
+                        </form>
+                    @endforeach
+                </div>
+            </details>
+        @endif
+
         <button type="button" onclick="toggle('broadcast-modal')"
                 class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
             📣 {{ __('app.notify.button') }}

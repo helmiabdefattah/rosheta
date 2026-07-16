@@ -12,12 +12,25 @@ use Illuminate\Support\Carbon;
  * Shared month-calendar builder for the doctor and assistant dashboards.
  * Working days come from the doctor's clinic opening hours; booked counts are
  * scoped to the doctor so clinics sharing the appointments table stay isolated.
+ *
+ * Pass $scopeToClinic to narrow the counts to $clinic as well — the doctor
+ * dashboard does, because it can switch clinics. The assistant dashboard must
+ * not: it has no switcher, so scoping would permanently hide the other
+ * clinics' appointments from them.
  */
 trait BuildsClinicCalendar
 {
-    protected function buildCalendar(Request $request, Doctor $doctor, ?Clinic $clinic, Carbon $selectedDate): array
-    {
+    protected function buildCalendar(
+        Request $request,
+        Doctor $doctor,
+        ?Clinic $clinic,
+        Carbon $selectedDate,
+        bool $scopeToClinic = false
+    ): array {
         $openingHours = $clinic?->opening_hours ?? [];
+        $inClinic = fn ($q) => $scopeToClinic && $clinic
+            ? $q->where('clinic_id', $clinic->id)
+            : $q;
 
         // The visible month follows ?month=, else the selected day's month.
         $month = Carbon::hasFormat((string) $request->query('month'), 'Y-m')
@@ -29,6 +42,7 @@ trait BuildsClinicCalendar
         $gridEnd = $month->copy()->endOfMonth()->endOfWeek(Carbon::FRIDAY);
 
         $counts = Appointment::where('doctor_id', $doctor->id)
+            ->where($inClinic)
             ->whereBetween('scheduled_at', [$gridStart->copy()->startOfDay(), $gridEnd->copy()->endOfDay()])
             ->whereIn('status', ['scheduled', 'under_examination', 'completed'])
             ->get()
@@ -37,6 +51,7 @@ trait BuildsClinicCalendar
 
         // Pending rosheta-platform requests still awaiting front-desk confirmation.
         $pendingCounts = Appointment::where('doctor_id', $doctor->id)
+            ->where($inClinic)
             ->whereBetween('scheduled_at', [$gridStart->copy()->startOfDay(), $gridEnd->copy()->endOfDay()])
             ->whereIn('status', ['pending', 'confirmed'])
             ->get()

@@ -19,10 +19,13 @@ trait ClinicContext
             ?? $request->user()->clinicDoctor();
     }
 
-    /** The doctor's primary clinic, creating a bare one if none exists yet. */
+    /**
+     * The clinic the workspace is currently working in — the one the doctor
+     * switched to, else their first — creating a bare one if none exists yet.
+     */
     protected function activeClinic(Doctor $doctor): Clinic
     {
-        return $doctor->clinics()->first()
+        return $doctor->activeClinic()
             ?? $doctor->clinics()->create([
                 'name' => $doctor->name,
                 'appointment_duration' => 30,

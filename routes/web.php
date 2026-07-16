@@ -450,6 +450,7 @@ Route::prefix('practice')->name('practice.')->group(function () {
     // ---- Doctor's Assistant area ----
     Route::middleware(['auth', 'clinic.role:assistant'])->prefix('assistant')->name('assistant.')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/printer-status', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'printerStatus'])->name('printer.status');
         Route::post('/appointments', [App\Http\Controllers\Clinic\AppointmentController::class, 'store'])->name('appointments.store');
         Route::post('/appointments/{appointment}/print-ticket', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'printTicket'])->name('appointments.print-ticket');
         Route::post('/pending/confirm', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'confirmPending'])->name('pending.confirm');
@@ -461,6 +462,7 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Clinic\DoctorDashboardController::class, 'index'])->name('dashboard');
         Route::get('/clinic', [App\Http\Controllers\Clinic\ClinicController::class, 'edit'])->name('clinic.edit');
         Route::put('/clinic', [App\Http\Controllers\Clinic\ClinicController::class, 'update'])->name('clinic.update');
+        Route::post('/clinic/switch', [App\Http\Controllers\Clinic\ClinicController::class, 'switchClinic'])->name('clinic.switch');
         Route::get('/appointments/{appointment}/examine', [App\Http\Controllers\Clinic\DoctorDashboardController::class, 'examine'])->name('examine');
         Route::put('/appointments/{appointment}/allergies', [App\Http\Controllers\Clinic\PatientController::class, 'updateAllergies'])->name('allergies.update');
         Route::put('/appointments/{appointment}/chronic-diseases', [App\Http\Controllers\Clinic\PatientController::class, 'updateChronicDiseases'])->name('chronic.update');

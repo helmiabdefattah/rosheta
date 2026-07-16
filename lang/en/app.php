@@ -144,6 +144,9 @@ return [
         'appointments' => 'appointments',
         'save' => 'Save settings',
         'saved' => 'Clinic settings saved.',
+        'switch' => 'Switch clinic',
+        'switched' => 'Switched to :name.',
+        'current' => 'Current clinic',
     ],
 
     // Rosheta booking requests awaiting the front desk's confirmation
@@ -311,6 +314,11 @@ return [
         'print_bt_sent' => 'Ticket sent to the printer',
         'print_bt_failed' => 'Could not send the ticket to the printer',
         'connect_printer' => 'Connect Printer',
+        'printer_online' => 'Printer online',
+        'printer_offline' => 'Printer offline',
+        'printer_online_hint' => 'A staff app with a ticket printer is connected — tickets print automatically.',
+        'printer_offline_hint' => 'No ticket printer connected. Open the staff app and connect the printer.',
+        'printer_last_seen' => 'Last seen :time',
     ],
 
     // Prescription print

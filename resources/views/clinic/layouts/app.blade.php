@@ -2,7 +2,9 @@
 @php
     $clinicUser = auth()->user();
     $clinicDoctor = $clinicUser?->clinicDoctor();
-    $displayClinic = $clinicDoctor?->clinics()->first();
+    // Follows the clinic the doctor switched to, so the Kiosk menu always
+    // opens the screens for the clinic they're currently working in.
+    $displayClinic = $clinicDoctor?->activeClinic();
     $homeRoute = ($clinicUser && $clinicUser->isDoctor())
         ? route('practice.doctor.dashboard')
         : route('practice.assistant.dashboard');
@@ -32,7 +34,7 @@
                 @if (auth()->check() && auth()->user()->isDoctor())
                     <a href="{{ route('doctor.dashboard') }}"
                        class="text-sm px-3 py-1 rounded-lg border border-indigo-300 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 whitespace-nowrap">
-                        {{ app()->getLocale() === 'ar' ? '← لوحة روشتة' : '← Rosheta dashboard' }}
+                        {{ app()->getLocale() === 'ar' ? '← العودة إلى اللوحة الرئيسية' : '← Back to main dashboard' }}
                     </a>
                 @endif
                 @if ($displayClinic)

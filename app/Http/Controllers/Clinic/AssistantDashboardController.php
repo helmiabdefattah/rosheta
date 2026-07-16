@@ -38,6 +38,21 @@ class AssistantDashboardController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    /**
+     * Whether a staff app with a Bluetooth ticket printer is currently online
+     * for this clinic. Polled by the dashboard so the front desk can see at a
+     * glance whether check-in tickets will auto-print.
+     */
+    public function printerStatus(Request $request): JsonResponse
+    {
+        $clinic = $this->activeClinic($this->clinicDoctor($request));
+
+        return response()->json([
+            'connected' => $clinic->hasConnectedPrinter(),
+            'last_seen' => $clinic->printer_connected_at?->diffForHumans(),
+        ]);
+    }
+
     public function index(Request $request): View
     {
         $doctor = $this->clinicDoctor($request);

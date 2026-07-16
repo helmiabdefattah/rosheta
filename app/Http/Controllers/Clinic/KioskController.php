@@ -36,8 +36,11 @@ class KioskController extends Controller
             return redirect()->route('practice.kiosk.register', ['clinic' => $clinic->id, 'phone' => $phone]);
         }
 
+        // Already booked today: this is a check-in, so print their existing
+        // number on the ticket printer rather than sending them to the browser
+        // print page.
         if ($appointment = $this->todaysAppointment($clinic, $patient)) {
-            return redirect()->route('practice.kiosk.ticket', ['clinic' => $clinic->id, 'appointment' => $appointment->id]);
+            return $this->afterCheckIn($clinic, $appointment);
         }
 
         return view('clinic.kiosk.found', compact('patient', 'clinic'));
@@ -97,12 +100,20 @@ class KioskController extends Controller
     }
 
     /**
-     * When the clinic has a connected Bluetooth printer, the ticket is printed
-     * automatically by the staff app (FCM), so skip the browser print page and
-     * return to the kiosk welcome screen. Otherwise fall back to browser print.
+     * Every check-in ends here — new walk-in, new booking, or a patient who
+     * already had a reservation today. Push the queue ticket to the clinic's
+     * Bluetooth printer via the staff app (best effort — check-in must never
+     * fail on it). When a printer is online the ticket prints itself, so skip
+     * the browser print page; otherwise fall back to it.
      */
     private function afterCheckIn(Clinic $clinic, Appointment $appointment): RedirectResponse
     {
+        try {
+            PrintQueueTicketNotification::sendToClinicStaff($appointment);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
         if ($clinic->hasConnectedPrinter()) {
             // Ticket auto-prints on the clinic's Bluetooth printer (FCM); send
             // the patient straight back to the waiting-room check-in display.
@@ -159,7 +170,9 @@ class KioskController extends Controller
             ->whereDate('scheduled_at', $now->toDateString())
             ->max('queue_number') ?? 0) + 1;
 
-        $appointment = Appointment::create([
+        // The ticket is printed by afterCheckIn(), which every caller goes
+        // through — don't send it from here as well.
+        return Appointment::create([
             'client_id' => $patient->id,
             'doctor_id' => $doctorId,
             'clinic_id' => $clinic->id,
@@ -170,15 +183,5 @@ class KioskController extends Controller
             'queue_number' => $queue,
             'reason' => __('app.kiosk.walk_in'),
         ]);
-
-        // Auto-print the queue ticket on the clinic's Bluetooth printer via
-        // the staff mobile app (best effort — check-in must never fail on it).
-        try {
-            PrintQueueTicketNotification::sendToClinicStaff($appointment);
-        } catch (\Throwable $e) {
-            report($e);
-        }
-
-        return $appointment;
     }
 }

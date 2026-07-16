@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Clinic;
 use App\Http\Controllers\Clinic\Concerns\ClinicContext;
 use App\Http\Controllers\Controller;
 use App\Models\Clinic;
+use App\Models\Doctor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -12,6 +13,22 @@ use Illuminate\View\View;
 class ClinicController extends Controller
 {
     use ClinicContext;
+
+    /**
+     * Switch the workspace to another of the doctor's clinics. The id is
+     * resolved through their own clinics, so a foreign id 404s rather than
+     * being stored.
+     */
+    public function switchClinic(Request $request): RedirectResponse
+    {
+        $doctor = $this->clinicDoctor($request);
+        $id = $request->validate(['clinic_id' => ['required', 'integer']])['clinic_id'];
+
+        $clinic = $doctor->clinics()->whereKey($id)->firstOrFail();
+        session([Doctor::ACTIVE_CLINIC_SESSION_KEY => $clinic->id]);
+
+        return back()->with('status', __('app.clinic.switched', ['name' => $clinic->name]));
+    }
 
     /** Show the clinic scheduling settings (opening hours + appointment duration). */
     public function edit(Request $request): View

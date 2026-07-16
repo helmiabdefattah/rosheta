@@ -23,7 +23,10 @@ class DoctorDashboardController extends Controller
             ? Carbon::createFromFormat('Y-m-d', $request->query('date'))->startOfDay()
             : Carbon::today();
 
+        // Scoped to the clinic the doctor is currently switched into, so a
+        // multi-clinic doctor sees one clinic's queue at a time.
         $appointments = Appointment::where('doctor_id', $doctor->id)
+            ->where('clinic_id', $clinic->id)
             ->whereDate('scheduled_at', $selectedDate)
             ->with(['client', 'prescriptions'])
             ->orderBy('queue_number')
@@ -41,7 +44,8 @@ class DoctorDashboardController extends Controller
             'current' => $current,
             'selectedDate' => $selectedDate,
             'waiting' => $appointments->where('status', 'scheduled')->values(),
-            'calendar' => $this->buildCalendar($request, $doctor, $clinic, $selectedDate),
+            'calendar' => $this->buildCalendar($request, $doctor, $clinic, $selectedDate, scopeToClinic: true),
+            'clinics' => $doctor->clinics()->orderBy('name')->get(),
         ]);
     }
 

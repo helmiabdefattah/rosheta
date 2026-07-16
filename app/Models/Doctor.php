@@ -43,6 +43,23 @@ class Doctor extends Model implements HasMedia
         return $this->hasMany(Clinic::class);
     }
 
+    /** Session key holding the clinic the user picked in the practice workspace. */
+    public const ACTIVE_CLINIC_SESSION_KEY = 'practice.clinic_id';
+
+    /**
+     * The clinic the practice workspace is currently working in: whichever the
+     * user switched to, falling back to their first. The session id is always
+     * re-checked against this doctor's own clinics, so a stale or tampered id
+     * simply falls back instead of leaking another doctor's clinic.
+     */
+    public function activeClinic(): ?Clinic
+    {
+        $selected = session(self::ACTIVE_CLINIC_SESSION_KEY);
+
+        return ($selected ? $this->clinics()->whereKey($selected)->first() : null)
+            ?? $this->clinics()->first();
+    }
+
     public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class);

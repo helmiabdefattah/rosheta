@@ -22,6 +22,18 @@
         </p>
     </div>
     <div class="flex flex-wrap items-center gap-2">
+        {{-- Ticket-printer status. Rendered from the current heartbeat, then
+             re-checked periodically by the poller at the bottom of this view. --}}
+        @php $printerOn = $clinic && $clinic->hasConnectedPrinter(); @endphp
+        <span id="printer-status"
+              class="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg border
+                     {{ $printerOn ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-slate-100 border-slate-300 text-slate-500' }}"
+              title="{{ $printerOn ? __('app.ticket.printer_online_hint') : __('app.ticket.printer_offline_hint') }}">
+            <span id="printer-dot"
+                  class="w-2 h-2 rounded-full {{ $printerOn ? 'bg-emerald-500' : 'bg-slate-400' }}"></span>
+            <span id="printer-text">🖨️ {{ $printerOn ? __('app.ticket.printer_online') : __('app.ticket.printer_offline') }}</span>
+        </span>
+
         {{-- Mobile app only: open the native Bluetooth printer screen via the Flutter JS bridge --}}
         @if (str_contains(request()->userAgent() ?? '', 'MostashfaOnApp'))
         <button type="button"
@@ -619,6 +631,53 @@
     </script>
     @endpush
 @endif
+
+{{-- Re-check the ticket-printer connection. The staff app heartbeats every few
+     minutes and hasConnectedPrinter() allows a 10-minute window, so a 30s poll
+     is well inside it. --}}
+@push('scripts')
+<script>
+    (function () {
+        var URL = @json(route('practice.assistant.printer.status'));
+        var ON = @json(__('app.ticket.printer_online'));
+        var OFF = @json(__('app.ticket.printer_offline'));
+        var ON_HINT = @json(__('app.ticket.printer_online_hint'));
+        var OFF_HINT = @json(__('app.ticket.printer_offline_hint'));
+        var LAST_SEEN = @json(__('app.ticket.printer_last_seen', ['time' => ':time']));
+
+        var box = document.getElementById('printer-status');
+        var dot = document.getElementById('printer-dot');
+        var text = document.getElementById('printer-text');
+        if (!box) return;
+
+        var BASE = 'inline-flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg border ';
+
+        function render(connected, lastSeen) {
+            box.className = BASE + (connected
+                ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                : 'bg-slate-100 border-slate-300 text-slate-500');
+            dot.className = 'w-2 h-2 rounded-full ' + (connected ? 'bg-emerald-500' : 'bg-slate-400');
+            text.textContent = '🖨️ ' + (connected ? ON : OFF);
+            var hint = connected ? ON_HINT : OFF_HINT;
+            if (lastSeen) { hint += ' — ' + LAST_SEEN.replace(':time', lastSeen); }
+            box.title = hint;
+        }
+
+        function poll() {
+            fetch(URL, { headers: { 'Accept': 'application/json' }, cache: 'no-store' })
+                .then(function (r) { return r.json(); })
+                .then(function (d) { render(!!d.connected, d.last_seen); })
+                .catch(function () { /* keep the last known state */ });
+        }
+
+        setInterval(poll, 30000);
+        // Catch up immediately when the tab is focused again.
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) poll();
+        });
+    })();
+</script>
+@endpush
 
 {{-- Send a queue ticket to the clinic's Bluetooth printer (FCM → staff mobile app). --}}
 @push('scripts')
