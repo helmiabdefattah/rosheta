@@ -123,14 +123,32 @@ class Appointment extends Model
         return $this->hasMany(Collection::class);
     }
 
+    /** Chargeable extras added during the examination. */
+    public function items(): HasMany
+    {
+        return $this->hasMany(AppointmentItem::class);
+    }
+
     /**
-     * Price due for this visit. Falls back to the clinic's current price for
-     * the visit type, so appointments created before prices were configured
-     * (price left null) still show something to collect.
+     * The visit fee itself. Falls back to the clinic's current price for the
+     * visit type, so appointments created before prices were configured (price
+     * left null) still show something to collect.
      */
-    public function dueAmount(): float
+    public function visitPrice(): float
     {
         return (float) ($this->price ?? $this->clinic?->priceFor($this->type) ?? 0);
+    }
+
+    /** Total of the chargeable extras added during the examination. */
+    public function itemsTotal(): float
+    {
+        return round($this->items->sum(fn (AppointmentItem $i) => $i->total()), 2);
+    }
+
+    /** Everything the patient owes for this visit: the fee plus any extras. */
+    public function dueAmount(): float
+    {
+        return round($this->visitPrice() + $this->itemsTotal(), 2);
     }
 
     /** Total already taken from the patient. */

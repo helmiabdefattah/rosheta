@@ -64,7 +64,7 @@ class AssistantDashboardController extends Controller
 
         $appointments = Appointment::where('doctor_id', $doctor->id)
             ->whereDate('scheduled_at', $selectedDate)
-            ->with(['client', 'prescriptions', 'clinic', 'collections.collector'])
+            ->with(['client', 'prescriptions', 'clinic', 'items', 'collections.collector'])
             ->orderBy('queue_number')
             ->orderBy('scheduled_at')
             ->get();

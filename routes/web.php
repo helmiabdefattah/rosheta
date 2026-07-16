@@ -444,6 +444,9 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::post('/appointments/{appointment}/collections', [App\Http\Controllers\Clinic\CollectionController::class, 'store'])->name('collections.store');
         Route::delete('/collections/{collection}', [App\Http\Controllers\Clinic\CollectionController::class, 'destroy'])->name('collections.destroy');
         Route::post('/appointments/{appointment}/type', [App\Http\Controllers\Clinic\CollectionController::class, 'updateType'])->name('appointments.type');
+        // Chargeable extras added during the examination.
+        Route::post('/appointments/{appointment}/items', [App\Http\Controllers\Clinic\AppointmentItemController::class, 'store'])->name('appointment-items.store');
+        Route::delete('/appointment-items/{item}', [App\Http\Controllers\Clinic\AppointmentItemController::class, 'destroy'])->name('appointment-items.destroy');
         Route::get('/appointments/{appointment}/ticket', [App\Http\Controllers\Clinic\AppointmentController::class, 'ticket'])->name('appointments.ticket');
         Route::post('/appointments/{appointment}/attachments', [App\Http\Controllers\Clinic\AttachmentController::class, 'store'])->name('attachments.store');
         Route::delete('/attachments/{attachment}', [App\Http\Controllers\Clinic\AttachmentController::class, 'destroy'])->name('attachments.destroy');

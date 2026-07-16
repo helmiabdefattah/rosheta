@@ -28,7 +28,7 @@ class DoctorDashboardController extends Controller
         $appointments = Appointment::where('doctor_id', $doctor->id)
             ->where('clinic_id', $clinic->id)
             ->whereDate('scheduled_at', $selectedDate)
-            ->with(['client', 'prescriptions'])
+            ->with(['client', 'prescriptions', 'clinic', 'items', 'collections'])
             ->orderBy('queue_number')
             ->orderBy('scheduled_at')
             ->get();
@@ -59,9 +59,19 @@ class DoctorDashboardController extends Controller
             'diagnosis',
             'prescriptions.items',
             'medicalRequests',
+            'clinic',
+            'items',
+            'collections',
         ]);
 
-        return view('clinic.doctor.examine', compact('appointment'));
+        // The doctor's price list, shared across their clinics.
+        $billableItems = $this->clinicDoctor($request)
+            ->billableItems()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('clinic.doctor.examine', compact('appointment', 'billableItems'));
     }
 
     /** Guard: an appointment must belong to the acting doctor. */

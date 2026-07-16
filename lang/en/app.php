@@ -82,6 +82,28 @@ return [
     ],
 
     // Shared table headers
+    'items' => [
+        'heading' => 'Charges to collect',
+        'hint' => 'Extras added on top of the visit fee. New items are saved to your price list for next time.',
+        'item' => 'Item',
+        'select' => '— Select an item —',
+        'new' => '+ New item…',
+        'new_name' => 'Item name',
+        'new_price' => 'Unit price',
+        'quantity' => 'Qty',
+        'unit_price' => 'Unit price',
+        'line_total' => 'Total',
+        'add' => 'Add',
+        'added' => 'Added :name.',
+        'removed' => 'Charge removed.',
+        'remove_confirm' => 'Remove this charge?',
+        'none' => 'No extra charges added.',
+        'pick_or_name' => 'Pick an item from the list or give a new one a name.',
+        'visit_fee' => 'Visit fee',
+        'total_due' => 'Total due',
+        'extras' => 'extras',
+    ],
+
     'collection' => [
         'heading' => 'Collect from patient',
         'collect' => 'Collect payment',
@@ -300,6 +322,9 @@ return [
         'medical_history' => 'Medical history',
         'appointments' => 'Appointments',
         'no_appointments' => 'No appointments.',
+        'collections_heading' => 'Visits & collections',
+        'outstanding' => 'Outstanding',
+        'visit' => 'Visit',
         'attachments' => 'Attachments',
         'no_attachments' => 'No attachments.',
         'prescriptions' => 'Prescriptions',

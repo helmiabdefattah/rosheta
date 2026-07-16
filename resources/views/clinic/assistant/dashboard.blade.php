@@ -234,9 +234,12 @@
                         <span class="md:hidden text-xs uppercase text-slate-400">{{ __('app.table.num') }}: </span>{{ $loop->iteration }}
                     </td>
                     <td class="block md:table-cell md:px-4 md:py-3">
-                        <div class="font-semibold text-slate-900 text-base md:text-sm">
+                        {{-- Opens the patient's file: past visits, what they owe,
+                             and collecting for visits never paid on the day. --}}
+                        <a href="{{ route('practice.patients.show', $appt->client) }}"
+                           class="font-semibold text-indigo-700 hover:text-indigo-900 hover:underline text-base md:text-sm">
                             {{ $appt->client->name }}
-                        </div>
+                        </a>
                         <div class="text-xs text-slate-400">{{ $appt->client->phone_number }}</div>
                     </td>
                     <td class="flex justify-between md:table-cell md:px-4 md:py-3 border-t border-slate-100 mt-2 pt-2 md:border-0 md:mt-0 md:pt-0">
@@ -247,7 +250,7 @@
                         <span class="md:hidden text-xs uppercase text-slate-400">{{ __('app.table.time') }}</span>
                         <span>{{ $appt->scheduled_at->format('H:i') }}</span>
                     </td>
-                    {{-- Money: what's due and what's been taken so far. --}}
+                    {{-- Money: what's due (visit fee + extras) and what's been taken. --}}
                     @php
                         $due = $appt->dueAmount();
                         $paid = $appt->collectedAmount();
@@ -255,24 +258,7 @@
                     @endphp
                     <td class="flex justify-between items-center md:table-cell md:px-4 md:py-3">
                         <span class="md:hidden text-xs uppercase text-slate-400">{{ __('app.table.amount') }}</span>
-                        <span class="text-end md:text-start">
-                            @if ($due <= 0 && $paid <= 0)
-                                <span class="text-xs text-slate-300">{{ __('app.collection.no_price') }}</span>
-                            @else
-                                <span class="font-semibold text-slate-800">{{ number_format($paid, 2) }}</span>
-                                <span class="text-slate-400">/ {{ number_format($due, 2) }}</span>
-                                <span class="text-xs text-slate-400">{{ __('app.clinic.currency') }}</span>
-                                <div class="text-[11px] mt-0.5">
-                                    @if ($left <= 0)
-                                        <span class="text-emerald-600 font-medium">✔ {{ __('app.collection.settled') }}</span>
-                                    @elseif ($paid > 0)
-                                        <span class="text-amber-600 font-medium">{{ __('app.collection.remaining') }}: {{ number_format($left, 2) }}</span>
-                                    @else
-                                        <span class="text-slate-400">{{ __('app.collection.unpaid') }}</span>
-                                    @endif
-                                </div>
-                            @endif
-                        </span>
+                        @include('clinic.partials.amount-cell', ['appt' => $appt])
                     </td>
                     <td class="flex justify-between items-center md:table-cell md:px-4 md:py-3">
                         <span class="md:hidden text-xs uppercase text-slate-400">{{ __('app.table.status') }}</span>

@@ -93,6 +93,7 @@
                 <th class="px-4 py-3">{{ __('app.table.patient') }}</th>
                 <th class="px-4 py-3">{{ __('app.table.type') }}</th>
                 <th class="px-4 py-3">{{ __('app.table.time') }}</th>
+                <th class="px-4 py-3">{{ __('app.table.amount') }}</th>
                 <th class="px-4 py-3">{{ __('app.table.status') }}</th>
                 <th class="px-4 py-3 text-end">{{ __('app.table.action') }}</th>
             </tr>
@@ -114,6 +115,11 @@
                         <span class="md:hidden text-xs uppercase text-slate-400">{{ __('app.table.time') }}</span>
                         <span>{{ $appt->scheduled_at->format('H:i') }}</span>
                     </td>
+                    {{-- Money: visit fee + extras added during the examination. --}}
+                    <td class="flex justify-between items-center md:table-cell md:px-4 md:py-3">
+                        <span class="md:hidden text-xs uppercase text-slate-400">{{ __('app.table.amount') }}</span>
+                        @include('clinic.partials.amount-cell', ['appt' => $appt])
+                    </td>
                     <td class="flex justify-between items-center md:table-cell md:px-4 md:py-3">
                         <span class="md:hidden text-xs uppercase text-slate-400">{{ __('app.table.status') }}</span>
                         <span class="text-xs px-2 py-1 rounded-full {{ $statusColors[$appt->status] ?? 'bg-slate-100 text-slate-700' }}">
@@ -131,7 +137,7 @@
                     </td>
                 </tr>
             @empty
-                <tr class="block md:table-row"><td colspan="6" class="block md:table-cell px-4 py-10 text-center text-slate-400 bg-white rounded-xl md:rounded-none">{{ __('app.doctor.empty') }}</td></tr>
+                <tr class="block md:table-row"><td colspan="7" class="block md:table-cell px-4 py-10 text-center text-slate-400 bg-white rounded-xl md:rounded-none">{{ __('app.doctor.empty') }}</td></tr>
             @endforelse
         </tbody>
     </table>

@@ -65,6 +65,12 @@ class Doctor extends Model implements HasMedia
         return $this->hasMany(Appointment::class);
     }
 
+    /** The doctor's price list of chargeable extras, shared across their clinics. */
+    public function billableItems(): HasMany
+    {
+        return $this->hasMany(BillableItem::class);
+    }
+
     /** Users who are this doctor's assistants (users.doctor_id → doctors.id). */
     public function assistants(): HasMany
     {

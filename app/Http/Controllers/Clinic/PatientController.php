@@ -27,10 +27,20 @@ class PatientController extends Controller
         // Only this doctor's visits with the patient.
         $appointments = Appointment::where('doctor_id', $doctor->id)
             ->where('client_id', $patient->id)
+            ->with(['clinic', 'items', 'collections.collector'])
             ->orderByDesc('scheduled_at')
             ->get();
 
-        return view('clinic.patients.show', compact('patient', 'appointments', 'doctor'));
+        // Money across every visit, so the front desk can settle what was never
+        // collected on the day. Cancelled visits are excluded — nothing is owed.
+        $billable = $appointments->where('status', '!=', 'cancelled');
+        $totals = [
+            'due' => round($billable->sum(fn (Appointment $a) => $a->dueAmount()), 2),
+            'collected' => round($billable->sum(fn (Appointment $a) => $a->collectedAmount()), 2),
+            'outstanding' => round($billable->sum(fn (Appointment $a) => $a->remainingAmount()), 2),
+        ];
+
+        return view('clinic.patients.show', compact('patient', 'appointments', 'doctor', 'totals'));
     }
 
     /** Update a patient's file (profile details). */

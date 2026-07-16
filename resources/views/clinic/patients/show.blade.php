@@ -24,6 +24,132 @@
     </dl>
 </div>
 
+{{-- Money across every visit: what each one came to, what was taken, and what
+     is still owed — including visits never collected on the day. --}}
+<div class="bg-white rounded-xl shadow-sm p-5 mb-6">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h2 class="font-semibold text-slate-800">💵 {{ __('app.patient.collections_heading') }}</h2>
+        <div class="flex flex-wrap items-center gap-4 text-sm">
+            <span class="text-slate-500">{{ __('app.collection.due') }}:
+                <strong class="text-slate-800">{{ number_format($totals['due'], 2) }}</strong></span>
+            <span class="text-slate-500">{{ __('app.collection.collected') }}:
+                <strong class="text-emerald-700">{{ number_format($totals['collected'], 2) }}</strong></span>
+            <span class="px-3 py-1 rounded-full font-semibold
+                {{ $totals['outstanding'] > 0 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800' }}">
+                {{ __('app.patient.outstanding') }}: {{ number_format($totals['outstanding'], 2) }} {{ __('app.clinic.currency') }}
+            </span>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-3 py-2">{{ __('app.patient.visit') }}</th>
+                    <th class="px-3 py-2">{{ __('app.table.type') }}</th>
+                    <th class="px-3 py-2 text-end">{{ __('app.collection.due') }}</th>
+                    <th class="px-3 py-2 text-end">{{ __('app.collection.collected') }}</th>
+                    <th class="px-3 py-2">{{ __('app.table.status') }}</th>
+                    <th class="px-3 py-2 text-end">{{ __('app.table.action') }}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @forelse ($appointments as $a)
+                    @php
+                        $aDue = $a->dueAmount();
+                        $aPaid = $a->collectedAmount();
+                        $aLeft = $a->remainingAmount();
+                        $cancelled = $a->status === 'cancelled';
+                    @endphp
+                    <tr class="{{ $aLeft > 0 && ! $cancelled ? 'bg-amber-50/40' : '' }}">
+                        <td class="px-3 py-2 whitespace-nowrap">
+                            <div class="text-slate-800">{{ $a->scheduled_at->translatedFormat('d M Y') }}</div>
+                            <div class="text-xs text-slate-400">{{ $a->scheduled_at->format('H:i') }} @if ($a->clinic) &middot; {{ $a->clinic->name }} @endif</div>
+                        </td>
+                        <td class="px-3 py-2">
+                            <div>{{ $a->typeLabel() }}</div>
+                            @if ($a->items->isNotEmpty())
+                                <div class="text-xs text-slate-400">
+                                    + {{ $a->items->map(fn ($i) => $i->name.($i->quantity > 1 ? '×'.$i->quantity : ''))->join(', ') }}
+                                </div>
+                            @endif
+                        </td>
+                        <td class="px-3 py-2 text-end whitespace-nowrap">{{ number_format($aDue, 2) }}</td>
+                        <td class="px-3 py-2 text-end whitespace-nowrap text-emerald-700">{{ number_format($aPaid, 2) }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap">
+                            @if ($cancelled)
+                                <span class="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-500">{{ $a->statusLabel() }}</span>
+                            @elseif ($aLeft <= 0 && $aDue > 0)
+                                <span class="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">✔ {{ __('app.collection.settled') }}</span>
+                            @elseif ($aPaid > 0)
+                                <span class="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-800">{{ __('app.collection.partial') }} — {{ number_format($aLeft, 2) }}</span>
+                            @elseif ($aDue > 0)
+                                <span class="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700">{{ __('app.collection.unpaid') }}</span>
+                            @else
+                                <span class="text-xs text-slate-300">{{ __('app.collection.no_price') }}</span>
+                            @endif
+                        </td>
+                        <td class="px-3 py-2 text-end whitespace-nowrap">
+                            @if (! $cancelled && $aLeft > 0)
+                                <button type="button" onclick="toggle('pc-{{ $a->id }}')"
+                                        class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg">
+                                    {{ __('app.collection.collect') }}
+                                </button>
+                            @endif
+                        </td>
+                    </tr>
+
+                    {{-- Collect for this visit, defaulting to what's still owed. --}}
+                    @if (! $cancelled && $aLeft > 0)
+                        <tr id="pc-{{ $a->id }}" class="hidden">
+                            <td colspan="6" class="px-3 py-3 bg-emerald-50/60">
+                                <form method="POST" action="{{ route('practice.collections.store', $a) }}"
+                                      class="flex flex-wrap items-end gap-3">
+                                    @csrf
+                                    <div>
+                                        <label class="block text-xs text-slate-500 mb-1">{{ __('app.collection.amount') }} ({{ __('app.clinic.currency') }})</label>
+                                        <input type="number" name="amount" step="0.01" min="0.01" required
+                                               value="{{ number_format($aLeft, 2, '.', '') }}"
+                                               class="w-32 border rounded px-2 py-1.5 text-sm">
+                                    </div>
+                                    <div class="grow max-w-xs">
+                                        <label class="block text-xs text-slate-500 mb-1">{{ __('app.collection.note') }}</label>
+                                        <input type="text" name="note" class="w-full border rounded px-2 py-1.5 text-sm">
+                                    </div>
+                                    <button class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-4 py-2 rounded-lg">
+                                        {{ __('app.collection.submit') }}
+                                    </button>
+                                    <button type="button" onclick="toggle('pc-{{ $a->id }}')"
+                                            class="text-sm text-slate-500 px-2">{{ __('app.collection.cancel') }}</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endif
+
+                    {{-- What's already been taken for this visit. --}}
+                    @if ($a->collections->isNotEmpty())
+                        <tr>
+                            <td colspan="6" class="px-3 pb-3 pt-0">
+                                <ul class="flex flex-wrap gap-x-4 gap-y-1">
+                                    @foreach ($a->collections->sortBy('collected_at') as $col)
+                                        <li class="text-xs text-slate-500">
+                                            <span class="font-semibold text-slate-700">{{ number_format((float) $col->amount, 2) }}</span>
+                                            &middot; {{ $col->collected_at?->translatedFormat('d M, H:i') }}
+                                            @if ($col->collector) &middot; {{ __('app.collection.by', ['name' => $col->collector->name]) }} @endif
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </td>
+                        </tr>
+                    @endif
+                @empty
+                    <tr><td colspan="6" class="px-3 py-6 text-center text-slate-400 italic">{{ __('app.patient.no_appointments') }}</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     {{-- Appointments --}}
     <div class="bg-white rounded-xl shadow-sm p-5">
