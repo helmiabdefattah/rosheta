@@ -38,15 +38,6 @@
                 class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
             {{ __('app.appointment.new') }}
         </button>
-        {{-- Show/hide the "call next patient" button on the waiting-room display --}}
-        @php $showNext = ! $clinic || $clinic->display_show_next_button; @endphp
-        <form method="POST" action="{{ route('practice.assistant.display.next-button.toggle') }}">
-            @csrf
-            <button class="text-sm font-medium px-4 py-2 rounded-lg border
-                {{ $showNext ? 'bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-500 border-slate-300' }}">
-                {{ $showNext ? __('app.assistant.display_next_on') : __('app.assistant.display_next_off') }}
-            </button>
-        </form>
     </div>
 </div>
 
@@ -209,7 +200,9 @@
     @endunless
 </div>
 
-<div class="md:bg-white md:rounded-xl md:shadow-sm md:overflow-x-auto">
+{{-- No overflow-x-auto here: it would clip the row "Actions" dropdown. The
+     table has no min-width, so it fits without horizontal scrolling. --}}
+<div class="md:bg-white md:rounded-xl md:shadow-sm">
     <table class="w-full text-sm block md:table">
         <thead class="bg-slate-50 text-slate-500 text-left hidden md:table-header-group">
             <tr>
@@ -248,68 +241,104 @@
                         </span>
                     </td>
                     <td class="block md:table-cell md:px-4 md:py-3 border-t border-slate-100 mt-2 pt-3 md:border-0 md:mt-0 md:pt-3">
-                        <div class="flex items-center justify-start md:justify-end gap-1 flex-wrap">
-                            {{-- View profile --}}
-                            <a href="{{ route('practice.patients.show', $appt->client) }}"
-                               class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700" title="{{ __('app.assistant.view_profile') }}">👤</a>
+                        {{-- All row actions in one menu, rather than a wall of icons. --}}
+                        <div class="flex justify-start md:justify-end">
+                            <details data-menu class="relative">
+                                <summary class="list-none cursor-pointer select-none inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-sm text-slate-700">
+                                    {{ __('app.table.actions') }}
+                                    <span class="text-[10px] text-slate-400">▼</span>
+                                </summary>
+                                <div class="absolute end-0 mt-2 w-60 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-30 text-start">
 
-                            {{-- Print queue ticket/receipt --}}
-                            <a href="{{ route('practice.appointments.ticket', $appt) }}" target="_blank"
-                               class="px-2 py-1 rounded bg-teal-100 hover:bg-teal-200 text-teal-700" title="{{ __('app.ticket.print') }}">🧾</a>
+                                    {{-- View profile --}}
+                                    <a href="{{ route('practice.patients.show', $appt->client) }}"
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                                        <span class="w-5">👤</span> {{ __('app.assistant.view_profile') }}
+                                    </a>
 
-                            {{-- Print on the clinic's Bluetooth ticket printer (via staff mobile app) --}}
-                            <button type="button" onclick="printTicketBt({{ $appt->id }}, this)"
-                               class="px-2 py-1 rounded bg-cyan-100 hover:bg-cyan-200 text-cyan-700" title="{{ __('app.ticket.print_bt') }}">🎫</button>
+                                    {{-- Print queue ticket/receipt --}}
+                                    <a href="{{ route('practice.appointments.ticket', $appt) }}" target="_blank"
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                                        <span class="w-5">🧾</span> {{ __('app.ticket.print') }}
+                                    </a>
 
-                            {{-- Edit patient file --}}
-                            <button onclick="toggle('edit-{{ $appt->id }}')"
-                               class="px-2 py-1 rounded bg-indigo-100 hover:bg-indigo-200 text-indigo-700" title="{{ __('app.patient.edit') }}">✏️</button>
+                                    {{-- Print on the clinic's Bluetooth ticket printer (via staff mobile app) --}}
+                                    <button type="button" onclick="printTicketBt({{ $appt->id }}, this)"
+                                            class="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-start">
+                                        <span class="w-5">🎫</span> {{ __('app.ticket.print_bt') }}
+                                    </button>
 
-                            {{-- Upload attachment --}}
-                            <button onclick="toggle('upload-{{ $appt->id }}')"
-                               class="px-2 py-1 rounded bg-blue-100 hover:bg-blue-200 text-blue-700" title="{{ __('app.assistant.upload_attachment') }}">📎</button>
+                                    {{-- Edit patient file --}}
+                                    <button type="button" onclick="toggle('edit-{{ $appt->id }}')"
+                                            class="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-start">
+                                        <span class="w-5">✏️</span> {{ __('app.patient.edit') }}
+                                    </button>
 
-                            {{-- Print prescription --}}
-                            @if ($appt->prescriptions->isNotEmpty())
-                                <a href="{{ route('practice.prescriptions.print', $appt->prescriptions->last()) }}" target="_blank"
-                                   class="px-2 py-1 rounded bg-purple-100 hover:bg-purple-200 text-purple-700" title="{{ __('app.assistant.print_prescription') }}">🖨️</a>
-                            @else
-                                <span class="px-2 py-1 rounded bg-slate-50 text-slate-300" title="{{ __('app.assistant.no_prescription') }}">🖨️</span>
-                            @endif
+                                    {{-- Upload attachment --}}
+                                    <button type="button" onclick="toggle('upload-{{ $appt->id }}')"
+                                            class="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-start">
+                                        <span class="w-5">📎</span> {{ __('app.assistant.upload_attachment') }}
+                                    </button>
 
-                            {{-- Start examination (also lets a no-show patient who turned up be seen) --}}
-                            @if (in_array($appt->status, ['scheduled', 'escaped']))
-                                <form method="POST" action="{{ route('practice.appointments.status', $appt) }}">
-                                    @csrf
-                                    <input type="hidden" name="status" value="under_examination">
-                                    <button class="px-2 py-1 rounded bg-amber-100 hover:bg-amber-200 text-amber-700" title="{{ __('app.assistant.start_examination') }}">▶</button>
-                                </form>
-                            @endif
+                                    {{-- Print prescription --}}
+                                    @if ($appt->prescriptions->isNotEmpty())
+                                        <a href="{{ route('practice.prescriptions.print', $appt->prescriptions->last()) }}" target="_blank"
+                                           class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                                            <span class="w-5">🖨️</span> {{ __('app.assistant.print_prescription') }}
+                                        </a>
+                                    @else
+                                        <span class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 cursor-not-allowed">
+                                            <span class="w-5">🖨️</span> {{ __('app.assistant.no_prescription') }}
+                                        </span>
+                                    @endif
 
-                            {{-- Complete / Cancel: available for any non-final appointment, including no-shows --}}
-                            @if (! in_array($appt->status, ['completed', 'cancelled']))
-                                <form method="POST" action="{{ route('practice.appointments.status', $appt) }}">
-                                    @csrf
-                                    <input type="hidden" name="status" value="completed">
-                                    <button class="px-2 py-1 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-700" title="{{ __('app.assistant.mark_completed') }}">✔</button>
-                                </form>
-                                {{-- Escape (no-show: patient didn't attend and didn't cancel) --}}
-                                @if ($appt->status !== 'escaped')
-                                    <form method="POST" action="{{ route('practice.appointments.status', $appt) }}"
-                                          onsubmit="return confirm('{{ __('app.assistant.confirm_escape') }}')">
-                                        @csrf
-                                        <input type="hidden" name="status" value="escaped">
-                                        <button class="px-2 py-1 rounded bg-orange-100 hover:bg-orange-200 text-orange-700" title="{{ __('app.assistant.escape') }}">⏷</button>
-                                    </form>
-                                @endif
-                                {{-- Cancel --}}
-                                <form method="POST" action="{{ route('practice.appointments.status', $appt) }}"
-                                      onsubmit="return confirm('{{ __('app.assistant.confirm_cancel') }}')">
-                                    @csrf
-                                    <input type="hidden" name="status" value="cancelled">
-                                    <button class="px-2 py-1 rounded bg-red-100 hover:bg-red-200 text-red-700" title="{{ __('app.assistant.cancel') }}">✖</button>
-                                </form>
-                            @endif
+                                    {{-- Start examination (also lets a no-show patient who turned up be seen) --}}
+                                    @if (in_array($appt->status, ['scheduled', 'escaped']))
+                                        <div class="border-t border-slate-100 my-1"></div>
+                                        <form method="POST" action="{{ route('practice.appointments.status', $appt) }}">
+                                            @csrf
+                                            <input type="hidden" name="status" value="under_examination">
+                                            <button class="w-full flex items-center gap-2 px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 text-start">
+                                                <span class="w-5">▶</span> {{ __('app.assistant.start_examination') }}
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    {{-- Complete / Cancel: available for any non-final appointment, including no-shows --}}
+                                    @if (! in_array($appt->status, ['completed', 'cancelled']))
+                                        @if (! in_array($appt->status, ['scheduled', 'escaped']))
+                                            <div class="border-t border-slate-100 my-1"></div>
+                                        @endif
+                                        <form method="POST" action="{{ route('practice.appointments.status', $appt) }}">
+                                            @csrf
+                                            <input type="hidden" name="status" value="completed">
+                                            <button class="w-full flex items-center gap-2 px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50 text-start">
+                                                <span class="w-5">✔</span> {{ __('app.assistant.mark_completed') }}
+                                            </button>
+                                        </form>
+                                        {{-- Escape (no-show: patient didn't attend and didn't cancel) --}}
+                                        @if ($appt->status !== 'escaped')
+                                            <form method="POST" action="{{ route('practice.appointments.status', $appt) }}"
+                                                  onsubmit="return confirm('{{ __('app.assistant.confirm_escape') }}')">
+                                                @csrf
+                                                <input type="hidden" name="status" value="escaped">
+                                                <button class="w-full flex items-center gap-2 px-4 py-2 text-sm text-orange-700 hover:bg-orange-50 text-start">
+                                                    <span class="w-5">⏷</span> {{ __('app.assistant.escape') }}
+                                                </button>
+                                            </form>
+                                        @endif
+                                        {{-- Cancel --}}
+                                        <form method="POST" action="{{ route('practice.appointments.status', $appt) }}"
+                                              onsubmit="return confirm('{{ __('app.assistant.confirm_cancel') }}')">
+                                            @csrf
+                                            <input type="hidden" name="status" value="cancelled">
+                                            <button class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-700 hover:bg-red-50 text-start">
+                                                <span class="w-5">✖</span> {{ __('app.assistant.cancel') }}
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </details>
                         </div>
                     </td>
                 </tr>

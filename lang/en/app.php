@@ -93,8 +93,6 @@ return [
     // Assistant dashboard
     'assistant' => [
         'title' => "Today's Appointments",
-        'display_next_on' => '⏭ Display button: On',
-        'display_next_off' => '⏭ Display button: Off',
         'stats' => [
             'total' => 'Total today',
             'waiting' => 'Waiting',
@@ -340,5 +338,22 @@ return [
         'next' => 'Call next patient',
         'check_in' => 'Check in',
         'announce' => 'Case number :patient, queue number for this case :queue',
+
+        // The "Kiosk" launcher menu in the clinic nav.
+        'menu' => 'Kiosk',
+        'counter' => 'Counter',
+        'counter_hint' => 'Waiting-room number display',
+        'interactive' => 'Interactive screen',
+        'interactive_hint' => 'Patient self check-in',
+        'assistant_screen' => 'Assistant screen',
+        'assistant_screen_hint' => 'Counter, queue & call next',
+    ],
+
+    'screen' => [
+        'title' => 'Assistant screen',
+        'queue' => 'Today\'s queue',
+        'empty' => 'No patients in today\'s queue.',
+        'serving' => 'Now serving',
+        'waiting_for' => 'Waiting',
     ],
 ];

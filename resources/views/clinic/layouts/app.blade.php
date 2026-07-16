@@ -36,12 +36,30 @@
                     </a>
                 @endif
                 @if ($displayClinic)
-                    <a href="{{ route('practice.display.screen', $displayClinic) }}" target="_blank"
-                       class="text-sm px-3 py-1 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 whitespace-nowrap"
-                       title="{{ __('app.display.open') }}">📺 {{ __('app.display.title') }}</a>
-                    <a href="{{ route('practice.display.screen', ['clinic' => $displayClinic, 'checkin' => 1]) }}" target="_blank"
-                       class="text-sm px-3 py-1 rounded-lg border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 whitespace-nowrap"
-                       title="{{ __('app.display.open_checkin') }}">🎫 {{ __('app.display.check_in') }}</a>
+                    {{-- Kiosk launcher: the three in-clinic screens. --}}
+                    <details data-menu class="relative">
+                        <summary class="list-none cursor-pointer select-none text-sm px-3 py-1 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 whitespace-nowrap flex items-center gap-1">
+                            🖥️ {{ __('app.display.menu') }}
+                            <span class="text-[10px] text-slate-400">▼</span>
+                        </summary>
+                        <div class="absolute end-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50">
+                            <a href="{{ route('practice.display.screen', $displayClinic) }}" target="_blank"
+                               class="block px-4 py-2.5 hover:bg-slate-50">
+                                <div class="text-sm font-medium text-slate-800">📺 {{ __('app.display.counter') }}</div>
+                                <div class="text-xs text-slate-400">{{ __('app.display.counter_hint') }}</div>
+                            </a>
+                            <a href="{{ route('practice.display.screen', ['clinic' => $displayClinic, 'checkin' => 1]) }}" target="_blank"
+                               class="block px-4 py-2.5 hover:bg-amber-50">
+                                <div class="text-sm font-medium text-amber-700">🎫 {{ __('app.display.interactive') }}</div>
+                                <div class="text-xs text-slate-400">{{ __('app.display.interactive_hint') }}</div>
+                            </a>
+                            <a href="{{ route('practice.screen') }}" target="_blank"
+                               class="block px-4 py-2.5 hover:bg-indigo-50">
+                                <div class="text-sm font-medium text-indigo-700">🩺 {{ __('app.display.assistant_screen') }}</div>
+                                <div class="text-xs text-slate-400">{{ __('app.display.assistant_screen_hint') }}</div>
+                            </a>
+                        </div>
+                    </details>
                 @endif
                 <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                    class="text-sm px-3 py-1 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 whitespace-nowrap">
@@ -86,7 +104,39 @@
         function toggle(id) {
             document.getElementById(id).classList.toggle('hidden');
         }
+
+        // <details data-menu> dropdowns: only one open at a time, closing on an
+        // outside click, on Escape, and once an item inside is chosen (a bare
+        // <details> would stay open through all three).
+        document.addEventListener('click', function (e) {
+            var onSummary = e.target.closest && e.target.closest('summary');
+            document.querySelectorAll('details[data-menu][open]').forEach(function (d) {
+                if (!d.contains(e.target)) {
+                    d.removeAttribute('open');
+                } else if (!onSummary && e.target.closest('a, button')) {
+                    d.removeAttribute('open');
+                }
+            });
+        });
+        document.addEventListener('toggle', function (e) {
+            var opened = e.target;
+            if (!opened.matches || !opened.matches('details[data-menu][open]')) return;
+            document.querySelectorAll('details[data-menu][open]').forEach(function (d) {
+                if (d !== opened) d.removeAttribute('open');
+            });
+        }, true);
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape') return;
+            document.querySelectorAll('details[data-menu][open]').forEach(function (d) {
+                d.removeAttribute('open');
+            });
+        });
     </script>
+    <style>
+        /* Hide the native disclosure triangle on our dropdown summaries. */
+        details[data-menu] > summary::-webkit-details-marker { display: none; }
+        details[data-menu] > summary::marker { content: ''; }
+    </style>
 
     @if (session('announce'))
         <script>

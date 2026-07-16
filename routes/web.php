@@ -433,6 +433,10 @@ Route::prefix('practice')->name('practice.')->group(function () {
 
     // ---- Shared clinic staff (doctor or assistant) ----
     Route::middleware(['auth', 'clinic.role:doctor,assistant'])->group(function () {
+        // Staff "assistant screen": counter + today's queue + check-in + call next.
+        // Behind auth because it lists patient names (the public display doesn't).
+        Route::get('/screen', [App\Http\Controllers\Clinic\AssistantScreenController::class, 'index'])->name('screen');
+        Route::get('/screen/queue', [App\Http\Controllers\Clinic\AssistantScreenController::class, 'queue'])->name('screen.queue');
         Route::get('/patients/{patient}', [App\Http\Controllers\Clinic\PatientController::class, 'show'])->name('patients.show');
         Route::put('/patients/{patient}', [App\Http\Controllers\Clinic\PatientController::class, 'update'])->name('patients.update');
         Route::post('/appointments/{appointment}/status', [App\Http\Controllers\Clinic\AppointmentController::class, 'updateStatus'])->name('appointments.status');
@@ -446,7 +450,6 @@ Route::prefix('practice')->name('practice.')->group(function () {
     // ---- Doctor's Assistant area ----
     Route::middleware(['auth', 'clinic.role:assistant'])->prefix('assistant')->name('assistant.')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'index'])->name('dashboard');
-        Route::post('/display-next-button', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'toggleDisplayNextButton'])->name('display.next-button.toggle');
         Route::post('/appointments', [App\Http\Controllers\Clinic\AppointmentController::class, 'store'])->name('appointments.store');
         Route::post('/appointments/{appointment}/print-ticket', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'printTicket'])->name('appointments.print-ticket');
         Route::post('/pending/confirm', [App\Http\Controllers\Clinic\AssistantDashboardController::class, 'confirmPending'])->name('pending.confirm');

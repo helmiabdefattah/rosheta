@@ -90,16 +90,6 @@ class AssistantDashboardController extends Controller
         ]);
     }
 
-    /** Toggle the "call next patient" button on the public waiting-room display. */
-    public function toggleDisplayNextButton(Request $request): RedirectResponse
-    {
-        $doctor = $this->clinicDoctor($request);
-        $clinic = $this->activeClinic($doctor);
-        $clinic->update(['display_show_next_button' => ! $clinic->display_show_next_button]);
-
-        return back();
-    }
-
     /** Confirm a rosheta-platform booking into today's clinic queue. */
     public function confirmPending(Request $request): RedirectResponse|JsonResponse
     {

@@ -77,19 +77,8 @@
     </button>
     @endif
 
-    {{-- Advance the queue: complete the current patient, call the next one,
-         and play the same Arabic announcement the dashboard uses. Shown only
-         when enabled from the assistant dashboard, and never on the check-in
-         display (that screen is for patients, not staff). --}}
-    @if ((! $clinic || $clinic->display_show_next_button) && ! request()->boolean('checkin'))
-    <button id="next-btn" type="button"
-            class="hidden fixed bottom-8 inset-x-0 mx-auto w-fit z-40 px-8 py-4 rounded-2xl
-                   bg-amber-500 hover:bg-amber-400 active:scale-95 transition
-                   text-slate-900 text-2xl md:text-3xl font-bold shadow-lg shadow-amber-900/40"
-            style="cursor: pointer;">
-        ⏭ {{ __('app.display.next') }}
-    </button>
-    @endif
+    {{-- No "call next" button here: this screen is the patient-facing counter.
+         The queue is advanced from the staff assistant screen instead. --}}
 
     <script>
         (function () {
@@ -97,10 +86,8 @@
             var SPEECH_LANG = LANG === 'ar' ? 'ar-SA' : 'en-US';
             var VOICE_PREFIX = LANG === 'ar' ? 'ar' : 'en';
             var CURRENT_URL = @json(route('practice.display.current', $clinic));
-            var NEXT_URL = @json(route('practice.display.next', $clinic));
             var KIOSK_URL = @json(route('practice.kiosk.welcome', $clinic));
             var VOICES_BASE = @json(asset('storage/voices/ar'));
-            var CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             // Returning from the kiosk: skip the "tap to start" overlay.
             var AUTO_START = @json(request()->boolean('started'));
 
@@ -119,7 +106,6 @@
                 idle: document.getElementById('idle'),
                 queue: document.getElementById('queue'),
                 clock: document.getElementById('clock'),
-                nextBtn: document.getElementById('next-btn'),
                 kioskBtn: document.getElementById('kiosk-btn'),
             };
 
@@ -192,22 +178,6 @@
                 }
             }
 
-            // Complete the current patient and call the next one, then let the
-            // normal render path announce them (lastId changes => announce()).
-            function advance() {
-                if (!audioReady) return;
-                els.nextBtn.disabled = true;
-                fetch(NEXT_URL, {
-                    method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
-                    cache: 'no-store',
-                })
-                    .then(function (r) { return r.json(); })
-                    .then(function (data) { render(data.current); })
-                    .catch(function () { /* a later poll will reconcile */ })
-                    .finally(function () { els.nextBtn.disabled = false; });
-            }
-
             function poll() {
                 fetch(CURRENT_URL, { headers: { 'Accept': 'application/json' }, cache: 'no-store' })
                     .then(function (r) { return r.json(); })
@@ -231,15 +201,12 @@
                     if (el.requestFullscreen) { el.requestFullscreen().catch(function () {}); }
                 }
                 els.starter.style.display = 'none';
-                if (els.nextBtn) { els.nextBtn.classList.remove('hidden'); }
                 if (els.kioskBtn) { els.kioskBtn.classList.remove('hidden'); }
                 poll();
             }
 
             els.starter.addEventListener('click', function () { startDisplay(true); });
             if (AUTO_START) { startDisplay(false); }
-
-            if (els.nextBtn) { els.nextBtn.addEventListener('click', advance); }
 
             // Go to the kiosk, remembering this display so the printed ticket
             // returns here afterwards (sessionStorage survives the same-tab
