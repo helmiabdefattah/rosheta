@@ -50,6 +50,29 @@ class CollectionController extends Controller
     }
 
     /**
+     * Override the visit fee — a discount, a surcharge, or writing it off.
+     * Only the fee moves; extras and payments already taken are untouched, so
+     * discounting below what's been paid simply surfaces a refund due.
+     *
+     * Note this is an override: changing the visit type afterwards re-prices
+     * from clinic settings and discards it.
+     */
+    public function updatePrice(Request $request, Appointment $appointment): RedirectResponse
+    {
+        $this->authorizeAppointment($request, $appointment);
+
+        $price = $request->validate([
+            'price' => ['required', 'numeric', 'min:0', 'max:999999'],
+        ])['price'];
+
+        $appointment->update(['price' => $price]);
+
+        return back()->with('status', __('app.items.fee_updated', [
+            'amount' => number_format((float) $price, 2),
+        ]));
+    }
+
+    /**
      * Change the visit type. The visit is re-priced from the clinic's current
      * settings for the new type; payments already taken are left alone, since
      * that money really changed hands.

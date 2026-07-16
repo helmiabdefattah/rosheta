@@ -9,6 +9,7 @@
     $due = $appt->dueAmount();
     $paid = $appt->collectedAmount();
     $left = $appt->remainingAmount();
+    $refund = $appt->refundDue();
     $extras = $appt->items;
 @endphp
 
@@ -35,7 +36,10 @@
         @endif
 
         <div class="text-[11px] mt-0.5">
-            @if ($left <= 0)
+            @if ($refund > 0)
+                {{-- Fee discounted after the patient had already paid --}}
+                <span class="text-red-600 font-semibold">↩ {{ __('app.collection.refund_due') }}: {{ number_format($refund, 2) }}</span>
+            @elseif ($left <= 0)
                 <span class="text-emerald-600 font-medium">✔ {{ __('app.collection.settled') }}</span>
             @elseif ($paid > 0)
                 <span class="text-amber-600 font-medium">{{ __('app.collection.remaining') }}: {{ number_format($left, 2) }}</span>

@@ -102,6 +102,11 @@ return [
         'visit_fee' => 'Visit fee',
         'total_due' => 'Total due',
         'extras' => 'extras',
+        'edit_fee' => 'Edit fee',
+        'fee_hint' => 'Raise or lower the visit fee — a discount, a surcharge, or write it off with 0.',
+        'fee_updated' => 'Visit fee set to :amount.',
+        'save_fee' => 'Save fee',
+        'fee_reprice_warning' => 'Changing the visit type later re-prices from clinic settings and clears this.',
     ],
 
     'collection' => [
@@ -119,6 +124,7 @@ return [
         'settled' => 'Paid in full',
         'unpaid' => 'Not paid',
         'partial' => 'Part-paid',
+        'refund_due' => 'Refund due',
         'no_price' => 'No price set',
         'history' => 'Payments taken',
         'delete_confirm' => 'Remove this payment entry?',

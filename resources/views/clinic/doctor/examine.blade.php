@@ -196,105 +196,6 @@
 
     {{-- MIDDLE + RIGHT --}}
     <div class="lg:col-span-2 space-y-6">
-        {{-- Charges to collect: visit fee + any extras added here --}}
-        @php
-            $visitFee = $appointment->visitPrice();
-            $extras = $appointment->itemsTotal();
-            $due = $appointment->dueAmount();
-            $paid = $appointment->collectedAmount();
-        @endphp
-        <div class="bg-white rounded-xl shadow-sm p-5">
-            <h2 class="font-semibold text-slate-800 mb-1">💵 {{ __('app.items.heading') }}</h2>
-            <p class="text-xs text-slate-500 mb-4">{{ __('app.items.hint') }}</p>
-
-            {{-- Existing charges --}}
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm mb-3">
-                    <tbody class="divide-y divide-slate-100">
-                        <tr class="text-slate-500">
-                            <td class="py-2">{{ __('app.items.visit_fee') }} — {{ $appointment->typeLabel() }}</td>
-                            <td class="py-2 text-center w-16">1</td>
-                            <td class="py-2 text-end w-24">{{ number_format($visitFee, 2) }}</td>
-                            <td class="w-8"></td>
-                        </tr>
-                        @forelse ($appointment->items as $item)
-                            <tr>
-                                <td class="py-2 text-slate-800">{{ $item->name }}</td>
-                                <td class="py-2 text-center text-slate-500">×{{ $item->quantity }}</td>
-                                <td class="py-2 text-end font-medium text-slate-800">{{ number_format($item->total(), 2) }}</td>
-                                <td class="py-2 text-end">
-                                    <form method="POST" action="{{ route('practice.appointment-items.destroy', $item) }}"
-                                          onsubmit="return confirm('{{ __('app.items.remove_confirm') }}')">
-                                        @csrf @method('DELETE')
-                                        <button class="text-red-500 hover:text-red-700 text-xs">✖</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="4" class="py-2 text-xs text-slate-400 italic">{{ __('app.items.none') }}</td></tr>
-                        @endforelse
-                    </tbody>
-                    <tfoot>
-                        <tr class="border-t-2 border-slate-200 font-semibold text-slate-900">
-                            <td class="py-2" colspan="2">{{ __('app.items.total_due') }}</td>
-                            <td class="py-2 text-end">{{ number_format($due, 2) }}</td>
-                            <td></td>
-                        </tr>
-                        @if ($paid > 0)
-                            <tr class="text-xs text-emerald-700">
-                                <td class="py-1" colspan="2">{{ __('app.collection.collected') }}</td>
-                                <td class="py-1 text-end">{{ number_format($paid, 2) }}</td>
-                                <td></td>
-                            </tr>
-                        @endif
-                        <tr class="text-xs {{ $appointment->remainingAmount() > 0 ? 'text-amber-700' : 'text-emerald-700' }}">
-                            <td class="py-1" colspan="2">{{ __('app.collection.remaining') }}</td>
-                            <td class="py-1 text-end">{{ number_format($appointment->remainingAmount(), 2) }}</td>
-                            <td></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-
-            {{-- Add a charge: pick from the price list, or name a new one --}}
-            <form method="POST" action="{{ route('practice.appointment-items.store', $appointment) }}"
-                  class="flex flex-wrap items-end gap-2 border-t border-slate-100 pt-4" id="add-item-form">
-                @csrf
-                <div class="grow min-w-[12rem]">
-                    <label class="block text-xs text-slate-500 mb-1">{{ __('app.items.item') }}</label>
-                    <select name="billable_item_id" id="item-select" class="w-full border rounded px-2 py-1.5 text-sm">
-                        <option value="">{{ __('app.items.select') }}</option>
-                        @foreach ($billableItems as $bi)
-                            <option value="{{ $bi->id }}">{{ $bi->name }} — {{ number_format((float) $bi->price, 2) }} {{ __('app.clinic.currency') }}</option>
-                        @endforeach
-                        <option value="__new__">{{ __('app.items.new') }}</option>
-                    </select>
-                </div>
-
-                {{-- Revealed when "New item…" is chosen --}}
-                <div id="new-item-fields" class="hidden flex flex-wrap items-end gap-2">
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1">{{ __('app.items.new_name') }}</label>
-                        <input type="text" name="new_name" id="new-name" class="w-40 border rounded px-2 py-1.5 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1">{{ __('app.items.new_price') }}</label>
-                        <input type="number" name="new_price" id="new-price" step="0.01" min="0" value="0"
-                               class="w-24 border rounded px-2 py-1.5 text-sm">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs text-slate-500 mb-1">{{ __('app.items.quantity') }}</label>
-                    <input type="number" name="quantity" value="1" min="1" max="999"
-                           class="w-20 border rounded px-2 py-1.5 text-sm">
-                </div>
-                <button class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-4 py-2 rounded-lg">
-                    {{ __('app.items.add') }}
-                </button>
-            </form>
-        </div>
-
         {{-- Diagnosis + treatment plan --}}
         <div class="bg-white rounded-xl shadow-sm p-5">
             <h2 class="font-semibold text-slate-800 mb-3">{{ __('app.examine.diagnosis_section') }}</h2>
@@ -404,6 +305,142 @@
                 </ul>
             </div>
         @endif
+
+        {{-- Charges to collect: visit fee + any extras added here --}}
+        @php
+            $visitFee = $appointment->visitPrice();
+            $extras = $appointment->itemsTotal();
+            $due = $appointment->dueAmount();
+            $paid = $appointment->collectedAmount();
+        @endphp
+        <div class="bg-white rounded-xl shadow-sm p-5">
+            <h2 class="font-semibold text-slate-800 mb-1">💵 {{ __('app.items.heading') }}</h2>
+            <p class="text-xs text-slate-500 mb-4">{{ __('app.items.hint') }}</p>
+
+            {{-- Existing charges --}}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm mb-3">
+                    <tbody class="divide-y divide-slate-100">
+                        <tr class="text-slate-500">
+                            <td class="py-2">{{ __('app.items.visit_fee') }} — {{ $appointment->typeLabel() }}</td>
+                            <td class="py-2 text-center w-16">1</td>
+                            <td class="py-2 text-end w-24">{{ number_format($visitFee, 2) }}</td>
+                            <td class="py-2 text-end w-8">
+                                <button type="button" onclick="toggle('edit-fee')"
+                                        class="text-indigo-600 hover:text-indigo-800 text-xs"
+                                        title="{{ __('app.items.edit_fee') }}">✏️</button>
+                            </td>
+                        </tr>
+                        {{-- Discount / surcharge on the visit fee itself --}}
+                        <tr id="edit-fee" class="hidden">
+                            <td colspan="4" class="py-3">
+                                <form method="POST" action="{{ route('practice.appointments.price', $appointment) }}"
+                                      class="flex flex-wrap items-end gap-2 bg-indigo-50/60 rounded-lg p-3">
+                                    @csrf
+                                    <div>
+                                        <label class="block text-xs text-slate-500 mb-1">
+                                            {{ __('app.items.visit_fee') }} ({{ __('app.clinic.currency') }})
+                                        </label>
+                                        <input type="number" name="price" step="0.01" min="0" required
+                                               value="{{ number_format($visitFee, 2, '.', '') }}"
+                                               class="w-32 border rounded px-2 py-1.5 text-sm">
+                                    </div>
+                                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg">
+                                        {{ __('app.items.save_fee') }}
+                                    </button>
+                                    <button type="button" onclick="toggle('edit-fee')"
+                                            class="text-sm text-slate-500 px-2">{{ __('app.collection.cancel') }}</button>
+                                    <p class="w-full text-xs text-slate-500">{{ __('app.items.fee_hint') }}</p>
+                                    <p class="w-full text-xs text-amber-600">{{ __('app.items.fee_reprice_warning') }}</p>
+                                </form>
+                            </td>
+                        </tr>
+                        @forelse ($appointment->items as $item)
+                            <tr>
+                                <td class="py-2 text-slate-800">{{ $item->name }}</td>
+                                <td class="py-2 text-center text-slate-500">×{{ $item->quantity }}</td>
+                                <td class="py-2 text-end font-medium text-slate-800">{{ number_format($item->total(), 2) }}</td>
+                                <td class="py-2 text-end">
+                                    <form method="POST" action="{{ route('practice.appointment-items.destroy', $item) }}"
+                                          onsubmit="return confirm('{{ __('app.items.remove_confirm') }}')">
+                                        @csrf @method('DELETE')
+                                        <button class="text-red-500 hover:text-red-700 text-xs">✖</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="4" class="py-2 text-xs text-slate-400 italic">{{ __('app.items.none') }}</td></tr>
+                        @endforelse
+                    </tbody>
+                    <tfoot>
+                        <tr class="border-t-2 border-slate-200 font-semibold text-slate-900">
+                            <td class="py-2" colspan="2">{{ __('app.items.total_due') }}</td>
+                            <td class="py-2 text-end">{{ number_format($due, 2) }}</td>
+                            <td></td>
+                        </tr>
+                        @if ($paid > 0)
+                            <tr class="text-xs text-emerald-700">
+                                <td class="py-1" colspan="2">{{ __('app.collection.collected') }}</td>
+                                <td class="py-1 text-end">{{ number_format($paid, 2) }}</td>
+                                <td></td>
+                            </tr>
+                        @endif
+                        @if ($appointment->refundDue() > 0)
+                            {{-- Discounted below what was already paid --}}
+                            <tr class="text-xs font-semibold text-red-600">
+                                <td class="py-1" colspan="2">↩ {{ __('app.collection.refund_due') }}</td>
+                                <td class="py-1 text-end">{{ number_format($appointment->refundDue(), 2) }}</td>
+                                <td></td>
+                            </tr>
+                        @else
+                            <tr class="text-xs {{ $appointment->remainingAmount() > 0 ? 'text-amber-700' : 'text-emerald-700' }}">
+                                <td class="py-1" colspan="2">{{ __('app.collection.remaining') }}</td>
+                                <td class="py-1 text-end">{{ number_format($appointment->remainingAmount(), 2) }}</td>
+                                <td></td>
+                            </tr>
+                        @endif
+                    </tfoot>
+                </table>
+            </div>
+
+            {{-- Add a charge: pick from the price list, or name a new one --}}
+            <form method="POST" action="{{ route('practice.appointment-items.store', $appointment) }}"
+                  class="flex flex-wrap items-end gap-2 border-t border-slate-100 pt-4" id="add-item-form">
+                @csrf
+                <div class="grow min-w-[12rem]">
+                    <label class="block text-xs text-slate-500 mb-1">{{ __('app.items.item') }}</label>
+                    <select name="billable_item_id" id="item-select" class="w-full border rounded px-2 py-1.5 text-sm">
+                        <option value="">{{ __('app.items.select') }}</option>
+                        @foreach ($billableItems as $bi)
+                            <option value="{{ $bi->id }}">{{ $bi->name }} — {{ number_format((float) $bi->price, 2) }} {{ __('app.clinic.currency') }}</option>
+                        @endforeach
+                        <option value="__new__">{{ __('app.items.new') }}</option>
+                    </select>
+                </div>
+
+                {{-- Revealed when "New item…" is chosen --}}
+                <div id="new-item-fields" class="hidden flex flex-wrap items-end gap-2">
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">{{ __('app.items.new_name') }}</label>
+                        <input type="text" name="new_name" id="new-name" class="w-40 border rounded px-2 py-1.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">{{ __('app.items.new_price') }}</label>
+                        <input type="number" name="new_price" id="new-price" step="0.01" min="0" value="0"
+                               class="w-24 border rounded px-2 py-1.5 text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-slate-500 mb-1">{{ __('app.items.quantity') }}</label>
+                    <input type="number" name="quantity" value="1" min="1" max="999"
+                           class="w-20 border rounded px-2 py-1.5 text-sm">
+                </div>
+                <button class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-4 py-2 rounded-lg">
+                    {{ __('app.items.add') }}
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 

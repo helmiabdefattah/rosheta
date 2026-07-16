@@ -157,10 +157,26 @@ class Appointment extends Model
         return (float) $this->collections->sum('amount');
     }
 
-    /** What's still owed; never negative, so an overpayment reads as settled. */
+    /**
+     * Signed difference between what's owed and what's been taken. Positive =
+     * the patient still owes; negative = they've overpaid and are due a refund
+     * (which happens when the fee is discounted after they've already paid).
+     */
+    public function balance(): float
+    {
+        return round($this->dueAmount() - $this->collectedAmount(), 2);
+    }
+
+    /** What's still owed; never negative — see refundDue() for the other side. */
     public function remainingAmount(): float
     {
-        return max(0, round($this->dueAmount() - $this->collectedAmount(), 2));
+        return max(0, $this->balance());
+    }
+
+    /** Money owed back to the patient, after a discount or a cancelled charge. */
+    public function refundDue(): float
+    {
+        return max(0, -$this->balance());
     }
 
     public function isFullyCollected(): bool
