@@ -27,4 +27,24 @@ class InsuranceCompany extends Model
     {
         return $this->hasMany(Client::class);
     }
+
+    public function appointmentInsurances(): HasMany
+    {
+        return $this->hasMany(AppointmentInsurance::class);
+    }
+
+    public function insuranceCollections(): HasMany
+    {
+        return $this->hasMany(InsuranceCollection::class);
+    }
+
+    /** Localized display name: the Arabic name when available under the ar locale. */
+    public function displayName(): string
+    {
+        if (app()->getLocale() === 'ar' && filled($this->name_ar)) {
+            return $this->name_ar;
+        }
+
+        return $this->name ?: ($this->name_ar ?? '');
+    }
 }

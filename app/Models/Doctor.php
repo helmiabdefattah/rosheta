@@ -71,6 +71,18 @@ class Doctor extends Model implements HasMedia
         return $this->hasMany(BillableItem::class);
     }
 
+    /** Reusable prescription templates saved by this doctor. */
+    public function medicalPlans(): HasMany
+    {
+        return $this->hasMany(MedicalPlan::class);
+    }
+
+    /** Custom examination fields defined by this doctor. */
+    public function examinationFields(): HasMany
+    {
+        return $this->hasMany(ExaminationField::class);
+    }
+
     /** Users who are this doctor's assistants (users.doctor_id → doctors.id). */
     public function assistants(): HasMany
     {

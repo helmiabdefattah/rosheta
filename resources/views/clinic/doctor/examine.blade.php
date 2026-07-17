@@ -45,6 +45,17 @@
                 <div class="flex justify-between"><dt class="text-slate-400">{{ __('app.common.blood_type') }}</dt><dd>{{ $p->blood_type ?? '—' }}</dd></div>
                 <div class="flex justify-between"><dt class="text-slate-400">{{ __('app.common.allergies') }}</dt><dd class="text-red-600">{{ filled($p->allergies) ? implode('، ', (array) $p->allergies) : __('app.common.none') }}</dd></div>
                 <div class="flex justify-between"><dt class="text-slate-400">{{ __('app.common.chronic_diseases') }}</dt><dd>{{ filled($p->chronic_diseases) ? implode('، ', (array) $p->chronic_diseases) : __('app.common.none') }}</dd></div>
+                @if ($appointment->insurance && $appointment->insurance->insuranceCompany)
+                    <div class="flex justify-between"><dt class="text-slate-400">{{ __('app.insurance.title') }}</dt>
+                        <dd class="text-cyan-800 font-medium text-end">
+                            🛡 {{ $appointment->insurance->insuranceCompany->displayName() }}
+                            <div class="text-[11px] text-slate-500 font-normal">
+                                {{ __('app.insurance.patient_amount') }}: {{ number_format((float) $appointment->insurance->patient_amount, 2) }}
+                                · {{ __('app.insurance.insurance_amount') }}: {{ number_format((float) $appointment->insurance->insurance_amount, 2) }}
+                            </div>
+                        </dd>
+                    </div>
+                @endif
             </dl>
             <a href="{{ route('practice.patients.show', $p) }}" class="block mt-3 text-sm text-indigo-600 hover:underline">{{ __('app.examine.view_full_profile') }}</a>
 
@@ -252,6 +263,40 @@
         {{-- Prescription / medicines --}}
         <div class="bg-white rounded-xl shadow-sm p-5">
             <h2 class="font-semibold text-slate-800 mb-3">{{ __('app.examine.new_prescription') }}</h2>
+
+            {{-- Load a saved medical plan into the rows, or save the current
+                 rows as a reusable plan. --}}
+            <div class="flex flex-wrap items-end gap-3 mb-4 pb-4 border-b border-slate-100">
+                @if ($medicalPlans->isNotEmpty())
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">{{ __('app.plan.load_label') }}</label>
+                        <div class="flex items-center gap-2">
+                            <select id="plan-select" class="border rounded px-2 py-1.5 text-sm w-52">
+                                <option value="">— {{ __('app.plan.select') }} —</option>
+                                @foreach ($medicalPlans as $plan)
+                                    <option value="{{ $plan->id }}">{{ $plan->title }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" onclick="loadPlan()"
+                                    class="text-sm px-3 py-1.5 rounded-lg border border-indigo-300 text-indigo-700 hover:bg-indigo-50">
+                                ↧ {{ __('app.plan.load_button') }}
+                            </button>
+                        </div>
+                    </div>
+                @endif
+                <div class="ms-auto flex items-end gap-2">
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">{{ __('app.plan.save_as_label') }}</label>
+                        <input id="plan-title-input" type="text" placeholder="{{ __('app.plan.title_label') }}"
+                               class="border rounded px-2 py-1.5 text-sm w-44">
+                    </div>
+                    <button type="button" onclick="saveAsPlan()"
+                            class="text-sm px-3 py-1.5 rounded-lg border border-purple-300 text-purple-700 hover:bg-purple-50">
+                        💾 {{ __('app.plan.save_as_button') }}
+                    </button>
+                </div>
+            </div>
+
             <form method="POST" action="{{ route('practice.doctor.prescriptions.store', $appointment) }}">
                 @csrf
                 <div class="overflow-x-auto -mx-1">
@@ -285,6 +330,69 @@
                 </div>
                 <button class="bg-purple-600 text-white text-sm px-4 py-2 rounded-lg">{{ __('app.examine.create_prescription') }}</button>
             </form>
+        </div>
+
+        {{-- Hidden form used to POST "save as plan" without touching the Rx form. --}}
+        <form id="save-plan-form" method="POST" action="{{ route('practice.doctor.setup.medical-plans.store') }}" class="hidden">
+            @csrf
+            <input type="hidden" name="title" id="save-plan-title">
+            <div id="save-plan-items"></div>
+        </form>
+
+        {{-- Custom examination fields defined by the doctor --}}
+        <div class="bg-white rounded-xl shadow-sm p-5">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="font-semibold text-slate-800">🧾 {{ __('app.field.title_plural') }}</h2>
+                <a href="{{ route('practice.doctor.setup.examination-fields') }}" class="text-xs text-indigo-600 hover:underline">{{ __('app.field.manage') }}</a>
+            </div>
+            @if ($examinationFields->isEmpty())
+                <p class="text-sm text-slate-400">{{ __('app.field.none_hint') }}</p>
+            @else
+                <form method="POST" action="{{ route('practice.doctor.examination-values.store', $appointment) }}"
+                      enctype="multipart/form-data" class="space-y-3">
+                    @csrf
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        @foreach ($examinationFields as $field)
+                            @php $val = $examinationValues[$field->id] ?? null; @endphp
+                            <div>
+                                <label class="block text-sm text-slate-500 mb-1">{{ $field->label }}</label>
+                                @switch($field->type)
+                                    @case('select')
+                                        <select name="fields[{{ $field->id }}]" class="w-full border rounded-lg px-3 py-2 text-sm">
+                                            <option value="">—</option>
+                                            @foreach ($field->optionsArray() as $opt)
+                                                <option value="{{ $opt }}" @selected($val && $val->value === $opt)>{{ $opt }}</option>
+                                            @endforeach
+                                        </select>
+                                        @break
+                                    @case('number')
+                                        <input type="number" step="any" name="fields[{{ $field->id }}]" value="{{ $val?->value }}"
+                                               class="w-full border rounded-lg px-3 py-2 text-sm">
+                                        @break
+                                    @case('percentage')
+                                        <div class="relative">
+                                            <input type="number" step="any" min="0" max="100" name="fields[{{ $field->id }}]" value="{{ $val?->value }}"
+                                                   class="w-full border rounded-lg px-3 py-2 pe-8 text-sm">
+                                            <span class="absolute end-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">%</span>
+                                        </div>
+                                        @break
+                                    @case('file')
+                                        @if ($val && $val->attachment)
+                                            <a href="{{ asset('storage/'.$val->attachment->file_path) }}" target="_blank"
+                                               class="block text-xs text-indigo-600 hover:underline mb-1">📎 {{ $val->attachment->file_name }}</a>
+                                        @endif
+                                        <input type="file" name="field_files[{{ $field->id }}]" class="w-full text-sm">
+                                        @break
+                                    @default
+                                        <input type="text" name="fields[{{ $field->id }}]" value="{{ $val?->value }}"
+                                               class="w-full border rounded-lg px-3 py-2 text-sm">
+                                @endswitch
+                            </div>
+                        @endforeach
+                    </div>
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg">{{ __('app.field.save_values') }}</button>
+                </form>
+            @endif
         </div>
 
         {{-- Existing prescriptions --}}
@@ -516,6 +624,70 @@
         @endif
         sync();
     })();
+
+    // ---- Medical plans: load into the Rx table / save current rows as a plan ----
+    @php
+        $plansPayload = $medicalPlans->mapWithKeys(fn ($p) => [$p->id => [
+            'id' => $p->id,
+            'items' => $p->items->map(fn ($i) => [
+                'medicine_name' => $i->medicine_name,
+                'dose' => $i->dose,
+                'frequency' => $i->frequency,
+                'duration' => $i->duration,
+                'instructions' => $i->instructions,
+            ])->values(),
+        ]]);
+    @endphp
+    const MEDICAL_PLANS = @json($plansPayload);
+
+    function addRxRowWith(v) {
+        addRxRow();
+        const rows = document.querySelectorAll('#rx-table tbody tr.rx-row');
+        const tr = rows[rows.length - 1];
+        ['medicine_name', 'dose', 'frequency', 'duration', 'instructions'].forEach(function (k) {
+            const input = tr.querySelector('input[name$="[' + k + ']"]');
+            if (input) input.value = v[k] || '';
+        });
+    }
+
+    function loadPlan() {
+        const sel = document.getElementById('plan-select');
+        const plan = MEDICAL_PLANS[sel.value];
+        if (!plan) return;
+
+        // Drop the first row if it's still empty, so a fresh form isn't left blank.
+        const first = document.querySelector('#rx-table tbody tr.rx-row input[name$="[medicine_name]"]');
+        if (first && !first.value.trim() && document.querySelectorAll('#rx-table tbody tr.rx-row').length === 1) {
+            document.querySelector('#rx-table tbody tr.rx-row').remove();
+        }
+        (plan.items || []).forEach(addRxRowWith);
+    }
+
+    function saveAsPlan() {
+        const title = (document.getElementById('plan-title-input').value || '').trim();
+        if (!title) { alert(@json(__('app.plan.title_required'))); return; }
+
+        const container = document.getElementById('save-plan-items');
+        container.innerHTML = '';
+        let i = 0;
+        document.querySelectorAll('#rx-table tbody tr.rx-row').forEach(function (tr) {
+            const name = tr.querySelector('input[name$="[medicine_name]"]');
+            if (!name || !name.value.trim()) return;
+            ['medicine_name', 'dose', 'frequency', 'duration', 'instructions'].forEach(function (k) {
+                const input = tr.querySelector('input[name$="[' + k + ']"]');
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'items[' + i + '][' + k + ']';
+                hidden.value = input ? input.value : '';
+                container.appendChild(hidden);
+            });
+            i++;
+        });
+
+        if (i === 0) { alert(@json(__('app.plan.needs_item'))); return; }
+        document.getElementById('save-plan-title').value = title;
+        document.getElementById('save-plan-form').submit();
+    }
 </script>
 @endpush
 @endsection

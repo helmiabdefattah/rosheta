@@ -28,7 +28,7 @@ class DoctorDashboardController extends Controller
         $appointments = Appointment::where('doctor_id', $doctor->id)
             ->where('clinic_id', $clinic->id)
             ->whereDate('scheduled_at', $selectedDate)
-            ->with(['client', 'prescriptions', 'clinic', 'items', 'collections'])
+            ->with(['client', 'prescriptions', 'clinic', 'items', 'collections', 'insurance.insuranceCompany'])
             ->orderBy('queue_number')
             ->orderBy('scheduled_at')
             ->get();
@@ -62,16 +62,29 @@ class DoctorDashboardController extends Controller
             'clinic',
             'items',
             'collections',
+            'insurance.insuranceCompany',
+            'examinationValues.attachment',
         ]);
 
+        $doctor = $this->clinicDoctor($request);
+
         // The doctor's price list, shared across their clinics.
-        $billableItems = $this->clinicDoctor($request)
-            ->billableItems()
+        $billableItems = $doctor->billableItems()
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
 
-        return view('clinic.doctor.examine', compact('appointment', 'billableItems'));
+        // Reusable prescription templates + custom examination fields.
+        $medicalPlans = $doctor->medicalPlans()->with('items')->orderBy('title')->get();
+        $examinationFields = $doctor->examinationFields()
+            ->where('is_active', true)
+            ->orderBy('sort_order')->orderBy('id')
+            ->get();
+        $examinationValues = $appointment->examinationValues->keyBy('examination_field_id');
+
+        return view('clinic.doctor.examine', compact(
+            'appointment', 'billableItems', 'medicalPlans', 'examinationFields', 'examinationValues'
+        ));
     }
 
     /** Guard: an appointment must belong to the acting doctor. */

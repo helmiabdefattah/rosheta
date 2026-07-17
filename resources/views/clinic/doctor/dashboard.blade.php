@@ -46,6 +46,14 @@
             </details>
         @endif
 
+        <a href="{{ route('practice.doctor.manager.index') }}"
+           class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
+            📊 {{ __('app.manager.button') }}
+        </a>
+        <a href="{{ route('practice.doctor.setup.index') }}"
+           class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg">
+            🧩 {{ __('app.setup.button') }}
+        </a>
         <button type="button" onclick="toggle('broadcast-modal')"
                 class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
             📣 {{ __('app.notify.button') }}
@@ -106,6 +114,7 @@
                     </td>
                     <td class="block md:table-cell md:px-4 md:py-3 font-semibold text-slate-900 text-base md:text-sm">
                         {{ $appt->client->name }}
+                        @include('clinic.partials.insurance-badge', ['appt' => $appt])
                     </td>
                     <td class="flex justify-between md:table-cell md:px-4 md:py-3 border-t border-slate-100 mt-2 pt-2 md:border-0 md:mt-0 md:pt-0">
                         <span class="md:hidden text-xs uppercase text-slate-400">{{ __('app.table.type') }}</span>

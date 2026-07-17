@@ -129,6 +129,18 @@ class Appointment extends Model
         return $this->hasMany(AppointmentItem::class);
     }
 
+    /** Insurance split for this visit (patient vs. insurance company), if any. */
+    public function insurance(): HasOne
+    {
+        return $this->hasOne(AppointmentInsurance::class);
+    }
+
+    /** Values captured for the doctor's custom examination fields. */
+    public function examinationValues(): HasMany
+    {
+        return $this->hasMany(ExaminationFieldValue::class);
+    }
+
     /**
      * The visit fee itself. Falls back to the clinic's current price for the
      * visit type, so appointments created before prices were configured (price

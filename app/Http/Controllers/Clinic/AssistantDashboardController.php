@@ -64,7 +64,7 @@ class AssistantDashboardController extends Controller
 
         $appointments = Appointment::where('doctor_id', $doctor->id)
             ->whereDate('scheduled_at', $selectedDate)
-            ->with(['client', 'prescriptions', 'clinic', 'items', 'collections.collector'])
+            ->with(['client', 'prescriptions', 'clinic', 'items', 'collections.collector', 'insurance.insuranceCompany'])
             ->orderBy('queue_number')
             ->orderBy('scheduled_at')
             ->get();
@@ -102,6 +102,7 @@ class AssistantDashboardController extends Controller
             'calendar' => $this->buildCalendar($request, $doctor, $clinic, $selectedDate),
             'patients' => Client::orderBy('name')->get(['id', 'name', 'phone_number']),
             'pendingRequests' => $pendingRequests,
+            'insuranceCompanies' => \App\Models\InsuranceCompany::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 

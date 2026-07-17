@@ -241,6 +241,7 @@
                             {{ $appt->client->name }}
                         </a>
                         <div class="text-xs text-slate-400">{{ $appt->client->phone_number }}</div>
+                        @include('clinic.partials.insurance-badge', ['appt' => $appt])
                     </td>
                     <td class="flex justify-between md:table-cell md:px-4 md:py-3 border-t border-slate-100 mt-2 pt-2 md:border-0 md:mt-0 md:pt-0">
                         <span class="md:hidden text-xs uppercase text-slate-400">{{ __('app.table.type') }}</span>
@@ -280,6 +281,12 @@
                                     <button type="button" onclick="toggle('collect-{{ $appt->id }}')"
                                             class="w-full flex items-center gap-2 px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50 text-start font-medium">
                                         <span class="w-5">💵</span> {{ __('app.collection.collect') }}
+                                    </button>
+
+                                    {{-- Assign / edit medical insurance for this visit --}}
+                                    <button type="button" onclick="toggle('insurance-{{ $appt->id }}')"
+                                            class="w-full flex items-center gap-2 px-4 py-2 text-sm text-cyan-700 hover:bg-cyan-50 text-start font-medium">
+                                        <span class="w-5">🛡</span> {{ __('app.insurance.assign') }}
                                     </button>
 
                                     {{-- Change visit type: re-prices from clinic settings --}}
@@ -442,6 +449,64 @@
                                         </li>
                                     @endforeach
                                 </ul>
+                            </div>
+                        @endif
+                    </td>
+                </tr>
+
+                {{-- Assign medical insurance: pick an existing company or add a
+                     new one, and split the amount between patient and insurer. --}}
+                <tr id="insurance-{{ $appt->id }}" class="hidden">
+                    <td colspan="7" class="block md:table-cell px-4 py-4 bg-cyan-50/50 rounded-xl md:rounded-none mb-3 md:mb-0">
+                        @php $ins = $appt->insurance; @endphp
+                        <form method="POST" action="{{ route('practice.appointments.insurance.store', $appt) }}"
+                              class="flex flex-wrap items-end gap-3">
+                            @csrf
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">{{ __('app.insurance.company') }}</label>
+                                <select name="insurance_company_id" class="w-52 border rounded px-2 py-1.5 text-sm">
+                                    <option value="">— {{ __('app.insurance.select_company') }} —</option>
+                                    @foreach ($insuranceCompanies as $co)
+                                        <option value="{{ $co->id }}" @selected($ins && $ins->insurance_company_id === $co->id)>{{ $co->displayName() }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">{{ __('app.insurance.or_new_company') }}</label>
+                                <input type="text" name="new_company_name" placeholder="{{ __('app.insurance.new_company_name') }}"
+                                       class="w-44 border rounded px-2 py-1.5 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">{{ __('app.insurance.patient_amount') }}</label>
+                                <input type="number" name="patient_amount" step="0.01" min="0" required
+                                       value="{{ $ins ? number_format((float) $ins->patient_amount, 2, '.', '') : '' }}"
+                                       class="w-28 border rounded px-2 py-1.5 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">{{ __('app.insurance.insurance_amount') }}</label>
+                                <input type="number" name="insurance_amount" step="0.01" min="0" required
+                                       value="{{ $ins ? number_format((float) $ins->insurance_amount, 2, '.', '') : '' }}"
+                                       class="w-28 border rounded px-2 py-1.5 text-sm">
+                            </div>
+                            <button class="bg-cyan-600 hover:bg-cyan-700 text-white text-sm px-4 py-2 rounded-lg">
+                                {{ __('app.insurance.save') }}
+                            </button>
+                            <button type="button" onclick="toggle('insurance-{{ $appt->id }}')"
+                                    class="text-sm text-slate-500 px-2">{{ __('app.insurance.cancel') }}</button>
+                        </form>
+
+                        @if ($ins)
+                            <div class="mt-3 pt-3 border-t border-cyan-100 flex items-center gap-3 text-xs text-slate-600">
+                                <span>{{ __('app.insurance.current') }}:
+                                    <strong>{{ $ins->insuranceCompany?->displayName() }}</strong>
+                                    · {{ __('app.insurance.patient_amount') }} {{ number_format((float) $ins->patient_amount, 2) }}
+                                    · {{ __('app.insurance.insurance_amount') }} {{ number_format((float) $ins->insurance_amount, 2) }}
+                                </span>
+                                <form method="POST" action="{{ route('practice.appointments.insurance.destroy', $appt) }}"
+                                      onsubmit="return confirm('{{ __('app.insurance.remove_confirm') }}')">
+                                    @csrf @method('DELETE')
+                                    <button class="text-red-600 hover:text-red-800">✖ {{ __('app.insurance.remove') }}</button>
+                                </form>
                             </div>
                         @endif
                     </td>

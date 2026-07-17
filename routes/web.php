@@ -445,6 +445,9 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::delete('/collections/{collection}', [App\Http\Controllers\Clinic\CollectionController::class, 'destroy'])->name('collections.destroy');
         Route::post('/appointments/{appointment}/type', [App\Http\Controllers\Clinic\CollectionController::class, 'updateType'])->name('appointments.type');
         Route::post('/appointments/{appointment}/price', [App\Http\Controllers\Clinic\CollectionController::class, 'updatePrice'])->name('appointments.price');
+        // Medical insurance split for a visit (assign / update / remove).
+        Route::post('/appointments/{appointment}/insurance', [App\Http\Controllers\Clinic\AppointmentInsuranceController::class, 'store'])->name('appointments.insurance.store');
+        Route::delete('/appointments/{appointment}/insurance', [App\Http\Controllers\Clinic\AppointmentInsuranceController::class, 'destroy'])->name('appointments.insurance.destroy');
         // Chargeable extras added during the examination.
         Route::post('/appointments/{appointment}/items', [App\Http\Controllers\Clinic\AppointmentItemController::class, 'store'])->name('appointment-items.store');
         Route::delete('/appointment-items/{item}', [App\Http\Controllers\Clinic\AppointmentItemController::class, 'destroy'])->name('appointment-items.destroy');
@@ -478,6 +481,29 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::post('/appointments/{appointment}/prescriptions', [App\Http\Controllers\Clinic\PrescriptionController::class, 'store'])->name('prescriptions.store');
         Route::post('/appointments/{appointment}/requests', [App\Http\Controllers\Clinic\MedicalRequestController::class, 'store'])->name('requests.store');
         Route::delete('/requests/{medicalRequest}', [App\Http\Controllers\Clinic\MedicalRequestController::class, 'destroy'])->name('requests.destroy');
+
+        // Custom examination-field values captured for a visit.
+        Route::post('/appointments/{appointment}/examination-values', [App\Http\Controllers\Clinic\ExaminationValueController::class, 'store'])->name('examination-values.store');
+
+        // Setup: clinical templates & custom examination fields.
+        Route::get('/setup', [App\Http\Controllers\Clinic\SetupController::class, 'index'])->name('setup.index');
+        Route::get('/setup/medical-plans', [App\Http\Controllers\Clinic\MedicalPlanController::class, 'index'])->name('setup.medical-plans');
+        Route::post('/setup/medical-plans', [App\Http\Controllers\Clinic\MedicalPlanController::class, 'store'])->name('setup.medical-plans.store');
+        Route::get('/setup/medical-plans/{medicalPlan}/edit', [App\Http\Controllers\Clinic\MedicalPlanController::class, 'edit'])->name('setup.medical-plans.edit');
+        Route::put('/setup/medical-plans/{medicalPlan}', [App\Http\Controllers\Clinic\MedicalPlanController::class, 'update'])->name('setup.medical-plans.update');
+        Route::delete('/setup/medical-plans/{medicalPlan}', [App\Http\Controllers\Clinic\MedicalPlanController::class, 'destroy'])->name('setup.medical-plans.destroy');
+        Route::get('/setup/examination-fields', [App\Http\Controllers\Clinic\ExaminationFieldController::class, 'index'])->name('setup.examination-fields');
+        Route::post('/setup/examination-fields', [App\Http\Controllers\Clinic\ExaminationFieldController::class, 'store'])->name('setup.examination-fields.store');
+        Route::put('/setup/examination-fields/{examinationField}', [App\Http\Controllers\Clinic\ExaminationFieldController::class, 'update'])->name('setup.examination-fields.update');
+        Route::delete('/setup/examination-fields/{examinationField}', [App\Http\Controllers\Clinic\ExaminationFieldController::class, 'destroy'])->name('setup.examination-fields.destroy');
+
+        // Manager: money & insurance reporting (doctor only).
+        Route::get('/manager', [App\Http\Controllers\Clinic\ManagerController::class, 'index'])->name('manager.index');
+        Route::get('/manager/collections', [App\Http\Controllers\Clinic\ManagerController::class, 'collections'])->name('manager.collections');
+        Route::get('/manager/patients', [App\Http\Controllers\Clinic\ManagerController::class, 'patients'])->name('manager.patients');
+        Route::get('/manager/insurance-collections', [App\Http\Controllers\Clinic\ManagerController::class, 'insuranceCollections'])->name('manager.insurance-collections');
+        Route::post('/manager/insurance-collections', [App\Http\Controllers\Clinic\ManagerController::class, 'storeInsuranceCollection'])->name('manager.insurance-collections.store');
+        Route::get('/manager/insurance-report', [App\Http\Controllers\Clinic\ManagerController::class, 'insuranceReport'])->name('manager.insurance-report');
     });
 });
 
