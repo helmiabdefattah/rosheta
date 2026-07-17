@@ -283,6 +283,12 @@
                                         <span class="w-5">💵</span> {{ __('app.collection.collect') }}
                                     </button>
 
+                                    {{-- Edit the due amount (visit fee) --}}
+                                    <button type="button" onclick="toggle('editfee-{{ $appt->id }}')"
+                                            class="w-full flex items-center gap-2 px-4 py-2 text-sm text-indigo-700 hover:bg-indigo-50 text-start font-medium">
+                                        <span class="w-5">✏️</span> {{ __('app.items.edit_fee') }}
+                                    </button>
+
                                     {{-- Assign / edit medical insurance for this visit --}}
                                     <button type="button" onclick="toggle('insurance-{{ $appt->id }}')"
                                             class="w-full flex items-center gap-2 px-4 py-2 text-sm text-cyan-700 hover:bg-cyan-50 text-start font-medium">
@@ -451,6 +457,30 @@
                                 </ul>
                             </div>
                         @endif
+                    </td>
+                </tr>
+
+                {{-- Edit the visit fee (the due amount). Extras and payments
+                     already taken are untouched; a discount below what's paid
+                     surfaces a refund due. --}}
+                <tr id="editfee-{{ $appt->id }}" class="hidden">
+                    <td colspan="7" class="block md:table-cell px-4 py-4 bg-indigo-50/50 rounded-xl md:rounded-none mb-3 md:mb-0">
+                        <form method="POST" action="{{ route('practice.appointments.price', $appt) }}"
+                              class="flex flex-wrap items-end gap-3">
+                            @csrf
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">{{ __('app.items.visit_fee') }} ({{ __('app.clinic.currency') }})</label>
+                                <input type="number" name="price" step="0.01" min="0" required
+                                       value="{{ number_format($appt->visitPrice(), 2, '.', '') }}"
+                                       class="w-32 border rounded px-2 py-1.5 text-sm">
+                            </div>
+                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg">
+                                {{ __('app.items.save_fee') }}
+                            </button>
+                            <button type="button" onclick="toggle('editfee-{{ $appt->id }}')"
+                                    class="text-sm text-slate-500 px-2">{{ __('app.collection.cancel') }}</button>
+                            <p class="w-full text-xs text-amber-600">{{ __('app.items.fee_reprice_warning') }}</p>
+                        </form>
                     </td>
                 </tr>
 
