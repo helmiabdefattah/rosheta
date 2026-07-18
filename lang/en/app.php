@@ -462,6 +462,13 @@ return [
         'test_added' => 'Test result attached.',
         'test_removed' => 'Test result removed.',
         'test_remove_confirm' => 'Remove this test result and its files?',
+        'lab_results_section' => 'Lab & Radiology Results (from labs)',
+        'no_lab_results' => 'No lab or radiology results for this patient.',
+        'lab_status_completed' => 'Completed',
+        'lab_status_sample' => 'Sample collected',
+        'lab_status_preparing' => 'In preparation',
+        'view_result' => 'View result',
+        'lab_waiting_results' => 'Waiting for results.',
     ],
 
     // Patient profile

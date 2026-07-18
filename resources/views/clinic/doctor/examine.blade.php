@@ -404,6 +404,66 @@
             </form>
         </div>
 
+        {{-- Lab & radiology results from the labs system (same data the patient
+             sees at client/test-results). Read-only. --}}
+        <div class="bg-white rounded-xl shadow-sm p-5">
+            <h2 class="font-semibold text-slate-800 mb-3">🔬 {{ __('app.examine.lab_results_section') }}</h2>
+            <div class="space-y-3">
+                @forelse ($labResults as $offer)
+                    @php
+                        $isRadiology = $offer->request_type === 'radiology';
+                        $statusClass = match ($offer->vendor_status) {
+                            'test_completed' => 'bg-emerald-100 text-emerald-700',
+                            'sample_collected' => 'bg-blue-100 text-blue-700',
+                            default => 'bg-amber-100 text-amber-700',
+                        };
+                        $statusLabel = match ($offer->vendor_status) {
+                            'test_completed' => __('app.examine.lab_status_completed'),
+                            'sample_collected' => __('app.examine.lab_status_sample'),
+                            default => __('app.examine.lab_status_preparing'),
+                        };
+                    @endphp
+                    <div class="border border-slate-100 rounded-lg p-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <div class="flex items-center gap-2 text-sm">
+                                <span class="text-xs px-2 py-0.5 rounded {{ $isRadiology ? 'bg-purple-100 text-purple-700' : 'bg-teal-100 text-teal-700' }}">
+                                    {{ $isRadiology ? __('app.test_types.radiology') : __('app.test_types.lab') }}
+                                </span>
+                                <span class="font-medium text-slate-700">🏥 {{ $offer->laboratory->name ?? '—' }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs px-2 py-0.5 rounded-full {{ $statusClass }}">{{ $statusLabel }}</span>
+                                <span class="text-xs text-slate-400">{{ $offer->updated_at?->format('Y-m-d') }}</span>
+                            </div>
+                        </div>
+
+                        @if ($offer->testLines->isNotEmpty())
+                            <p class="text-xs text-slate-500 mb-2">
+                                {{ $offer->testLines->map(fn ($l) => optional($l->medicalTest)->test_name_ar ?: optional($l->medicalTest)->test_name_en)->filter()->join('، ') }}
+                            </p>
+                        @endif
+
+                        @if ($offer->attachments->isNotEmpty())
+                            <ul class="flex flex-wrap gap-2">
+                                @foreach ($offer->attachments as $file)
+                                    <li>
+                                        <a href="{{ $file->url }}" target="_blank"
+                                           class="inline-flex items-center gap-1 text-indigo-600 hover:underline bg-slate-50 border border-slate-100 rounded px-2 py-1 text-xs">
+                                            📎 {{ __('app.examine.view_result') }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <p class="text-xs text-slate-400 italic">{{ __('app.examine.lab_waiting_results') }}</p>
+                        @endif
+                    </div>
+                @empty
+                    <p class="text-sm text-slate-400 italic">{{ __('app.examine.no_lab_results') }}</p>
+                @endforelse
+            </div>
+        </div>
+
         {{-- Prescription / medicines --}}
         <div class="bg-white rounded-xl shadow-sm p-5">
             <h2 class="font-semibold text-slate-800 mb-3">{{ __('app.examine.new_prescription') }}</h2>

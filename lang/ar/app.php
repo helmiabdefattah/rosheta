@@ -451,6 +451,13 @@ return [
         'test_added' => 'تم إرفاق نتيجة الفحص.',
         'test_removed' => 'تم حذف نتيجة الفحص.',
         'test_remove_confirm' => 'حذف نتيجة الفحص وملفاتها؟',
+        'lab_results_section' => 'نتائج التحاليل والأشعة (من المعامل)',
+        'no_lab_results' => 'لا توجد نتائج تحاليل أو أشعة لهذا المريض.',
+        'lab_status_completed' => 'مكتمل',
+        'lab_status_sample' => 'تم سحب العينة',
+        'lab_status_preparing' => 'جاري التحضير',
+        'view_result' => 'عرض النتيجة',
+        'lab_waiting_results' => 'بانتظار رفع النتائج.',
     ],
 
     'patient' => [
