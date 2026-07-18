@@ -469,6 +469,10 @@ return [
         'lab_status_preparing' => 'In preparation',
         'view_result' => 'View result',
         'lab_waiting_results' => 'Waiting for results.',
+        'lab_filter_test' => 'Test',
+        'lab_prev' => 'Previous',
+        'lab_next' => 'Next',
+        'lab_page_info' => 'Page :page of :pages · :total result(s)',
     ],
 
     // Patient profile

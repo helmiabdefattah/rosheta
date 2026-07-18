@@ -41,7 +41,10 @@ class PatientController extends Controller
             'outstanding' => round($billable->sum(fn (Appointment $a) => $a->remainingAmount()), 2),
         ];
 
-        return view('clinic.patients.show', compact('patient', 'appointments', 'doctor', 'totals'));
+        // Lab / radiology results from the labs system (client/test-results data).
+        $labResults = \App\Models\Offer::labResultsForClient($patient->id);
+
+        return view('clinic.patients.show', compact('patient', 'appointments', 'doctor', 'totals', 'labResults'));
     }
 
     /** Update a patient's file (profile details). */

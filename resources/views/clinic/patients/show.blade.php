@@ -236,4 +236,9 @@
         @endforelse
     </div>
 </div>
+
+{{-- Lab & radiology results (same data as client/test-results) --}}
+<div class="mt-6">
+    @include('clinic.partials.lab-results')
+</div>
 @endsection

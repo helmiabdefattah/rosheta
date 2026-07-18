@@ -458,6 +458,10 @@ return [
         'lab_status_preparing' => 'جاري التحضير',
         'view_result' => 'عرض النتيجة',
         'lab_waiting_results' => 'بانتظار رفع النتائج.',
+        'lab_filter_test' => 'الفحص',
+        'lab_prev' => 'السابق',
+        'lab_next' => 'التالي',
+        'lab_page_info' => 'صفحة :page من :pages · :total نتيجة',
     ],
 
     'patient' => [

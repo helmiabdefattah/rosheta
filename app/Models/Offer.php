@@ -200,4 +200,20 @@ class Offer extends Model
     {
         return $this->morphMany(Attachment::class, 'attachable');
     }
+
+    /**
+     * Accepted lab / radiology results for a patient, with their result files —
+     * the same data shown to the patient at client/test-results. Shared by the
+     * clinic screens (examine + patient profile).
+     */
+    public static function labResultsForClient(int $clientId)
+    {
+        return static::query()
+            ->where('status', 'accepted')
+            ->whereIn('request_type', ['test', 'radiology'])
+            ->whereHas('request', fn ($q) => $q->where('client_id', $clientId))
+            ->with(['laboratory', 'attachments', 'testLines.medicalTest', 'request'])
+            ->latest()
+            ->get();
+    }
 }

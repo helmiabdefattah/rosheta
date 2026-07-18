@@ -95,28 +95,12 @@ class DoctorDashboardController extends Controller
 
         // The patient's lab / radiology results from the labs system — the same
         // data shown to the patient at client/test-results. Read-only here.
-        $labResults = $this->labResults($appointment->client_id);
+        $labResults = \App\Models\Offer::labResultsForClient($appointment->client_id);
 
         return view('clinic.doctor.examine', compact(
             'appointment', 'billableItems', 'medicalPlans', 'examinationFields',
             'examinationValues', 'testSuggestions', 'actingDoctorId', 'labResults'
         ));
-    }
-
-    /**
-     * Accepted lab / radiology offers for a patient, with their result files —
-     * mirrors ClientTestResultController so the doctor sees exactly what the
-     * patient sees at client/test-results.
-     */
-    protected function labResults(int $clientId)
-    {
-        return \App\Models\Offer::query()
-            ->where('status', 'accepted')
-            ->whereIn('request_type', ['test', 'radiology'])
-            ->whereHas('request', fn ($q) => $q->where('client_id', $clientId))
-            ->with(['laboratory', 'attachments', 'testLines.medicalTest', 'request'])
-            ->latest()
-            ->get();
     }
 
     /**
