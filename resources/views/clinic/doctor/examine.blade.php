@@ -231,6 +231,73 @@
             </form>
         </div>
 
+        {{-- Medical history: this patient's examinations across visits & doctors.
+             The acting doctor's own records are editable; others are view-only. --}}
+        @php $history = $appointment->client->diagnoses->where('appointment_id', '!=', $appointment->id); @endphp
+        <div class="bg-white rounded-xl shadow-sm p-5">
+            <h2 class="font-semibold text-slate-800 mb-1">📋 {{ __('app.examine.history_section') }}</h2>
+            <p class="text-xs text-slate-500 mb-4">{{ __('app.examine.history_hint') }}</p>
+            @forelse ($history as $past)
+                @php $mine = $past->doctor_id === $actingDoctorId; @endphp
+                <div class="border border-slate-100 rounded-lg p-3 mb-3">
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <div class="text-sm">
+                            <span class="font-medium text-slate-700">👨‍⚕️ {{ $past->doctor?->name ?? __('app.common.none') }}</span>
+                            <span class="text-xs text-slate-400 mx-1">{{ optional($past->appointment?->scheduled_at ?? $past->created_at)->format('Y-m-d') }}</span>
+                        </div>
+                        @if ($mine)
+                            <span class="text-xs px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">✎ {{ __('app.examine.history_mine') }}</span>
+                        @else
+                            <span class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-500">🔒 {{ __('app.examine.history_view_only') }}</span>
+                        @endif
+                    </div>
+
+                    @if ($mine)
+                        <form method="POST" action="{{ route('practice.doctor.diagnoses.update', $past) }}" class="space-y-2">
+                            @csrf @method('PUT')
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">{{ __('app.examine.history_diagnosis') }}</label>
+                                <textarea name="diagnosis" rows="2" required
+                                          class="w-full border rounded px-2 py-1.5 text-sm">{{ $past->diagnosis }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">{{ __('app.examine.treatment_plan') }}</label>
+                                <textarea name="treatment_plan" rows="2"
+                                          class="w-full border rounded px-2 py-1.5 text-sm">{{ $past->treatment_plan }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">{{ __('app.common.notes') }}</label>
+                                <textarea name="notes" rows="1"
+                                          class="w-full border rounded px-2 py-1.5 text-sm">{{ $past->notes }}</textarea>
+                            </div>
+                            <button class="bg-indigo-600 text-white text-xs px-3 py-1.5 rounded">{{ __('app.examine.history_save') }}</button>
+                        </form>
+                    @else
+                        <dl class="text-sm space-y-1.5">
+                            <div>
+                                <dt class="text-xs text-slate-400">{{ __('app.examine.history_diagnosis') }}</dt>
+                                <dd class="text-slate-700 whitespace-pre-line">{{ $past->diagnosis }}</dd>
+                            </div>
+                            @if ($past->treatment_plan)
+                                <div>
+                                    <dt class="text-xs text-slate-400">{{ __('app.examine.treatment_plan') }}</dt>
+                                    <dd class="text-slate-700 whitespace-pre-line">{{ $past->treatment_plan }}</dd>
+                                </div>
+                            @endif
+                            @if ($past->notes)
+                                <div>
+                                    <dt class="text-xs text-slate-400">{{ __('app.common.notes') }}</dt>
+                                    <dd class="text-slate-600 whitespace-pre-line">{{ $past->notes }}</dd>
+                                </div>
+                            @endif
+                        </dl>
+                    @endif
+                </div>
+            @empty
+                <p class="text-sm text-slate-400 italic">{{ __('app.examine.no_history') }}</p>
+            @endforelse
+        </div>
+
         {{-- Medical requests: examinations / tests / radiology --}}
         <div class="bg-white rounded-xl shadow-sm p-5">
             <h2 class="font-semibold text-slate-800 mb-3">{{ __('app.examine.requests_section') }}</h2>
@@ -249,13 +316,15 @@
             </ul>
             <form method="POST" action="{{ route('practice.doctor.requests.store', $appointment) }}" class="flex flex-wrap items-end gap-2">
                 @csrf
-                <select name="type" class="border rounded px-2 py-1.5 text-sm">
+                <select name="type" id="req-type" class="border rounded px-2 py-1.5 text-sm">
                     <option value="examination">{{ __('app.request_types.examination') }}</option>
                     <option value="lab_test">{{ __('app.request_types.lab_test') }}</option>
                     <option value="radiology">{{ __('app.request_types.radiology') }}</option>
                 </select>
-                <input type="text" name="name" placeholder="{{ __('app.examine.request_name_placeholder') }}" required
+                <input type="text" name="name" id="req-name" list="req-suggestions" autocomplete="off"
+                       placeholder="{{ __('app.examine.request_name_placeholder') }}" required
                        class="border rounded px-2 py-1.5 text-sm flex-1 min-w-[180px]">
+                <datalist id="req-suggestions"></datalist>
                 <button class="bg-slate-700 text-white text-sm px-3 py-1.5 rounded">{{ __('app.examine.add') }}</button>
             </form>
         </div>
@@ -698,6 +767,33 @@
             select.value = '__new__';
         @endif
         sync();
+    })();
+
+    // ---- Requests: autocomplete the name field from the selected type ----
+    // Suggestions come from the medical-tests catalogue; typing a value that
+    // isn't listed is still allowed (native <datalist> behaviour).
+    const TEST_SUGGESTIONS = @json($testSuggestions);
+    (function () {
+        const type = document.getElementById('req-type');
+        const list = document.getElementById('req-suggestions');
+        const nameInput = document.getElementById('req-name');
+        if (!type || !list) return;
+
+        function fillSuggestions(clearStale) {
+            const names = TEST_SUGGESTIONS[type.value] || [];
+            list.replaceChildren(...names.map(function (n) {
+                const opt = document.createElement('option');
+                opt.value = n;
+                return opt;
+            }));
+            // On a user-initiated type switch, drop a value that doesn't belong
+            // to the new type so the picker starts fresh (free text still allowed).
+            if (clearStale && nameInput && nameInput.value && !names.includes(nameInput.value)) {
+                nameInput.value = '';
+            }
+        }
+        type.addEventListener('change', function () { fillSuggestions(true); });
+        fillSuggestions(false);
     })();
 
     // ---- Medical plans: load into the Rx table / save current rows as a plan ----

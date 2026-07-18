@@ -57,6 +57,8 @@ class DoctorDashboardController extends Controller
         $appointment->load([
             'client.attachments',
             'client.patientTests' => fn ($q) => $q->with('attachments')->latest(),
+            // The patient's examination history across all their visits & doctors.
+            'client.diagnoses' => fn ($q) => $q->with(['doctor', 'appointment'])->latest(),
             'diagnosis',
             'prescriptions.items',
             'medicalRequests',
@@ -83,9 +85,44 @@ class DoctorDashboardController extends Controller
             ->get();
         $examinationValues = $appointment->examinationValues->keyBy('examination_field_id');
 
+        // Autocomplete options for the "Examinations, Lab Tests & Radiology"
+        // form, grouped by request type. Names come from the medical-tests
+        // catalogue (localised); the doctor may still type a value not listed.
+        $testSuggestions = $this->testSuggestions();
+
+        // Used by the view to decide which history entries this doctor may edit.
+        $actingDoctorId = $doctor->id;
+
         return view('clinic.doctor.examine', compact(
-            'appointment', 'billableItems', 'medicalPlans', 'examinationFields', 'examinationValues'
+            'appointment', 'billableItems', 'medicalPlans', 'examinationFields',
+            'examinationValues', 'testSuggestions', 'actingDoctorId'
         ));
+    }
+
+    /**
+     * Localised name suggestions per medical-request type, drawn from the
+     * shared medical-tests catalogue. 'examination' has no catalogue, so it
+     * stays free-text only.
+     */
+    protected function testSuggestions(): array
+    {
+        $ar = app()->getLocale() === 'ar';
+        $name = fn ($t) => $ar
+            ? ($t->test_name_ar ?: $t->test_name_en)
+            : ($t->test_name_en ?: $t->test_name_ar);
+
+        $forType = fn (string $catalogueType) => \App\Models\MedicalTest::where('type', $catalogueType)
+            ->get(['test_name_en', 'test_name_ar'])
+            ->map($name)
+            ->filter()
+            ->unique()
+            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+
+        return [
+            'lab_test' => $forType('test'),
+            'radiology' => $forType('radiology'),
+        ];
     }
 
     /** Guard: an appointment must belong to the acting doctor. */

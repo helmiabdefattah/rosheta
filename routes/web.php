@@ -478,6 +478,7 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::put('/appointments/{appointment}/allergies', [App\Http\Controllers\Clinic\PatientController::class, 'updateAllergies'])->name('allergies.update');
         Route::put('/appointments/{appointment}/chronic-diseases', [App\Http\Controllers\Clinic\PatientController::class, 'updateChronicDiseases'])->name('chronic.update');
         Route::post('/appointments/{appointment}/diagnosis', [App\Http\Controllers\Clinic\DiagnosisController::class, 'store'])->name('diagnosis.store');
+        Route::put('/diagnoses/{diagnosis}', [App\Http\Controllers\Clinic\DiagnosisController::class, 'update'])->name('diagnoses.update');
         Route::post('/appointments/{appointment}/prescriptions', [App\Http\Controllers\Clinic\PrescriptionController::class, 'store'])->name('prescriptions.store');
         Route::post('/appointments/{appointment}/requests', [App\Http\Controllers\Clinic\MedicalRequestController::class, 'store'])->name('requests.store');
         Route::delete('/requests/{medicalRequest}', [App\Http\Controllers\Clinic\MedicalRequestController::class, 'destroy'])->name('requests.destroy');
