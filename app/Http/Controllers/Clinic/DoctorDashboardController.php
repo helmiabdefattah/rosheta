@@ -56,6 +56,7 @@ class DoctorDashboardController extends Controller
 
         $appointment->load([
             'client.attachments',
+            'client.patientTests' => fn ($q) => $q->with('attachments')->latest(),
             'diagnosis',
             'prescriptions.items',
             'medicalRequests',

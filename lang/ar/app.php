@@ -51,6 +51,11 @@ return [
         'radiology' => 'أشعة',
     ],
 
+    'test_types' => [
+        'lab' => 'تحاليل',
+        'radiology' => 'أشعة',
+    ],
+
     'genders' => [
         'male' => 'ذكر',
         'female' => 'أنثى',
@@ -426,6 +431,17 @@ return [
         'prescription_created' => 'تم إنشاء الروشتة :code.',
         'prescriptions' => 'الروشتات',
         'medicines_count' => ':count دواء',
+        'tests_section' => 'نتائج الفحوصات (تحاليل / أشعة)',
+        'no_tests' => 'لا توجد نتائج فحوصات بعد.',
+        'test_type' => 'نوع الفحص',
+        'test_title' => 'العنوان',
+        'test_title_placeholder' => 'مثال: صورة دم كاملة، أشعة صدر',
+        'test_files' => 'ملفات النتيجة',
+        'test_files_hint' => 'يمكنك اختيار ملف واحد أو أكثر.',
+        'add_test' => 'إرفاق نتيجة الفحص',
+        'test_added' => 'تم إرفاق نتيجة الفحص.',
+        'test_removed' => 'تم حذف نتيجة الفحص.',
+        'test_remove_confirm' => 'حذف نتيجة الفحص وملفاتها؟',
     ],
 
     'patient' => [

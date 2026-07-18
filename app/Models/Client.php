@@ -77,6 +77,12 @@ class Client extends Authenticatable
         return $this->morphMany(Attachment::class, 'attachable');
     }
 
+    /** Lab / radiology test results recorded for this patient. */
+    public function patientTests(): HasMany
+    {
+        return $this->hasMany(PatientTest::class);
+    }
+
     public function addresses()
     {
         return $this->hasMany(ClientAddress::class);

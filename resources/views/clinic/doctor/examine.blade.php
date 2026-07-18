@@ -260,6 +260,81 @@
             </form>
         </div>
 
+        {{-- Test results: lab / radiology files attached to the patient --}}
+        <div class="bg-white rounded-xl shadow-sm p-5">
+            <h2 class="font-semibold text-slate-800 mb-3">🧪 {{ __('app.examine.tests_section') }}</h2>
+
+            {{-- Existing tests for this patient (across all visits) --}}
+            <ul class="space-y-3 text-sm mb-5">
+                @forelse ($appointment->client->patientTests as $test)
+                    <li class="border border-slate-100 rounded-lg p-3">
+                        <div class="flex items-start justify-between gap-2 mb-2">
+                            <div>
+                                <span class="text-xs px-2 py-0.5 rounded
+                                    {{ $test->type === 'radiology' ? 'bg-purple-100 text-purple-700' : 'bg-teal-100 text-teal-700' }}">
+                                    {{ $test->typeLabel() }}
+                                </span>
+                                @if ($test->title)
+                                    <span class="text-slate-800 mx-1">{{ $test->title }}</span>
+                                @endif
+                                <span class="text-xs text-slate-400 mx-1">{{ $test->created_at->format('Y-m-d') }}</span>
+                            </div>
+                            <form method="POST" action="{{ route('practice.doctor.tests.destroy', $test) }}"
+                                  onsubmit="return confirm('{{ __('app.examine.test_remove_confirm') }}')">
+                                @csrf @method('DELETE')
+                                <button class="text-red-500 text-xs hover:underline">{{ __('app.common.remove') }}</button>
+                            </form>
+                        </div>
+                        @if ($test->notes)
+                            <p class="text-xs text-slate-500 mb-2">{{ $test->notes }}</p>
+                        @endif
+                        <ul class="flex flex-wrap gap-2">
+                            @foreach ($test->attachments as $file)
+                                <li>
+                                    <a href="{{ $file->url }}" target="_blank"
+                                       class="inline-flex items-center gap-1 text-indigo-600 hover:underline bg-slate-50 border border-slate-100 rounded px-2 py-1 text-xs">
+                                        📎 {{ $file->file_name }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </li>
+                @empty
+                    <li class="text-slate-400 italic">{{ __('app.examine.no_tests') }}</li>
+                @endforelse
+            </ul>
+
+            {{-- Attach a new test result --}}
+            <form method="POST" action="{{ route('practice.doctor.tests.store', $appointment) }}"
+                  enctype="multipart/form-data" class="space-y-2 border-t border-slate-100 pt-4">
+                @csrf
+                <div class="flex flex-wrap items-end gap-2">
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">{{ __('app.examine.test_type') }}</label>
+                        <select name="type" class="border rounded px-2 py-1.5 text-sm">
+                            <option value="lab">{{ __('app.test_types.lab') }}</option>
+                            <option value="radiology">{{ __('app.test_types.radiology') }}</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 min-w-[180px]">
+                        <label class="block text-xs text-slate-500 mb-1">{{ __('app.examine.test_title') }}</label>
+                        <input type="text" name="title" placeholder="{{ __('app.examine.test_title_placeholder') }}"
+                               class="w-full border rounded px-2 py-1.5 text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-500 mb-1">{{ __('app.examine.test_files') }}</label>
+                    <input type="file" name="files[]" multiple required class="w-full text-sm">
+                    <p class="text-[11px] text-slate-400 mt-1">{{ __('app.examine.test_files_hint') }}</p>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-500 mb-1">{{ __('app.common.notes') }}</label>
+                    <textarea name="notes" rows="2" class="w-full border rounded px-2 py-1.5 text-sm"></textarea>
+                </div>
+                <button class="bg-teal-600 hover:bg-teal-700 text-white text-sm px-4 py-2 rounded-lg">{{ __('app.examine.add_test') }}</button>
+            </form>
+        </div>
+
         {{-- Prescription / medicines --}}
         <div class="bg-white rounded-xl shadow-sm p-5">
             <h2 class="font-semibold text-slate-800 mb-3">{{ __('app.examine.new_prescription') }}</h2>

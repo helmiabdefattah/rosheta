@@ -482,6 +482,10 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::post('/appointments/{appointment}/requests', [App\Http\Controllers\Clinic\MedicalRequestController::class, 'store'])->name('requests.store');
         Route::delete('/requests/{medicalRequest}', [App\Http\Controllers\Clinic\MedicalRequestController::class, 'destroy'])->name('requests.destroy');
 
+        // Lab / radiology test results attached to the patient.
+        Route::post('/appointments/{appointment}/tests', [App\Http\Controllers\Clinic\PatientTestController::class, 'store'])->name('tests.store');
+        Route::delete('/tests/{patientTest}', [App\Http\Controllers\Clinic\PatientTestController::class, 'destroy'])->name('tests.destroy');
+
         // Custom examination-field values captured for a visit.
         Route::post('/appointments/{appointment}/examination-values', [App\Http\Controllers\Clinic\ExaminationValueController::class, 'store'])->name('examination-values.store');
 

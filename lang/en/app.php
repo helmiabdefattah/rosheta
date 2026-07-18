@@ -54,6 +54,11 @@ return [
         'radiology' => 'Radiology',
     ],
 
+    'test_types' => [
+        'lab' => 'Lab',
+        'radiology' => 'Radiology',
+    ],
+
     'genders' => [
         'male' => 'Male',
         'female' => 'Female',
@@ -437,6 +442,17 @@ return [
         'prescription_created' => 'Prescription :code created.',
         'prescriptions' => 'Prescriptions',
         'medicines_count' => ':count medicine(s)',
+        'tests_section' => 'Test Results (Lab / Radiology)',
+        'no_tests' => 'No test results yet.',
+        'test_type' => 'Test type',
+        'test_title' => 'Title',
+        'test_title_placeholder' => 'e.g. CBC, Chest X-Ray',
+        'test_files' => 'Result files',
+        'test_files_hint' => 'You can select one or more files.',
+        'add_test' => 'Attach test result',
+        'test_added' => 'Test result attached.',
+        'test_removed' => 'Test result removed.',
+        'test_remove_confirm' => 'Remove this test result and its files?',
     ],
 
     // Patient profile
