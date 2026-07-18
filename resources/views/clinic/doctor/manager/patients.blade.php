@@ -10,6 +10,12 @@
 </div>
 
 <form method="GET" class="bg-white rounded-xl shadow-sm p-4 mb-4 flex flex-wrap items-end gap-3">
+    <div class="grow min-w-[12rem]">
+        <label class="block text-xs text-slate-500 mb-1">{{ __('app.report.search') }}</label>
+        <input type="search" name="search" value="{{ $search }}"
+               placeholder="{{ __('app.report.search_patient_placeholder') }}"
+               class="w-full border rounded px-2 py-1.5 text-sm">
+    </div>
     <div>
         <label class="block text-xs text-slate-500 mb-1">{{ __('app.report.from') }}</label>
         <input type="date" name="from" value="{{ $from }}" class="border rounded px-2 py-1.5 text-sm">
@@ -73,7 +79,19 @@
             @forelse ($appointments as $appt)
                 <tr>
                     <td class="px-4 py-3 whitespace-nowrap">{{ $appt->scheduled_at?->format('Y-m-d H:i') }}</td>
-                    <td class="px-4 py-3 font-medium text-slate-800">{{ $appt->client?->name ?? '—' }}</td>
+                    <td class="px-4 py-3">
+                        @if ($appt->client)
+                            <a href="{{ route('practice.patients.show', $appt->client) }}"
+                               class="font-medium text-indigo-600 hover:text-indigo-800 hover:underline">
+                                {{ $appt->client->name }}
+                            </a>
+                        @else
+                            <span class="font-medium text-slate-800">—</span>
+                        @endif
+                        @if ($appt->client?->phone_number)
+                            <div class="text-xs text-slate-400" dir="ltr">📞 {{ $appt->client->phone_number }}</div>
+                        @endif
+                    </td>
                     <td class="px-4 py-3">{{ $appt->typeLabel() }}</td>
                     <td class="px-4 py-3">{{ number_format($appt->dueAmount(), 2) }}</td>
                     <td class="px-4 py-3">{{ number_format($appt->collectedAmount(), 2) }}</td>

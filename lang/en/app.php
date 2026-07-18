@@ -196,6 +196,8 @@ return [
         'total_insurance' => 'Total insurance',
         'total_claimed' => 'Total claimed',
         'total_pending' => 'Total pending',
+        'search' => 'Search',
+        'search_patient_placeholder' => 'Name or phone number',
     ],
 
     'setup' => [

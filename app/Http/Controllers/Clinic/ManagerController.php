@@ -61,6 +61,7 @@ class ManagerController extends Controller
         [$from, $to] = $this->period($request);
         $status = $request->query('status');
         $companyId = $request->query('insurance_company_id');
+        $search = trim((string) $request->query('search', ''));
 
         $appointments = Appointment::query()
             ->where('doctor_id', $doctor->id)
@@ -70,6 +71,12 @@ class ManagerController extends Controller
             ->when($companyId, fn ($q) => $q->whereHas(
                 'insurance',
                 fn ($q2) => $q2->where('insurance_company_id', $companyId)
+            ))
+            // Match on the patient's name or phone number.
+            ->when($search !== '', fn ($q) => $q->whereHas(
+                'client',
+                fn ($q2) => $q2->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone_number', 'like', "%{$search}%")
             ))
             ->with(['client', 'items', 'collections', 'insurance.insuranceCompany'])
             ->orderByDesc('scheduled_at')
@@ -89,6 +96,7 @@ class ManagerController extends Controller
             'to' => $to->toDateString(),
             'status' => $status,
             'companyId' => $companyId,
+            'search' => $search,
             'statuses' => array_keys(Appointment::STATUSES),
         ]);
     }

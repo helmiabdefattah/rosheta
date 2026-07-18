@@ -191,6 +191,8 @@ return [
         'total_insurance' => 'إجمالي التأمين',
         'total_claimed' => 'إجمالي المُطالب',
         'total_pending' => 'إجمالي المتبقي',
+        'search' => 'بحث',
+        'search_patient_placeholder' => 'الاسم أو رقم الهاتف',
     ],
 
     'setup' => [
