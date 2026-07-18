@@ -198,20 +198,42 @@
             @endforelse
         </ul>
     </div>
+</div>
 
-    {{-- Diagnoses --}}
-    <div class="bg-white rounded-xl shadow-sm p-5">
-        <h2 class="font-semibold text-slate-800 mb-3">{{ __('app.patient.diagnoses') }}</h2>
-        <ul class="divide-y divide-slate-100 text-sm">
-            @forelse ($p->diagnoses as $d)
-                <li class="py-2">
-                    <div class="font-medium">{{ $d->diagnosis }}</div>
-                    @if ($d->treatment_plan)<div class="text-slate-500 text-xs mt-0.5">{{ __('app.patient.plan', ['value' => $d->treatment_plan]) }}</div>@endif
-                </li>
-            @empty
-                <li class="py-2 text-slate-400 italic">{{ __('app.patient.no_diagnoses') }}</li>
-            @endforelse
-        </ul>
+{{-- Medical history: the patient's examinations across all visits & doctors. --}}
+<div class="bg-white rounded-xl shadow-sm p-5 mt-6">
+    <h2 class="font-semibold text-slate-800 mb-4">📋 {{ __('app.examine.history_section') }}</h2>
+    <div class="space-y-3">
+        @forelse ($p->diagnoses as $d)
+            <div class="border border-slate-100 rounded-lg p-4">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2 text-sm">
+                    <span class="font-medium text-slate-700">👨‍⚕️ {{ $d->doctor?->name ?? '—' }}</span>
+                    <span class="text-xs text-slate-400">
+                        {{ optional($d->appointment?->scheduled_at ?? $d->created_at)->translatedFormat('d M Y') }}
+                    </span>
+                </div>
+                <dl class="text-sm space-y-1.5">
+                    <div>
+                        <dt class="text-xs text-slate-400">{{ __('app.examine.history_diagnosis') }}</dt>
+                        <dd class="text-slate-700 whitespace-pre-line">{{ $d->diagnosis }}</dd>
+                    </div>
+                    @if ($d->treatment_plan)
+                        <div>
+                            <dt class="text-xs text-slate-400">{{ __('app.examine.treatment_plan') }}</dt>
+                            <dd class="text-slate-700 whitespace-pre-line">{{ $d->treatment_plan }}</dd>
+                        </div>
+                    @endif
+                    @if ($d->notes)
+                        <div>
+                            <dt class="text-xs text-slate-400">{{ __('app.common.notes') }}</dt>
+                            <dd class="text-slate-600 whitespace-pre-line">{{ $d->notes }}</dd>
+                        </div>
+                    @endif
+                </dl>
+            </div>
+        @empty
+            <p class="text-sm text-slate-400 italic">{{ __('app.examine.no_history') }}</p>
+        @endforelse
     </div>
 </div>
 @endsection

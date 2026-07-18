@@ -21,7 +21,8 @@ class PatientController extends Controller
         $patient->load([
             'attachments.uploader',
             'prescriptions' => fn ($q) => $q->where('doctor_id', $doctor->id)->with('items'),
-            'diagnoses' => fn ($q) => $q->where('doctor_id', $doctor->id),
+            // Full examination history — every doctor's records, newest first.
+            'diagnoses' => fn ($q) => $q->with(['doctor', 'appointment'])->latest(),
         ]);
 
         // Only this doctor's visits with the patient.
