@@ -275,7 +275,7 @@
                                     {{ __('app.table.actions') }}
                                     <span class="text-[10px] text-slate-400">▼</span>
                                 </summary>
-                                <div class="absolute end-0 mt-2 w-60 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-30 text-start">
+                                <div class="absolute start-0 md:start-auto md:end-0 mt-2 w-60 max-w-[calc(100vw-2rem)] bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-30 text-start">
 
                                     {{-- Collect payment --}}
                                     <button type="button" onclick="toggle('collect-{{ $appt->id }}')"
