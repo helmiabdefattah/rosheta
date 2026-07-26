@@ -42,6 +42,51 @@
             🖨️ {{ __('app.ticket.connect_printer') }}
         </button>
         @endif
+        {{-- Notifications bell: patients requesting an appointment with this doctor
+             via the Rosheta platform. Badge = number of requests awaiting the desk. --}}
+        <details data-menu class="relative">
+            <summary class="list-none cursor-pointer select-none relative inline-flex items-center justify-center w-10 h-10 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-lg"
+                     title="{{ __('app.bell.title') }}">
+                🔔
+                @if ($pendingRequests->isNotEmpty())
+                    <span class="absolute -top-1 -end-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">
+                        {{ $pendingRequests->count() > 99 ? '99+' : $pendingRequests->count() }}
+                    </span>
+                @endif
+            </summary>
+            <div class="absolute start-0 md:start-auto md:end-0 mt-2 w-72 max-w-[calc(100vw-2rem)] bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50 text-start">
+                <div class="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
+                    <span class="text-sm font-semibold text-slate-700">🔔 {{ __('app.bell.title') }}</span>
+                    @if ($pendingRequests->isNotEmpty())
+                        <span class="text-xs text-red-600 bg-red-50 px-2 py-0.5 rounded-full">{{ __('app.bell.count_new', ['count' => $pendingRequests->count()]) }}</span>
+                    @endif
+                </div>
+                @forelse ($pendingRequests->take(8) as $req)
+                    <a href="#pending-panel"
+                       class="block px-4 py-2.5 hover:bg-teal-50 border-b border-slate-50 last:border-0">
+                        <div class="flex items-start gap-2">
+                            <span class="text-base">🏥</span>
+                            <div class="min-w-0">
+                                <div class="text-sm text-slate-800 leading-snug">
+                                    <span class="font-semibold">{{ $req->client->name }}</span>
+                                    {{ __('app.bell.wants_appointment') }}
+                                </div>
+                                <div class="text-xs text-slate-400">
+                                    {{ $req->typeLabel() }}@if ($req->scheduled_at) &middot; {{ $req->scheduled_at->translatedFormat('d M') }} · {{ $req->scheduled_at->format('H:i') }}@endif
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                @empty
+                    <div class="px-4 py-6 text-center text-sm text-slate-400">{{ __('app.bell.empty') }}</div>
+                @endforelse
+                @if ($pendingRequests->isNotEmpty())
+                    <a href="#pending-panel" class="block px-4 py-2 text-center text-sm font-medium text-teal-700 hover:bg-teal-50 border-t border-slate-100">
+                        {{ __('app.bell.view_all') }}
+                    </a>
+                @endif
+            </div>
+        </details>
         <button type="button" onclick="toggle('broadcast-modal')"
                 class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
             📣 {{ __('app.notify.button') }}
@@ -275,7 +320,7 @@
                                     {{ __('app.table.actions') }}
                                     <span class="text-[10px] text-slate-400">▼</span>
                                 </summary>
-                                <div class="absolute end-0 mt-2 w-60 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-30 text-start">
+                                <div class="absolute start-0 md:start-auto md:end-0 mt-2 w-60 max-w-[calc(100vw-2rem)] bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-30 text-start">
 
                                     {{-- Collect payment --}}
                                     <button type="button" onclick="toggle('collect-{{ $appt->id }}')"
@@ -369,6 +414,17 @@
                                     @if (! in_array($appt->status, ['completed', 'cancelled']))
                                         @if (! in_array($appt->status, ['scheduled', 'escaped']))
                                             <div class="border-t border-slate-100 my-1"></div>
+                                        @endif
+                                        {{-- Confirm a platform booking request into the day's schedule
+                                             (moves it out of the pending/notifications list) --}}
+                                        @if (in_array($appt->status, ['pending', 'confirmed']))
+                                            <form method="POST" action="{{ route('practice.appointments.status', $appt) }}">
+                                                @csrf
+                                                <input type="hidden" name="status" value="scheduled">
+                                                <button class="w-full flex items-center gap-2 px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 text-start">
+                                                    <span class="w-5">📅</span> {{ __('app.assistant.confirm_booking') }}
+                                                </button>
+                                            </form>
                                         @endif
                                         <form method="POST" action="{{ route('practice.appointments.status', $appt) }}">
                                             @csrf

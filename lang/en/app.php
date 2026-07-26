@@ -293,6 +293,7 @@ return [
         'print_prescription' => 'Print prescription',
         'no_prescription' => 'No prescription yet',
         'start_examination' => 'Start examination',
+        'confirm_booking' => 'Confirm & add to schedule',
         'mark_completed' => 'Mark completed',
         'cancel' => 'Cancel',
         'confirm_cancel' => 'Cancel this appointment?',
@@ -361,6 +362,15 @@ return [
         'confirmed' => 'Booking request confirmed and added to the schedule.',
         'declined' => 'Booking request declined.',
         'request_gone' => 'That booking request is no longer available — it may have been handled already.',
+    ],
+
+    // Notifications bell: incoming booking requests for this doctor
+    'bell' => [
+        'title' => 'Notifications',
+        'empty' => 'No new notifications',
+        'wants_appointment' => 'wants an appointment with you',
+        'view_all' => 'View all booking requests',
+        'count_new' => ':count new',
     ],
 
     // Broadcast a message to today's patients
