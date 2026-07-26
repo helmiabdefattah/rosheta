@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Appointment;
+use App\Support\EscPosTicketRenderer;
 
 /**
  * Data-only FCM message telling the MostashfaOn mobile app to print a queue
@@ -84,6 +85,8 @@ class PrintQueueTicketNotification extends BaseNotification
         // otherwise one clinic gets mixed-language tickets. `printer_language`
         // is sent too so the app localises its own printed labels to match.
         $lang = $a->clinic?->printerLanguage() ?? config('app.locale');
+        $withQr = (bool) ($a->clinic?->print_qr ?? true);
+        $ahead = $a->patientsWaitingAhead();
 
         return [
             'type' => 'print_ticket',
@@ -98,8 +101,26 @@ class PrintQueueTicketNotification extends BaseNotification
             'time' => optional($a->scheduled_at)->format('Y-m-d H:i') ?? '',
             // Whether to render the QR code on the printed paper (per-clinic
             // toggle) and how many patients are still waiting ahead of this one.
-            'print_qr' => ($a->clinic?->print_qr ?? true) ? '1' : '0',
-            'patients_ahead' => (string) $a->patientsWaitingAhead(),
+            'print_qr' => $withQr ? '1' : '0',
+            'patients_ahead' => (string) $ahead,
+            // Every printed label pre-localized to the clinic's printer language,
+            // so an app that renders the ticket from fields (its Arabic text path
+            // already works) can print correct labels without its own i18n — it
+            // just prints these strings and honours print_qr. Sent as JSON.
+            'labels' => [
+                'queue_number' => __('app.ticket.queue_number', [], $lang),
+                'patients_ahead' => trans_choice('app.ticket.patients_ahead', $ahead, ['count' => $ahead], $lang),
+                'patient' => __('app.ticket.patient', [], $lang),
+                'type' => __('app.ticket.type', [], $lang),
+                'date' => __('app.ticket.date', [], $lang),
+                'time' => __('app.ticket.time', [], $lang),
+                'thanks' => __('app.ticket.thanks', [], $lang),
+            ],
+            // Ready-to-print ESC/POS buffer (base64). The app writes these bytes
+            // to the RONGTA printer verbatim — language and QR are already baked
+            // in server-side, so the ticket no longer depends on the app's own
+            // rendering or device locale. Fields above remain for older apps.
+            'escpos_base64' => EscPosTicketRenderer::make($a, $lang, $withQr)->toBase64(),
         ];
     }
 }
