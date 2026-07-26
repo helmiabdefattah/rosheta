@@ -343,6 +343,8 @@ return [
         'printer_hint' => 'Language used to print queue tickets on the clinic\'s Bluetooth printer.',
         'printer_language' => 'Printer language',
         'printer_language_default' => 'Follow app language (:lang)',
+        'print_qr' => 'Print QR code on the ticket',
+        'print_qr_hint' => 'Include a QR code on the printed patient paper alongside the queue number.',
     ],
 
     // Rosheta booking requests awaiting the front desk's confirmation
@@ -532,6 +534,7 @@ return [
         'title' => 'Ticket #:num',
         'print' => 'Print ticket',
         'queue_number' => 'YOUR NUMBER',
+        'patients_ahead' => 'No one waiting ahead of you|:count patient waiting ahead of you|:count patients waiting ahead of you',
         'patient' => 'Patient',
         'type' => 'Type',
         'date' => 'Date',

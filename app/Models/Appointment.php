@@ -223,4 +223,24 @@ class Appointment extends Model
     {
         return __('app.statuses.'.$this->status);
     }
+
+    /**
+     * How many patients are still waiting ahead of this one in today's queue:
+     * scheduled (not-yet-called) appointments for the same doctor on the same
+     * day with a lower queue number. Printed on the ticket so the patient can
+     * see how many people are before them.
+     */
+    public function patientsWaitingAhead(): int
+    {
+        if ($this->queue_number === null) {
+            return 0;
+        }
+
+        return static::where('doctor_id', $this->doctor_id)
+            ->whereKeyNot($this->getKey())
+            ->whereDate('scheduled_at', $this->scheduled_at ?? today())
+            ->where('status', 'scheduled')
+            ->where('queue_number', '<', $this->queue_number)
+            ->count();
+    }
 }

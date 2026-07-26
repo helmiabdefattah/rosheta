@@ -78,6 +78,17 @@
                 </option>
             @endforeach
         </select>
+
+        {{-- QR code on the printed ticket --}}
+        <label class="mt-5 flex items-start gap-3 cursor-pointer">
+            <input type="hidden" name="print_qr" value="0">
+            <input type="checkbox" name="print_qr" value="1" class="mt-0.5 rounded"
+                   @checked(old('print_qr', $clinic->print_qr ?? true))>
+            <span>
+                <span class="block text-sm font-medium text-slate-700">{{ __('app.clinic.print_qr') }}</span>
+                <span class="block text-xs text-slate-500">{{ __('app.clinic.print_qr_hint') }}</span>
+            </span>
+        </label>
     </div>
 
     {{-- Opening days & hours --}}

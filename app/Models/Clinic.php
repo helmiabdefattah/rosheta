@@ -33,6 +33,7 @@ class Clinic extends Model
         'display_show_next_button',
         'printer_connected_at',
         'printer_language',
+        'print_qr',
     ];
 
     /** Languages the Bluetooth ticket printer can print in. */
@@ -60,6 +61,7 @@ class Clinic extends Model
         'appointment_duration' => 'integer',
         'display_show_next_button' => 'boolean',
         'printer_connected_at' => 'datetime',
+        'print_qr' => 'boolean',
     ];
 
     /**

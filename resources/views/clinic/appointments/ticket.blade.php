@@ -1,3 +1,9 @@
+@php
+    // Print the ticket in the clinic's configured printer language, not the
+    // locale of whoever opened the page — otherwise a clinic set to Arabic
+    // still prints English tickets (and vice-versa).
+    app()->setLocale($appointment->clinic?->printerLanguage() ?? app()->getLocale());
+@endphp
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
@@ -81,6 +87,10 @@
         <div class="center">
             <div class="num-label">{{ __('app.ticket.queue_number') }}</div>
             <div class="num">{{ $appointment->queue_number ?? '—' }}</div>
+            @php $ahead = $appointment->patientsWaitingAhead(); @endphp
+            <div class="muted">
+                {{ trans_choice('app.ticket.patients_ahead', $ahead, ['count' => $ahead]) }}
+            </div>
         </div>
 
         <hr>

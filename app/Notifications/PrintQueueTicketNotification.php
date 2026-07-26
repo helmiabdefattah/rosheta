@@ -96,6 +96,10 @@ class PrintQueueTicketNotification extends BaseNotification
             'visit_type' => (string) $a->typeLabel($lang),
             'printer_language' => (string) $lang,
             'time' => optional($a->scheduled_at)->format('Y-m-d H:i') ?? '',
+            // Whether to render the QR code on the printed paper (per-clinic
+            // toggle) and how many patients are still waiting ahead of this one.
+            'print_qr' => ($a->clinic?->print_qr ?? true) ? '1' : '0',
+            'patients_ahead' => (string) $a->patientsWaitingAhead(),
         ];
     }
 }
