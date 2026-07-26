@@ -88,15 +88,20 @@ class PrintQueueTicketNotification extends BaseNotification
         $withQr = (bool) ($a->clinic?->print_qr ?? true);
         $ahead = $a->patientsWaitingAhead();
 
-        return [
+        $clinicName = (string) ($a->clinic->name ?? '');
+        $doctorName = (string) ($a->doctor->name ?? '');
+        $patientName = (string) ($a->client->name ?? '');
+        $visitType = (string) $a->typeLabel($lang);
+
+        $data = [
             'type' => 'print_ticket',
             'appointment_id' => (string) $a->id,
             'clinic_id' => (string) $a->clinic_id,
             'ticket_number' => (string) $a->queue_number,
-            'clinic_name' => (string) ($a->clinic->name ?? ''),
-            'doctor_name' => (string) ($a->doctor->name ?? ''),
-            'patient_name' => (string) ($a->client->name ?? ''),
-            'visit_type' => (string) $a->typeLabel($lang),
+            'clinic_name' => $clinicName,
+            'doctor_name' => $doctorName,
+            'patient_name' => $patientName,
+            'visit_type' => $visitType,
             'printer_language' => (string) $lang,
             'time' => optional($a->scheduled_at)->format('Y-m-d H:i') ?? '',
             // Whether to render the QR code on the printed paper (per-clinic
@@ -104,9 +109,8 @@ class PrintQueueTicketNotification extends BaseNotification
             'print_qr' => $withQr ? '1' : '0',
             'patients_ahead' => (string) $ahead,
             // Every printed label pre-localized to the clinic's printer language,
-            // so an app that renders the ticket from fields (its Arabic text path
-            // already works) can print correct labels without its own i18n — it
-            // just prints these strings and honours print_qr. Sent as JSON.
+            // so the app can render the ticket (bitmap path) with correct labels
+            // and honour print_qr without needing its own i18n. Sent as JSON.
             'labels' => [
                 'queue_number' => __('app.ticket.queue_number', [], $lang),
                 'patients_ahead' => trans_choice('app.ticket.patients_ahead', $ahead, ['count' => $ahead], $lang),
@@ -116,11 +120,28 @@ class PrintQueueTicketNotification extends BaseNotification
                 'time' => __('app.ticket.time', [], $lang),
                 'thanks' => __('app.ticket.thanks', [], $lang),
             ],
-            // Ready-to-print ESC/POS buffer (base64). The app writes these bytes
-            // to the RONGTA printer verbatim — language and QR are already baked
-            // in server-side, so the ticket no longer depends on the app's own
-            // rendering or device locale. Fields above remain for older apps.
-            'escpos_base64' => EscPosTicketRenderer::make($a, $lang, $withQr)->toBase64(),
         ];
+
+        // Fast path — only when every printed string is ASCII. The RONGTA RPP30
+        // has no Arabic font, so Arabic can't be printed as ESC/POS text; those
+        // tickets fall back to the app's on-device bitmap renderer (which shapes
+        // Arabic correctly). When the whole ticket is Latin we send a ready-made
+        // ESC/POS buffer the app prints verbatim — far faster than a bitmap.
+        if ($lang === 'en'
+            && $this->isAscii($clinicName)
+            && $this->isAscii($doctorName)
+            && $this->isAscii($patientName)
+            && $this->isAscii($visitType)
+        ) {
+            $data['escpos_base64'] = EscPosTicketRenderer::make($a, $lang, $withQr)->toBase64();
+        }
+
+        return $data;
+    }
+
+    /** True when the string is empty or pure 7-bit ASCII (safe for text-mode ESC/POS). */
+    private function isAscii(string $s): bool
+    {
+        return $s === '' || mb_check_encoding($s, 'ASCII');
     }
 }
