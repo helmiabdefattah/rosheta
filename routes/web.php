@@ -395,6 +395,10 @@ Route::middleware([
     // Specializations (for doctors)
     Route::resource('specializations', App\Http\Controllers\Admin\SpecializationController::class);
 
+    // One-step clinic setup: doctor + clinic + assistant + demo data
+    Route::get('/clinic-onboarding', [App\Http\Controllers\Admin\ClinicOnboardingController::class, 'create'])->name('clinic-onboarding.create');
+    Route::post('/clinic-onboarding', [App\Http\Controllers\Admin\ClinicOnboardingController::class, 'store'])->name('clinic-onboarding.store');
+
     // Doctors, Clinics, Appointments
     Route::resource('doctors', App\Http\Controllers\Admin\DoctorController::class);
 
