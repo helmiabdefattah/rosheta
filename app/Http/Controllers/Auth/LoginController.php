@@ -80,8 +80,20 @@ class LoginController extends Controller
                 throw ValidationException::withMessages([
                     'email' => [
                         app()->getLocale() === 'ar'
-                            ? 'حسابك غير مفعّل بعد. يرجى انتظار موافقة الإدارة.'
-                            : 'Your account is not active yet. Please wait for administrator approval.',
+                            ? 'حسابك غير مفعّل. يرجى التواصل مع الإدارة لتفعيل الحساب.'
+                            : 'Your account is not active. Please contact the administration to activate it.',
+                    ],
+                ]);
+            }
+
+            // An assistant cannot work while the doctor they assist is deactivated.
+            $doctorAccount = $user->supervisingDoctorAccount();
+            if ($doctorAccount && ! $doctorAccount->is_active) {
+                throw ValidationException::withMessages([
+                    'email' => [
+                        app()->getLocale() === 'ar'
+                            ? 'حساب الطبيب الذي تعمل معه غير مفعّل. يرجى التواصل مع الإدارة.'
+                            : 'The account of the doctor you work with is not active. Please contact the administration.',
                     ],
                 ]);
             }

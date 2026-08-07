@@ -210,6 +210,12 @@ Route::middleware(['auth', 'doctor'])->prefix('doctor')->name('doctor.')->group(
     Route::put('/appointments/{appointment}/status', [App\Http\Controllers\Doctor\DoctorAppointmentController::class, 'updateStatus'])->name('appointments.update-status');
     Route::get('/calendar', [App\Http\Controllers\Doctor\DoctorCalendarController::class, 'index'])->name('calendar.index');
     Route::post('/calendar/toggle-off', [App\Http\Controllers\Doctor\DoctorCalendarController::class, 'toggleOff'])->name('calendar.toggle-off');
+    // Assistant accounts the doctor creates for their clinics (capped per clinic).
+    Route::get('/staff', [App\Http\Controllers\Doctor\DoctorStaffController::class, 'index'])->name('staff.index');
+    Route::post('/staff', [App\Http\Controllers\Doctor\DoctorStaffController::class, 'store'])->name('staff.store');
+    Route::put('/staff/{assistant}', [App\Http\Controllers\Doctor\DoctorStaffController::class, 'update'])->name('staff.update');
+    Route::patch('/staff/{assistant}/toggle-active', [App\Http\Controllers\Doctor\DoctorStaffController::class, 'toggleActive'])->name('staff.toggle-active');
+    Route::delete('/staff/{assistant}', [App\Http\Controllers\Doctor\DoctorStaffController::class, 'destroy'])->name('staff.destroy');
 });
 
 // Offer routes
@@ -400,6 +406,7 @@ Route::middleware([
     Route::post('/clinic-onboarding', [App\Http\Controllers\Admin\ClinicOnboardingController::class, 'store'])->name('clinic-onboarding.store');
 
     // Doctors, Clinics, Appointments
+    Route::patch('/doctors/{doctor}/toggle-active', [App\Http\Controllers\Admin\DoctorController::class, 'toggleActive'])->name('doctors.toggle-active');
     Route::resource('doctors', App\Http\Controllers\Admin\DoctorController::class);
 
     Route::resource('clinics', App\Http\Controllers\Admin\ClinicController::class);

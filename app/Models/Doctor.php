@@ -19,7 +19,15 @@ class Doctor extends Model implements HasMedia
         'name',
         'slug',
         'brief',
+        'assistant_limit',
     ];
+
+    protected $casts = [
+        'assistant_limit' => 'integer',
+    ];
+
+    /** Assistant accounts a doctor may create per clinic before an admin raises it. */
+    public const DEFAULT_ASSISTANT_LIMIT = 2;
 
     public function registerMediaCollections(): void
     {
@@ -51,9 +59,20 @@ class Doctor extends Model implements HasMedia
      * user switched to, falling back to their first. The session id is always
      * re-checked against this doctor's own clinics, so a stale or tampered id
      * simply falls back instead of leaking another doctor's clinic.
+     *
+     * An assistant hired into a specific clinic is pinned to it — only the
+     * doctor switches between clinics.
      */
     public function activeClinic(): ?Clinic
     {
+        $user = auth()->user();
+        if ($user && $user->doctor_id === $this->id && $user->clinic_id) {
+            $pinned = $this->clinics()->whereKey($user->clinic_id)->first();
+            if ($pinned) {
+                return $pinned;
+            }
+        }
+
         $selected = session(self::ACTIVE_CLINIC_SESSION_KEY);
 
         return ($selected ? $this->clinics()->whereKey($selected)->first() : null)
@@ -87,6 +106,30 @@ class Doctor extends Model implements HasMedia
     public function assistants(): HasMany
     {
         return $this->hasMany(User::class, 'doctor_id');
+    }
+
+    /** How many assistants this doctor may have at each of their clinics. */
+    public function assistantLimit(): int
+    {
+        return (int) ($this->assistant_limit ?: self::DEFAULT_ASSISTANT_LIMIT);
+    }
+
+    /** Assistants already hired into a given clinic. */
+    public function assistantsAtClinic(int $clinicId): HasMany
+    {
+        return $this->assistants()->where('clinic_id', $clinicId);
+    }
+
+    /** Whether this doctor still has an assistant slot free at the given clinic. */
+    public function canAddAssistantAt(int $clinicId): bool
+    {
+        return $this->assistantsAtClinic($clinicId)->count() < $this->assistantLimit();
+    }
+
+    /** True when the login behind this doctor profile is active (admin switch). */
+    public function accountIsActive(): bool
+    {
+        return (bool) $this->user?->is_active;
     }
 
     /** Diagnoses recorded by this doctor in the clinic system. */

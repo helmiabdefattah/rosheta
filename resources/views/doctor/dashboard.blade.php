@@ -55,6 +55,21 @@
                 </div>
             </a>
         </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <a href="{{ route('doctor.staff.index') }}" class="flex items-center gap-4 hover:opacity-90">
+                <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                    <i class="bi bi-people text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-slate-800">{{ app()->getLocale() === 'ar' ? 'المساعدون' : 'Assistants' }}</p>
+                    <p class="text-xs text-slate-500">
+                        {{ app()->getLocale() === 'ar'
+                            ? 'حتى ' . $doctor->assistantLimit() . ' مساعدين لكل عيادة'
+                            : 'Up to ' . $doctor->assistantLimit() . ' per clinic' }}
+                    </p>
+                </div>
+            </a>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">

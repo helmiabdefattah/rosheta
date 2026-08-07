@@ -140,6 +140,7 @@ class ClinicOnboardingService
             'password' => $assistantPassword,
             'is_active' => true,
             'doctor_id' => $doctor->id,
+            'clinic_id' => $clinic->id,
         ]);
 
         $stats = [
