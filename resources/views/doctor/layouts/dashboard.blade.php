@@ -62,6 +62,9 @@
             <a href="{{ route('doctor.clinics.index') }}" class="nav-item {{ request()->routeIs('doctor.clinics.*') ? 'active' : '' }}">
                 <i class="bi bi-building me-3 opacity-70"></i><span>{{ app()->getLocale() === 'ar' ? 'عياداتي' : 'My Clinics' }}</span>
             </a>
+            <a href="{{ route('doctor.staff.index') }}" class="nav-item {{ request()->routeIs('doctor.staff.*') ? 'active' : '' }}">
+                <i class="bi bi-people me-3 opacity-70"></i><span>{{ app()->getLocale() === 'ar' ? 'المساعدون' : 'Assistants' }}</span>
+            </a>
             <div class="menu-header">{{ app()->getLocale() === 'ar' ? 'المواعيد' : 'APPOINTMENTS' }}</div>
             <a href="{{ route('doctor.appointments.index') }}" class="nav-item {{ request()->routeIs('doctor.appointments.*') ? 'active' : '' }}">
                 <i class="bi bi-calendar-event me-3 opacity-70"></i><span>{{ app()->getLocale() === 'ar' ? 'المواعيد' : 'Appointments' }}</span>

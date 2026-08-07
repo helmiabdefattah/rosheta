@@ -34,6 +34,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia
         'laboratory_id',
         'nurse_id',
         'doctor_id',
+        'clinic_id',
         'charitable_organization_id',
         'fcm_token_web',
         'fcm_token_mobile',
@@ -122,6 +123,15 @@ class User extends Authenticatable implements FilamentUser, HasMedia
         return $this->belongsTo(Doctor::class, 'doctor_id');
     }
 
+    /**
+     * When this user is a doctor's assistant, the clinic they were hired into.
+     * (users.clinic_id → clinics.id)
+     */
+    public function assistantClinic(): BelongsTo
+    {
+        return $this->belongsTo(Clinic::class, 'clinic_id');
+    }
+
     /** True when this user owns a doctor profile. */
     public function isDoctor(): bool
     {
@@ -132,6 +142,30 @@ class User extends Authenticatable implements FilamentUser, HasMedia
     public function isAssistant(): bool
     {
         return $this->doctor_id !== null;
+    }
+
+    /**
+     * The login account of the doctor this user assists, when they are an
+     * assistant. Assistants ride on their doctor's activation.
+     */
+    public function supervisingDoctorAccount(): ?self
+    {
+        return $this->doctor_id ? $this->assistantDoctor?->user : null;
+    }
+
+    /**
+     * No access: the account was switched off by an admin, or — for an
+     * assistant — the doctor they work for was switched off.
+     */
+    public function isSuspended(): bool
+    {
+        if (! $this->is_active) {
+            return true;
+        }
+
+        $doctorAccount = $this->supervisingDoctorAccount();
+
+        return $doctorAccount !== null && ! $doctorAccount->is_active;
     }
 
     /**

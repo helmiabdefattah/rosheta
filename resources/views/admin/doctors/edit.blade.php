@@ -45,7 +45,22 @@
                     </select>
                     @error('user_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                 </div>
+                <div>
+                    <x-admin.ui.label for="assistant_limit">{{ app()->getLocale() === 'ar' ? 'عدد المساعدين المسموح به لكل عيادة' : 'Assistants allowed per clinic' }}</x-admin.ui.label>
+                    <x-admin.ui.input type="number" name="assistant_limit" :value="old('assistant_limit', $doctor->assistantLimit())" min="0" max="50" />
+                    <p class="mt-1 text-sm text-slate-500">{{ app()->getLocale() === 'ar' ? 'الافتراضي 2 — ارفع الرقم ليتمكن الطبيب من إضافة عدد أكبر من المساعدين في كل عيادة.' : 'Default 2 — raise it to let this doctor add more assistants in each of their clinics.' }}</p>
+                    @error('assistant_limit')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
                 @if($doctor->user_id)
+                <label class="flex items-start gap-3 cursor-pointer rounded-lg border border-slate-200 p-4">
+                    <input type="hidden" name="is_active" value="0">
+                    <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', $doctor->user?->is_active ? '1' : '0') == '1' ? 'checked' : '' }}
+                           class="mt-1 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary">
+                    <span>
+                        <span class="block text-sm font-medium text-slate-700">{{ app()->getLocale() === 'ar' ? 'الحساب مفعّل' : 'Account active' }}</span>
+                        <span class="block text-sm text-slate-500">{{ app()->getLocale() === 'ar' ? 'إذا كان غير مفعّل، سيظهر للطبيب (ولمساعديه) عند تسجيل الدخول أن الحساب غير مفعّل.' : 'When inactive, the doctor — and their assistants — are told at login that the account is not active.' }}</span>
+                    </span>
+                </label>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <x-admin.ui.label for="password">{{ app()->getLocale() === 'ar' ? 'كلمة مرور الحساب المرتبط (اختياري)' : 'Linked account password (optional)' }}</x-admin.ui.label>

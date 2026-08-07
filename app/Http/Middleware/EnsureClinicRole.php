@@ -25,6 +25,21 @@ class EnsureClinicRole
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
+
+        // Deactivated mid-session (the doctor's own account, or the doctor an
+        // assistant works for): end the session rather than serve the workspace.
+        if ($user->isSuspended()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')->withErrors([
+                'email' => app()->getLocale() === 'ar'
+                    ? 'حسابك غير مفعّل. يرجى التواصل مع الإدارة لتفعيل الحساب.'
+                    : 'Your account is not active. Please contact the administration to activate it.',
+            ]);
+        }
+
         $roles = $roles ?: ['doctor', 'assistant'];
 
         $isDoctor = in_array('doctor', $roles, true) && $user->isDoctor();
