@@ -33,6 +33,13 @@ Route::get('/feedback', function () {
 
 Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale');
 
+// Public "get the app" share link: renders a branded page with Open Graph tags
+// (so WhatsApp/social show the logo + a preview) and redirects real visitors to
+// the Google Play listing. Kept public and crawler-friendly on purpose.
+Route::get('/get-app', function () {
+    return view('public.get-app');
+})->name('get-app');
+
 // Mobile app WebView: one-time session bridge (signed URL from POST /api/webview-bridge)
 Route::get('/app/webview-bridge', [WebviewBridgeController::class, 'establish'])
     ->name('webview.bridge.establish');

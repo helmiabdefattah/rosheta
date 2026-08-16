@@ -184,6 +184,16 @@
 	<div>
 		<p class="text-base font-bold text-slate-900 mb-4">{{ $isAr ? 'خدماتنا' : 'Our services' }}</p>
 		<div class="grid grid-cols-2 gap-4">
+			<a href="{{ route('client.doctor-reservation.index') }}" class="landing-service-card group relative rounded-[1.25rem] overflow-hidden min-h-[160px] border border-slate-200/80 shadow-md bg-white">
+				<div class="absolute inset-0 bg-gradient-to-br from-teal-500/25 to-cyan-700/15"></div>
+				<div class="relative p-4 h-full flex flex-col justify-between">
+					<span class="inline-flex w-12 h-12 rounded-full bg-[#00897B] text-white items-center justify-center shadow-lg"><i class="bi bi-hospital text-xl"></i></span>
+					<div class="rounded-xl bg-white/95 border border-white/80 shadow-sm px-3 py-2 mt-4">
+						<p class="font-extrabold text-slate-900 text-[15px] leading-tight">{{ $isAr ? 'العيادات والأطباء' : 'Clinics & doctors' }}</p>
+						<p class="text-[11px] font-semibold text-slate-600 mt-0.5">{{ $isAr ? 'ابحث واحجز موعدك' : 'Search & book a visit' }}</p>
+					</div>
+				</div>
+			</a>
 			<a href="{{ route('client.medicine-requests.create') }}" class="landing-service-card group relative rounded-[1.25rem] overflow-hidden min-h-[160px] border border-slate-200/80 shadow-md bg-white">
 				<div class="absolute inset-0 bg-gradient-to-br from-teal-500/25 to-emerald-600/15"></div>
 				<div class="relative p-4 h-full flex flex-col justify-between">
