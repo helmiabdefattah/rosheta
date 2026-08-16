@@ -57,9 +57,13 @@
                             <dt class="text-slate-500">{{ $l ? 'التخصص' : 'Specialization' }}</dt>
                             <dd class="text-slate-800 text-end">{{ $doctor->specialization->name ?? '—' }}</dd>
                         </div>
-                        <div class="flex justify-between gap-3 pt-1">
+                        <div class="flex justify-between gap-3 border-b border-slate-100 pb-2">
                             <dt class="text-slate-500">{{ $l ? 'البريد' : 'User email' }}</dt>
                             <dd class="text-slate-800 text-end text-xs break-all">{{ $doctor->user->email ?? '—' }}</dd>
+                        </div>
+                        <div class="flex justify-between items-center gap-3 pt-1">
+                            <dt class="text-slate-500">{{ $l ? 'حالة الحساب' : 'Account' }}</dt>
+                            <dd>@include('admin.doctors.partials.status-toggle', ['doctor' => $doctor])</dd>
                         </div>
                     </dl>
                     <div class="mt-4 pt-3 border-t border-slate-100">
@@ -79,6 +83,7 @@
                         <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
                         <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $l ? 'التخصص' : 'Specialization' }}</th>
                         <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $l ? 'الحساب' : 'User' }}</th>
+                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $l ? 'حالة الحساب' : 'Status' }}</th>
                         <th class="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $l ? 'إجراءات' : 'Actions' }}</th>
                     </tr>
                 </thead>
@@ -98,6 +103,7 @@
                             <td class="px-4 py-3 text-sm text-slate-600 font-mono text-xs">{{ $doctor->slug }}</td>
                             <td class="px-4 py-3 text-sm text-slate-700">{{ $doctor->specialization->name ?? '—' }}</td>
                             <td class="px-4 py-3 text-sm text-slate-700">{{ $doctor->user->email ?? '—' }}</td>
+                            <td class="px-4 py-3 text-sm">@include('admin.doctors.partials.status-toggle', ['doctor' => $doctor])</td>
                             <td class="px-4 py-3 text-sm text-end">@include('admin.doctors.actions', ['doctor' => $doctor])</td>
                         </tr>
                     @endforeach
@@ -109,3 +115,5 @@
     @endif
 </div>
 @endsection
+
+@include('admin.doctors.partials.status-toggle-script')

@@ -36,6 +36,12 @@
                     @error('specialization_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                 </div>
                 <div>
+                    <x-admin.ui.label for="assistant_limit">{{ app()->getLocale() === 'ar' ? 'عدد المساعدين المسموح به لكل عيادة' : 'Assistants allowed per clinic' }}</x-admin.ui.label>
+                    <x-admin.ui.input type="number" name="assistant_limit" :value="old('assistant_limit', \App\Models\Doctor::DEFAULT_ASSISTANT_LIMIT)" min="0" max="50" />
+                    <p class="mt-1 text-sm text-slate-500">{{ app()->getLocale() === 'ar' ? 'الافتراضي 2 — يمكن للطبيب إنشاء هذا العدد من حسابات المساعدين في كل عيادة.' : 'Default 2 — the doctor may create this many assistant logins in each of their clinics.' }}</p>
+                    @error('assistant_limit')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
                     <x-admin.ui.label for="user_id">{{ app()->getLocale() === 'ar' ? 'ربط بحساب مستخدم (اختياري)' : 'Link to user account (optional)' }}</x-admin.ui.label>
                     <p class="text-sm text-slate-500 mb-1">{{ app()->getLocale() === 'ar' ? 'إن لم تختر مستخدمًا، أدخل بيانات الحساب أدناه لإنشاء مستخدم جديد يمكنه تسجيل الدخول.' : 'If you do not select a user, fill in the login fields below to create a new user.' }}</p>
                     <select name="user_id" id="user_id" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
@@ -70,6 +76,15 @@
                         </div>
                     </div>
                 </div>
+                <label class="flex items-start gap-3 cursor-pointer rounded-lg border border-slate-200 p-4">
+                    <input type="hidden" name="is_active" value="0">
+                    <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', '1') == '1' ? 'checked' : '' }}
+                           class="mt-1 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary">
+                    <span>
+                        <span class="block text-sm font-medium text-slate-700">{{ app()->getLocale() === 'ar' ? 'الحساب مفعّل' : 'Account active' }}</span>
+                        <span class="block text-sm text-slate-500">{{ app()->getLocale() === 'ar' ? 'إذا كان غير مفعّل، سيظهر للطبيب عند تسجيل الدخول أن حسابه غير مفعّل ولن يتمكن من الدخول.' : 'When inactive, the doctor is told at login that their account is not active and cannot sign in.' }}</span>
+                    </span>
+                </label>
                 <div>
                     <x-admin.ui.label for="profile_image">{{ app()->getLocale() === 'ar' ? 'صورة الطبيب (اختياري)' : 'Doctor photo (optional)' }}</x-admin.ui.label>
                     <input type="file" name="profile_image" id="profile_image" accept="image/jpeg,image/png,image/gif,image/webp" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
