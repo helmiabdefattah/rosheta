@@ -1,105 +1,196 @@
+@php
+    $isAr = app()->getLocale() === 'ar';
+    $clinic = $prescription->appointment?->clinic;
+    $client = $prescription->client;
+    $doctor = $prescription->doctor;
+@endphp
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+<html lang="{{ app()->getLocale() }}" dir="{{ $isAr ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ __('app.print.title', ['code' => $prescription->code]) }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        :root { --ink:#1e293b; --teal:#0d9488; --teal-d:#0f766e; --muted:#64748b; --line:#cbd5e1; }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+        body {
+            background: #eef2f5;
+            color: var(--ink);
+            font-family: "Segoe UI", Tahoma, system-ui, -apple-system, Arial, sans-serif;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .toolbar {
+            max-width: 148mm; margin: 12px auto 8px; display: flex; justify-content: space-between; gap: 8px;
+        }
+        .toolbar a { color: var(--teal-d); text-decoration: none; font-size: 13px; align-self: center; }
+        .toolbar button {
+            background: var(--teal); color: #fff; border: 0; padding: 9px 18px;
+            border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;
+        }
+        /* The sheet: A5 portrait. */
+        .sheet {
+            width: 148mm; min-height: 210mm; margin: 0 auto 24px; background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,.12); position: relative;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .rx-header {
+            background: linear-gradient(135deg, var(--teal) 0%, var(--teal-d) 100%);
+            color: #fff; padding: 14mm 12mm 8mm; display: flex; justify-content: space-between; gap: 10px;
+        }
+        .rx-header .doc-name { font-size: 20px; font-weight: 800; line-height: 1.2; }
+        .rx-header .doc-spec { font-size: 12px; opacity: .92; margin-top: 3px; }
+        .rx-header .clinic { font-size: 12px; opacity: .92; margin-top: 6px; }
+        .rx-header .meta { text-align: end; font-size: 11px; opacity: .95; white-space: nowrap; }
+        .rx-header .code { font-family: ui-monospace, monospace; background: rgba(255,255,255,.18); padding: 2px 8px; border-radius: 6px; }
+        .body { padding: 8mm 12mm; flex: 1; }
+        .patient {
+            display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 13px;
+            border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; margin-bottom: 10px;
+        }
+        .patient .lbl { color: var(--muted); font-size: 11px; }
+        .patient .val { font-weight: 700; }
+        .dx { font-size: 12.5px; margin: 6px 2px 10px; }
+        .dx .lbl { color: var(--muted); font-size: 11px; }
+        .rx-mark { font-size: 40px; color: var(--teal-d); font-weight: 700; line-height: 1; font-family: Georgia, "Times New Roman", serif; }
+        ol.meds { list-style: none; margin: 4px 0 0; padding: 0; counter-reset: med; }
+        ol.meds > li {
+            counter-increment: med; position: relative; padding: 8px 0 8px 0;
+            border-bottom: 1px dashed var(--line);
+        }
+        ol.meds > li::before {
+            content: counter(med); position: absolute; inset-inline-start: 0; top: 8px;
+            width: 22px; height: 22px; border-radius: 999px; background: var(--teal);
+            color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+        }
+        .med-row { padding-inline-start: 32px; }
+        .med-name { font-size: 15.5px; font-weight: 700; }
+        .med-sub {
+            font-size: 12.5px; color: var(--teal-d); margin-top: 2px;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .med-sub .chip { background: #ccfbf1; border-radius: 6px; padding: 1px 6px; font-weight: 700; }
+        .med-meta { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+        .med-meta b { color: var(--ink); font-weight: 600; }
+        .notes { margin-top: 12px; font-size: 12.5px; }
+        .notes .lbl { color: var(--muted); font-size: 11px; }
+        .footer {
+            margin-top: auto; padding: 6mm 12mm 10mm; border-top: 1px solid var(--line);
+            display: flex; justify-content: space-between; align-items: flex-end; gap: 12px;
+        }
+        .footer .contact { font-size: 11px; color: var(--muted); line-height: 1.6; }
+        .footer .sign { text-align: center; font-size: 12px; color: var(--muted); }
+        .footer .sign .rule { border-top: 1px solid var(--muted); width: 46mm; padding-top: 4px; margin-top: 22px; }
+
         @media print {
-            .no-print { display: none !important; }
-            body { background: white; }
+            @page { size: A5 portrait; margin: 0; }
+            body { background: #fff; }
+            .toolbar { display: none !important; }
+            .sheet { box-shadow: none; margin: 0; width: auto; min-height: auto; }
         }
     </style>
 </head>
-<body class="bg-slate-100 p-6 text-slate-800">
-<div class="max-w-2xl mx-auto">
-    <div class="no-print mb-4 flex justify-between">
-        <a href="{{ url()->previous() }}" class="text-indigo-600 text-sm">{{ __('app.common.back') }}</a>
-        <button onclick="window.print()" class="bg-purple-600 text-white px-4 py-2 rounded text-sm">{{ __('app.common.print') }}</button>
+<body>
+    <div class="toolbar">
+        <a href="{{ url()->previous() }}">← {{ __('app.common.back') }}</a>
+        <button onclick="window.print()">🖨️ {{ __('app.print.print_pdf') }}</button>
     </div>
 
-    <div class="bg-white shadow-sm rounded-xl p-8 border-t-4 border-indigo-600">
-        {{-- Header --}}
-        <div class="flex items-center justify-between border-b pb-4 mb-4">
+    <div class="sheet">
+        {{-- Letterhead --}}
+        <div class="rx-header">
             <div>
-                <div class="text-2xl font-bold">🩺 {{ $prescription->appointment->clinic->name ?? config('app.name') }}</div>
-                <div class="text-sm text-slate-500">{{ $prescription->appointment->clinic->address ?? '' }}</div>
-                <div class="text-sm text-slate-500">{{ $prescription->appointment->clinic->phone_number ?? '' }}</div>
+                <div class="doc-name">{{ $isAr ? 'د. ' : 'Dr. ' }}{{ $doctor->name ?? '' }}</div>
+                @if ($doctor?->specialization?->name)
+                    <div class="doc-spec">{{ $doctor->specialization->name }}</div>
+                @endif
+                @if ($clinic)
+                    <div class="clinic">🩺 {{ $clinic->name }}</div>
+                @endif
             </div>
-            <div class="text-end text-sm">
-                <div class="font-mono bg-slate-100 px-2 py-1 rounded">{{ $prescription->code }}</div>
-                <div class="text-slate-500 mt-1">{{ $prescription->created_at->translatedFormat('d M Y') }}</div>
+            <div class="meta">
+                <div class="code">{{ $prescription->code }}</div>
+                <div style="margin-top:6px">{{ $prescription->created_at->translatedFormat('d M Y') }}</div>
             </div>
         </div>
 
-        {{-- Doctor / patient --}}
-        <div class="grid grid-cols-2 gap-4 text-sm mb-6">
-            <div>
-                <div class="text-slate-400 text-xs uppercase">{{ __('app.print.doctor') }}</div>
-                <div class="font-semibold">{{ $prescription->doctor->name ?? '—' }}</div>
-                <div class="text-slate-500">{{ ($prescription->doctor->specialization->name ?? '') }}</div>
-            </div>
-            <div>
-                <div class="text-slate-400 text-xs uppercase">{{ __('app.print.patient') }}</div>
-                <div class="font-semibold">{{ $prescription->client->name }}</div>
-                <div class="text-slate-500">
-                    {{ $prescription->client->gender ? __('app.genders.'.$prescription->client->gender) : '' }}
-                    @if($prescription->client->age) &middot; {{ $prescription->client->age }} {{ __('app.common.yrs') }} @endif
+        <div class="body">
+            {{-- Patient --}}
+            <div class="patient">
+                <div>
+                    <div class="lbl">{{ __('app.print.patient') }}</div>
+                    <div class="val">{{ $client->name }}</div>
                 </div>
+                @if ($client->gender)
+                    <div>
+                        <div class="lbl">{{ __('app.common.gender') }}</div>
+                        <div class="val">{{ __('app.genders.'.$client->gender) }}</div>
+                    </div>
+                @endif
+                @if ($client->age)
+                    <div>
+                        <div class="lbl">{{ __('app.print.age') }}</div>
+                        <div class="val">{{ $client->age }} {{ __('app.common.yrs') }}</div>
+                    </div>
+                @endif
             </div>
+
+            @if ($prescription->diagnosis)
+                <div class="dx">
+                    <span class="lbl">{{ __('app.common.diagnosis') }}:</span>
+                    {{ $prescription->diagnosis->diagnosis }}
+                </div>
+            @endif
+
+            {{-- Rx --}}
+            <div class="rx-mark">℞</div>
+            <ol class="meds">
+                @foreach ($prescription->items as $item)
+                    <li>
+                        <div class="med-row">
+                            <div class="med-name">{{ $item->medicine_name }}</div>
+                            @if ($item->substitute_name)
+                                <div class="med-sub">
+                                    ↔ <span>{{ __('app.print.substitute') }}:</span>
+                                    <span class="chip">{{ $item->substitute_name }}</span>
+                                </div>
+                            @endif
+                            @if ($item->dose || $item->frequency || $item->duration || $item->instructions)
+                                <div class="med-meta">
+                                    @if ($item->dose)<span><b>{{ __('app.print.dose') }}:</b> {{ $item->dose }}</span>@endif
+                                    @if ($item->frequency)<span><b>{{ __('app.print.frequency') }}:</b> {{ $item->frequency }}</span>@endif
+                                    @if ($item->duration)<span><b>{{ __('app.print.duration') }}:</b> {{ $item->duration }}</span>@endif
+                                    @if ($item->instructions)<span><b>{{ __('app.print.instructions') }}:</b> {{ $item->instructions }}</span>@endif
+                                </div>
+                            @endif
+                        </div>
+                    </li>
+                @endforeach
+            </ol>
+
+            @if ($prescription->notes)
+                <div class="notes">
+                    <div class="lbl">{{ __('app.common.notes') }}</div>
+                    <div>{{ $prescription->notes }}</div>
+                </div>
+            @endif
         </div>
 
-        @if ($prescription->diagnosis)
-            <div class="mb-4 text-sm">
-                <div class="text-slate-400 text-xs uppercase">{{ __('app.common.diagnosis') }}</div>
-                <div>{{ $prescription->diagnosis->diagnosis }}</div>
+        {{-- Footer: clinic contact + signature --}}
+        <div class="footer">
+            <div class="contact">
+                @if ($clinic?->address)<div>📍 {{ $clinic->address }}</div>@endif
+                @if ($clinic?->phone_number)<div>📞 {{ $clinic->phone_number }}</div>@endif
             </div>
-        @endif
-
-        {{-- Rx symbol + medicines --}}
-        <div class="text-4xl font-serif italic text-indigo-600 mb-2">℞</div>
-        <table class="w-full text-sm border-t border-b">
-            <thead class="text-start text-slate-400 text-xs">
-                <tr>
-                    <th class="py-2">#</th>
-                    <th class="py-2">{{ __('app.print.medicine') }}</th>
-                    <th class="py-2">{{ __('app.print.dose') }}</th>
-                    <th class="py-2">{{ __('app.print.frequency') }}</th>
-                    <th class="py-2">{{ __('app.print.duration') }}</th>
-                    <th class="py-2">{{ __('app.print.instructions') }}</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-                @foreach ($prescription->items as $i => $item)
-                    <tr>
-                        <td class="py-2">{{ $i + 1 }}</td>
-                        <td class="py-2 font-medium">{{ $item->medicine_name }}</td>
-                        <td class="py-2">{{ $item->dose ?? '—' }}</td>
-                        <td class="py-2">{{ $item->frequency ?? '—' }}</td>
-                        <td class="py-2">{{ $item->duration ?? '—' }}</td>
-                        <td class="py-2">{{ $item->instructions ?? '—' }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-
-        @if ($prescription->notes)
-            <div class="mt-4 text-sm">
-                <div class="text-slate-400 text-xs uppercase">{{ __('app.common.notes') }}</div>
-                <div>{{ $prescription->notes }}</div>
-            </div>
-        @endif
-
-        <div class="mt-10 flex justify-end">
-            <div class="text-center text-sm">
-                <div class="border-t border-slate-400 w-48 pt-1">{{ __('app.print.signature') }}</div>
+            <div class="sign">
+                <div class="rule">{{ __('app.print.signature') }}</div>
             </div>
         </div>
     </div>
-</div>
-<script>
-    // Auto-open the print dialog when arriving with ?auto=1
-    if (new URLSearchParams(location.search).get('auto')) window.print();
-</script>
+
+    <script>
+        // Auto-open the print dialog when arriving with ?auto=1
+        if (new URLSearchParams(location.search).get('auto')) window.print();
+    </script>
 </body>
 </html>

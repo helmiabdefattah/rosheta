@@ -453,6 +453,8 @@ return [
         'add' => 'Add',
         'new_prescription' => 'New Medical Prescription',
         'medicine' => 'Medicine',
+        'substitute' => 'Alternative',
+        'substitute_placeholder' => 'Alternative (optional)',
         'dose' => 'Dose',
         'frequency' => 'Frequency (Doses)',
         'duration' => 'Duration (Period)',
@@ -573,6 +575,14 @@ return [
         'duration' => 'Duration',
         'instructions' => 'Instructions',
         'signature' => "Doctor's Signature",
+        'rx_title' => 'Prescription',
+        'substitute' => 'Alternative',
+        'age' => 'Age',
+        'print_pdf' => 'Print',
+        'download_pdf' => 'PDF',
+        'print_thermal' => 'Clinic printer',
+        'thermal_sent' => 'Sent to the clinic printer',
+        'thermal_failed' => 'Could not send to the clinic printer',
     ],
 
     // Waiting-room display / screen-saver

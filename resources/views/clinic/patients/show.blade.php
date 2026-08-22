@@ -189,9 +189,30 @@
         <h2 class="font-semibold text-slate-800 mb-3">{{ __('app.patient.prescriptions') }}</h2>
         <ul class="divide-y divide-slate-100 text-sm">
             @forelse ($p->prescriptions as $rx)
-                <li class="py-2 flex justify-between items-center">
-                    <span class="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">{{ $rx->code }}</span>
-                    <a href="{{ route('practice.prescriptions.print', $rx) }}" target="_blank" class="text-purple-600 text-xs hover:underline">{{ __('app.common.print') }}</a>
+                <li class="py-3">
+                    <div class="flex justify-between items-center gap-2 flex-wrap">
+                        <span class="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">{{ $rx->code }}</span>
+                        <div class="flex items-center gap-2">
+                            <a href="{{ route('practice.prescriptions.print', ['prescription' => $rx, 'auto' => 1]) }}" target="_blank"
+                               class="bg-purple-100 text-purple-700 px-3 py-1 rounded text-xs">🖨️ {{ __('app.print.print_pdf') }}</a>
+                            <a href="{{ route('practice.prescriptions.pdf', ['prescription' => $rx, 'download' => 1]) }}"
+                               class="bg-rose-100 text-rose-700 px-3 py-1 rounded text-xs">⬇️ {{ __('app.print.download_pdf') }}</a>
+                            <button type="button" onclick="printRxThermal(this, {{ $rx->id }})"
+                                    class="bg-teal-100 text-teal-700 px-3 py-1 rounded text-xs">🧾 {{ __('app.print.print_thermal') }}</button>
+                        </div>
+                    </div>
+                    @if ($rx->items->isNotEmpty())
+                        <ul class="mt-2 ps-1 space-y-0.5 text-xs text-slate-600">
+                            @foreach ($rx->items as $it)
+                                <li>
+                                    <span class="font-medium text-slate-800">{{ $loop->iteration }}. {{ $it->medicine_name }}</span>
+                                    @if ($it->substitute_name)
+                                        <span class="text-teal-700">↔ {{ __('app.print.substitute') }}: {{ $it->substitute_name }}</span>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
                 </li>
             @empty
                 <li class="py-2 text-slate-400 italic">{{ __('app.patient.no_prescriptions') }}</li>
@@ -199,6 +220,33 @@
         </ul>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    // Send a saved prescription to the clinic's Bluetooth thermal printer.
+    function printRxThermal(btn, id) {
+        const original = btn.innerHTML;
+        btn.disabled = true;
+        fetch(`{{ url('practice/prescriptions') }}/${id}/print-thermal`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            },
+        })
+        .then(res => res.ok ? res.json() : Promise.reject(res))
+        .then(() => {
+            btn.innerHTML = '✅';
+            setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2500);
+        })
+        .catch(() => {
+            btn.disabled = false;
+            alert(@json(__('app.print.thermal_failed')));
+        });
+    }
+</script>
+@endpush
 
 {{-- Medical history: the patient's examinations across all visits & doctors. --}}
 <div class="bg-white rounded-xl shadow-sm p-5 mt-6">

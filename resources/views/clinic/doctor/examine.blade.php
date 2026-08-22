@@ -459,7 +459,10 @@
                     </thead>
                     <tbody>
                         <tr class="rx-row">
-                            <td class="pr-1 py-1"><input name="items[0][medicine_name]" required class="w-full border rounded px-2 py-1"></td>
+                            <td class="pr-1 py-1">
+                                <input name="items[0][medicine_name]" required class="w-full border rounded px-2 py-1">
+                                <input name="items[0][substitute_name]" placeholder="↔ {{ __('app.examine.substitute_placeholder') }}" class="w-full border rounded px-2 py-1 mt-1 text-xs text-slate-600">
+                            </td>
                             <td class="pr-1 py-1"><input name="items[0][dose]" placeholder="500 mg" class="w-full border rounded px-2 py-1"></td>
                             <td class="pr-1 py-1"><input name="items[0][frequency]" placeholder="2x/day" class="w-full border rounded px-2 py-1"></td>
                             <td class="pr-1 py-1"><input name="items[0][duration]" placeholder="7 days" class="w-full border rounded px-2 py-1"></td>
@@ -545,15 +548,34 @@
         @if ($appointment->prescriptions->isNotEmpty())
             <div class="bg-white rounded-xl shadow-sm p-5">
                 <h2 class="font-semibold text-slate-800 mb-3">{{ __('app.examine.prescriptions') }}</h2>
-                <ul class="space-y-2 text-sm">
+                <ul class="space-y-3 text-sm">
                     @foreach ($appointment->prescriptions as $rx)
-                        <li class="flex items-center justify-between border-b border-slate-50 pb-2">
-                            <div>
-                                <span class="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">{{ $rx->code }}</span>
-                                <span class="text-slate-500 mx-2">{{ __('app.examine.medicines_count', ['count' => $rx->items->count()]) }}</span>
+                        <li class="border-b border-slate-50 pb-3">
+                            <div class="flex items-center justify-between gap-2 flex-wrap">
+                                <div>
+                                    <span class="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">{{ $rx->code }}</span>
+                                    <span class="text-slate-500 mx-2">{{ __('app.examine.medicines_count', ['count' => $rx->items->count()]) }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('practice.prescriptions.print', ['prescription' => $rx, 'auto' => 1]) }}" target="_blank"
+                                       class="bg-purple-100 text-purple-700 px-3 py-1 rounded text-xs">🖨️ {{ __('app.print.print_pdf') }}</a>
+                                    <a href="{{ route('practice.prescriptions.pdf', ['prescription' => $rx, 'download' => 1]) }}"
+                                       class="bg-rose-100 text-rose-700 px-3 py-1 rounded text-xs">⬇️ {{ __('app.print.download_pdf') }}</a>
+                                    <button type="button" onclick="printRxThermal(this, {{ $rx->id }})"
+                                            class="bg-teal-100 text-teal-700 px-3 py-1 rounded text-xs">🧾 {{ __('app.print.print_thermal') }}</button>
+                                </div>
                             </div>
-                            <a href="{{ route('practice.prescriptions.print', $rx) }}" target="_blank"
-                               class="bg-purple-100 text-purple-700 px-3 py-1 rounded text-xs">{{ __('app.common.print') }}</a>
+                            {{-- Medicines with their optional alternative (both names shown). --}}
+                            <ul class="mt-2 ps-1 space-y-0.5 text-xs text-slate-600">
+                                @foreach ($rx->items as $it)
+                                    <li>
+                                        <span class="font-medium text-slate-800">{{ $loop->iteration }}. {{ $it->medicine_name }}</span>
+                                        @if ($it->substitute_name)
+                                            <span class="text-teal-700">↔ {{ __('app.print.substitute') }}: {{ $it->substitute_name }}</span>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
                         </li>
                     @endforeach
                 </ul>
@@ -724,13 +746,39 @@
         list.appendChild(row);
     }
 
+    // Send a saved prescription to the clinic's Bluetooth thermal printer.
+    function printRxThermal(btn, id) {
+        const original = btn.innerHTML;
+        btn.disabled = true;
+        fetch(`{{ url('practice/prescriptions') }}/${id}/print-thermal`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            },
+        })
+        .then(res => res.ok ? res.json() : Promise.reject(res))
+        .then(() => {
+            btn.innerHTML = '✅';
+            setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2500);
+        })
+        .catch(() => {
+            btn.disabled = false;
+            alert(@json(__('app.print.thermal_failed')));
+        });
+    }
+
     let rxIndex = 1;
     function addRxRow() {
         const tbody = document.querySelector('#rx-table tbody');
         const tr = document.createElement('tr');
         tr.className = 'rx-row';
         tr.innerHTML = `
-            <td class="pr-1 py-1"><input name="items[${rxIndex}][medicine_name]" class="w-full border rounded px-2 py-1"></td>
+            <td class="pr-1 py-1">
+                <input name="items[${rxIndex}][medicine_name]" class="w-full border rounded px-2 py-1">
+                <input name="items[${rxIndex}][substitute_name]" placeholder="↔ {{ __('app.examine.substitute_placeholder') }}" class="w-full border rounded px-2 py-1 mt-1 text-xs text-slate-600">
+            </td>
             <td class="pr-1 py-1"><input name="items[${rxIndex}][dose]" placeholder="500 mg" class="w-full border rounded px-2 py-1"></td>
             <td class="pr-1 py-1"><input name="items[${rxIndex}][frequency]" placeholder="2x/day" class="w-full border rounded px-2 py-1"></td>
             <td class="pr-1 py-1"><input name="items[${rxIndex}][duration]" placeholder="7 days" class="w-full border rounded px-2 py-1"></td>

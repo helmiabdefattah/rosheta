@@ -442,6 +442,8 @@ return [
         'add' => 'إضافة',
         'new_prescription' => 'روشتة طبية جديدة',
         'medicine' => 'الدواء',
+        'substitute' => 'البديل',
+        'substitute_placeholder' => 'بديل (اختياري)',
         'dose' => 'الجرعة',
         'frequency' => 'التكرار (عدد الجرعات)',
         'duration' => 'المدة',
@@ -559,6 +561,14 @@ return [
         'duration' => 'المدة',
         'instructions' => 'التعليمات',
         'signature' => 'توقيع الطبيب',
+        'rx_title' => 'روشتة',
+        'substitute' => 'البديل',
+        'age' => 'السن',
+        'print_pdf' => 'طباعة',
+        'download_pdf' => 'PDF',
+        'print_thermal' => 'طابعة العيادة',
+        'thermal_sent' => 'تم الإرسال إلى طابعة العيادة',
+        'thermal_failed' => 'تعذّر الإرسال إلى طابعة العيادة',
     ],
 
     'display' => [

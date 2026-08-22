@@ -473,6 +473,8 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::post('/appointments/{appointment}/attachments', [App\Http\Controllers\Clinic\AttachmentController::class, 'store'])->name('attachments.store');
         Route::delete('/attachments/{attachment}', [App\Http\Controllers\Clinic\AttachmentController::class, 'destroy'])->name('attachments.destroy');
         Route::get('/prescriptions/{prescription}/print', [App\Http\Controllers\Clinic\PrescriptionController::class, 'print'])->name('prescriptions.print');
+        Route::get('/prescriptions/{prescription}/pdf', [App\Http\Controllers\Clinic\PrescriptionController::class, 'pdf'])->name('prescriptions.pdf');
+        Route::post('/prescriptions/{prescription}/print-thermal', [App\Http\Controllers\Clinic\PrescriptionController::class, 'printThermal'])->name('prescriptions.print-thermal');
         Route::post('/notifications/broadcast', [App\Http\Controllers\Clinic\ClinicNotificationController::class, 'broadcast'])->name('notifications.broadcast');
     });
 
