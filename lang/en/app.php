@@ -346,6 +346,11 @@ return [
         'printer_language_default' => 'Follow app language (:lang)',
         'print_qr' => 'Print QR code on the ticket',
         'print_qr_hint' => 'Include a QR code on the printed patient paper alongside the queue number.',
+        'notify_heading' => 'Queue notifications',
+        'notify_hint' => 'Controls the "patients before you" push you can send to today\'s waiting patients.',
+        'notify_max_label' => 'Cap the "patients before you" number at',
+        'notify_max_suffix' => 'patients',
+        'notify_max_example' => 'When more are waiting, the message reads "more than :max patients before you".',
     ],
 
     // Rosheta booking requests awaiting the front desk's confirmation
@@ -386,6 +391,15 @@ return [
         'sent' => 'Message sent to :count patient(s).',
         'none_today' => 'There are no patients with an appointment today.',
         'message_required' => 'Choose a ready-made message or write your own.',
+        'queue_button' => 'Queue position update',
+        'queue_button_hint' => 'Tell each waiting patient how many reservations are ahead of them right now.',
+        'queue_send' => 'Notify waiting',
+        'queue_title' => 'Your place in the queue',
+        'queue_next' => "It's almost your turn — you're next.",
+        'queue_count' => 'You have :count patient before you.|You have :count patients before you.',
+        'queue_more' => 'You have more than :max patients before you.',
+        'queue_sent' => 'Notified :count waiting patient(s) of their position.',
+        'queue_none' => 'There are no waiting patients to notify right now.',
     ],
 
     // Calendar

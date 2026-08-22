@@ -34,6 +34,7 @@ class Clinic extends Model
         'printer_connected_at',
         'printer_language',
         'print_qr',
+        'notify_queue_max',
     ];
 
     /** Languages the Bluetooth ticket printer can print in. */
@@ -62,7 +63,14 @@ class Clinic extends Model
         'display_show_next_button' => 'boolean',
         'printer_connected_at' => 'datetime',
         'print_qr' => 'boolean',
+        'notify_queue_max' => 'integer',
     ];
+
+    /** Cap for the "patients before you" queue notification (min 1, default 10). */
+    public function notifyQueueMax(): int
+    {
+        return max(1, (int) ($this->notify_queue_max ?? 10));
+    }
 
     /**
      * Whether a staff mobile app with a connected Bluetooth printer has sent a

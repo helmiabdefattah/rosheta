@@ -52,6 +52,7 @@ class ClinicController extends Controller
             'follow_up_price' => ['nullable', 'numeric', 'min:0', 'max:999999'],
             'printer_language' => ['nullable', Rule::in(Clinic::PRINTER_LANGUAGES)],
             'print_qr' => ['nullable', 'boolean'],
+            'notify_queue_max' => ['required', 'integer', 'min:1', 'max:999'],
             'days' => ['required', 'array'],
             'days.*.open' => ['nullable', 'date_format:H:i'],
             'days.*.close' => ['nullable', 'date_format:H:i', 'after:days.*.open'],
@@ -76,6 +77,7 @@ class ClinicController extends Controller
             'follow_up_price' => $data['follow_up_price'] ?? null,
             'printer_language' => $data['printer_language'] ?? null,
             'print_qr' => $request->boolean('print_qr'),
+            'notify_queue_max' => $data['notify_queue_max'],
         ]);
 
         // Mirror the schedule into the rosheta workingHours table so the other

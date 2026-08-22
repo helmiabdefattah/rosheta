@@ -476,6 +476,7 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::get('/prescriptions/{prescription}/pdf', [App\Http\Controllers\Clinic\PrescriptionController::class, 'pdf'])->name('prescriptions.pdf');
         Route::post('/prescriptions/{prescription}/print-thermal', [App\Http\Controllers\Clinic\PrescriptionController::class, 'printThermal'])->name('prescriptions.print-thermal');
         Route::post('/notifications/broadcast', [App\Http\Controllers\Clinic\ClinicNotificationController::class, 'broadcast'])->name('notifications.broadcast');
+        Route::post('/notifications/queue-position', [App\Http\Controllers\Clinic\ClinicNotificationController::class, 'queuePosition'])->name('notifications.queue');
     });
 
     // ---- Doctor's Assistant area ----

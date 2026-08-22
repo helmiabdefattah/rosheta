@@ -11,6 +11,22 @@
                     class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
         </div>
 
+        {{-- Queue position: push each waiting patient how many are ahead of them. --}}
+        <form method="POST" action="{{ route('practice.notifications.queue') }}"
+              class="px-5 pt-4 pb-4 border-b border-slate-100">
+            @csrf
+            <div class="flex items-center justify-between gap-3 bg-teal-50 border border-teal-100 rounded-xl px-4 py-3">
+                <div>
+                    <p class="text-sm font-semibold text-teal-900">🔔 {{ __('app.notify.queue_button') }}</p>
+                    <p class="text-xs text-teal-700 mt-0.5">{{ __('app.notify.queue_button_hint') }}</p>
+                </div>
+                <button type="submit"
+                        class="shrink-0 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
+                    {{ __('app.notify.queue_send') }}
+                </button>
+            </div>
+        </form>
+
         <form method="POST" action="{{ route('practice.notifications.broadcast') }}" class="p-5 space-y-4">
             @csrf
             <p class="text-xs text-slate-500">{{ __('app.notify.subtitle') }}</p>

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Clinic;
 
 use App\Http\Controllers\Clinic\Concerns\ClinicContext;
 use App\Http\Controllers\Controller;
+use App\Models\Appointment;
 use App\Models\Client;
 use App\Notifications\ClinicBroadcastNotification;
+use App\Notifications\QueuePositionNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -70,5 +72,45 @@ class ClinicNotificationController extends Controller
         ));
 
         return back()->with('status', __('app.notify.sent', ['count' => $clients->count()]));
+    }
+
+    /**
+     * Push each still-waiting patient how many reservations are ahead of them in
+     * today's queue, capped at the clinic's notify_queue_max. Ordered the same
+     * way the queue is (queue number, then time), so a patient's "ahead" count
+     * is simply the number of waiting reservations before their own.
+     */
+    public function queuePosition(Request $request): RedirectResponse
+    {
+        $doctor = $this->clinicDoctor($request);
+        $clinic = $this->activeClinic($doctor);
+        $max = $clinic->notifyQueueMax();
+
+        $waiting = Appointment::where('doctor_id', $doctor->id)
+            ->whereDate('scheduled_at', today())
+            ->where('status', 'scheduled')
+            ->with('client')
+            ->orderBy('queue_number')
+            ->orderBy('scheduled_at')
+            ->get();
+
+        $notified = [];
+        foreach ($waiting as $index => $appointment) {
+            $client = $appointment->client;
+            // One message per patient; a patient with two visits keeps the
+            // earliest (smaller) position. $index = reservations ahead of this one.
+            if (! $client || isset($notified[$client->id])) {
+                continue;
+            }
+            $notified[$client->id] = true;
+
+            $client->notify(new QueuePositionNotification($index, $max, $clinic->name));
+        }
+
+        if (empty($notified)) {
+            return back()->with('status', __('app.notify.queue_none'));
+        }
+
+        return back()->with('status', __('app.notify.queue_sent', ['count' => count($notified)]));
     }
 }

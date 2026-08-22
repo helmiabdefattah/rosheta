@@ -91,6 +91,22 @@
         </label>
     </div>
 
+    {{-- Queue notifications --}}
+    <div class="bg-white rounded-xl shadow-sm p-5">
+        <h2 class="font-semibold text-slate-800 mb-1">🔔 {{ __('app.clinic.notify_heading') }}</h2>
+        <p class="text-xs text-slate-500 mb-4">{{ __('app.clinic.notify_hint') }}</p>
+        <label for="notify-queue-max" class="block text-sm font-medium text-slate-700 mb-1">
+            {{ __('app.clinic.notify_max_label') }}
+        </label>
+        <div class="flex items-center gap-3">
+            <input type="number" name="notify_queue_max" id="notify-queue-max" min="1" max="999" step="1"
+                   value="{{ old('notify_queue_max', $clinic->notify_queue_max ?? 10) }}"
+                   class="w-28 border rounded px-3 py-2 text-sm">
+            <span class="text-sm text-slate-500">{{ __('app.clinic.notify_max_suffix') }}</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-2">{{ __('app.clinic.notify_max_example', ['max' => (int) old('notify_queue_max', $clinic->notify_queue_max ?? 10)]) }}</p>
+    </div>
+
     {{-- Opening days & hours --}}
     <div class="bg-white rounded-xl shadow-sm p-5">
         <h2 class="font-semibold text-slate-800 mb-4">{{ __('app.clinic.hours_heading') }}</h2>
