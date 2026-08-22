@@ -69,3 +69,12 @@ coverage/
 # Firebase Service Account (sensitive credentials)
 # /storage/app/firebase-service-account.json
 # /storage/app/*firebase*.json
+
+# Videos & presentations
+*.mp4
+*.webm
+*.mov
+*.avi
+*.mkv
+*.ppt
+*.pptx
