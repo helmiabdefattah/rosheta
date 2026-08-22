@@ -193,6 +193,13 @@ Route::middleware('auth:client')->prefix('client')->name('client.')->group(funct
     Route::get('/doctor-reservation/book/{clinic}', [App\Http\Controllers\ClientDoctorReservationController::class, 'book'])->name('doctor-reservation.book');
     Route::post('/doctor-reservation', [App\Http\Controllers\ClientDoctorReservationController::class, 'store'])->name('doctor-reservation.store');
     Route::get('/doctor-reservation/available-slots', [App\Http\Controllers\ClientDoctorReservationController::class, 'availableSlots'])->name('doctor-reservation.available-slots');
+
+    // Chat with doctors the patient has visited recently.
+    Route::get('/chat', [App\Http\Controllers\ClientChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/threads', [App\Http\Controllers\ClientChatController::class, 'threads'])->name('chat.threads');
+    Route::post('/chat/start/{doctor}', [App\Http\Controllers\ClientChatController::class, 'start'])->name('chat.start');
+    Route::get('/chat/{conversation}/messages', [App\Http\Controllers\ClientChatController::class, 'messages'])->name('chat.messages');
+    Route::post('/chat/{conversation}/messages', [App\Http\Controllers\ClientChatController::class, 'send'])->name('chat.send');
 });
 
 // Doctor Dashboard (auth + must have doctor profile)
@@ -216,6 +223,14 @@ Route::middleware(['auth', 'doctor'])->prefix('doctor')->name('doctor.')->group(
     Route::put('/staff/{assistant}', [App\Http\Controllers\Doctor\DoctorStaffController::class, 'update'])->name('staff.update');
     Route::patch('/staff/{assistant}/toggle-active', [App\Http\Controllers\Doctor\DoctorStaffController::class, 'toggleActive'])->name('staff.toggle-active');
     Route::delete('/staff/{assistant}', [App\Http\Controllers\Doctor\DoctorStaffController::class, 'destroy'])->name('staff.destroy');
+
+    // Chat with patients. The doctor owns the switch; the window is counted
+    // from each patient's last visit (see Doctor::chatOpenFor).
+    Route::get('/chat', [App\Http\Controllers\Doctor\DoctorChatController::class, 'index'])->name('chat.index');
+    Route::put('/chat/settings', [App\Http\Controllers\Doctor\DoctorChatController::class, 'updateSettings'])->name('chat.settings');
+    Route::get('/chat/threads', [App\Http\Controllers\Doctor\DoctorChatController::class, 'threads'])->name('chat.threads');
+    Route::get('/chat/{conversation}/messages', [App\Http\Controllers\Doctor\DoctorChatController::class, 'messages'])->name('chat.messages');
+    Route::post('/chat/{conversation}/messages', [App\Http\Controllers\Doctor\DoctorChatController::class, 'send'])->name('chat.send');
 });
 
 // Offer routes
