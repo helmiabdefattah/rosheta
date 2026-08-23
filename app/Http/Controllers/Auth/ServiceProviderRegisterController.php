@@ -184,7 +184,9 @@ class ServiceProviderRegisterController extends Controller
                 'phone_number' => $validated['phone_number'],
                 'email' => ! empty($validated['email'] ?? null) ? $validated['email'] : null,
                 'password' => Hash::make($validated['password']),
-                'is_active' => false,
+                // Doctors who sign up themselves start active and can log in
+                // right away; every other provider type waits for admin review.
+                'is_active' => $type === 'doctor',
                 'registration_license_number' => in_array($type, ['nurse', 'doctor', 'charitable_organization'], true)
                     ? ($validated['license_number'] ?? null)
                     : null,
@@ -270,6 +272,15 @@ class ServiceProviderRegisterController extends Controller
 
             $this->attachRegistrationPapers($user, $request);
         });
+
+        if ($type === 'doctor') {
+            return redirect()->route('login')->with(
+                'info',
+                app()->getLocale() === 'ar'
+                    ? 'تم إنشاء حسابك بنجاح. يمكنك تسجيل الدخول الآن.'
+                    : 'Your account was created successfully. You can log in now.'
+            );
+        }
 
         return redirect()->route('login')->with(
             'info',

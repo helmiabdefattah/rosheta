@@ -6,6 +6,13 @@
     ? 'أنشئ الطبيب وعيادته وحساب مساعده وبيانات تجريبية كاملة للعرض في خطوة واحدة'
     : 'Create a doctor, their clinic, an assistant account and a full demo dataset in one step')
 
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+#locationMap { height: 320px; width: 100%; border-radius: 0.75rem; border: 1px solid #e2e8f0; }
+</style>
+@endpush
+
 @section('content')
 @php
     $ar = app()->getLocale() === 'ar';
@@ -189,6 +196,34 @@
                     </x-admin.ui.select>
                 </div>
 
+                <div class="md:col-span-2">
+                    <x-admin.ui.label>
+                        {{ $ar ? 'موقع العيادة على الخريطة' : 'Clinic location on map' }}
+                        <span class="font-normal text-slate-400">({{ $ar ? 'اختياري' : 'optional' }})</span>
+                    </x-admin.ui.label>
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+                        <p class="text-sm text-slate-500">{{ $ar
+                            ? 'انقر على الخريطة أو اسحب العلامة لتحديد الموقع — يمكنك تركه فارغاً.'
+                            : 'Click the map or drag the marker to set the location — you can leave it empty.' }}</p>
+                        <div class="flex items-center gap-2">
+                            <button type="button" id="locate-me"
+                                    class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50">
+                                {{ $ar ? 'موقعي الحالي' : 'Use my location' }}
+                            </button>
+                            <button type="button" id="clear-location"
+                                    class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hidden">
+                                {{ $ar ? 'مسح الموقع' : 'Clear location' }}
+                            </button>
+                        </div>
+                    </div>
+                    <div id="locationMap"></div>
+                    <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
+                    <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
+                    <p id="location-readout" class="mt-1.5 text-xs text-slate-500">{{ $ar ? 'لم يتم تحديد موقع' : 'No location selected' }}</p>
+                    @error('latitude')<p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>@enderror
+                    @error('longitude')<p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>@enderror
+                </div>
+
                 <div>
                     <x-admin.ui.label for="medical_examination_price" required>{{ $ar ? 'سعر الكشف' : 'Examination price' }}</x-admin.ui.label>
                     <x-admin.ui.input type="number" name="medical_examination_price" :value="old('medical_examination_price', 200)" step="0.01" min="0" required />
@@ -344,6 +379,7 @@
 @endsection
 
 @push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 $(function () {
     const isRTL = {{ $ar ? 'true' : 'false' }};
@@ -374,6 +410,63 @@ $(function () {
     }
     $('#seed_demo').on('change', toggleDemoOptions);
     toggleDemoOptions();
+
+    // Optional clinic location: no marker until one is actually picked, so an
+    // untouched map submits empty coordinates rather than a default point.
+    const noLocationText = '{{ $ar ? "لم يتم تحديد موقع" : "No location selected" }}';
+    const $lat = $('#latitude'), $lng = $('#longitude');
+    const startLat = parseFloat($lat.val()), startLng = parseFloat($lng.val());
+    const hasStart = !isNaN(startLat) && !isNaN(startLng);
+
+    const map = L.map('locationMap').setView(
+        hasStart ? [startLat, startLng] : [30.0444, 31.2357],
+        hasStart ? 15 : 11
+    );
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap', maxZoom: 19 }).addTo(map);
+
+    let marker = null;
+
+    function setLocation(la, ln, recenter) {
+        if (marker) {
+            marker.setLatLng([la, ln]);
+        } else {
+            marker = L.marker([la, ln], { draggable: true }).addTo(map);
+            marker.on('dragend', function () {
+                const p = marker.getLatLng();
+                setLocation(p.lat, p.lng, false);
+            });
+        }
+        if (recenter) map.setView([la, ln], Math.max(map.getZoom(), 15));
+        $lat.val(la.toFixed(8));
+        $lng.val(ln.toFixed(8));
+        $('#location-readout').text(la.toFixed(6) + ', ' + ln.toFixed(6));
+        $('#clear-location').removeClass('hidden');
+    }
+
+    function clearLocation() {
+        if (marker) { map.removeLayer(marker); marker = null; }
+        $lat.val('');
+        $lng.val('');
+        $('#location-readout').text(noLocationText);
+        $('#clear-location').addClass('hidden');
+    }
+
+    if (hasStart) setLocation(startLat, startLng, false);
+
+    map.on('click', function (e) { setLocation(e.latlng.lat, e.latlng.lng, false); });
+    $('#clear-location').on('click', clearLocation);
+
+    $('#locate-me').on('click', function () {
+        if (!navigator.geolocation) return;
+        const $btn = $(this).prop('disabled', true);
+        navigator.geolocation.getCurrentPosition(
+            function (pos) {
+                setLocation(pos.coords.latitude, pos.coords.longitude, true);
+                $btn.prop('disabled', false);
+            },
+            function () { $btn.prop('disabled', false); }
+        );
+    });
 });
 </script>
 @endpush
