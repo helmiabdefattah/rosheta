@@ -345,6 +345,10 @@ Route::middleware([
     // Governorates
     Route::resource('governorates', App\Http\Controllers\Admin\GovernorateController::class);
 
+    // Providers network: search the external directory and import doctors/clinics
+    Route::get('/providers-network', [App\Http\Controllers\Admin\ProvidersNetworkController::class, 'index'])->name('providers-network.index');
+    Route::post('/providers-network/import', [App\Http\Controllers\Admin\ProvidersNetworkController::class, 'import'])->name('providers-network.import');
+
     // Medical Tests
     Route::get('/medical-tests/data', [App\Http\Controllers\Admin\MedicalTestController::class, 'data'])->name('medical-tests.data');
     Route::resource('medical-tests', App\Http\Controllers\Admin\MedicalTestController::class);
