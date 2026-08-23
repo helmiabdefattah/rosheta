@@ -217,6 +217,13 @@
                     <span>{{ app()->getLocale() === 'ar' ? 'حجز موعد طبيب' : 'Doctor Reservation' }}</span>
                 </a>
 
+                <a href="{{ route('client.chat.index') }}" class="nav-item {{ request()->routeIs('client.chat.*') ? 'active' : '' }}">
+                    <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z"/>
+                    </svg>
+                    <span>{{ __('app.chat.title') }}</span>
+                </a>
+
                 <a href="{{ route('client.addresses.index') }}" class="nav-item {{ request()->routeIs('client.addresses.*') ? 'active' : '' }}">
                     <svg class="w-4 h-4 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -346,6 +353,8 @@
                         </svg>
                         <span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
                     </a>
+
+                    <x-chat-dropdown side="client" />
 
                     <x-notification-dropdown />
 

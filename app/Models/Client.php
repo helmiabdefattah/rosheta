@@ -77,6 +77,12 @@ class Client extends Authenticatable
         return $this->morphMany(Attachment::class, 'attachable');
     }
 
+    /** Chat threads this patient has with doctors. */
+    public function conversations(): HasMany
+    {
+        return $this->hasMany(Conversation::class);
+    }
+
     /** Lab / radiology test results recorded for this patient. */
     public function patientTests(): HasMany
     {

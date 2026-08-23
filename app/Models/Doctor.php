@@ -20,14 +20,21 @@ class Doctor extends Model implements HasMedia
         'slug',
         'brief',
         'assistant_limit',
+        'chat_enabled',
+        'chat_window_days',
     ];
 
     protected $casts = [
         'assistant_limit' => 'integer',
+        'chat_enabled' => 'boolean',
+        'chat_window_days' => 'integer',
     ];
 
     /** Assistant accounts a doctor may create per clinic before an admin raises it. */
     public const DEFAULT_ASSISTANT_LIMIT = 2;
+
+    /** Days a patient may keep writing after their last visit, when unset. */
+    public const DEFAULT_CHAT_WINDOW_DAYS = 30;
 
     public function registerMediaCollections(): void
     {
@@ -148,6 +155,47 @@ class Doctor extends Model implements HasMedia
     public function clinicDoctorWorkingHours(): HasMany
     {
         return $this->hasMany(ClinicDoctorWorkingHour::class, 'doctor_id');
+    }
+
+    /** Chat threads this doctor has with their patients. */
+    public function conversations(): HasMany
+    {
+        return $this->hasMany(Conversation::class);
+    }
+
+    /** How many days after a visit this doctor keeps the chat open. */
+    public function chatWindowDays(): int
+    {
+        return max(1, (int) ($this->chat_window_days ?: self::DEFAULT_CHAT_WINDOW_DAYS));
+    }
+
+    /**
+     * When the chat window for a patient closes: their most recent *past*
+     * appointment with this doctor plus the configured number of days.
+     *
+     * Cancelled visits do not count — a patient who called off their booking
+     * never actually saw the doctor. Returns null when the doctor has chat off
+     * or the patient has no qualifying visit, i.e. the window never opened.
+     */
+    public function chatWindowEndsFor(Client $client): ?\Carbon\Carbon
+    {
+        if (! $this->chat_enabled) {
+            return null;
+        }
+
+        $lastVisit = $this->appointments()
+            ->where('client_id', $client->id)
+            ->where('status', '!=', 'cancelled')
+            ->where('scheduled_at', '<=', now())
+            ->max('scheduled_at');
+
+        return $lastVisit ? \Carbon\Carbon::parse($lastVisit)->addDays($this->chatWindowDays()) : null;
+    }
+
+    /** Whether this patient may still write to this doctor right now. */
+    public function chatOpenFor(Client $client): bool
+    {
+        return $this->chatWindowEndsFor($client)?->isFuture() ?? false;
     }
 
     /** Days when this doctor is off (at a specific clinic or all clinics if clinic_id null). */

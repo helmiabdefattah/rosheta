@@ -72,6 +72,10 @@
             <a href="{{ route('doctor.calendar.index') }}" class="nav-item {{ request()->routeIs('doctor.calendar.*') ? 'active' : '' }}">
                 <i class="bi bi-calendar-week me-3 opacity-70"></i><span>{{ app()->getLocale() === 'ar' ? 'أيام العمل والإجازة' : 'Working & Off Days' }}</span>
             </a>
+            <div class="menu-header">{{ __('app.chat.menu_header') }}</div>
+            <a href="{{ route('doctor.chat.index') }}" class="nav-item {{ request()->routeIs('doctor.chat.*') ? 'active' : '' }}">
+                <i class="bi bi-chat-dots me-3 opacity-70"></i><span>{{ __('app.chat.title') }}</span>
+            </a>
         </nav>
         @php $user = auth()->user(); $avatarUrl = $doctor->getFirstMediaUrl('profile_image') ?: 'https://ui-avatars.com/api/?name=' . urlencode($doctor->name ?? 'D') . '&background=0d9488&color=fff'; @endphp
         <div class="p-4 border-t border-slate-800/50">
@@ -108,6 +112,7 @@
                     </svg>
                     <span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
                 </a>
+                <x-chat-dropdown side="doctor" />
                 <x-notification-dropdown />
                 <span class="doctor-badge"><i class="bi bi-heart-pulse text-xs me-1"></i>{{ app()->getLocale() === 'ar' ? 'طبيب' : 'Doctor' }}</span>
             </div>

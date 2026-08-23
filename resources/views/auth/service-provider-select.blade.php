@@ -37,8 +37,8 @@
             </h1>
             <p class="mt-2 text-slate-600 max-w-xl mx-auto">
                 {{ app()->getLocale() === 'ar'
-                    ? 'اختر نوع الخدمة التي تقدمها. سيتم مراجعة طلبك وتفعيل الحساب من قبل الإدارة.'
-                    : 'Choose the type of service you provide. Your request will be reviewed and your account activated by an administrator.' }}
+                    ? 'اختر نوع الخدمة التي تقدمها. حسابات الأطباء تُفعّل فوراً، وباقي الأنواع تتم مراجعتها وتفعيلها من قبل الإدارة.'
+                    : 'Choose the type of service you provide. Doctor accounts are activated immediately; other types are reviewed and activated by an administrator.' }}
             </p>
         </div>
 

@@ -8,6 +8,10 @@
     $homeRoute = ($clinicUser && $clinicUser->isDoctor())
         ? route('practice.doctor.dashboard')
         : route('practice.assistant.dashboard');
+    // Patient chat is the doctor's own correspondence, so assistants sharing
+    // this workspace get neither the inbox nor the Alpine it needs — their
+    // (vanilla-JS heavy) screens stay exactly as they were.
+    $showPatientChat = (bool) $clinicUser?->isDoctor();
 @endphp
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
@@ -62,6 +66,9 @@
                             </a>
                         </div>
                     </details>
+                @endif
+                @if ($showPatientChat)
+                    <x-chat-dropdown side="doctor" />
                 @endif
                 <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                    class="text-sm px-3 py-1 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 whitespace-nowrap">
@@ -200,6 +207,11 @@
                 speak();
             })();
         </script>
+    @endif
+    @if ($showPatientChat)
+        {{-- Alpine powers the chat widget in the navbar. Deferred, so the widget's
+             own inline script still registers chatWidget() before Alpine boots. --}}
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @endif
     @stack('scripts')
 </body>
