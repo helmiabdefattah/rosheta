@@ -212,7 +212,15 @@
  * Threads refresh on a slow poll so the badge stays live; every open, expanded
  * window polls its own messages faster so a reply lands without a page reload.
  * Minimised windows stop polling — they only carry an unread badge.
+ *
+ * X-Requested-With matters: without it Laravel treats these polls as ordinary
+ * page visits and stores them as the session's previous URL, so a later
+ * redirect()->back() (the language switch, a failed form) lands the user on raw
+ * JSON. That is invisible in a browser, which still sends a Referer, but the
+ * mobile WebView does not.
  */
+const CHAT_POLL_HEADERS = { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+
 function chatWidget(config) {
     return {
         open: false,
@@ -246,7 +254,7 @@ function chatWidget(config) {
         async loadThreads() {
             this.loadingThreads = true;
             try {
-                const res = await fetch(config.threadsUrl, { headers: { 'Accept': 'application/json' } });
+                const res = await fetch(config.threadsUrl, { headers: CHAT_POLL_HEADERS });
                 const data = await res.json();
                 this.threads = data.threads || [];
                 this.unreadTotal = data.unread_total || 0;
@@ -330,7 +338,7 @@ function chatWidget(config) {
             if (!quiet) win.loading = true;
 
             try {
-                const res = await fetch(`${config.chatBase}/${id}/messages`, { headers: { 'Accept': 'application/json' } });
+                const res = await fetch(`${config.chatBase}/${id}/messages`, { headers: CHAT_POLL_HEADERS });
                 if (!res.ok) throw new Error(res.status);
                 const data = await res.json();
 

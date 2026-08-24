@@ -105,6 +105,12 @@
         }
 
         /* Mobile Sidebar Transition */
+        /* Anchor the mobile drawer to the start edge. Without an explicit left/right
+           the fixed sidebar falls back to its flex static position, which lands on
+           the opposite edge in RTL and leaves the dark panel on top of the page.
+           Ignored at lg, where the sidebar is static. */
+        #sidebar { left: 0; right: auto; }
+        [dir="rtl"] #sidebar { left: auto; right: 0; }
         .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-closed-ltr { transform: translateX(-100%); }
         .sidebar-closed-rtl { transform: translateX(100%); }
@@ -125,7 +131,10 @@
 
         <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden backdrop-blur-sm"></div>
 
-        <aside id="sidebar" class="fixed lg:static inset-y-0 z-50 w-64 bg-sidebar text-white flex flex-col shadow-2xl sidebar-transition sidebar-closed-ltr lg:translate-x-0 h-full">
+        {{-- Closed state is rendered per-direction so the drawer is already off-screen
+             at first paint; fixing it from JS at the end of <body> flashed the dark
+             panel until the CDN scripts above finished loading. --}}
+        <aside id="sidebar" class="fixed lg:static inset-y-0 z-50 w-64 bg-sidebar text-white flex flex-col shadow-2xl sidebar-transition {{ app()->getLocale() === 'ar' ? 'sidebar-closed-rtl' : 'sidebar-closed-ltr' }} lg:translate-x-0 h-full">
 
             <div class="h-16 flex items-center px-6 border-b border-slate-800/50">
                 <a href="{{ route('client.dashboard') }}" class="flex items-center gap-3">
@@ -502,12 +511,6 @@
         });
         closeBtn?.addEventListener('click', closeSidebar);
         overlay?.addEventListener('click', closeSidebar);
-
-        // Handle RTL
-        if (document.documentElement.dir === 'rtl') {
-            sidebar.classList.remove('sidebar-closed-ltr');
-            sidebar.classList.add('sidebar-closed-rtl');
-        }
     </script>
 
     <!-- Firebase SDK -->

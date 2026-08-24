@@ -11,7 +11,9 @@
         async loadNotifications() {
             this.loading = true;
             try {
-                const response = await fetch('/notifications/unread');
+                // X-Requested-With keeps this poll out of the session's previous URL,
+                // so redirect()->back() never lands the user on raw JSON.
+                const response = await fetch('/notifications/unread', { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
                 const data = await response.json();
                 this.notifications = data.notifications || [];
                 this.unreadCount = data.unread_count || 0;
