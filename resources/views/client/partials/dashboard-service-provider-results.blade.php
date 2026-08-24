@@ -25,11 +25,16 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             @foreach($results as $item)
                                 @php
-                                    // A doctor is bookable only when it has an active user account
-                                    // (imported directory doctors have no login → not bookable).
-                                    $doctorActive = $providerType === 'doctor'
-                                        ? (bool) ($item->doctor?->user?->is_active)
-                                        : true;
+                                    // A provider's action button shows only when it has an active
+                                    // user account. Imported directory records have no login, so
+                                    // their action (book / request tests / medicines) is hidden.
+                                    if ($providerType === 'doctor') {
+                                        $providerActive = (bool) ($item->doctor?->user?->is_active);
+                                    } elseif ($providerType === 'charity') {
+                                        $providerActive = true; // charity has no action button
+                                    } else {
+                                        $providerActive = (bool) ($item->user?->is_active);
+                                    }
                                 @endphp
                                 <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow" data-marker-id="{{ $item->id }}">
                                     {{-- Logo (doctor profile image for clinics) --}}
@@ -231,21 +236,20 @@
                                         </div>
                                     @endif
 
-                                    {{-- Action Buttons --}}
+                                    {{-- Action Buttons — hidden when the provider has no active account --}}
                                     <div class="mt-4 space-y-2">
                                         @if($providerType === 'charity')
                                             {{-- Charity organizations don't have action buttons, just display info --}}
+                                        @elseif(! $providerActive)
+                                            {{-- Inactive / directory-only provider: no action button --}}
                                         @elseif($providerType === 'doctor')
-                                            {{-- Book only when the doctor has an active account --}}
-                                            @if($doctorActive)
-                                                <a href="{{ route('client.doctor-reservation.book', $item) }}"
-                                                   class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center">
-                                                    <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                                    </svg>
-                                                    {{ app()->getLocale() === 'ar' ? 'حجز موعد' : 'Book Appointment' }}
-                                                </a>
-                                            @endif
+                                            <a href="{{ route('client.doctor-reservation.book', $item) }}"
+                                               class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center">
+                                                <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                </svg>
+                                                {{ app()->getLocale() === 'ar' ? 'حجز موعد' : 'Book Appointment' }}
+                                            </a>
                                         @elseif(in_array($providerType, ['radiology_lab', 'test_lab', 'laboratory'], true))
                                             @if($providerType === 'test_lab' || ($providerType === 'laboratory' && in_array($item->type, ['test', 'both'], true)))
                                                 <a href="{{ route('client.test-requests.create', ['type' => 'test', 'laboratory_id' => $item->id]) }}"

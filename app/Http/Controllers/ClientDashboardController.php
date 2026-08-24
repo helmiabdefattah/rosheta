@@ -146,7 +146,7 @@ class ClientDashboardController extends Controller
                     ? ['radiology', 'both']
                     : ($providerType === 'test_lab' ? ['test', 'both'] : ['radiology', 'test', 'both']);
 
-                $query = Laboratory::with(['area.city.governorate'])
+                $query = Laboratory::with(['area.city.governorate', 'user'])
                     ->where('is_active', true)
                     ->whereIn('type', $labTypes)
                     ->whereNotNull('lat')
@@ -209,7 +209,7 @@ class ClientDashboardController extends Controller
                     })
                     ->values();
             } else {
-                $query = \App\Models\Pharmacy::with(['area.city.governorate'])
+                $query = \App\Models\Pharmacy::with(['area.city.governorate', 'user'])
                     ->where('is_active', true)
                     ->whereNotNull('lat')
                     ->whereNotNull('lng');
