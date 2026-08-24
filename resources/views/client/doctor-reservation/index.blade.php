@@ -105,6 +105,9 @@
                             $followUpPrice = $clinic->getPriceForDoctor($doctor, 'follow_up');
                             $openingSummary = $clinic->getOpeningHoursSummaryForDoctor($doctor);
                             $firstSlot = $clinic->getFirstAvailableSlotForDoctor($doctor);
+                            // Bookable only when the doctor has an active account. Directory
+                            // listings (no login) hide booking + their default hours/availability.
+                            $isBookable = (bool) ($doctor->user && $doctor->user->is_active);
                         @endphp
                         <div class="doctor-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
                             <div class="p-5 flex-1">
@@ -130,10 +133,17 @@
                                         @endif
                                     </div>
                                 </div>
-                                @if($clinic->address || $clinic->area || $clinic->city)
+                                @if($clinic->address)
                                     <div class="mt-3 flex items-start gap-2 text-sm text-gray-600">
                                         <i class="bi bi-geo-alt text-gray-400 mt-0.5 flex-shrink-0"></i>
-                                        <span>{{ $clinic->address ?: implode(', ', array_filter([$clinic->area?->name ?? $clinic->area?->name_ar, $clinic->city?->name ?? $clinic->city?->name_ar, $clinic->governorate?->name ?? $clinic->governorate?->name_ar])) ?: '-' }}</span>
+                                        <span>{{ $clinic->address }}</span>
+                                    </div>
+                                @endif
+                                {{-- City shown after the address --}}
+                                @if($clinic->city)
+                                    <div class="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                                        <i class="bi bi-building text-gray-400 flex-shrink-0"></i>
+                                        <span>{{ app()->getLocale() === 'ar' ? ($clinic->city->name_ar ?? $clinic->city->name) : ($clinic->city->name ?? $clinic->city->name_ar) }}@if($clinic->governorate)، {{ app()->getLocale() === 'ar' ? ($clinic->governorate->name_ar ?? $clinic->governorate->name) : ($clinic->governorate->name ?? $clinic->governorate->name_ar) }}@endif</span>
                                     </div>
                                 @endif
                                 @if($clinic->phone_number)
@@ -142,41 +152,48 @@
                                         <a href="tel:{{ $clinic->phone_number }}" class="hover:text-primary">{{ $clinic->phone_number }}</a>
                                     </div>
                                 @endif
-                                @if($openingSummary)
+                                {{-- Opening hours / first available: only for bookable (active) doctors --}}
+                                @if($isBookable && $openingSummary)
                                     <div class="mt-2 flex items-center gap-2 text-sm text-gray-600">
                                         <i class="bi bi-clock text-gray-400 flex-shrink-0"></i>
                                         <span>{{ app()->getLocale() === 'ar' ? 'مواعيد العمل:' : 'Opening:' }} <strong>{{ $openingSummary }}</strong></span>
                                     </div>
                                 @endif
-                                @if($firstSlot)
+                                @if($isBookable && $firstSlot)
                                     <div class="mt-2 flex items-center gap-2 text-sm text-emerald-700">
                                         <i class="bi bi-calendar-check flex-shrink-0"></i>
                                         <span>{{ app()->getLocale() === 'ar' ? 'أول موعد متاح:' : 'First available:' }} <strong>{{ \Carbon\Carbon::parse($firstSlot['date'].' '.$firstSlot['time'])->locale(app()->getLocale())->translatedFormat(app()->getLocale() === 'ar' ? 'd M، g:i a' : 'M j, g:i A') }}</strong></span>
                                     </div>
                                 @endif
-                                <div class="mt-3 flex flex-wrap gap-3 text-sm">
-                                    <span class="inline-flex items-center gap-1 text-gray-700">
-                                        <i class="bi bi-cash text-gray-500"></i>
-                                        {{ app()->getLocale() === 'ar' ? 'كشف:' : 'Examination:' }} <strong>{{ number_format($examPrice, 2) }}</strong>
-                                    </span>
-                                    @if((float) $followUpPrice === 0.0)
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium">
-                                            <i class="bi bi-gift text-emerald-600"></i>
-                                            {{ app()->getLocale() === 'ar' ? 'متابعة مجانية' : 'Free follow-up' }}
-                                        </span>
-                                    @else
+                                {{-- Prices only when an examination price is set (> 0) --}}
+                                @if((float) $examPrice > 0)
+                                    <div class="mt-3 flex flex-wrap gap-3 text-sm">
                                         <span class="inline-flex items-center gap-1 text-gray-700">
-                                            <i class="bi bi-arrow-repeat text-gray-500"></i>
-                                            {{ app()->getLocale() === 'ar' ? 'متابعة:' : 'Follow-up:' }} <strong>{{ number_format($followUpPrice, 2) }}</strong>
+                                            <i class="bi bi-cash text-gray-500"></i>
+                                            {{ app()->getLocale() === 'ar' ? 'كشف:' : 'Examination:' }} <strong>{{ number_format($examPrice, 2) }}</strong>
                                         </span>
-                                    @endif
+                                        @if((float) $followUpPrice === 0.0)
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium">
+                                                <i class="bi bi-gift text-emerald-600"></i>
+                                                {{ app()->getLocale() === 'ar' ? 'متابعة مجانية' : 'Free follow-up' }}
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1 text-gray-700">
+                                                <i class="bi bi-arrow-repeat text-gray-500"></i>
+                                                {{ app()->getLocale() === 'ar' ? 'متابعة:' : 'Follow-up:' }} <strong>{{ number_format($followUpPrice, 2) }}</strong>
+                                            </span>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+                            {{-- Book only when the doctor has an active account --}}
+                            @if($isBookable)
+                                <div class="p-4 bg-gray-50 border-t border-gray-100">
+                                    <a href="{{ route('client.doctor-reservation.book', $clinic) }}?doctor_id={{ $doctor->id }}" class="block w-full text-center px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
+                                        {{ app()->getLocale() === 'ar' ? 'حجز موعد' : 'Reserve' }}
+                                    </a>
                                 </div>
-                            </div>
-                            <div class="p-4 bg-gray-50 border-t border-gray-100">
-                                <a href="{{ route('client.doctor-reservation.book', $clinic) }}?doctor_id={{ $doctor->id }}" class="block w-full text-center px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
-                                    {{ app()->getLocale() === 'ar' ? 'حجز موعد' : 'Reserve' }}
-                                </a>
-                            </div>
+                            @endif
                         </div>
                     @endforeach
                 @endforeach

@@ -24,6 +24,13 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             @foreach($results as $item)
+                                @php
+                                    // A doctor is bookable only when it has an active user account
+                                    // (imported directory doctors have no login → not bookable).
+                                    $doctorActive = $providerType === 'doctor'
+                                        ? (bool) ($item->doctor?->user?->is_active)
+                                        : true;
+                                @endphp
                                 <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow" data-marker-id="{{ $item->id }}">
                                     {{-- Logo (doctor profile image for clinics) --}}
                                     @if($providerType === 'doctor' && $item->doctor && $item->doctor->getFirstMediaUrl('profile_image'))
@@ -110,7 +117,8 @@
                                             </div>
                                         @endif
                                     @elseif($providerType === 'doctor')
-                                        @if($item->governorate || $item->city || $item->area)
+                                        {{-- City is shown after the address (below); keep only area + governorate here. --}}
+                                        @if($item->area || $item->governorate)
                                             <div class="text-sm text-gray-600 mb-2">
                                                 <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -119,12 +127,8 @@
                                                 @if($item->area)
                                                     {{ app()->getLocale() === 'ar' ? ($item->area->name_ar ?? $item->area->name) : ($item->area->name ?? $item->area->name_ar) }}
                                                 @endif
-                                                @if($item->city)
-                                                    @if($item->area), @endif
-                                                    {{ app()->getLocale() === 'ar' ? ($item->city->name_ar ?? $item->city->name) : ($item->city->name ?? $item->city->name_ar) }}
-                                                @endif
                                                 @if($item->governorate)
-                                                    @if($item->city || $item->area), @endif
+                                                    @if($item->area), @endif
                                                     {{ app()->getLocale() === 'ar' ? ($item->governorate->name_ar ?? $item->governorate->name) : ($item->governorate->name ?? $item->governorate->name_ar) }}
                                                 @endif
                                             </div>
@@ -155,9 +159,21 @@
                                                     {{ Str::limit($item->address, 80) }}
                                                 </div>
                                             @endif
-                                            <div class="text-gray-700 mt-1">
-                                                {{ app()->getLocale() === 'ar' ? 'كشف:' : 'Examination:' }} <strong>{{ number_format($item->medical_examination_price ?? 0, 2) }}</strong>
-                                            </div>
+                                            {{-- City shown after the address --}}
+                                            @if($item->city)
+                                                <div>
+                                                    <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    </svg>
+                                                    {{ app()->getLocale() === 'ar' ? ($item->city->name_ar ?? $item->city->name) : ($item->city->name ?? $item->city->name_ar) }}
+                                                </div>
+                                            @endif
+                                            {{-- Examination price only when it is set (> 0) --}}
+                                            @if(((float) ($item->medical_examination_price ?? 0)) > 0)
+                                                <div class="text-gray-700 mt-1">
+                                                    {{ app()->getLocale() === 'ar' ? 'كشف:' : 'Examination:' }} <strong>{{ number_format($item->medical_examination_price, 2) }}</strong>
+                                                </div>
+                                            @endif
                                         @elseif($providerType === 'charity')
                                             @if($item->phone_numbers && count($item->phone_numbers) > 0)
                                                 @foreach($item->phone_numbers as $phone)
@@ -220,13 +236,16 @@
                                         @if($providerType === 'charity')
                                             {{-- Charity organizations don't have action buttons, just display info --}}
                                         @elseif($providerType === 'doctor')
-                                            <a href="{{ route('client.doctor-reservation.book', $item) }}"
-                                               class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center">
-                                                <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                                </svg>
-                                                {{ app()->getLocale() === 'ar' ? 'حجز موعد' : 'Book Appointment' }}
-                                            </a>
+                                            {{-- Book only when the doctor has an active account --}}
+                                            @if($doctorActive)
+                                                <a href="{{ route('client.doctor-reservation.book', $item) }}"
+                                                   class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center">
+                                                    <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                    </svg>
+                                                    {{ app()->getLocale() === 'ar' ? 'حجز موعد' : 'Book Appointment' }}
+                                                </a>
+                                            @endif
                                         @elseif(in_array($providerType, ['radiology_lab', 'test_lab', 'laboratory'], true))
                                             @if($providerType === 'test_lab' || ($providerType === 'laboratory' && in_array($item->type, ['test', 'both'], true)))
                                                 <a href="{{ route('client.test-requests.create', ['type' => 'test', 'laboratory_id' => $item->id]) }}"

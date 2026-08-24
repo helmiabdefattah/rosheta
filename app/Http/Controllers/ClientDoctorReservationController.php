@@ -20,7 +20,7 @@ class ClientDoctorReservationController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Clinic::with(['doctor.specialization', 'doctors.specialization', 'governorate', 'city', 'area', 'workingHours', 'clinicDoctorWorkingHours']);
+        $query = Clinic::with(['doctor.specialization', 'doctor.user', 'doctors.specialization', 'doctors.user', 'governorate', 'city', 'area', 'workingHours', 'clinicDoctorWorkingHours']);
 
         if ($request->filled('governorate_id')) {
             $query->where('governorate_id', $request->governorate_id);

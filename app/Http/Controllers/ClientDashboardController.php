@@ -113,7 +113,7 @@ class ClientDashboardController extends Controller
 
                 // Note: Charity organizations don't have lat/lng, so they won't appear on map
             } elseif ($providerType === 'doctor') {
-                $query = Clinic::with(['doctor.specialization', 'governorate', 'city', 'area'])
+                $query = Clinic::with(['doctor.specialization', 'doctor.user', 'governorate', 'city', 'area'])
                     ->whereHas('doctor')
                     ->where('governorate_id', $governorateId);
 
