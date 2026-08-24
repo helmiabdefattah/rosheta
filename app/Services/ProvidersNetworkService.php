@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
+use App\Models\Area;
 use App\Models\City;
 use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\Governorate;
+use App\Models\Laboratory;
+use App\Models\Pharmacy;
 use App\Models\Specialization;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -120,7 +123,19 @@ class ProvidersNetworkService
         ];
     }
 
-    /** Create or update one provider. Returns 'created' | 'updated' | 'skipped'. */
+    /** Provider types that are lab facilities → Laboratory (with its `type`). */
+    private const LAB_TYPES = [
+        'معامل تحاليل' => 'test',
+        'مراكز اشعة' => 'radiology',
+    ];
+
+    /**
+     * Route a provider to the right entity by its provider_type: lab facilities
+     * become Laboratory records, pharmacies become Pharmacy records, everything
+     * else (عيادات / اسنان / مراكز متخصصة / …) becomes a Doctor + Clinic.
+     *
+     * Returns 'created' | 'updated' | 'skipped'.
+     */
     private function importOne(array $r): string
     {
         $providerId = trim((string) ($r['provider_id'] ?? $r['Provider_ID'] ?? ''));
@@ -129,6 +144,21 @@ class ProvidersNetworkService
             return 'skipped';
         }
 
+        $type = trim((string) ($r['provider_type'] ?? ''));
+
+        if (isset(self::LAB_TYPES[$type])) {
+            return $this->importLab($r, $providerId, $name, self::LAB_TYPES[$type]);
+        }
+        if ($type === 'صيدليات') {
+            return $this->importPharmacy($r, $providerId, $name);
+        }
+
+        return $this->importClinic($r, $providerId, $name);
+    }
+
+    /** A doctor practice → Doctor + Clinic. */
+    private function importClinic(array $r, string $providerId, string $name): string
+    {
         $governorate = $this->governorate((string) ($r['governorate'] ?? ''));
         $city = $governorate ? $this->city($governorate, (string) ($r['city'] ?? '')) : null;
         $specialization = $this->specialization((string) ($r['provider_specialty'] ?? ''));
@@ -169,6 +199,75 @@ class ProvidersNetworkService
         $clinic->syncOpeningHoursFromWorkingHours();
 
         return $wasNew ? 'created' : 'updated';
+    }
+
+    /** A lab facility → Laboratory ($type = 'test' | 'radiology'). */
+    private function importLab(array $r, string $providerId, string $name, string $type): string
+    {
+        $area = $this->areaFor($r);
+
+        // Match by our own import marker (net:<provider_id>) so re-imports update
+        // the same row and never collide with real, pre-existing labs.
+        $lab = Laboratory::updateOrCreate(
+            ['notes' => 'net:'.$providerId],
+            [
+                'name' => $name,
+                'type' => $type,
+                'area_id' => $area?->id,
+                'phone' => $this->firstPhone((string) ($r['phone'] ?? '')) ?: null,
+                'address' => trim((string) ($r['address'] ?? '')) ?: null,
+                'lat' => $this->coord($r['coord_x'] ?? null),
+                'lng' => $this->coord($r['coord_y'] ?? null),
+                'is_active' => true,
+                'user_id' => null,
+            ]
+        );
+
+        return $lab->wasRecentlyCreated ? 'created' : 'updated';
+    }
+
+    /** A pharmacy → Pharmacy. */
+    private function importPharmacy(array $r, string $providerId, string $name): string
+    {
+        $area = $this->areaFor($r);
+
+        $pharmacy = Pharmacy::updateOrCreate(
+            ['notes' => 'net:'.$providerId],
+            [
+                'name' => $name,
+                'area_id' => $area?->id,
+                'phone' => $this->firstPhone((string) ($r['phone'] ?? '')) ?: null,
+                'address' => trim((string) ($r['address'] ?? '')) ?: null,
+                'lat' => $this->coord($r['coord_x'] ?? null),
+                'lng' => $this->coord($r['coord_y'] ?? null),
+                'is_active' => true,
+                'user_id' => null,
+            ]
+        );
+
+        return $pharmacy->wasRecentlyCreated ? 'created' : 'updated';
+    }
+
+    /**
+     * Resolve an Area for a lab/pharmacy row so it's searchable by governorate
+     * (area → city → governorate). The API has no area, so we use one named
+     * after the city under the resolved city.
+     */
+    private function areaFor(array $r): ?Area
+    {
+        $governorate = $this->governorate((string) ($r['governorate'] ?? ''));
+        if (! $governorate) {
+            return null;
+        }
+        $city = $this->city($governorate, (string) ($r['city'] ?? ''));
+        if (! $city) {
+            return null;
+        }
+
+        return Area::firstOrCreate(
+            ['city_id' => $city->id, 'name_ar' => $city->name_ar],
+            ['name' => $city->name],
+        );
     }
 
     private function firstPhone(string $raw): string

@@ -87,6 +87,11 @@
                 </div>
             </div>
             <a href="{{ route('user.profile.edit') }}" class="block text-center text-sm text-slate-400 hover:text-white mb-2">{{ app()->getLocale() === 'ar' ? 'إعدادات الحساب' : 'Account' }}</a>
+            {{-- Language switch (toggles to the other language) --}}
+            <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
+               class="w-full flex items-center justify-center gap-2 px-4 py-2 mb-1 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg">
+                <i class="bi bi-translate"></i><span>{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
+            </a>
             <form method="POST" action="{{ route('logout') }}">@csrf
                 <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg">
                     <i class="bi bi-box-arrow-right"></i><span>{{ app()->getLocale() === 'ar' ? 'تسجيل الخروج' : 'Logout' }}</span>
