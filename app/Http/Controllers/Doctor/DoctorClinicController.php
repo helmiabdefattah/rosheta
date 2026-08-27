@@ -142,6 +142,82 @@ class DoctorClinicController extends DoctorDashboardController
             ->with('success', app()->getLocale() === 'ar' ? 'تم تحديث العيادة بنجاح' : 'Clinic updated successfully.');
     }
 
+    /**
+     * Quick-add a city under a governorate from the clinic form.
+     */
+    public function storeCity(Request $request)
+    {
+        $validated = $request->validate([
+            'governorate_id' => 'required|exists:governorates,id',
+            'name' => 'required|string|max:255',
+            'name_ar' => 'nullable|string|max:255',
+        ]);
+
+        $name = trim($validated['name']);
+        $nameAr = trim($validated['name_ar'] ?? '') ?: $name;
+
+        $city = City::where('governorate_id', $validated['governorate_id'])
+            ->where(fn ($q) => $q->where('name', $name)->orWhere('name_ar', $nameAr))
+            ->first();
+
+        if (!$city) {
+            $city = City::create([
+                'governorate_id' => $validated['governorate_id'],
+                'name' => $name,
+                'name_ar' => $nameAr,
+                'is_active' => true,
+                'sort_order' => 0,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $city->id,
+                'name' => $city->name,
+                'name_ar' => $city->name_ar,
+            ],
+        ]);
+    }
+
+    /**
+     * Quick-add an area under a city from the clinic form.
+     */
+    public function storeArea(Request $request)
+    {
+        $validated = $request->validate([
+            'city_id' => 'required|exists:cities,id',
+            'name' => 'required|string|max:255',
+            'name_ar' => 'nullable|string|max:255',
+        ]);
+
+        $name = trim($validated['name']);
+        $nameAr = trim($validated['name_ar'] ?? '') ?: $name;
+
+        $area = Area::where('city_id', $validated['city_id'])
+            ->where(fn ($q) => $q->where('name', $name)->orWhere('name_ar', $nameAr))
+            ->first();
+
+        if (!$area) {
+            $area = Area::create([
+                'city_id' => $validated['city_id'],
+                'name' => $name,
+                'name_ar' => $nameAr,
+                'is_active' => true,
+                'sort_order' => 0,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $area->id,
+                'name' => $area->name,
+                'name_ar' => $area->name_ar,
+            ],
+        ]);
+    }
+
     protected function authorizeClinic($doctor, Clinic $clinic): void
     {
         if ($clinic->doctor_id !== $doctor->id && !$clinic->doctors()->where('doctors.id', $doctor->id)->exists()) {
