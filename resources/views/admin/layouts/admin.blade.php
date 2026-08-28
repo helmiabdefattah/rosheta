@@ -471,6 +471,13 @@
                     </div>
                 @endif
 
+                @if(session('error'))
+                    <div class="mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-sm" role="alert">
+                        <p class="font-bold">{{ app()->getLocale() === 'ar' ? 'خطأ' : 'Error' }}</p>
+                        <p>{{ session('error') }}</p>
+                    </div>
+                @endif
+
                 @yield('content')
             </main>
         </div>

@@ -433,6 +433,9 @@ Route::middleware([
 
     // Doctors, Clinics, Appointments
     Route::patch('/doctors/{doctor}/toggle-active', [App\Http\Controllers\Admin\DoctorController::class, 'toggleActive'])->name('doctors.toggle-active');
+    // Grant a login to a doctor that was added without one.
+    Route::get('/doctors/{doctor}/account/create', [App\Http\Controllers\Admin\DoctorController::class, 'createAccount'])->name('doctors.account.create');
+    Route::post('/doctors/{doctor}/account', [App\Http\Controllers\Admin\DoctorController::class, 'storeAccount'])->name('doctors.account.store');
     Route::resource('doctors', App\Http\Controllers\Admin\DoctorController::class);
 
     Route::resource('clinics', App\Http\Controllers\Admin\ClinicController::class);

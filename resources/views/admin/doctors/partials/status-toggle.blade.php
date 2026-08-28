@@ -4,7 +4,10 @@
     $active = (bool) $account?->is_active;
 @endphp
 @if(! $account)
-    <span class="text-xs text-slate-400">{{ $localeAr ? 'بدون حساب' : 'No account' }}</span>
+    <a href="{{ route('admin.doctors.account.create', $doctor) }}"
+       class="text-xs font-medium text-slate-500 hover:text-primary hover:underline">
+        {{ $localeAr ? 'بدون حساب — إضافة حساب' : 'No account — add one' }}
+    </a>
 @else
     <div class="doctor-active-toggle flex items-center gap-2"
          data-toggle-url="{{ route('admin.doctors.toggle-active', $doctor) }}">

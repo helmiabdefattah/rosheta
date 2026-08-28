@@ -135,6 +135,64 @@ class DoctorController extends Controller
     }
 
     /**
+     * Grant a login account to a doctor who was added without one.
+     *
+     * A doctor may exist as a directory profile only (user_id null), so there is
+     * no way to hand them a login after the fact: create() builds the account
+     * alongside the doctor, and edit() can only link a user that already exists.
+     * This pair fills that gap, reachable from the "Add account" action on the
+     * doctors list.
+     */
+    public function createAccount(Doctor $doctor)
+    {
+        if ($doctor->user_id) {
+            return redirect()->route('admin.doctors.edit', $doctor)
+                ->with('error', $this->alreadyHasAccountMessage());
+        }
+
+        return view('admin.doctors.account', compact('doctor'));
+    }
+
+    public function storeAccount(Request $request, Doctor $doctor)
+    {
+        if ($doctor->user_id) {
+            return redirect()->route('admin.doctors.edit', $doctor)
+                ->with('error', $this->alreadyHasAccountMessage());
+        }
+
+        $validated = $request->validate([
+            'account_name' => 'required|string|max:255',
+            'account_email' => 'required|email|unique:users,email',
+            'account_phone' => 'required|string|max:50|unique:users,phone_number',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        // Doctor login is resolved through doctors.user_id (User::doctor()), so
+        // linking the row is all it takes — same as store() does on creation.
+        $user = User::create([
+            'name' => $validated['account_name'],
+            'email' => $validated['account_email'],
+            'phone_number' => $validated['account_phone'],
+            'password' => $validated['password'],
+            'is_active' => $request->boolean('is_active', true),
+        ]);
+
+        $doctor->update(['user_id' => $user->id]);
+
+        return redirect()->route('admin.doctors.index')
+            ->with('success', app()->getLocale() === 'ar'
+                ? 'تم إنشاء حساب الدخول وربطه بالطبيب'
+                : 'Login account created and linked to the doctor');
+    }
+
+    private function alreadyHasAccountMessage(): string
+    {
+        return app()->getLocale() === 'ar'
+            ? 'هذا الطبيب لديه حساب دخول بالفعل.'
+            : 'This doctor already has a login account.';
+    }
+
+    /**
      * Activate / deactivate the doctor's login. A deactivated doctor is turned
      * away at login with an "account not active" message, and so are the
      * assistants working under them.
