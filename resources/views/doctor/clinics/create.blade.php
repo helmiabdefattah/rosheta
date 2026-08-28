@@ -43,29 +43,60 @@
                         @error('governorate_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>
-                        <label for="city_id" class="block text-sm font-medium text-slate-700 mb-1">{{ app()->getLocale() === 'ar' ? 'المدينة' : 'City' }}</label>
+                        <div class="flex items-center justify-between mb-1">
+                            <label for="city_id" class="block text-sm font-medium text-slate-700">{{ app()->getLocale() === 'ar' ? 'المدينة' : 'City' }}</label>
+                            <button type="button" id="toggle-add-city" class="text-xs font-medium text-teal-600 hover:text-teal-700">+ {{ app()->getLocale() === 'ar' ? 'إضافة مدينة' : 'Add city' }}</button>
+                        </div>
                         <select name="city_id" id="city_id" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500">
                             <option value="">{{ app()->getLocale() === 'ar' ? 'اختر المدينة' : 'Select' }}</option>
                             @foreach($cities as $c)
                                 <option value="{{ $c->id }}" {{ old('city_id') == $c->id ? 'selected' : '' }}>{{ $c->name_ar ?? $c->name }}</option>
                             @endforeach
                         </select>
+                        <div id="add-city-box" class="hidden mt-2 p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+                            <input type="text" id="new_city_name" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500" placeholder="{{ app()->getLocale() === 'ar' ? 'اسم المدينة' : 'City name' }}">
+                            <div class="flex items-center gap-2">
+                                <button type="button" id="save-new-city" class="px-3 py-1.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-xs font-medium">{{ app()->getLocale() === 'ar' ? 'حفظ' : 'Save' }}</button>
+                                <button type="button" id="cancel-new-city" class="px-3 py-1.5 text-slate-600 border border-slate-300 bg-white rounded-lg hover:bg-slate-50 text-xs">{{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}</button>
+                            </div>
+                            <p id="new-city-msg" class="text-xs hidden"></p>
+                        </div>
                         @error('city_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>
-                        <label for="area_id" class="block text-sm font-medium text-slate-700 mb-1">{{ app()->getLocale() === 'ar' ? 'المنطقة' : 'Area' }}</label>
+                        <div class="flex items-center justify-between mb-1">
+                            <label for="area_id" class="block text-sm font-medium text-slate-700">{{ app()->getLocale() === 'ar' ? 'المنطقة' : 'Area' }}</label>
+                            <button type="button" id="toggle-add-area" class="text-xs font-medium text-teal-600 hover:text-teal-700">+ {{ app()->getLocale() === 'ar' ? 'إضافة منطقة' : 'Add area' }}</button>
+                        </div>
                         <select name="area_id" id="area_id" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500">
                             <option value="">{{ app()->getLocale() === 'ar' ? 'اختر المنطقة' : 'Select' }}</option>
                             @foreach($areas as $a)
                                 <option value="{{ $a->id }}" {{ old('area_id') == $a->id ? 'selected' : '' }}>{{ $a->name_ar ?? $a->name }}</option>
                             @endforeach
                         </select>
+                        <div id="add-area-box" class="hidden mt-2 p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+                            <input type="text" id="new_area_name" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500" placeholder="{{ app()->getLocale() === 'ar' ? 'اسم المنطقة' : 'Area name' }}">
+                            <div class="flex items-center gap-2">
+                                <button type="button" id="save-new-area" class="px-3 py-1.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-xs font-medium">{{ app()->getLocale() === 'ar' ? 'حفظ' : 'Save' }}</button>
+                                <button type="button" id="cancel-new-area" class="px-3 py-1.5 text-slate-600 border border-slate-300 bg-white rounded-lg hover:bg-slate-50 text-xs">{{ app()->getLocale() === 'ar' ? 'إلغاء' : 'Cancel' }}</button>
+                            </div>
+                            <p id="new-area-msg" class="text-xs hidden"></p>
+                        </div>
                         @error('area_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">{{ app()->getLocale() === 'ar' ? 'موقع العيادة على الخريطة (اختياري)' : 'Location on map (optional)' }}</label>
+                    <div class="flex flex-wrap items-center gap-2 mb-2">
+                        <button type="button" id="use-live-location" class="inline-flex items-center gap-2 px-3 py-2 bg-teal-50 text-teal-700 border border-teal-200 rounded-lg hover:bg-teal-100 text-sm font-medium disabled:opacity-60">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path stroke-linecap="round" d="M12 1.5v3m0 15v3M1.5 12h3m15 0h3"/></svg>
+                            <span>{{ app()->getLocale() === 'ar' ? 'استخدم موقعي الحالي' : 'Use my current location' }}</span>
+                        </button>
+                        <button type="button" id="clear-location" class="px-3 py-2 text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 text-sm">{{ app()->getLocale() === 'ar' ? 'مسح الموقع' : 'Clear' }}</button>
+                        <span id="location-status" class="text-xs text-slate-500"></span>
+                    </div>
                     <div id="locationMap"></div>
+                    <p class="mt-1 text-xs text-slate-500">{{ app()->getLocale() === 'ar' ? 'انقر على الخريطة أو اسحب العلامة لضبط الموقع بدقة.' : 'Click the map or drag the marker to fine-tune the position.' }}</p>
                     <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
                     <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
                 </div>
@@ -182,17 +213,167 @@ $(function() {
     });
     if (oldGov) $('#governorate_id').trigger('change');
 
+    // ---- Quick-add city / area -------------------------------------------------
+    var T = {
+        pickGov: isRTL ? 'اختر المحافظة أولاً' : 'Select a governorate first.',
+        pickCity: isRTL ? 'اختر المدينة أولاً' : 'Select a city first.',
+        needName: isRTL ? 'أدخل الاسم' : 'Enter a name.',
+        saving: isRTL ? 'جارٍ الحفظ…' : 'Saving…',
+        failed: isRTL ? 'تعذر الحفظ، حاول مرة أخرى' : 'Could not save, please try again.',
+        added: isRTL ? 'تمت الإضافة' : 'Added.',
+        locating: isRTL ? 'جارٍ تحديد موقعك…' : 'Locating you…',
+        located: isRTL ? 'تم تحديد الموقع' : 'Location set',
+        noGeo: isRTL ? 'المتصفح لا يدعم تحديد الموقع' : 'Geolocation is not supported by this browser.',
+        denied: isRTL ? 'تم رفض إذن الموقع. فعّله من إعدادات المتصفح أو حدد الموقع يدويًا على الخريطة.' : 'Location permission denied. Allow it in your browser or pick the spot on the map.',
+        geoFail: isRTL ? 'تعذر تحديد الموقع، حدده يدويًا على الخريطة.' : 'Could not get your location, pick it on the map instead.',
+        cleared: isRTL ? 'لم يتم تحديد موقع' : 'No location set'
+    };
+    function showMsg($el, text, ok) {
+        $el.removeClass('hidden text-red-600 text-teal-700').addClass(ok ? 'text-teal-700' : 'text-red-600').text(text);
+    }
+    function labelOf(row) { return isRTL ? (row.name_ar || row.name) : (row.name || row.name_ar); }
+
+    $('#toggle-add-city').on('click', function() {
+        if (!$('#governorate_id').val()) { alert(T.pickGov); return; }
+        $('#add-city-box').toggleClass('hidden');
+        $('#new_city_name').focus();
+    });
+    $('#cancel-new-city').on('click', function() {
+        $('#add-city-box').addClass('hidden');
+        $('#new_city_name').val('');
+        $('#new-city-msg').addClass('hidden');
+    });
+    $('#save-new-city').on('click', function() {
+        var $btn = $(this), $msg = $('#new-city-msg');
+        var gid = $('#governorate_id').val(), name = $.trim($('#new_city_name').val());
+        if (!gid) { showMsg($msg, T.pickGov, false); return; }
+        if (!name) { showMsg($msg, T.needName, false); return; }
+        $btn.prop('disabled', true);
+        showMsg($msg, T.saving, true);
+        $.post('{{ route('doctor.clinics.quick-city') }}', { _token: '{{ csrf_token() }}', governorate_id: gid, name: name })
+            .done(function(r) {
+                var c = r.data;
+                if (!$('#city_id option[value="' + c.id + '"]').length) {
+                    $('#city_id').append($('<option></option>').attr('value', c.id).text(labelOf(c)));
+                }
+                $('#city_id').val(c.id).trigger('change');
+                $('#new_city_name').val('');
+                $('#add-city-box').addClass('hidden');
+                $msg.addClass('hidden');
+            })
+            .fail(function(x) {
+                var m = (x.responseJSON && x.responseJSON.message) || T.failed;
+                showMsg($msg, m, false);
+            })
+            .always(function() { $btn.prop('disabled', false); });
+    });
+
+    $('#toggle-add-area').on('click', function() {
+        if (!$('#city_id').val()) { alert(T.pickCity); return; }
+        $('#add-area-box').toggleClass('hidden');
+        $('#new_area_name').focus();
+    });
+    $('#cancel-new-area').on('click', function() {
+        $('#add-area-box').addClass('hidden');
+        $('#new_area_name').val('');
+        $('#new-area-msg').addClass('hidden');
+    });
+    $('#save-new-area').on('click', function() {
+        var $btn = $(this), $msg = $('#new-area-msg');
+        var cid = $('#city_id').val(), name = $.trim($('#new_area_name').val());
+        if (!cid) { showMsg($msg, T.pickCity, false); return; }
+        if (!name) { showMsg($msg, T.needName, false); return; }
+        $btn.prop('disabled', true);
+        showMsg($msg, T.saving, true);
+        $.post('{{ route('doctor.clinics.quick-area') }}', { _token: '{{ csrf_token() }}', city_id: cid, name: name })
+            .done(function(r) {
+                var a = r.data;
+                if (!$('#area_id option[value="' + a.id + '"]').length) {
+                    $('#area_id').append($('<option></option>').attr('value', a.id).text(labelOf(a)));
+                }
+                $('#area_id').val(a.id);
+                $('#new_area_name').val('');
+                $('#add-area-box').addClass('hidden');
+                $msg.addClass('hidden');
+            })
+            .fail(function(x) {
+                var m = (x.responseJSON && x.responseJSON.message) || T.failed;
+                showMsg($msg, m, false);
+            })
+            .always(function() { $btn.prop('disabled', false); });
+    });
+
+    // ---- Map + live location ---------------------------------------------------
+    var hasCoords = !!($('#latitude').val() && $('#longitude').val());
     var lat = parseFloat($('#latitude').val()) || 30.0444, lng = parseFloat($('#longitude').val()) || 31.2357;
-    var map = L.map('locationMap').setView([lat, lng], 13);
+    var map = L.map('locationMap').setView([lat, lng], hasCoords ? 16 : 13);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap', maxZoom: 19 }).addTo(map);
     var marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+    var accuracyCircle = null;
+    var $status = $('#location-status');
+    function setStatus(text, tone) {
+        $status.removeClass('text-slate-500 text-red-600 text-teal-600')
+            .addClass(tone === 'error' ? 'text-red-600' : (tone === 'ok' ? 'text-teal-600' : 'text-slate-500'))
+            .text(text);
+    }
     function updateLoc(la, ln) {
         marker.setLatLng([la, ln]);
         $('#latitude').val(la.toFixed(8));
         $('#longitude').val(ln.toFixed(8));
+        setStatus(T.located + ': ' + la.toFixed(5) + ', ' + ln.toFixed(5), 'ok');
     }
-    marker.on('dragend', function(e) { var p = marker.getLatLng(); updateLoc(p.lat, p.lng); });
-    map.on('click', function(e) { updateLoc(e.latlng.lat, e.latlng.lng); });
+    if (hasCoords) { setStatus(T.located + ': ' + lat.toFixed(5) + ', ' + lng.toFixed(5), 'ok'); }
+    marker.on('dragend', function(e) {
+        if (accuracyCircle) { map.removeLayer(accuracyCircle); accuracyCircle = null; }
+        var p = marker.getLatLng();
+        updateLoc(p.lat, p.lng);
+    });
+    map.on('click', function(e) {
+        if (accuracyCircle) { map.removeLayer(accuracyCircle); accuracyCircle = null; }
+        updateLoc(e.latlng.lat, e.latlng.lng);
+    });
+
+    // Fill the address field from the picked coordinates when it is still empty.
+    function fillAddressFrom(la, ln) {
+        var $address = $('#address');
+        if ($.trim($address.val())) return;
+        $.ajax({
+            url: 'https://nominatim.openstreetmap.org/reverse',
+            data: { format: 'jsonv2', lat: la, lon: ln, 'accept-language': isRTL ? 'ar' : 'en' },
+            dataType: 'json'
+        }).done(function(r) {
+            if (r && r.display_name && !$.trim($address.val())) $address.val(r.display_name);
+        });
+    }
+
+    $('#use-live-location').on('click', function() {
+        var $btn = $(this);
+        if (!navigator.geolocation) { setStatus(T.noGeo, 'error'); return; }
+        $btn.prop('disabled', true);
+        setStatus(T.locating, null);
+        navigator.geolocation.getCurrentPosition(function(pos) {
+            $btn.prop('disabled', false);
+            var la = pos.coords.latitude, ln = pos.coords.longitude;
+            updateLoc(la, ln);
+            map.setView([la, ln], 17);
+            if (accuracyCircle) map.removeLayer(accuracyCircle);
+            accuracyCircle = L.circle([la, ln], {
+                radius: Math.max(pos.coords.accuracy || 0, 15),
+                color: '#0d9488', fillColor: '#0d9488', fillOpacity: 0.12, weight: 1
+            }).addTo(map);
+            fillAddressFrom(la, ln);
+        }, function(err) {
+            $btn.prop('disabled', false);
+            setStatus(err && err.code === 1 ? T.denied : T.geoFail, 'error');
+        }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+    });
+
+    $('#clear-location').on('click', function() {
+        $('#latitude').val('');
+        $('#longitude').val('');
+        if (accuracyCircle) { map.removeLayer(accuracyCircle); accuracyCircle = null; }
+        setStatus(T.cleared, null);
+    });
 
     function hourAmPmTo24(hour, ampm) {
         if (!hour || hour === '') return '';

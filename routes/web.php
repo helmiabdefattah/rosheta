@@ -220,6 +220,9 @@ Route::middleware(['auth', 'doctor'])->prefix('doctor')->name('doctor.')->group(
     Route::get('/clinics/{clinic}', [App\Http\Controllers\Doctor\DoctorClinicController::class, 'show'])->name('clinics.show');
     Route::get('/clinics/{clinic}/edit', [App\Http\Controllers\Doctor\DoctorClinicController::class, 'edit'])->name('clinics.edit');
     Route::put('/clinics/{clinic}', [App\Http\Controllers\Doctor\DoctorClinicController::class, 'update'])->name('clinics.update');
+    // Quick-add location lookups used by the clinic create/edit form.
+    Route::post('/clinics/quick-city', [App\Http\Controllers\Doctor\DoctorClinicController::class, 'storeCity'])->name('clinics.quick-city');
+    Route::post('/clinics/quick-area', [App\Http\Controllers\Doctor\DoctorClinicController::class, 'storeArea'])->name('clinics.quick-area');
     Route::get('/appointments', [App\Http\Controllers\Doctor\DoctorAppointmentController::class, 'index'])->name('appointments.index');
     Route::put('/appointments/{appointment}/status', [App\Http\Controllers\Doctor\DoctorAppointmentController::class, 'updateStatus'])->name('appointments.update-status');
     Route::get('/calendar', [App\Http\Controllers\Doctor\DoctorCalendarController::class, 'index'])->name('calendar.index');
