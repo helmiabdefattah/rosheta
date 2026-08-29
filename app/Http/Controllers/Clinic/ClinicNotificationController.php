@@ -8,6 +8,7 @@ use App\Models\Appointment;
 use App\Models\Client;
 use App\Notifications\ClinicBroadcastNotification;
 use App\Notifications\QueuePositionNotification;
+use App\Support\ClinicBroadcastAudience;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -29,6 +30,11 @@ class ClinicNotificationController extends Controller
         $data = $request->validate([
             'template' => ['nullable', 'string'],
             'message' => ['nullable', 'string', 'max:1000'],
+            // Absent means "everyone today", which is how this worked before the
+            // picker existed and how any other caller still behaves.
+            'audience' => ['nullable', 'in:all,selected'],
+            'client_ids' => ['nullable', 'array'],
+            'client_ids.*' => ['integer'],
         ]);
 
         $templates = config('clinic_broadcast.templates', []);
@@ -48,19 +54,27 @@ class ClinicNotificationController extends Controller
             $messageEn = $custom;
         }
 
-        // Every patient with an appointment today (excluding cancelled ones),
-        // de-duplicated so a patient with two visits isn't messaged twice.
-        $clients = Client::query()
-            ->whereHas('appointments', function ($q) use ($doctor) {
-                $q->where('doctor_id', $doctor->id)
-                    ->whereDate('scheduled_at', today())
-                    ->where('status', '!=', 'cancelled');
-            })
-            ->get();
+        // Every patient with a live appointment today, de-duplicated so a patient
+        // with two visits isn't messaged twice.
+        $audience = ClinicBroadcastAudience::forDoctor($doctor);
 
-        if ($clients->isEmpty()) {
+        if ($audience->isEmpty()) {
             return back()->with('status', __('app.notify.none_today'));
         }
+
+        // Narrow to the patients ticked in the modal. Intersecting with the
+        // audience rather than trusting the ids means a tampered form can only
+        // ever reach someone who was already on today's list.
+        if (($data['audience'] ?? 'all') === 'selected') {
+            $chosen = collect($data['client_ids'] ?? [])->map(fn ($id) => (int) $id);
+            $audience = $audience->filter(fn (Appointment $a) => $chosen->contains((int) $a->client_id));
+
+            if ($audience->isEmpty()) {
+                return back()->withErrors(['client_ids' => __('app.notify.pick_patients')]);
+            }
+        }
+
+        $clients = $audience->pluck('client');
 
         $title = config('clinic_broadcast.title');
         Notification::send($clients, new ClinicBroadcastNotification(

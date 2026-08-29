@@ -224,5 +224,6 @@
             setInterval(poll, 3000);
         })();
     </script>
+    @include('clinic.partials.keep-awake')
 </body>
 </html>

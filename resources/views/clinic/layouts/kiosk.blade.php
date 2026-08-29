@@ -67,5 +67,6 @@
     <footer class="shrink-0 text-center text-white/70 text-sm short:text-xs pb-6 short:pb-2">
         {{ __('app.kiosk.footer') }}
     </footer>
+    @include('clinic.partials.keep-awake')
 </body>
 </html>

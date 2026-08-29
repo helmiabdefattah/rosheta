@@ -1,4 +1,11 @@
-@php $isAr = app()->getLocale() === 'ar'; @endphp
+@php
+    $isAr = app()->getLocale() === 'ar';
+    // The clinic's doctor, shown on the counter so patients see whose room this is.
+    $displayDoctor = $clinic?->doctor;
+    $doctorPhoto = $displayDoctor?->getFirstMediaUrl('profile_image') ?: null;
+    $brandName = $isAr ? 'مستشفى-أون' : 'mostashfaOn';
+    $brandHost = preg_replace('#^https?://#', '', rtrim(config('app.url'), '/'));
+@endphp
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" dir="{{ $isAr ? 'rtl' : 'ltr' }}">
 <head>
@@ -27,7 +34,7 @@
         .pulse-in { animation: pulse-in 0.7s cubic-bezier(.2,.8,.2,1); }
     </style>
 </head>
-<body class="text-white select-none">
+<body class="h-full flex flex-col text-white select-none">
     {{-- One-time overlay: a tap unlocks browser audio + fullscreen for the screensaver. --}}
     <div id="starter"
          class="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-slate-950/95 cursor-pointer">
@@ -36,32 +43,63 @@
         <div class="text-lg text-slate-400 animate-pulse">{{ __('app.display.tap_to_start') }}</div>
     </div>
 
-    {{-- Clock --}}
-    <div class="fixed top-6 end-8 text-right">
-        <div id="clock" class="text-3xl font-bold tabular-nums text-slate-300"></div>
-        <div class="text-sm text-slate-500">{{ $clinic->name ?? config('app.name') }}</div>
-    </div>
+    {{-- Header: whose room this is, and the time --}}
+    <header class="shrink-0 flex items-start justify-between gap-6 px-8 pt-6">
+        <div class="flex items-center gap-5 min-w-0">
+            @if ($doctorPhoto)
+                <img src="{{ $doctorPhoto }}" alt=""
+                     class="w-24 h-24 xl:w-32 xl:h-32 rounded-full object-cover border-4 border-white/25 shadow-2xl shrink-0">
+            @endif
+            <div class="min-w-0">
+                <div class="text-4xl xl:text-6xl font-extrabold leading-tight truncate">
+                    {{ $clinic->name ?? $brandName }}
+                </div>
+                @if ($displayDoctor?->name)
+                    {{-- Printed as stored: every doctor name in this system already
+                         carries its own title ("د/ …"), so adding one doubles it. --}}
+                    <div class="text-2xl xl:text-3xl text-slate-300 mt-1 truncate">
+                        {{ $displayDoctor->name }}
+                    </div>
+                @endif
+            </div>
+        </div>
 
-    {{-- Main stage --}}
-    <div class="h-full w-full flex items-center justify-center px-6">
+        <div id="clock" class="text-3xl xl:text-4xl font-bold tabular-nums text-slate-300 shrink-0"></div>
+    </header>
+
+    {{-- Main stage. The number is sized off the viewport height so it fills a
+         tablet in landscape and still fits a short one without being cropped. --}}
+    <main class="flex-1 min-h-0 w-full flex items-center justify-center px-6">
         <div class="drift text-center">
-            <div class="text-xl md:text-3xl font-semibold uppercase tracking-[0.3em] text-amber-400 mb-8">
+            <div class="text-xl md:text-3xl font-semibold uppercase tracking-[0.3em] text-amber-400 mb-4">
                 {{ __('app.display.title') }}
             </div>
 
             {{-- Active call: only the appointment sort (queue) number — no patient data. --}}
             <div id="active" class="hidden">
-                <div class="text-slate-400 text-2xl md:text-4xl mb-2">{{ __('app.display.queue_label') }}</div>
-                <div id="queue" class="font-extrabold leading-none text-amber-300 text-[16rem] md:text-[22rem]">—</div>
+                <div class="text-slate-400 text-2xl md:text-4xl mb-1">{{ __('app.display.queue_label') }}</div>
+                <div id="queue" class="font-extrabold leading-none text-amber-300"
+                     style="font-size: clamp(6rem, 34vh, 20rem);">—</div>
             </div>
 
             {{-- Idle state --}}
             <div id="idle">
-                <div class="text-[10rem] md:text-[14rem] leading-none text-slate-700 font-extrabold">—</div>
-                <div class="mt-4 text-2xl md:text-3xl text-slate-500 italic">{{ __('app.display.waiting') }}</div>
+                <div class="leading-none text-slate-700 font-extrabold" style="font-size: clamp(5rem, 26vh, 14rem);">—</div>
+                <div class="mt-2 text-2xl md:text-3xl text-slate-500 italic">{{ __('app.display.waiting') }}</div>
             </div>
         </div>
-    </div>
+    </main>
+
+    {{-- The platform behind the screen --}}
+    <footer class="shrink-0 flex items-center justify-end gap-4 px-8 pb-6 opacity-80">
+        <img src="{{ asset('images/mo-logo.png') }}" alt="" class="h-14 xl:h-20 w-auto object-contain">
+        <div class="leading-tight text-end">
+            <div class="text-2xl xl:text-3xl font-bold">{{ $brandName }}</div>
+            @if ($brandHost)
+                <div class="text-base xl:text-lg text-slate-400">{{ $brandHost }}</div>
+            @endif
+        </div>
+    </footer>
 
     {{-- Open the self-service kiosk to check a patient in. Remembers this
          display so the printed ticket can return here (see the ticket view).
@@ -221,5 +259,6 @@
             setInterval(poll, 3000);
         })();
     </script>
+    @include('clinic.partials.keep-awake')
 </body>
 </html>
