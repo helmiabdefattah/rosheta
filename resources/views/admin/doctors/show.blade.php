@@ -6,6 +6,7 @@
 
 @section('header-actions')
     <a href="{{ route('admin.doctors.edit', $doctor) }}" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-xl hover:bg-teal-600">{{ app()->getLocale() === 'ar' ? 'تعديل' : 'Edit' }}</a>
+    <a href="{{ route('admin.doctors.credentials', $doctor) }}" class="px-4 py-2 text-sm font-medium text-teal-700 bg-teal-100 rounded-xl hover:bg-teal-200">{{ app()->getLocale() === 'ar' ? 'بيانات الدخول' : 'Login cards' }}</a>
     <a href="{{ route('admin.clinics.create') }}?doctor_id={{ $doctor->id }}" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-xl hover:bg-green-700">{{ app()->getLocale() === 'ar' ? 'إضافة عيادة' : 'Add Clinic' }}</a>
 @endsection
 

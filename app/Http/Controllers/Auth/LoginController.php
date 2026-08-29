@@ -38,11 +38,14 @@ class LoginController extends Controller
             if ($user->charitable_organization_id) {
                 return redirect()->route('user.profile.edit');
             }
-            if ($user->managedClinic) {
-                return redirect()->route('clinic.dashboard');
-            }
+            // Doctors first: Clinic Quick Setup registers the doctor's own login
+            // as the clinic's manager (clinics.user_id), so those accounts match
+            // managedClinic too and used to land on the clinic staff portal.
             if ($user->doctor()->exists()) {
                 return redirect()->route('doctor.dashboard');
+            }
+            if ($user->managedClinic) {
+                return redirect()->route('clinic.dashboard');
             }
 
             // Doctor's assistant → clinic (design) system assistant workspace
@@ -117,11 +120,12 @@ class LoginController extends Controller
             if ($user->charitable_organization_id) {
                 return redirect()->route('user.profile.edit');
             }
-            if ($user->managedClinic) {
-                return redirect()->route('clinic.dashboard');
-            }
+            // Doctors first — see the note in showLoginForm().
             if ($user->doctor()->exists()) {
                 return redirect()->route('doctor.dashboard');
+            }
+            if ($user->managedClinic) {
+                return redirect()->route('clinic.dashboard');
             }
             // Doctor's assistant → clinic (design) system assistant workspace
             if ($user->doctor_id) {

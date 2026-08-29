@@ -146,11 +146,13 @@ class WebviewBridgeController extends Controller
         if ($user->charitable_organization_id) {
             return route('user.profile.edit');
         }
-        if ($user->managedClinic) {
-            return route('clinic.dashboard');
-        }
+        // Doctors first: a doctor set up through Clinic Quick Setup is also the
+        // clinic's manager (clinics.user_id), so managedClinic would otherwise win.
         if ($user->doctor()->exists()) {
             return route('doctor.dashboard');
+        }
+        if ($user->managedClinic) {
+            return route('clinic.dashboard');
         }
         // Doctor's assistant → clinic (design) system assistant workspace
         if ($user->doctor_id) {

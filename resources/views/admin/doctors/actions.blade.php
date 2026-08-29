@@ -4,6 +4,7 @@
     @if(! $doctor->user_id)
         <a href="{{ route('admin.doctors.account.create', $doctor) }}" class="px-3 py-1 text-sm bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200 transition-colors">{{ app()->getLocale() === 'ar' ? 'إضافة حساب' : 'Add account' }}</a>
     @endif
+    <a href="{{ route('admin.doctors.credentials', $doctor) }}" class="px-3 py-1 text-sm bg-teal-100 text-teal-700 rounded hover:bg-teal-200 transition-colors">{{ app()->getLocale() === 'ar' ? 'بيانات الدخول' : 'Login cards' }}</a>
     <form action="{{ route('admin.doctors.destroy', $doctor) }}" method="POST" class="inline" onsubmit="return confirm('{{ app()->getLocale() === 'ar' ? 'هل أنت متأكد من الحذف؟' : 'Are you sure?' }}');">
         @csrf
         @method('DELETE')

@@ -439,6 +439,9 @@ Route::middleware([
     // Grant a login to a doctor that was added without one.
     Route::get('/doctors/{doctor}/account/create', [App\Http\Controllers\Admin\DoctorController::class, 'createAccount'])->name('doctors.account.create');
     Route::post('/doctors/{doctor}/account', [App\Http\Controllers\Admin\DoctorController::class, 'storeAccount'])->name('doctors.account.store');
+    // Printable login cards for the doctor and each of their assistants.
+    Route::get('/doctors/{doctor}/credentials', [App\Http\Controllers\Admin\DoctorCredentialsController::class, 'show'])->name('doctors.credentials');
+    Route::post('/doctors/{doctor}/credentials/{user}/password', [App\Http\Controllers\Admin\DoctorCredentialsController::class, 'resetPassword'])->name('doctors.credentials.password');
     Route::resource('doctors', App\Http\Controllers\Admin\DoctorController::class);
 
     Route::resource('clinics', App\Http\Controllers\Admin\ClinicController::class);

@@ -87,7 +87,13 @@
 
                 <div>
                     <x-admin.ui.label>{{ app()->getLocale() === 'ar' ? 'موقع العيادة على الخريطة' : 'Location on Map' }}</x-admin.ui.label>
-                    <p class="text-sm text-slate-500 mb-2">{{ app()->getLocale() === 'ar' ? 'انقر على الخريطة أو اسحب العلامة لتحديد الموقع' : 'Click on the map or drag the marker to set location' }}</p>
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+                        <p class="text-sm text-slate-500">{{ app()->getLocale() === 'ar' ? 'انقر على الخريطة أو اسحب العلامة لتحديد الموقع' : 'Click on the map or drag the marker to set location' }}</p>
+                        <button type="button" id="locate-me"
+                                class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50">
+                            {{ app()->getLocale() === 'ar' ? 'موقعي الحالي' : 'Use my location' }}
+                        </button>
+                    </div>
                     <div id="locationMap"></div>
                     <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude', $clinic->latitude) }}">
                     <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude', $clinic->longitude) }}">
@@ -284,6 +290,27 @@ $(document).ready(function() {
     }
     marker.on('dragend', function(e) { var p = marker.getLatLng(); updateLoc(p.lat, p.lng); });
     map.on('click', function(e) { updateLoc(e.latlng.lat, e.latlng.lng); });
+
+    // Drop the marker on the admin's own position. Browsers only expose
+    // geolocation over HTTPS (or localhost), and the user still has to allow it.
+    $('#locate-me').on('click', function () {
+        var $btn = $(this);
+        var failed = '{{ app()->getLocale() === 'ar' ? 'تعذر تحديد موقعك الحالي.' : 'Could not get your current location.' }}';
+
+        if (!navigator.geolocation) { toastr.error(failed); return; }
+
+        $btn.prop('disabled', true);
+        navigator.geolocation.getCurrentPosition(
+            function (pos) {
+                updateLoc(pos.coords.latitude, pos.coords.longitude);
+                $btn.prop('disabled', false);
+            },
+            function () {
+                toastr.error(failed);
+                $btn.prop('disabled', false);
+            }
+        );
+    });
 
     function hourAmPmTo24(hour, ampm) {
         if (!hour || hour === '') return '';
