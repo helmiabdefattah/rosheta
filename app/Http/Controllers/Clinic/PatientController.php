@@ -28,7 +28,8 @@ class PatientController extends Controller
         // Only this doctor's visits with the patient.
         $appointments = Appointment::where('doctor_id', $doctor->id)
             ->where('client_id', $patient->id)
-            ->with(['clinic', 'items', 'collections.collector'])
+            // `insurance` feeds dueAmount(): without it every visit lazy-loads one.
+            ->with(['clinic', 'items', 'collections.collector', 'insurance'])
             ->orderByDesc('scheduled_at')
             ->get();
 

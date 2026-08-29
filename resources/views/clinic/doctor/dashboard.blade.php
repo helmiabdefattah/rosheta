@@ -54,6 +54,13 @@
            class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg">
             🧩 {{ __('app.setup.button') }}
         </a>
+        {{-- Call next: completes whoever is in the chair and starts the next one
+             in today's queue — the same action the assistant's screen fires, so
+             the waiting-room counter announces it exactly as it always did. --}}
+        <button type="button" id="doctor-next-btn"
+                class="bg-amber-500 hover:bg-amber-400 text-slate-900 text-sm font-bold px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            ⏭ {{ __('app.display.next') }}
+        </button>
         <button type="button" onclick="toggle('broadcast-modal')"
                 class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
             📣 {{ __('app.notify.button') }}
@@ -72,10 +79,19 @@
             <div class="text-xl font-bold text-slate-900">#{{ $current->queue_number }} — {{ $current->client->name }}</div>
             <div class="text-sm text-slate-600">{{ $current->typeLabel() }} &middot; {{ $current->scheduled_at->format('H:i') }}</div>
         </div>
-        <a href="{{ route('practice.doctor.examine', $current) }}"
-           class="shrink-0 text-center bg-amber-600 hover:bg-amber-700 text-white font-medium px-5 py-2.5 rounded-lg">
-            {{ __('app.doctor.open_examination') }}
-        </a>
+        <div class="shrink-0 flex flex-col sm:flex-row gap-2">
+            <a href="{{ route('practice.doctor.examine', $current) }}"
+               class="text-center bg-amber-600 hover:bg-amber-700 text-white font-medium px-5 py-2.5 rounded-lg">
+                {{ __('app.doctor.open_examination') }}
+            </a>
+            <form method="POST" action="{{ route('practice.appointments.status', $current) }}">
+                @csrf
+                <input type="hidden" name="status" value="completed">
+                <button class="w-full text-center bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-5 py-2.5 rounded-lg">
+                    ✔ {{ __('app.assistant.mark_completed') }}
+                </button>
+            </form>
+        </div>
     </div>
 @endif
 
@@ -137,8 +153,32 @@
                     </td>
                     <td class="block md:table-cell md:px-4 md:py-3 text-end mt-3 md:mt-0">
                         @if (! in_array($appt->status, ['completed', 'cancelled']))
-                            <a href="{{ route('practice.doctor.examine', $appt) }}"
-                               class="block md:inline-block text-center bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-2 md:py-1.5 rounded-lg">{{ __('app.doctor.examine') }}</a>
+                            {{-- The doctor drives the queue from here too, not just
+                                 from the assistant's screen: start whoever is in the
+                                 chair, or close them out. Same endpoint the assistant
+                                 posts to — it already allows either role. --}}
+                            <div class="flex flex-col md:flex-row md:justify-end gap-2">
+                                <a href="{{ route('practice.doctor.examine', $appt) }}"
+                                   class="block md:inline-block text-center bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-2 md:py-1.5 rounded-lg">{{ __('app.doctor.examine') }}</a>
+
+                                @if (in_array($appt->status, ['scheduled', 'escaped', 'pending', 'confirmed']))
+                                    <form method="POST" action="{{ route('practice.appointments.status', $appt) }}">
+                                        @csrf
+                                        <input type="hidden" name="status" value="under_examination">
+                                        <button class="w-full md:w-auto text-center bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs px-3 py-2 md:py-1.5 rounded-lg">
+                                            ▶ {{ __('app.assistant.start_examination') }}
+                                        </button>
+                                    </form>
+                                @endif
+
+                                <form method="POST" action="{{ route('practice.appointments.status', $appt) }}">
+                                    @csrf
+                                    <input type="hidden" name="status" value="completed">
+                                    <button class="w-full md:w-auto text-center bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs px-3 py-2 md:py-1.5 rounded-lg">
+                                        ✔ {{ __('app.assistant.mark_completed') }}
+                                    </button>
+                                </form>
+                            </div>
                         @else
                             <a href="{{ route('practice.doctor.examine', $appt) }}"
                                class="text-indigo-600 hover:underline text-xs">{{ __('app.doctor.view') }}</a>
@@ -208,3 +248,29 @@
 
 @include('clinic.partials.broadcast-modal')
 @endsection
+
+@push('scripts')
+<script>
+    (function () {
+        var btn = document.getElementById('doctor-next-btn');
+        if (!btn) return;
+
+        var NEXT_URL = @json(route('practice.display.next', $clinic));
+        var CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+        btn.addEventListener('click', function () {
+            btn.disabled = true;
+            fetch(NEXT_URL, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                cache: 'no-store',
+            })
+                .then(function (r) { return r.json(); })
+                // Reload rather than patch the row: the queue, the "now examining"
+                // banner and the day's counts all move together.
+                .then(function () { window.location.reload(); })
+                .catch(function () { btn.disabled = false; });
+        });
+    })();
+</script>
+@endpush

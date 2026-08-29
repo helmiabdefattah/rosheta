@@ -32,7 +32,7 @@ class ClientPrescriptionController extends Controller
         $client = Auth::guard('client')->user();
         abort_unless((int) $prescription->client_id === (int) $client->id, 403);
 
-        $prescription->load(['items', 'client', 'doctor.specialization', 'diagnosis', 'appointment.clinic']);
+        $prescription->load(['items', 'client', 'doctor.specialization', 'diagnosis', 'appointment.clinic', 'appointment.medicalRequests']);
 
         return view('clinic.prescriptions.print', compact('prescription'));
     }

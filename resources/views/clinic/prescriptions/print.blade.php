@@ -72,8 +72,18 @@
         .med-sub .chip { background: #ccfbf1; border-radius: 6px; padding: 1px 6px; font-weight: 700; }
         .med-meta { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
         .med-meta b { color: var(--ink); font-weight: 600; }
+        .sub-meta { padding-inline-start: 14px; }
         .notes { margin-top: 12px; font-size: 12.5px; }
         .notes .lbl { color: var(--muted); font-size: 11px; }
+        .requests { margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
+        .requests-title { font-size: 12px; font-weight: 700; color: var(--teal-d); margin-bottom: 4px; }
+        .requests-group { margin-top: 4px; }
+        .requests-type { font-size: 11px; color: var(--muted); }
+        .requests ul { margin: 2px 0 0; padding-inline-start: 18px; font-size: 12.5px; }
+        .requests li { margin: 1px 0; }
+        .requests-note { color: var(--muted); font-size: 11.5px; }
+        .footer .qr { text-align: center; font-size: 9px; color: var(--muted); line-height: 1.3; }
+        .footer .qr img { display: block; width: 20mm; height: 20mm; margin: 0 auto 2px; }
         .footer {
             margin-top: auto; padding: 6mm 12mm 10mm; border-top: 1px solid var(--line);
             display: flex; justify-content: space-between; align-items: flex-end; gap: 12px;
@@ -84,9 +94,14 @@
 
         @media print {
             @page { size: A5 portrait; margin: 0; }
-            body { background: #fff; }
+            /* Full page height, so the sheet's flex column still stretches and
+               `.footer { margin-top: auto }` pins the footer to the bottom of the
+               paper exactly as it sits in the on-screen preview. `min-height:auto`
+               collapsed the column, which left the footer floating up under the
+               last medicine. */
+            html, body { height: 100%; background: #fff; }
             .toolbar { display: none !important; }
-            .sheet { box-shadow: none; margin: 0; width: auto; min-height: auto; }
+            .sheet { box-shadow: none; margin: 0; width: auto; min-height: 100%; }
         }
     </style>
 </head>
@@ -154,6 +169,14 @@
                                     ↔ <span>{{ __('app.print.substitute') }}:</span>
                                     <span class="chip">{{ $item->substitute_name }}</span>
                                 </div>
+                                @if ($item->substitute_dose || $item->substitute_frequency || $item->substitute_duration || $item->substitute_instructions)
+                                    <div class="med-meta sub-meta">
+                                        @if ($item->substitute_dose)<span><b>{{ __('app.print.dose') }}:</b> {{ $item->substitute_dose }}</span>@endif
+                                        @if ($item->substitute_frequency)<span><b>{{ __('app.print.frequency') }}:</b> {{ $item->substitute_frequency }}</span>@endif
+                                        @if ($item->substitute_duration)<span><b>{{ __('app.print.duration') }}:</b> {{ $item->substitute_duration }}</span>@endif
+                                        @if ($item->substitute_instructions)<span><b>{{ __('app.print.instructions') }}:</b> {{ $item->substitute_instructions }}</span>@endif
+                                    </div>
+                                @endif
                             @endif
                             @if ($item->dose || $item->frequency || $item->duration || $item->instructions)
                                 <div class="med-meta">
@@ -167,6 +190,8 @@
                     </li>
                 @endforeach
             </ol>
+
+            @include('clinic.prescriptions.partials.requests')
 
             @if ($prescription->notes)
                 <div class="notes">
@@ -182,6 +207,13 @@
                 @if ($clinic?->address)<div>📍 {{ $clinic->address }}</div>@endif
                 @if ($clinic?->phone_number)<div>📞 {{ $clinic->phone_number }}</div>@endif
             </div>
+            @php $rxQr = \App\Support\LandingQrCode::dataUri(); @endphp
+            @if ($rxQr)
+                <div class="qr">
+                    <img src="{{ $rxQr }}" alt="">
+                    {{ __('app.print.scan_hint') }}
+                </div>
+            @endif
             <div class="sign">
                 <div class="rule">{{ __('app.print.signature') }}</div>
             </div>

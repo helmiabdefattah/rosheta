@@ -118,17 +118,23 @@
             </label>
         </div>
 
-        {{-- Existing patient picker --}}
+        {{-- Existing patient picker: type to filter the list by name or phone.
+             The whole list is already in the page, so filtering stays instant
+             and needs no round trip. --}}
         <div id="ap-existing">
-            <label class="block text-xs text-slate-500 mb-1">{{ __('app.table.patient') }}</label>
-            <select name="client_id" class="w-full md:w-1/2 border rounded px-2 py-1.5 text-sm">
-                <option value="">{{ __('app.appointment.select_patient') }}</option>
-                @foreach ($patients as $patient)
-                    <option value="{{ $patient->id }}" @selected(old('client_id') == $patient->id)>
-                        {{ $patient->name }}@if($patient->phone_number) — {{ $patient->phone_number }}@endif
-                    </option>
-                @endforeach
-            </select>
+            <label for="ap-patient-search" class="block text-xs text-slate-500 mb-1">{{ __('app.table.patient') }}</label>
+            <div class="relative w-full md:w-1/2">
+                <input type="text" id="ap-patient-search" autocomplete="off"
+                       placeholder="{{ __('app.appointment.search_patient') }}"
+                       role="combobox" aria-expanded="false" aria-controls="ap-patient-list" aria-autocomplete="list"
+                       class="w-full border rounded ps-2 pe-8 py-1.5 text-sm">
+                <button type="button" id="ap-patient-clear"
+                        class="hidden absolute inset-y-0 end-0 px-2 text-lg leading-none text-slate-400 hover:text-slate-600"
+                        aria-label="{{ __('app.appointment.clear_patient') }}">&times;</button>
+                <input type="hidden" name="client_id" id="ap-patient-id" value="{{ old('client_id') }}">
+                <ul id="ap-patient-list" role="listbox"
+                    class="hidden absolute z-30 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border border-slate-200 bg-white text-sm shadow-lg"></ul>
+            </div>
         </div>
 
         {{-- New patient fields --}}
@@ -861,6 +867,138 @@
 @endif
 
 @include('clinic.partials.broadcast-modal')
+
+{{-- Existing-patient combobox: filters the in-page patient list by name or by
+     phone. Phone matching compares digits only, so "0100 123" still finds
+     "01001234567" however the number was typed in. --}}
+@push('scripts')
+<script>
+    (function () {
+        var PATIENTS = @json($patients->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'phone' => $p->phone_number])->values());
+        var NO_MATCHES = @json(__('app.appointment.no_patient_matches'));
+
+        var search = document.getElementById('ap-patient-search');
+        var list = document.getElementById('ap-patient-list');
+        var hidden = document.getElementById('ap-patient-id');
+        var clear = document.getElementById('ap-patient-clear');
+        if (!search || !list || !hidden) return;
+
+        var matches = [];
+        var active = -1;
+
+        function digits(value) { return String(value || '').replace(/\D+/g, ''); }
+
+        function label(p) { return p.phone ? p.name + ' — ' + p.phone : p.name; }
+
+        function find(query) {
+            var text = query.trim().toLowerCase();
+            if (!text) return PATIENTS.slice(0, 50);
+
+            var number = digits(text);
+            return PATIENTS.filter(function (p) {
+                if (String(p.name || '').toLowerCase().indexOf(text) !== -1) return true;
+                return number !== '' && digits(p.phone).indexOf(number) !== -1;
+            }).slice(0, 50);
+        }
+
+        function close() {
+            list.classList.add('hidden');
+            search.setAttribute('aria-expanded', 'false');
+            active = -1;
+        }
+
+        function highlight() {
+            Array.prototype.forEach.call(list.children, function (li, i) {
+                li.classList.toggle('bg-emerald-50', i === active);
+                if (i === active) li.scrollIntoView({ block: 'nearest' });
+            });
+        }
+
+        function render(query) {
+            matches = find(query);
+            list.innerHTML = '';
+
+            if (!matches.length) {
+                var empty = document.createElement('li');
+                empty.className = 'px-3 py-2 text-slate-400';
+                empty.textContent = NO_MATCHES;
+                list.appendChild(empty);
+            } else {
+                matches.forEach(function (p, i) {
+                    var li = document.createElement('li');
+                    li.className = 'cursor-pointer px-3 py-2 hover:bg-emerald-50';
+                    li.setAttribute('role', 'option');
+                    li.textContent = label(p);
+                    // mousedown, not click: blur would close the list first.
+                    li.addEventListener('mousedown', function (e) { e.preventDefault(); pick(i); });
+                    list.appendChild(li);
+                });
+            }
+
+            active = -1;
+            list.classList.remove('hidden');
+            search.setAttribute('aria-expanded', 'true');
+        }
+
+        function pick(index) {
+            var p = matches[index];
+            if (!p) return;
+            hidden.value = p.id;
+            search.value = label(p);
+            clear.classList.remove('hidden');
+            close();
+        }
+
+        function reset() {
+            hidden.value = '';
+            search.value = '';
+            clear.classList.add('hidden');
+            close();
+        }
+
+        search.addEventListener('input', function () {
+            // Typing after a pick means the assistant is choosing again.
+            hidden.value = '';
+            clear.classList.add('hidden');
+            render(search.value);
+        });
+
+        search.addEventListener('focus', function () { render(search.value); });
+        search.addEventListener('blur', close);
+
+        search.addEventListener('keydown', function (e) {
+            var open = !list.classList.contains('hidden');
+
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                if (!open) { render(search.value); return; }
+                e.preventDefault();
+                if (!matches.length) return;
+                active = e.key === 'ArrowDown'
+                    ? (active + 1) % matches.length
+                    : (active <= 0 ? matches.length : active) - 1;
+                highlight();
+            } else if (e.key === 'Enter') {
+                // Never let Enter submit the form while the list is open.
+                if (open && active >= 0) { e.preventDefault(); pick(active); }
+                else if (open) { e.preventDefault(); close(); }
+            } else if (e.key === 'Escape') {
+                if (open) { e.preventDefault(); close(); }
+            }
+        });
+
+        clear.addEventListener('click', function () { reset(); search.focus(); });
+
+        // Restore the pick after a validation round trip.
+        if (hidden.value) {
+            var current = PATIENTS.filter(function (p) { return String(p.id) === String(hidden.value); })[0];
+            if (current) {
+                search.value = label(current);
+                clear.classList.remove('hidden');
+            }
+        }
+    })();
+</script>
+@endpush
 
 @if ($errors->any() && old('scheduled_at'))
     {{-- Re-open the new-appointment form so the validation errors make sense. --}}

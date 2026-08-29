@@ -445,33 +445,16 @@
 
             <form method="POST" action="{{ route('practice.doctor.prescriptions.store', $appointment) }}">
                 @csrf
-                <div class="overflow-x-auto -mx-1">
-                <table class="w-full text-sm mb-2 min-w-[560px]" id="rx-table">
-                    <thead class="text-slate-400 text-start text-xs">
-                        <tr>
-                            <th class="py-1">{{ __('app.examine.medicine') }}</th>
-                            <th class="py-1">{{ __('app.examine.dose') }}</th>
-                            <th class="py-1">{{ __('app.examine.frequency') }}</th>
-                            <th class="py-1">{{ __('app.examine.duration') }}</th>
-                            <th class="py-1">{{ __('app.examine.instructions') }}</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="rx-row">
-                            <td class="pr-1 py-1">
-                                <input name="items[0][medicine_name]" required class="w-full border rounded px-2 py-1">
-                                <input name="items[0][substitute_name]" placeholder="↔ {{ __('app.examine.substitute_placeholder') }}" class="w-full border rounded px-2 py-1 mt-1 text-xs text-slate-600">
-                            </td>
-                            <td class="pr-1 py-1"><input name="items[0][dose]" placeholder="500 mg" class="w-full border rounded px-2 py-1"></td>
-                            <td class="pr-1 py-1"><input name="items[0][frequency]" placeholder="2x/day" class="w-full border rounded px-2 py-1"></td>
-                            <td class="pr-1 py-1"><input name="items[0][duration]" placeholder="7 days" class="w-full border rounded px-2 py-1"></td>
-                            <td class="pr-1 py-1"><input name="items[0][instructions]" placeholder="after meals" class="w-full border rounded px-2 py-1"></td>
-                            <td></td>
-                        </tr>
-                    </tbody>
-                </table>
+                <p class="text-[11px] text-slate-400 mb-2">{{ __('app.examine.medicine_search_hint') }}</p>
+                <div id="rx-rows">
+                    @include('clinic.partials.rx-row', ['index' => 0])
                 </div>
+
+                {{-- Cloned by addRxRow(); same partial as the first row above. --}}
+                <template id="rx-row-template">
+                    @include('clinic.partials.rx-row', ['index' => '__INDEX__'])
+                </template>
+
                 <button type="button" onclick="addRxRow()" class="text-indigo-600 text-sm hover:underline mb-3">{{ __('app.examine.add_medicine') }}</button>
                 <div class="mb-3">
                     <label class="block text-sm text-slate-500 mb-1">{{ __('app.examine.prescription_notes') }}</label>
@@ -769,24 +752,121 @@
         });
     }
 
+    // ---- Prescription rows: clone the template, never hand-build the markup ----
     let rxIndex = 1;
+
     function addRxRow() {
-        const tbody = document.querySelector('#rx-table tbody');
-        const tr = document.createElement('tr');
-        tr.className = 'rx-row';
-        tr.innerHTML = `
-            <td class="pr-1 py-1">
-                <input name="items[${rxIndex}][medicine_name]" class="w-full border rounded px-2 py-1">
-                <input name="items[${rxIndex}][substitute_name]" placeholder="↔ {{ __('app.examine.substitute_placeholder') }}" class="w-full border rounded px-2 py-1 mt-1 text-xs text-slate-600">
-            </td>
-            <td class="pr-1 py-1"><input name="items[${rxIndex}][dose]" placeholder="500 mg" class="w-full border rounded px-2 py-1"></td>
-            <td class="pr-1 py-1"><input name="items[${rxIndex}][frequency]" placeholder="2x/day" class="w-full border rounded px-2 py-1"></td>
-            <td class="pr-1 py-1"><input name="items[${rxIndex}][duration]" placeholder="7 days" class="w-full border rounded px-2 py-1"></td>
-            <td class="pr-1 py-1"><input name="items[${rxIndex}][instructions]" placeholder="after meals" class="w-full border rounded px-2 py-1"></td>
-            <td><button type="button" onclick="this.closest('tr').remove()" class="text-red-500 px-2">✕</button></td>`;
-        tbody.appendChild(tr);
+        const tpl = document.getElementById('rx-row-template');
+        const html = tpl.innerHTML.split('__INDEX__').join(String(rxIndex));
+        const holder = document.createElement('div');
+        holder.innerHTML = html;
+        const row = holder.querySelector('.rx-row');
+        document.getElementById('rx-rows').appendChild(row);
         rxIndex++;
+        return row;
     }
+
+    // A row is only removable while it is not the last one: the form needs one.
+    document.getElementById('rx-rows').addEventListener('click', function (e) {
+        if (!e.target.closest('.rx-remove')) return;
+        const rows = document.querySelectorAll('#rx-rows .rx-row');
+        if (rows.length <= 1) {
+            e.target.closest('.rx-row').querySelectorAll('input').forEach(function (i) { i.value = ''; });
+            return;
+        }
+        e.target.closest('.rx-row').remove();
+    });
+
+    // ---- Medicine type-ahead over the catalogue -------------------------------
+    (function () {
+        const SEARCH_URL = @json(route('practice.doctor.medicines.search'));
+        const NO_MATCH = @json(__('app.examine.no_medicine_matches'));
+        const rows = document.getElementById('rx-rows');
+        let timer = null;
+        let seq = 0;
+
+        function group(input) { return input.closest('.rx-group'); }
+        function listOf(input) { return group(input).querySelector('.rx-suggest'); }
+        function hintOf(input) { return group(input).querySelector('.rx-form-hint'); }
+        function doseOf(input) { return group(input).querySelector('.rx-dose'); }
+
+        function closeList(input) {
+            const ul = listOf(input);
+            ul.classList.add('hidden');
+            ul.innerHTML = '';
+        }
+
+        /** Offer the dose choices that fit this medicine's dosage form. */
+        function applyMedicine(input, med) {
+            input.value = med.name;
+            hintOf(input).textContent = [med.form, med.ingredient].filter(Boolean).join(' · ');
+
+            const dose = doseOf(input);
+            const list = dose && dose.list;
+            if (!list) return;
+            list.innerHTML = '';
+            (med.dose_options || []).forEach(function (opt) {
+                const o = document.createElement('option');
+                o.value = opt;
+                list.appendChild(o);
+            });
+        }
+
+        function render(input, items) {
+            const ul = listOf(input);
+            ul.innerHTML = '';
+
+            if (!items.length) {
+                const li = document.createElement('li');
+                li.className = 'px-3 py-2 text-slate-400';
+                li.textContent = NO_MATCH;
+                ul.appendChild(li);
+            } else {
+                items.forEach(function (med) {
+                    const li = document.createElement('li');
+                    li.className = 'cursor-pointer px-3 py-2 hover:bg-purple-50';
+                    li.innerHTML = '<span class="font-medium">' + med.name.replace(/[<>&]/g, '') + '</span>'
+                        + (med.form ? ' <span class="text-xs text-slate-400">' + String(med.form).replace(/[<>&]/g, '') + '</span>' : '');
+                    li.addEventListener('mousedown', function (e) {
+                        e.preventDefault();
+                        applyMedicine(input, med);
+                        closeList(input);
+                    });
+                    ul.appendChild(li);
+                });
+            }
+            ul.classList.remove('hidden');
+        }
+
+        rows.addEventListener('input', function (e) {
+            const input = e.target.closest('.rx-medicine');
+            if (!input) return;
+
+            const term = input.value.trim();
+            hintOf(input).textContent = '';
+            if (term.length < 2) { closeList(input); return; }
+
+            clearTimeout(timer);
+            const mine = ++seq;
+            timer = setTimeout(function () {
+                fetch(SEARCH_URL + '?q=' + encodeURIComponent(term), {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                })
+                    .then(function (r) { return r.json(); })
+                    .then(function (json) {
+                        // Ignore a slow reply the doctor has already typed past.
+                        if (mine !== seq) return;
+                        render(input, json.data || []);
+                    })
+                    .catch(function () { closeList(input); });
+            }, 200);
+        });
+
+        rows.addEventListener('focusout', function (e) {
+            const input = e.target.closest('.rx-medicine');
+            if (input) setTimeout(function () { closeList(input); }, 120);
+        });
+    })();
 
     // Re-open the profile editor if it failed validation (only that form submits "name").
     @if ($errors->any() && old('name'))
@@ -847,28 +927,48 @@
     })();
 
     // ---- Medical plans: load into the Rx table / save current rows as a plan ----
+    // Every field of a line, primary and alternative, travels with the plan.
+    const RX_FIELDS = [
+        'medicine_name', 'dose', 'frequency', 'duration', 'instructions',
+        'substitute_name', 'substitute_dose', 'substitute_frequency',
+        'substitute_duration', 'substitute_instructions',
+    ];
+
     @php
+        $rxFields = ['medicine_name', 'dose', 'frequency', 'duration', 'instructions',
+                     'substitute_name', 'substitute_dose', 'substitute_frequency',
+                     'substitute_duration', 'substitute_instructions'];
         $plansPayload = $medicalPlans->mapWithKeys(fn ($p) => [$p->id => [
             'id' => $p->id,
-            'items' => $p->items->map(fn ($i) => [
-                'medicine_name' => $i->medicine_name,
-                'dose' => $i->dose,
-                'frequency' => $i->frequency,
-                'duration' => $i->duration,
-                'instructions' => $i->instructions,
-            ])->values(),
+            'items' => $p->items->map(fn ($i) => collect($rxFields)
+                ->mapWithKeys(fn ($f) => [$f => $i->{$f}])
+                ->all())->values(),
         ]]);
     @endphp
     const MEDICAL_PLANS = @json($plansPayload);
 
+    /** Exact field lookup: names end in "[field]", so a suffix match is enough. */
+    function rxField(row, field) {
+        return row.querySelector('[name$="[' + field + ']"]');
+    }
+
     function addRxRowWith(v) {
-        addRxRow();
-        const rows = document.querySelectorAll('#rx-table tbody tr.rx-row');
-        const tr = rows[rows.length - 1];
-        ['medicine_name', 'dose', 'frequency', 'duration', 'instructions'].forEach(function (k) {
-            const input = tr.querySelector('input[name$="[' + k + ']"]');
-            if (input) input.value = v[k] || '';
+        const row = addRxRow();
+        let hasSubstitute = false;
+
+        RX_FIELDS.forEach(function (k) {
+            const input = rxField(row, k);
+            if (!input) return;
+            input.value = v[k] || '';
+            if (k === 'substitute_name' && input.value) hasSubstitute = true;
         });
+
+        // Open the alternative panel when the plan actually carries one,
+        // otherwise it looks like the plan lost it.
+        if (hasSubstitute) {
+            const alt = row.querySelector('details.rx-alt');
+            if (alt) alt.open = true;
+        }
     }
 
     function loadPlan() {
@@ -877,9 +977,10 @@
         if (!plan) return;
 
         // Drop the first row if it's still empty, so a fresh form isn't left blank.
-        const first = document.querySelector('#rx-table tbody tr.rx-row input[name$="[medicine_name]"]');
-        if (first && !first.value.trim() && document.querySelectorAll('#rx-table tbody tr.rx-row').length === 1) {
-            document.querySelector('#rx-table tbody tr.rx-row').remove();
+        const rows = document.querySelectorAll('#rx-rows .rx-row');
+        const first = rows.length === 1 ? rxField(rows[0], 'medicine_name') : null;
+        if (first && !first.value.trim()) {
+            rows[0].remove();
         }
         (plan.items || []).forEach(addRxRowWith);
     }
@@ -891,11 +992,11 @@
         const container = document.getElementById('save-plan-items');
         container.innerHTML = '';
         let i = 0;
-        document.querySelectorAll('#rx-table tbody tr.rx-row').forEach(function (tr) {
-            const name = tr.querySelector('input[name$="[medicine_name]"]');
+        document.querySelectorAll('#rx-rows .rx-row').forEach(function (row) {
+            const name = rxField(row, 'medicine_name');
             if (!name || !name.value.trim()) return;
-            ['medicine_name', 'dose', 'frequency', 'duration', 'instructions'].forEach(function (k) {
-                const input = tr.querySelector('input[name$="[' + k + ']"]');
+            RX_FIELDS.forEach(function (k) {
+                const input = rxField(row, k);
                 const hidden = document.createElement('input');
                 hidden.type = 'hidden';
                 hidden.name = 'items[' + i + '][' + k + ']';

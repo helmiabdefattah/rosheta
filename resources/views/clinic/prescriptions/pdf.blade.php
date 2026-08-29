@@ -37,6 +37,13 @@
         .med-meta { font-size: 10px; color: #64748b; margin-top: 2px; }
         .med-meta b { color: #1e293b; }
         .notes { padding: 8px 16px; font-size: 11px; }
+        .requests { margin: 10px 16px 0; border: 0.6px solid #cbd5e1; padding: 6px 10px; }
+        .requests-title { font-size: 10.5px; font-weight: bold; color: #0f766e; }
+        .requests-type { font-size: 9.5px; color: #64748b; margin-top: 3px; }
+        .requests ul { margin: 2px 0 0; padding: 0 14px; font-size: 10.5px; }
+        .requests-note { color: #64748b; font-size: 9.5px; }
+        .qr-cell { text-align: center; font-size: 8px; color: #64748b; }
+        .qr-cell img { width: 62px; height: 62px; }
         .footer-td { border-top: 0.6px solid #cbd5e1; padding: 10px 16px; font-size: 9px; color: #64748b; }
         .sign { border-top: 0.6px solid #64748b; padding-top: 3px; width: 150px; text-align: center; color: #64748b; }
     </style>
@@ -89,6 +96,14 @@
             <span class="med-name">{{ $item->medicine_name }}</span>
             @if ($item->substitute_name)
                 <div class="med-sub">&#8596; {{ __('app.print.substitute') }}: <span class="chip">{{ $item->substitute_name }}</span></div>
+                @if ($item->substitute_dose || $item->substitute_frequency || $item->substitute_duration || $item->substitute_instructions)
+                    <div class="med-meta" style="padding-{{ $start }}: 12px;">
+                        @if ($item->substitute_dose)<b>{{ __('app.print.dose') }}:</b> {{ $item->substitute_dose }} @endif
+                        @if ($item->substitute_frequency)<b>{{ __('app.print.frequency') }}:</b> {{ $item->substitute_frequency }} @endif
+                        @if ($item->substitute_duration)<b>{{ __('app.print.duration') }}:</b> {{ $item->substitute_duration }} @endif
+                        @if ($item->substitute_instructions)<b>{{ __('app.print.instructions') }}:</b> {{ $item->substitute_instructions }}@endif
+                    </div>
+                @endif
             @endif
             @if ($item->dose || $item->frequency || $item->duration || $item->instructions)
                 <div class="med-meta">
@@ -100,6 +115,8 @@
             @endif
         </div>
     @endforeach
+
+    @include('clinic.prescriptions.partials.requests')
 
     @if ($prescription->notes)
         <div class="notes" align="{{ $start }}">
@@ -114,6 +131,13 @@
                 @if ($clinic?->address)<div>{{ $clinic->address }}</div>@endif
                 @if ($clinic?->phone_number)<div>{{ $clinic->phone_number }}</div>@endif
             </td>
+            @php $rxQr = App\Support\LandingQrCode::dataUri(); @endphp
+            @if ($rxQr)
+                <td class="footer-td qr-cell" valign="bottom" width="90">
+                    <img src="{{ $rxQr }}" alt=""><br>
+                    {{ __('app.print.scan_hint') }}
+                </td>
+            @endif
             <td class="footer-td" align="{{ $end }}" valign="bottom">
                 <div class="sign" style="margin-{{ $start }}: auto;">{{ __('app.print.signature') }}</div>
             </td>

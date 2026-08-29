@@ -529,6 +529,8 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::post('/appointments/{appointment}/diagnosis', [App\Http\Controllers\Clinic\DiagnosisController::class, 'store'])->name('diagnosis.store');
         Route::put('/diagnoses/{diagnosis}', [App\Http\Controllers\Clinic\DiagnosisController::class, 'update'])->name('diagnoses.update');
         Route::post('/appointments/{appointment}/prescriptions', [App\Http\Controllers\Clinic\PrescriptionController::class, 'store'])->name('prescriptions.store');
+        // Type-ahead over the medicines catalogue for the prescription form.
+        Route::get('/medicines/search', App\Http\Controllers\Clinic\MedicineSearchController::class)->name('medicines.search');
         Route::post('/appointments/{appointment}/requests', [App\Http\Controllers\Clinic\MedicalRequestController::class, 'store'])->name('requests.store');
         Route::delete('/requests/{medicalRequest}', [App\Http\Controllers\Clinic\MedicalRequestController::class, 'destroy'])->name('requests.destroy');
 

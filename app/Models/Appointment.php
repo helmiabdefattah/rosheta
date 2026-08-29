@@ -157,10 +157,24 @@ class Appointment extends Model
         return round($this->items->sum(fn (AppointmentItem $i) => $i->total()), 2);
     }
 
-    /** Everything the patient owes for this visit: the fee plus any extras. */
+    /**
+     * The part of the visit fee the patient pays out of their own pocket.
+     *
+     * With a medical-insurance split on the visit that is the agreed
+     * patient_amount — the rest is claimed from the company, not from the
+     * patient. Without insurance they owe the whole fee.
+     */
+    public function patientFeeShare(): float
+    {
+        return $this->insurance
+            ? (float) $this->insurance->patient_amount
+            : $this->visitPrice();
+    }
+
+    /** Everything the patient owes for this visit: their fee share plus any extras. */
     public function dueAmount(): float
     {
-        return round($this->visitPrice() + $this->itemsTotal(), 2);
+        return round($this->patientFeeShare() + $this->itemsTotal(), 2);
     }
 
     /** Total already taken from the patient. */

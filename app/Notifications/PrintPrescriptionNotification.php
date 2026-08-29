@@ -30,7 +30,7 @@ class PrintPrescriptionNotification extends BaseNotification
         $prescription->loadMissing([
             'items', 'client', 'diagnosis',
             'doctor.user', 'doctor.assistants', 'doctor.specialization',
-            'appointment.clinic',
+            'appointment.clinic', 'appointment.medicalRequests',
         ]);
 
         $doctor = $prescription->doctor;
@@ -93,12 +93,26 @@ class PrintPrescriptionNotification extends BaseNotification
 
         $items = $p->items->map(fn ($it) => [
             'name' => (string) $it->medicine_name,
-            'substitute' => (string) ($it->substitute_name ?? ''),
             'dose' => (string) ($it->dose ?? ''),
             'frequency' => (string) ($it->frequency ?? ''),
             'duration' => (string) ($it->duration ?? ''),
             'instructions' => (string) ($it->instructions ?? ''),
+            // The alternative carries its own schedule, same shape as above.
+            'substitute' => (string) ($it->substitute_name ?? ''),
+            'substitute_dose' => (string) ($it->substitute_dose ?? ''),
+            'substitute_frequency' => (string) ($it->substitute_frequency ?? ''),
+            'substitute_duration' => (string) ($it->substitute_duration ?? ''),
+            'substitute_instructions' => (string) ($it->substitute_instructions ?? ''),
         ])->values()->all();
+
+        // Examinations / lab / radiology ordered during the visit, printed under
+        // the medicines exactly as they are on the A5 sheet and the PDF.
+        $requests = ($p->appointment?->medicalRequests ?? collect())
+            ->map(fn ($r) => [
+                'type' => (string) __('app.request_types.'.$r->type, [], $lang),
+                'name' => (string) $r->name,
+                'notes' => (string) ($r->notes ?? ''),
+            ])->values()->all();
 
         return [
             'type' => 'print_prescription',
@@ -119,6 +133,10 @@ class PrintPrescriptionNotification extends BaseNotification
             // Medicines (with optional substitute) as JSON — the app renders each
             // as a numbered line, showing the substitute under its medicine.
             'items' => $items,
+            'requests' => $requests,
+            // The app renders this as a QR on the ticket; sending the URL rather
+            // than a bitmap keeps the data message well inside FCM's 4KB limit.
+            'landing_url' => \App\Support\LandingQrCode::url(),
             // Pre-localized labels so the app prints a correct-language document
             // without needing its own prescription i18n.
             'labels' => [
@@ -133,6 +151,9 @@ class PrintPrescriptionNotification extends BaseNotification
                 'duration' => __('app.print.duration', [], $lang),
                 'signature' => __('app.print.signature', [], $lang),
                 'yrs' => __('app.common.yrs', [], $lang),
+                'instructions' => __('app.print.instructions', [], $lang),
+                'requests_title' => __('app.print.requests_title', [], $lang),
+                'scan_hint' => __('app.print.scan_hint', [], $lang),
             ],
         ];
     }

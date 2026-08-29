@@ -27,11 +27,16 @@ class PrescriptionController extends Controller
             'notes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.medicine_name' => ['required', 'string', 'max:255'],
-            'items.*.substitute_name' => ['nullable', 'string', 'max:255'],
             'items.*.dose' => ['nullable', 'string', 'max:255'],
             'items.*.frequency' => ['nullable', 'string', 'max:255'],
             'items.*.duration' => ['nullable', 'string', 'max:255'],
             'items.*.instructions' => ['nullable', 'string', 'max:255'],
+            // The alternative mirrors the primary medicine, every part optional.
+            'items.*.substitute_name' => ['nullable', 'string', 'max:255'],
+            'items.*.substitute_dose' => ['nullable', 'string', 'max:255'],
+            'items.*.substitute_frequency' => ['nullable', 'string', 'max:255'],
+            'items.*.substitute_duration' => ['nullable', 'string', 'max:255'],
+            'items.*.substitute_instructions' => ['nullable', 'string', 'max:255'],
         ]);
 
         $prescription = $appointment->prescriptions()->create([
@@ -45,6 +50,17 @@ class PrescriptionController extends Controller
         foreach ($data['items'] as $item) {
             if (blank($item['medicine_name'] ?? null)) {
                 continue;
+            }
+            // Substitute detail without a substitute name would print as an
+            // orphan dose under the primary medicine.
+            if (blank($item['substitute_name'] ?? null)) {
+                unset(
+                    $item['substitute_name'],
+                    $item['substitute_dose'],
+                    $item['substitute_frequency'],
+                    $item['substitute_duration'],
+                    $item['substitute_instructions'],
+                );
             }
             $prescription->items()->create($item);
         }
@@ -61,7 +77,9 @@ class PrescriptionController extends Controller
     {
         $this->authorizePrescription($request, $prescription);
 
-        $prescription->load(['items', 'client', 'doctor.specialization', 'diagnosis', 'appointment.clinic']);
+        // medicalRequests: the examinations/tests ordered during the visit, printed
+        // under the medicines on every print type.
+        $prescription->load(['items', 'client', 'doctor.specialization', 'diagnosis', 'appointment.clinic', 'appointment.medicalRequests']);
 
         return view('clinic.prescriptions.print', compact('prescription'));
     }
@@ -74,7 +92,9 @@ class PrescriptionController extends Controller
     public function pdf(Request $request, Prescription $prescription)
     {
         $this->authorizePrescription($request, $prescription);
-        $prescription->load(['items', 'client', 'doctor.specialization', 'diagnosis', 'appointment.clinic']);
+        // medicalRequests: the examinations/tests ordered during the visit, printed
+        // under the medicines on every print type.
+        $prescription->load(['items', 'client', 'doctor.specialization', 'diagnosis', 'appointment.clinic', 'appointment.medicalRequests']);
 
         return $this->streamPrescriptionPdf($request, $prescription);
     }

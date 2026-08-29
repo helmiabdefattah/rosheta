@@ -9,6 +9,7 @@ class MedicalPlanItem extends Model
 {
     protected $fillable = [
         'medical_plan_id', 'medicine_name', 'dose', 'frequency', 'duration', 'instructions',
+        'substitute_name', 'substitute_dose', 'substitute_frequency', 'substitute_duration', 'substitute_instructions',
     ];
 
     public function plan(): BelongsTo

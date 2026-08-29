@@ -85,17 +85,33 @@ class MedicalPlanController extends Controller
             'items.*.frequency' => ['nullable', 'string', 'max:255'],
             'items.*.duration' => ['nullable', 'string', 'max:255'],
             'items.*.instructions' => ['nullable', 'string', 'max:255'],
+            // A plan keeps the alternative too, so reusing it restores the whole
+            // line the doctor saved — not just the primary medicine.
+            'items.*.substitute_name' => ['nullable', 'string', 'max:255'],
+            'items.*.substitute_dose' => ['nullable', 'string', 'max:255'],
+            'items.*.substitute_frequency' => ['nullable', 'string', 'max:255'],
+            'items.*.substitute_duration' => ['nullable', 'string', 'max:255'],
+            'items.*.substitute_instructions' => ['nullable', 'string', 'max:255'],
         ]);
 
         return collect($data['items'])
             ->filter(fn ($i) => filled($i['medicine_name'] ?? null))
-            ->map(fn ($i) => [
-                'medicine_name' => $i['medicine_name'],
-                'dose' => $i['dose'] ?? null,
-                'frequency' => $i['frequency'] ?? null,
-                'duration' => $i['duration'] ?? null,
-                'instructions' => $i['instructions'] ?? null,
-            ])
+            ->map(function ($i) {
+                $hasSubstitute = filled($i['substitute_name'] ?? null);
+
+                return [
+                    'medicine_name' => $i['medicine_name'],
+                    'dose' => $i['dose'] ?? null,
+                    'frequency' => $i['frequency'] ?? null,
+                    'duration' => $i['duration'] ?? null,
+                    'instructions' => $i['instructions'] ?? null,
+                    'substitute_name' => $hasSubstitute ? $i['substitute_name'] : null,
+                    'substitute_dose' => $hasSubstitute ? ($i['substitute_dose'] ?? null) : null,
+                    'substitute_frequency' => $hasSubstitute ? ($i['substitute_frequency'] ?? null) : null,
+                    'substitute_duration' => $hasSubstitute ? ($i['substitute_duration'] ?? null) : null,
+                    'substitute_instructions' => $hasSubstitute ? ($i['substitute_instructions'] ?? null) : null,
+                ];
+            })
             ->values();
     }
 
