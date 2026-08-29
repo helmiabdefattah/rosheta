@@ -7,6 +7,7 @@ return [
         'assistant' => 'مساعد',
     ],
     'logout' => 'تسجيل الخروج',
+    'refresh' => 'تحديث',
     'language' => 'English',
 
     'common' => [

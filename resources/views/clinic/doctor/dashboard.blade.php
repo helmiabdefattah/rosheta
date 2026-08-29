@@ -46,6 +46,15 @@
             </details>
         @endif
 
+        {{-- Pull the day again. A link to the current URL, not location.reload():
+             it keeps the selected date and re-requests cleanly instead of
+             replaying whatever navigation landed here. --}}
+        <a href="{{ request()->fullUrl() }}"
+           class="inline-flex items-center gap-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg"
+           title="{{ __('app.refresh') }}">
+            <span aria-hidden="true">🔄</span> {{ __('app.refresh') }}
+        </a>
+
         <a href="{{ route('practice.doctor.manager.index') }}"
            class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
             📊 {{ __('app.manager.button') }}

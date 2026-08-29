@@ -7,6 +7,7 @@ return [
         'assistant' => 'Assistant',
     ],
     'logout' => 'Logout',
+    'refresh' => 'Refresh',
     'language' => 'العربية', // label of the button switches TO the other language
 
     // Shared / reused labels

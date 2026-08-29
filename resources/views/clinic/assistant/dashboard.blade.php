@@ -22,6 +22,15 @@
         </p>
     </div>
     <div class="flex flex-wrap items-center gap-2">
+        {{-- Pull the queue again. A link to the current URL, not location.reload():
+             it keeps the selected date and re-requests cleanly instead of
+             replaying whatever navigation landed here. --}}
+        <a href="{{ request()->fullUrl() }}"
+           class="inline-flex items-center gap-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg"
+           title="{{ __('app.refresh') }}">
+            <span aria-hidden="true">🔄</span> {{ __('app.refresh') }}
+        </a>
+
         {{-- Ticket-printer status. Rendered from the current heartbeat, then
              re-checked periodically by the poller at the bottom of this view. --}}
         @php $printerOn = $clinic && $clinic->hasConnectedPrinter(); @endphp
