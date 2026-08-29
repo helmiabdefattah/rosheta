@@ -9,6 +9,7 @@ use App\Models\Client;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AppointmentController extends Controller
@@ -41,6 +42,10 @@ class AppointmentController extends Controller
                 'name' => $data['new_patient_name'],
                 'phone_number' => $data['new_patient_phone'] ?? '',
                 'gender' => $data['new_patient_gender'] ?? null,
+                // Walk-in patients aren't app users; give them a random password so
+                // the non-nullable clients.password column is satisfied. They claim
+                // the account later through the phone-code reset, same as the kiosk.
+                'password' => Str::random(40),
             ])->id;
         } else {
             return back()

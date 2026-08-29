@@ -91,7 +91,13 @@ class PrintPrescriptionNotification extends BaseNotification
 
         $client = $p->client;
 
-        $items = $p->items->map(fn ($it) => [
+        // FCM caps a data message at 4KB and rejects the whole thing when it is
+        // exceeded — which would print nothing at all. Empty fields are dropped
+        // rather than sent as ""; the printer app reads every key as
+        // `it['x'] ?? ''`, so an absent one costs it nothing.
+        $compact = fn (array $row) => array_filter($row, fn ($v) => $v !== '');
+
+        $items = $p->items->map(fn ($it) => $compact([
             'name' => (string) $it->medicine_name,
             'dose' => (string) ($it->dose ?? ''),
             'frequency' => (string) ($it->frequency ?? ''),
@@ -103,16 +109,16 @@ class PrintPrescriptionNotification extends BaseNotification
             'substitute_frequency' => (string) ($it->substitute_frequency ?? ''),
             'substitute_duration' => (string) ($it->substitute_duration ?? ''),
             'substitute_instructions' => (string) ($it->substitute_instructions ?? ''),
-        ])->values()->all();
+        ]))->values()->all();
 
         // Examinations / lab / radiology ordered during the visit, printed under
         // the medicines exactly as they are on the A5 sheet and the PDF.
         $requests = ($p->appointment?->medicalRequests ?? collect())
-            ->map(fn ($r) => [
+            ->map(fn ($r) => $compact([
                 'type' => (string) __('app.request_types.'.$r->type, [], $lang),
                 'name' => (string) $r->name,
                 'notes' => (string) ($r->notes ?? ''),
-            ])->values()->all();
+            ]))->values()->all();
 
         return [
             'type' => 'print_prescription',
