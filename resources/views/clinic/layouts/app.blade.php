@@ -20,6 +20,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? __('app.clinic.title') }} &middot; {{ config('app.name') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    {{-- Counterpart to @stack('scripts') at the end of the body: without it a
+         view's @push('styles') is silently dropped. --}}
+    @stack('styles')
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen overflow-x-hidden">
     <nav class="bg-white shadow-sm border-b border-slate-200">

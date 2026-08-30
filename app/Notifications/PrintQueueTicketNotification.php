@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Appointment;
+use App\Support\SiteBrand;
 use App\Support\EscPosTicketRenderer;
 
 /**
@@ -16,6 +17,12 @@ use App\Support\EscPosTicketRenderer;
  */
 class PrintQueueTicketNotification extends BaseNotification
 {
+    /**
+     * Headroom under FCM's 4096-byte data cap. The margin absorbs the fields
+     * that vary with the visit — long clinic, doctor and patient names.
+     */
+    private const FCM_SAFE_BYTES = 3400;
+
     protected bool $sendPush = true;
 
     protected bool $storeInDatabase = false;
@@ -119,6 +126,8 @@ class PrintQueueTicketNotification extends BaseNotification
                 'date' => __('app.ticket.date', [], $lang),
                 'time' => __('app.ticket.time', [], $lang),
                 'thanks' => __('app.ticket.thanks', [], $lang),
+                // Printed under the platform mark; the app bundles the mark itself.
+                'site_name' => SiteBrand::name($lang),
             ],
         ];
 
@@ -134,9 +143,34 @@ class PrintQueueTicketNotification extends BaseNotification
             && $this->isAscii($visitType)
         ) {
             $data['escpos_base64'] = EscPosTicketRenderer::make($a, $lang, $withQr)->toBase64();
+
+            // The ready-made buffer now carries the logo raster, so it is by far
+            // the largest field. FCM rejects a data message over 4KB outright —
+            // and a rejected message prints nothing at all. If we are close to
+            // that, drop the fast path: the app then renders the ticket itself,
+            // logo included, with no size ceiling. Slower, but it prints.
+            if (self::payloadBytes($data) > self::FCM_SAFE_BYTES) {
+                unset($data['escpos_base64']);
+            }
         }
 
         return $data;
+    }
+
+    /**
+     * Size of the data message as FCM measures it — every key and value, with
+     * arrays in the JSON form the channel sends them as.
+     */
+    private static function payloadBytes(array $data): int
+    {
+        $bytes = 0;
+
+        foreach ($data as $key => $value) {
+            $bytes += strlen((string) $key);
+            $bytes += strlen(is_array($value) ? (string) json_encode($value) : (string) $value);
+        }
+
+        return $bytes;
     }
 
     /** True when the string is empty or pure 7-bit ASCII (safe for text-mode ESC/POS). */

@@ -84,6 +84,9 @@
         .requests-note { color: var(--muted); font-size: 11.5px; }
         .footer .qr { text-align: center; font-size: 9px; color: var(--muted); line-height: 1.3; }
         .footer .qr img { display: block; width: 20mm; height: 20mm; margin: 0 auto 2px; }
+        .footer .brand { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+        .footer .brand img { height: 12mm; width: auto; }
+        .footer .brand .name { font-size: 11px; font-weight: 700; color: var(--teal-d); line-height: 1.2; }
         .footer {
             margin-top: auto; padding: 6mm 12mm 10mm; border-top: 1px solid var(--line);
             display: flex; justify-content: space-between; align-items: flex-end; gap: 12px;
@@ -204,6 +207,11 @@
         {{-- Footer: clinic contact + signature --}}
         <div class="footer">
             <div class="contact">
+                {{-- Issued through the platform; the clinic stays the letterhead. --}}
+                <div class="brand">
+                    <img src="{{ \App\Support\SiteBrand::logoUrl() }}" alt="">
+                    <span class="name">{{ \App\Support\SiteBrand::name() }}</span>
+                </div>
                 @if ($clinic?->address)<div>📍 {{ $clinic->address }}</div>@endif
                 @if ($clinic?->phone_number)<div>📞 {{ $clinic->phone_number }}</div>@endif
             </div>

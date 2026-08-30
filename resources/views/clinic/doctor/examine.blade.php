@@ -231,6 +231,10 @@
             </form>
         </div>
 
+        {{-- The specialisation's body chart. Renders nothing for specialisations
+             that do not use one. --}}
+        @include('clinic.partials.clinical-chart', ['appointment' => $appointment, 'doctor' => $doctor])
+
         {{-- Medical history: this patient's examinations across visits & doctors.
              The acting doctor's own records are editable; others are view-only. --}}
         @php $history = $appointment->client->diagnoses->where('appointment_id', '!=', $appointment->id); @endphp

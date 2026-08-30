@@ -44,6 +44,8 @@
         .requests-note { color: #64748b; font-size: 9.5px; }
         .qr-cell { text-align: center; font-size: 8px; color: #64748b; }
         .qr-cell img { width: 62px; height: 62px; }
+        .brand-logo { height: 34px; }
+        .brand-name { font-size: 9px; font-weight: bold; color: #0f766e; }
         .footer-td { border-top: 0.6px solid #cbd5e1; padding: 10px 16px; font-size: 9px; color: #64748b; }
         .sign { border-top: 0.6px solid #64748b; padding-top: 3px; width: 150px; text-align: center; color: #64748b; }
     </style>
@@ -128,6 +130,12 @@
     <table width="100%" cellspacing="0" cellpadding="0" style="margin-top: 24px;">
         <tr>
             <td class="footer-td" align="{{ $start }}" valign="bottom">
+                {{-- Issued through the platform; the clinic stays the letterhead. --}}
+                @php $rxBrandLogo = App\Support\SiteBrand::logoDataUri(); @endphp
+                @if ($rxBrandLogo)
+                    <div><img src="{{ $rxBrandLogo }}" class="brand-logo" alt=""></div>
+                @endif
+                <div class="brand-name">{{ App\Support\SiteBrand::name() }}</div>
                 @if ($clinic?->address)<div>{{ $clinic->address }}</div>@endif
                 @if ($clinic?->phone_number)<div>{{ $clinic->phone_number }}</div>@endif
             </td>

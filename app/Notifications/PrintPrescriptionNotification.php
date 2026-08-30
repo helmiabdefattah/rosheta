@@ -160,6 +160,9 @@ class PrintPrescriptionNotification extends BaseNotification
                 'instructions' => __('app.print.instructions', [], $lang),
                 'requests_title' => __('app.print.requests_title', [], $lang),
                 'scan_hint' => __('app.print.scan_hint', [], $lang),
+                // The platform name printed under the mark; the app bundles the
+                // mark itself, so only the wording travels.
+                'site_name' => \App\Support\SiteBrand::name($lang),
             ],
         ];
     }

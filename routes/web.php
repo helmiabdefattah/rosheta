@@ -527,6 +527,9 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::put('/appointments/{appointment}/allergies', [App\Http\Controllers\Clinic\PatientController::class, 'updateAllergies'])->name('allergies.update');
         Route::put('/appointments/{appointment}/chronic-diseases', [App\Http\Controllers\Clinic\PatientController::class, 'updateChronicDiseases'])->name('chronic.update');
         Route::post('/appointments/{appointment}/diagnosis', [App\Http\Controllers\Clinic\DiagnosisController::class, 'store'])->name('diagnosis.store');
+        // Notes pinned to a body part (teeth / skeleton / eyes) during an exam.
+        Route::post('/appointments/{appointment}/chart-notes', [App\Http\Controllers\Clinic\ClinicalChartNoteController::class, 'store'])->name('chart-notes.store');
+        Route::delete('/appointments/{appointment}/chart-notes/{note}', [App\Http\Controllers\Clinic\ClinicalChartNoteController::class, 'destroy'])->name('chart-notes.destroy');
         Route::put('/diagnoses/{diagnosis}', [App\Http\Controllers\Clinic\DiagnosisController::class, 'update'])->name('diagnoses.update');
         Route::post('/appointments/{appointment}/prescriptions', [App\Http\Controllers\Clinic\PrescriptionController::class, 'store'])->name('prescriptions.store');
         // Type-ahead over the medicines catalogue for the prescription form.

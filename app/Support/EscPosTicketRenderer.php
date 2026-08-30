@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Appointment;
+use App\Support\SiteBrand;
 
 /**
  * Builds a ready-to-print ESC/POS byte buffer for a clinic queue ticket, so the
@@ -34,6 +35,12 @@ class EscPosTicketRenderer
      * as garbage or Latin.
      */
     public const ARABIC_CODE_PAGE = 0x32; // 50 = WPC1256 on many RONGTA units
+
+    /**
+     * Printed width of the platform mark, in dots of the 384-dot head. Sized to
+     * stay well inside FCM's 4KB cap on the whole data message.
+     */
+    private const LOGO_WIDTH = 96;
 
     /** Code-page slot for CP437 / USA-Standard Europe (the power-on default). */
     public const LATIN_CODE_PAGE = 0x00;
@@ -67,8 +74,10 @@ class EscPosTicketRenderer
         $out .= self::ESC.'@';
         $out .= self::ESC.'t'.chr($isAr ? self::ARABIC_CODE_PAGE : self::LATIN_CODE_PAGE);
 
-        // ---- Clinic header (centered) ----
+        // ---- Platform mark, then the clinic header (centered) ----
         $out .= $this->align('center');
+        $out .= $this->logoRaster();
+        $out .= $this->size(1, 1).$this->line(SiteBrand::name($this->lang));
         $out .= $this->size(2, 2).$this->line($a->clinic->name ?? config('app.name')).$this->size(1, 1);
         if ($a->doctor?->name) {
             $out .= $this->bold(true).$this->line($a->doctor->name).$this->bold(false);
@@ -154,6 +163,65 @@ class EscPosTicketRenderer
     private function align(string $where): string
     {
         return self::ESC.'a'.chr(['left' => 0, 'center' => 1, 'right' => 2][$where] ?? 0);
+    }
+
+    /**
+     * The platform mark as a 1-bit ESC/POS raster (GS v 0).
+     *
+     * Kept deliberately small: this buffer travels inside the FCM data message,
+     * which is capped at 4KB for the whole payload. Thresholded on alpha, not
+     * luminance, so the teal-to-purple gradient prints as one solid silhouette —
+     * the same shape the app's own bitmap renderer produces for Arabic tickets.
+     *
+     * Returns an empty string if the file or GD is unavailable; a missing logo
+     * must never cost the clinic a ticket.
+     */
+    private function logoRaster(int $targetWidth = self::LOGO_WIDTH): string
+    {
+        $path = public_path('images/mo-logo.png');
+
+        if (! function_exists('imagecreatefrompng') || ! is_readable($path)) {
+            return '';
+        }
+
+        $src = @imagecreatefrompng($path);
+        if (! $src) {
+            return '';
+        }
+
+        // Whole bytes per row: the raster command packs 8 pixels to a byte.
+        $width = max(8, $targetWidth - ($targetWidth % 8));
+        $height = (int) round(imagesy($src) * $width / imagesx($src));
+
+        $dst = imagecreatetruecolor($width, $height);
+        imagealphablending($dst, false);
+        imagesavealpha($dst, true);
+        imagefill($dst, 0, 0, imagecolorallocatealpha($dst, 255, 255, 255, 127));
+        imagecopyresampled($dst, $src, 0, 0, 0, 0, $width, $height, imagesx($src), imagesy($src));
+
+        $bytesPerRow = intdiv($width, 8);
+        $data = '';
+
+        for ($y = 0; $y < $height; $y++) {
+            for ($xb = 0; $xb < $bytesPerRow; $xb++) {
+                $byte = 0;
+                for ($bit = 0; $bit < 8; $bit++) {
+                    $alpha = (imagecolorat($dst, $xb * 8 + $bit, $y) >> 24) & 0x7F;
+                    if ($alpha < 64) {          // mostly opaque = ink
+                        $byte |= 0x80 >> $bit;
+                    }
+                }
+                $data .= chr($byte);
+            }
+        }
+
+        imagedestroy($src);
+        imagedestroy($dst);
+
+        return self::GS.'v0'.chr(0)
+            .chr($bytesPerRow & 0xFF).chr(($bytesPerRow >> 8) & 0xFF)
+            .chr($height & 0xFF).chr(($height >> 8) & 0xFF)
+            .$data;
     }
 
     /** Character magnification 1..8 in each axis via GS ! n. */

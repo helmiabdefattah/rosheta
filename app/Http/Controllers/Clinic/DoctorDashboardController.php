@@ -97,8 +97,12 @@ class DoctorDashboardController extends Controller
         // data shown to the patient at client/test-results. Read-only here.
         $labResults = \App\Models\Offer::labResultsForClient($appointment->client_id);
 
+        // The clinical chart under the diagnosis is chosen by the acting
+        // doctor's specialisation, so the view needs both.
+        $doctor->loadMissing('specialization');
+
         return view('clinic.doctor.examine', compact(
-            'appointment', 'billableItems', 'medicalPlans', 'examinationFields',
+            'appointment', 'doctor', 'billableItems', 'medicalPlans', 'examinationFields',
             'examinationValues', 'testSuggestions', 'actingDoctorId', 'labResults'
         ));
     }
