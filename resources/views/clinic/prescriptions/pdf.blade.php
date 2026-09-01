@@ -42,6 +42,7 @@
         .requests-type { font-size: 9.5px; color: #64748b; margin-top: 3px; }
         .requests ul { margin: 2px 0 0; padding: 0 14px; font-size: 10.5px; }
         .requests-note { color: #64748b; font-size: 9.5px; }
+        .sick-leave { margin: 10px 16px 0; border: 0.6px solid #0d9488; padding: 5px 10px; font-size: 10.5px; }
         .qr-cell { text-align: center; font-size: 8px; color: #64748b; }
         .qr-cell img { width: 62px; height: 62px; }
         .brand-logo { height: 34px; }
@@ -117,6 +118,13 @@
             @endif
         </div>
     @endforeach
+
+    @if ($prescription->sick_leave_days)
+        <div class="sick-leave" align="{{ $start }}">
+            <b>{{ __('app.print.sick_leave') }}:</b>
+            {{ trans_choice('app.print.sick_leave_days', $prescription->sick_leave_days, ['count' => $prescription->sick_leave_days]) }}
+        </div>
+    @endif
 
     @include('clinic.prescriptions.partials.requests')
 

@@ -401,12 +401,18 @@
                                         <span class="w-5">📎</span> {{ __('app.assistant.upload_attachment') }}
                                     </button>
 
-                                    {{-- Print prescription --}}
+                                    {{-- Print prescription: in the browser, or straight
+                                         to the clinic's thermal printer. --}}
                                     @if ($appt->prescriptions->isNotEmpty())
                                         <a href="{{ route('practice.prescriptions.print', $appt->prescriptions->last()) }}" target="_blank"
                                            class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
                                             <span class="w-5">🖨️</span> {{ __('app.assistant.print_prescription') }}
                                         </a>
+                                        <button type="button"
+                                                onclick="printRxThermal(this, {{ $appt->prescriptions->last()->id }})"
+                                                class="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-start">
+                                            <span class="w-5">🧾</span> {{ __('app.assistant.print_prescription_bt') }}
+                                        </button>
                                     @else
                                         <span class="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 cursor-not-allowed">
                                             <span class="w-5">🖨️</span> {{ __('app.assistant.no_prescription') }}
@@ -1066,6 +1072,29 @@
             if (!document.hidden) poll();
         });
     })();
+</script>
+@endpush
+
+{{-- Send a saved prescription to the clinic's Bluetooth printer, the same way
+     the examination screen does. --}}
+@push('scripts')
+<script>
+    function printRxThermal(btn, id) {
+        var original = btn.innerHTML;
+        btn.disabled = true;
+        fetch(@json(url('practice/prescriptions')) + '/' + id + '/print-thermal', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            },
+        })
+            .then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+            .then(function () { toastr.success(@json(__('app.assistant.rx_bt_sent'))); })
+            .catch(function () { toastr.error(@json(__('app.assistant.rx_bt_failed'))); })
+            .finally(function () { btn.disabled = false; btn.innerHTML = original; });
+    }
 </script>
 @endpush
 

@@ -460,9 +460,22 @@
                 </template>
 
                 <button type="button" onclick="addRxRow()" class="text-indigo-600 text-sm hover:underline mb-3">{{ __('app.examine.add_medicine') }}</button>
-                <div class="mb-3">
-                    <label class="block text-sm text-slate-500 mb-1">{{ __('app.examine.prescription_notes') }}</label>
-                    <textarea name="notes" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm"></textarea>
+                <div class="mb-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm text-slate-500 mb-1">{{ __('app.examine.prescription_notes') }}</label>
+                        <textarea name="notes" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm"></textarea>
+                    </div>
+                    <div>
+                        <label for="sick_leave_days" class="block text-sm text-slate-500 mb-1">
+                            {{ __('app.examine.sick_leave') }}
+                        </label>
+                        <input type="number" name="sick_leave_days" id="sick_leave_days"
+                               min="1" max="365" inputmode="numeric"
+                               placeholder="{{ __('app.examine.sick_leave_placeholder') }}"
+                               class="w-full border rounded-lg px-3 py-2 text-sm">
+                        <p class="mt-1 text-[11px] text-slate-400">{{ __('app.examine.sick_leave_hint') }}</p>
+                        @error('sick_leave_days')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    </div>
                 </div>
                 <button class="bg-purple-600 text-white text-sm px-4 py-2 rounded-lg">{{ __('app.examine.create_prescription') }}</button>
             </form>

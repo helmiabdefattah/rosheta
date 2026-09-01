@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Client;
 use App\Models\Clinic;
+use App\Models\Prescription;
+use App\Notifications\PrintPrescriptionNotification;
 use App\Notifications\PrintQueueTicketNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -106,6 +108,77 @@ class KioskController extends Controller
      * fail on it). When a printer is online the ticket prints itself, so skip
      * the browser print page; otherwise fall back to it.
      */
+    /** The phone-entry screen for a patient collecting their own prescription. */
+    public function prescription(Clinic $clinic): View
+    {
+        return view('clinic.kiosk.prescription', compact('clinic'));
+    }
+
+    /**
+     * Print the patient's latest prescription from this clinic on the clinic's
+     * own printer, once.
+     *
+     * This route is public — it is the waiting-room screen — so it is
+     * deliberately narrow: it only ever reaches the most recent prescription
+     * written by this clinic's doctor, it prints to the clinic's own printer
+     * rather than showing anything on screen, and self_printed_at makes it a
+     * single copy. Anything else, including "no prescription", returns the same
+     * neutral screen so the kiosk cannot be used to probe who is a patient here.
+     */
+    public function printPrescription(Request $request, Clinic $clinic): View
+    {
+        $data = $request->validate(['phone' => ['required', 'string', 'max:50']]);
+
+        $patient = $this->findLocalPatient(trim($data['phone']));
+        $prescription = $patient ? $this->latestPrescriptionAt($clinic, $patient) : null;
+
+        if (! $prescription) {
+            return view('clinic.kiosk.prescription', [
+                'clinic' => $clinic,
+                'result' => 'none',
+            ]);
+        }
+
+        if ($prescription->wasSelfPrinted()) {
+            return view('clinic.kiosk.prescription', [
+                'clinic' => $clinic,
+                'result' => 'already',
+                'printedAt' => $prescription->self_printed_at,
+            ]);
+        }
+
+        // Stamp before sending: a printer that is offline still consumes the one
+        // copy, which is the safe way round for a public button. The front desk
+        // can always print another from the dashboard.
+        $prescription->forceFill(['self_printed_at' => now()])->save();
+
+        try {
+            PrintPrescriptionNotification::sendToClinicStaff($prescription);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return view('clinic.kiosk.prescription', [
+                'clinic' => $clinic,
+                'result' => 'failed',
+            ]);
+        }
+
+        return view('clinic.kiosk.prescription', [
+            'clinic' => $clinic,
+            'result' => 'printed',
+            'code' => $prescription->code,
+        ]);
+    }
+
+    /** This patient's most recent prescription from this clinic's doctor. */
+    private function latestPrescriptionAt(Clinic $clinic, Client $patient): ?Prescription
+    {
+        return Prescription::where('client_id', $patient->id)
+            ->where('doctor_id', $clinic->doctor_id)
+            ->latest('id')
+            ->first();
+    }
+
     private function afterCheckIn(Clinic $clinic, Appointment $appointment): RedirectResponse
     {
         try {

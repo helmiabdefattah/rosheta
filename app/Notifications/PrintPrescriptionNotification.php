@@ -134,6 +134,9 @@ class PrintPrescriptionNotification extends BaseNotification
             'patient_age' => (string) ($client?->age ?? ''),
             'diagnosis' => (string) ($p->diagnosis?->diagnosis ?? ''),
             'notes' => (string) ($p->notes ?? ''),
+            'sick_leave' => $p->sick_leave_days
+                ? (string) trans_choice('app.print.sick_leave_days', $p->sick_leave_days, ['count' => $p->sick_leave_days], $lang)
+                : '',
             'date' => optional($p->created_at)->format('Y-m-d') ?? '',
             'printer_language' => (string) $lang,
             // Medicines (with optional substitute) as JSON — the app renders each
@@ -159,6 +162,7 @@ class PrintPrescriptionNotification extends BaseNotification
                 'yrs' => __('app.common.yrs', [], $lang),
                 'instructions' => __('app.print.instructions', [], $lang),
                 'requests_title' => __('app.print.requests_title', [], $lang),
+                'sick_leave' => __('app.print.sick_leave', [], $lang),
                 'scan_hint' => __('app.print.scan_hint', [], $lang),
                 // The platform name printed under the mark; the app bundles the
                 // mark itself, so only the wording travels.

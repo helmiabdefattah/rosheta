@@ -25,6 +25,8 @@ class PrescriptionController extends Controller
 
         $data = $request->validate([
             'notes' => ['nullable', 'string'],
+            // Optional rest the doctor recommends, printed on every copy.
+            'sick_leave_days' => ['nullable', 'integer', 'min:1', 'max:365'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.medicine_name' => ['required', 'string', 'max:255'],
             'items.*.dose' => ['nullable', 'string', 'max:255'],
@@ -45,6 +47,7 @@ class PrescriptionController extends Controller
             'doctor_id' => $doctor->id,
             'diagnosis_id' => $appointment->diagnosis?->id,
             'notes' => $data['notes'] ?? null,
+            'sick_leave_days' => $data['sick_leave_days'] ?? null,
         ]);
 
         foreach ($data['items'] as $item) {

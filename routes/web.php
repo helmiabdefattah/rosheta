@@ -468,6 +468,9 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::post('/register', [App\Http\Controllers\Clinic\KioskController::class, 'store'])->name('store');
         Route::post('/book', [App\Http\Controllers\Clinic\KioskController::class, 'book'])->name('book');
         Route::get('/ticket/{appointment}', [App\Http\Controllers\Clinic\KioskController::class, 'ticket'])->name('ticket');
+        // A patient collecting their own prescription on the clinic printer, once.
+        Route::get('/prescription', [App\Http\Controllers\Clinic\KioskController::class, 'prescription'])->name('prescription');
+        Route::post('/prescription', [App\Http\Controllers\Clinic\KioskController::class, 'printPrescription'])->name('prescription.print');
     });
 
     // ---- Public: waiting-room display (per clinic) ----

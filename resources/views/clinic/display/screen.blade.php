@@ -106,13 +106,25 @@
          Revealed once the starter overlay is dismissed. Shown only when the
          display is opened with ?checkin=1 (the "check-in" launch button). --}}
     @if (request()->boolean('checkin'))
-    <button id="kiosk-btn" type="button"
-            class="hidden fixed bottom-8 start-8 z-40 px-6 py-4 rounded-2xl
-                   bg-indigo-500 hover:bg-indigo-400 active:scale-95 transition
-                   text-white text-2xl md:text-3xl font-bold shadow-lg shadow-indigo-900/40"
-            style="cursor: pointer;">
-        🎫 {{ __('app.display.check_in') }}
-    </button>
+    <div class="hidden fixed bottom-8 start-8 z-40 flex flex-wrap items-center gap-4" id="kiosk-actions">
+        <button id="kiosk-btn" type="button"
+                class="px-6 py-4 rounded-2xl
+                       bg-indigo-500 hover:bg-indigo-400 active:scale-95 transition
+                       text-white text-2xl md:text-3xl font-bold shadow-lg shadow-indigo-900/40"
+                style="cursor: pointer;">
+            🎫 {{ __('app.display.check_in') }}
+        </button>
+
+        {{-- Collect a prescription without queueing at the desk. The screen
+             itself shows nothing: it goes to the clinic's own printer. --}}
+        <button id="rx-btn" type="button"
+                class="px-6 py-4 rounded-2xl
+                       bg-teal-500 hover:bg-teal-400 active:scale-95 transition
+                       text-white text-2xl md:text-3xl font-bold shadow-lg shadow-teal-900/40"
+                style="cursor: pointer;">
+            🧾 {{ __('app.kiosk.rx_button') }}
+        </button>
+    </div>
     @endif
 
     {{-- No "call next" button here: this screen is the patient-facing counter.
@@ -125,6 +137,7 @@
             var VOICE_PREFIX = LANG === 'ar' ? 'ar' : 'en';
             var CURRENT_URL = @json(route('practice.display.current', $clinic));
             var KIOSK_URL = @json(route('practice.kiosk.welcome', $clinic));
+            var RX_URL = @json(route('practice.kiosk.prescription', $clinic));
             var VOICES_BASE = @json(asset('storage/voices/ar'));
             // Returning from the kiosk: skip the "tap to start" overlay.
             var AUTO_START = @json(request()->boolean('started'));
@@ -145,6 +158,8 @@
                 queue: document.getElementById('queue'),
                 clock: document.getElementById('clock'),
                 kioskBtn: document.getElementById('kiosk-btn'),
+                rxBtn: document.getElementById('rx-btn'),
+                kioskActions: document.getElementById('kiosk-actions'),
             };
 
             var lastId = null;     // appointment id last shown — change => re-announce
@@ -239,7 +254,7 @@
                     if (el.requestFullscreen) { el.requestFullscreen().catch(function () {}); }
                 }
                 els.starter.style.display = 'none';
-                if (els.kioskBtn) { els.kioskBtn.classList.remove('hidden'); }
+                if (els.kioskActions) { els.kioskActions.classList.remove('hidden'); }
                 poll();
             }
 
@@ -249,11 +264,16 @@
             // Go to the kiosk, remembering this display so the printed ticket
             // returns here afterwards (sessionStorage survives the same-tab
             // navigation through the kiosk flow; read by the ticket view).
+            function leaveTo(url) {
+                try { sessionStorage.setItem('kioskReturnUrl', location.href); } catch (e) {}
+                location.href = url;
+            }
+
             if (els.kioskBtn) {
-                els.kioskBtn.addEventListener('click', function () {
-                    try { sessionStorage.setItem('kioskReturnUrl', location.href); } catch (e) {}
-                    location.href = KIOSK_URL;
-                });
+                els.kioskBtn.addEventListener('click', function () { leaveTo(KIOSK_URL); });
+            }
+            if (els.rxBtn) {
+                els.rxBtn.addEventListener('click', function () { leaveTo(RX_URL); });
             }
 
             setInterval(poll, 3000);

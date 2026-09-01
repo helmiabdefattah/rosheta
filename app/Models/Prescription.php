@@ -13,7 +13,19 @@ class Prescription extends Model
 
     protected $fillable = [
         'code', 'appointment_id', 'client_id', 'doctor_id', 'diagnosis_id', 'notes',
+        'sick_leave_days', 'self_printed_at',
     ];
+
+    protected $casts = [
+        'sick_leave_days' => 'integer',
+        'self_printed_at' => 'datetime',
+    ];
+
+    /** A patient may print their own copy from the waiting-room screen once. */
+    public function wasSelfPrinted(): bool
+    {
+        return $this->self_printed_at !== null;
+    }
 
     public function items(): HasMany
     {

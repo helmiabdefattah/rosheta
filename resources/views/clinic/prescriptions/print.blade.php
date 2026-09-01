@@ -82,6 +82,10 @@
         .requests ul { margin: 2px 0 0; padding-inline-start: 18px; font-size: 12.5px; }
         .requests li { margin: 1px 0; }
         .requests-note { color: var(--muted); font-size: 11.5px; }
+        .sick-leave {
+            margin-top: 12px; font-size: 12.5px; border: 1px solid var(--teal);
+            border-radius: 10px; padding: 6px 12px; background: #f0fdfa;
+        }
         .footer .qr { text-align: center; font-size: 9px; color: var(--muted); line-height: 1.3; }
         .footer .qr img { display: block; width: 20mm; height: 20mm; margin: 0 auto 2px; }
         .footer .brand { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
@@ -193,6 +197,13 @@
                     </li>
                 @endforeach
             </ol>
+
+            @if ($prescription->sick_leave_days)
+                <div class="sick-leave">
+                    🛌 <b>{{ __('app.print.sick_leave') }}:</b>
+                    {{ trans_choice('app.print.sick_leave_days', $prescription->sick_leave_days, ['count' => $prescription->sick_leave_days]) }}
+                </div>
+            @endif
 
             @include('clinic.prescriptions.partials.requests')
 
