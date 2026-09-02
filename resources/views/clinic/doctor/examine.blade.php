@@ -722,6 +722,16 @@
 
 @push('scripts')
 <script>
+    /**
+     * Runs a page initialiser now, and again after each background submit
+     * replaces <main>. Self-installing so script load order does not matter —
+     * the clinical chart registers from its own partial.
+     */
+    function onExamineReady(fn) {
+        (window.examineReady = window.examineReady || []).push(fn);
+        fn();
+    }
+
     // Add another allergy input row.
     function addAllergyRow() {
         const list = document.getElementById('allergy-list');
@@ -784,18 +794,33 @@
     }
 
     // A row is only removable while it is not the last one: the form needs one.
-    document.getElementById('rx-rows').addEventListener('click', function (e) {
-        if (!e.target.closest('.rx-remove')) return;
-        const rows = document.querySelectorAll('#rx-rows .rx-row');
-        if (rows.length <= 1) {
-            e.target.closest('.rx-row').querySelectorAll('input').forEach(function (i) { i.value = ''; });
-            return;
-        }
-        e.target.closest('.rx-row').remove();
+    /**
+     * Registered so it runs now and again after every background submit, when
+     * the swap has replaced the nodes it binds to. Binding only to elements
+     * inside <main> is what makes re-running safe.
+     */
+    onExamineReady(function () {
+        var rows = document.getElementById('rx-rows');
+        if (!rows) return;
+
+        rows.addEventListener('click', function (e) {
+            if (!e.target.closest('.rx-remove')) return;
+            const all = document.querySelectorAll('#rx-rows .rx-row');
+            if (all.length <= 1) {
+                e.target.closest('.rx-row').querySelectorAll('input').forEach(function (i) { i.value = ''; });
+                return;
+            }
+            e.target.closest('.rx-row').remove();
+        });
     });
 
     // ---- Medicine type-ahead over the catalogue -------------------------------
-    (function () {
+    /**
+     * Registered so it runs now and again after every background submit, when
+     * the swap has replaced the nodes it binds to. Binding only to elements
+     * inside <main> is what makes re-running safe.
+     */
+    onExamineReady(function () {
         const SEARCH_URL = @json(route('practice.doctor.medicines.search'));
         const NO_MATCH = @json(__('app.examine.no_medicine_matches'));
         const rows = document.getElementById('rx-rows');
@@ -883,7 +908,7 @@
             const input = e.target.closest('.rx-medicine');
             if (input) setTimeout(function () { closeList(input); }, 120);
         });
-    })();
+    });
 
     // Re-open the profile editor if it failed validation (only that form submits "name").
     @if ($errors->any() && old('name'))
@@ -893,7 +918,12 @@
     // "New item…" swaps the catalog picker for name + price inputs. The select
     // is cleared so the controller sees no billable_item_id and takes the
     // new-item branch.
-    (function () {
+    /**
+     * Registered so it runs now and again after every background submit, when
+     * the swap has replaced the nodes it binds to. Binding only to elements
+     * inside <main> is what makes re-running safe.
+     */
+    onExamineReady(function () {
         var select = document.getElementById('item-select');
         var fields = document.getElementById('new-item-fields');
         if (!select || !fields) return;
@@ -914,13 +944,18 @@
             select.value = '__new__';
         @endif
         sync();
-    })();
+    });
 
     // ---- Requests: autocomplete the name field from the selected type ----
     // Suggestions come from the medical-tests catalogue; typing a value that
     // isn't listed is still allowed (native <datalist> behaviour).
     const TEST_SUGGESTIONS = @json($testSuggestions);
-    (function () {
+    /**
+     * Registered so it runs now and again after every background submit, when
+     * the swap has replaced the nodes it binds to. Binding only to elements
+     * inside <main> is what makes re-running safe.
+     */
+    onExamineReady(function () {
         const type = document.getElementById('req-type');
         const list = document.getElementById('req-suggestions');
         const nameInput = document.getElementById('req-name');
@@ -941,7 +976,7 @@
         }
         type.addEventListener('change', function () { fillSuggestions(true); });
         fillSuggestions(false);
-    })();
+    });
 
     // ---- Medical plans: load into the Rx table / save current rows as a plan ----
     // Every field of a line, primary and alternative, travels with the plan.
@@ -1025,8 +1060,14 @@
 
         if (i === 0) { alert(@json(__('app.plan.needs_item'))); return; }
         document.getElementById('save-plan-title').value = title;
-        document.getElementById('save-plan-form').submit();
+        // requestSubmit, not submit: only the former fires the submit event the
+        // background handler listens for.
+        document.getElementById('save-plan-form').requestSubmit();
     }
 </script>
+@endpush
+
+@push('scripts')
+@include('clinic.partials.examine-ajax')
 @endpush
 @endsection

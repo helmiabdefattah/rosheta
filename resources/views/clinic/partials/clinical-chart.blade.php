@@ -153,7 +153,11 @@
     @once
     @push('scripts')
     <script>
-        (function () {
+        // Registered rather than run once: the examination screen submits in the
+        // background and replaces <main>, so this rebinds to the new chart.
+        // onExamineReady is defined by that screen; fall back to running once
+        // for any other page that includes this partial.
+        (window.onExamineReady || function (fn) { fn(); })(function () {
             var root = document.querySelector('[data-clinical-chart]');
             if (!root) return;
 
@@ -252,7 +256,7 @@
             });
 
             if (root.dataset.selected) select(root.dataset.selected);
-        })();
+        });
     </script>
     @endpush
 
