@@ -90,17 +90,17 @@
 
     <main class="max-w-7xl mx-auto px-4 py-6">
         @if (session('status'))
-            <div class="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 text-sm">
+            <div data-flash="success" class="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 text-sm">
                 {{ session('status') }}
             </div>
         @endif
         @if (session('error'))
-            <div class="mb-4 rounded-lg bg-red-50 border border-red-200 text-red-800 px-4 py-3 text-sm">
+            <div data-flash="error" class="mb-4 rounded-lg bg-red-50 border border-red-200 text-red-800 px-4 py-3 text-sm">
                 {{ session('error') }}
             </div>
         @endif
         @if ($errors->any())
-            <div class="mb-4 rounded-lg bg-red-50 border border-red-200 text-red-800 px-4 py-3 text-sm">
+            <div data-flash="error" class="mb-4 rounded-lg bg-red-50 border border-red-200 text-red-800 px-4 py-3 text-sm">
                 <ul class="list-disc list-inside">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -111,6 +111,51 @@
 
         @yield('content')
     </main>
+
+    {{-- Toasts. The practice area never loaded toastr, so this provides the same
+         small API the rest of the app calls — guarded, so a real toastr added
+         later simply wins. --}}
+    <div id="toast-stack" class="fixed z-[60] top-4 inset-inline-end-4 flex flex-col gap-2 pointer-events-none"
+         style="inset-inline-end: 1rem;" aria-live="polite" aria-atomic="false"></div>
+    <script>
+        window.toastr = window.toastr || (function () {
+            var stack = document.getElementById('toast-stack');
+
+            var TONE = {
+                success: 'bg-emerald-600',
+                error: 'bg-red-600',
+                warning: 'bg-amber-500 text-slate-900',
+                info: 'bg-slate-800',
+            };
+
+            function show(message, tone) {
+                if (!stack || !message) return;
+
+                var el = document.createElement('div');
+                el.className = 'pointer-events-auto cursor-pointer max-w-sm rounded-xl px-4 py-3 text-sm ' +
+                    'font-medium text-white shadow-lg transition-opacity duration-300 ' + (TONE[tone] || TONE.info);
+                el.setAttribute('role', tone === 'error' ? 'alert' : 'status');
+                el.textContent = message;
+
+                function dismiss() {
+                    el.style.opacity = '0';
+                    setTimeout(function () { el.remove(); }, 300);
+                }
+
+                el.addEventListener('click', dismiss);
+                stack.appendChild(el);
+                // Errors linger: they are usually something to act on.
+                setTimeout(dismiss, tone === 'error' ? 8000 : 4000);
+            }
+
+            return {
+                success: function (m) { show(m, 'success'); },
+                error: function (m) { show(m, 'error'); },
+                warning: function (m) { show(m, 'warning'); },
+                info: function (m) { show(m, 'info'); },
+            };
+        })();
+    </script>
 
     <script>
         function toggle(id) {

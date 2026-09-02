@@ -44,13 +44,25 @@
             var fresh = doc.querySelector('main');
             if (!fresh) return false;
 
+            // The banners the server rendered become toasts instead: the reply
+            // to a background action should not move the page the doctor is
+            // still working in. Read them out of the incoming document and drop
+            // them before the swap, so no banner ever reaches the screen.
+            var flashes = Array.prototype.map.call(
+                fresh.querySelectorAll('[data-flash]'),
+                function (el) {
+                    el.remove();
+                    return { tone: el.getAttribute('data-flash'), text: el.textContent.replace(/\s+/g, ' ').trim() };
+                }
+            );
+
             main.innerHTML = fresh.innerHTML;
             runReady();
 
-            // A flash or an error is the answer to what was just submitted, so
-            // bring it into view; otherwise leave the page exactly where it was.
-            var banner = main.querySelector('main > div.mb-4, .mb-4.rounded-lg');
-            if (banner) banner.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            flashes.forEach(function (f) {
+                if (!f.text) return;
+                (f.tone === 'error' ? window.toastr.error : window.toastr.success)(f.text);
+            });
             return true;
         }
 
