@@ -35,7 +35,7 @@
      fires the same action as the dashboard's button, so the waiting-room
      counter still announces them; once they have started, this screen moves
      on to them. --}}
-<div id="examine-bar" class="sticky top-0 z-30 -mx-4 px-4 py-2 mb-5 bg-slate-100/95 backdrop-blur border-b border-slate-200">
+<div id="examine-bar" class="sticky top-0 z-30 -mx-4 px-4 py-2 mb-5 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
     <div class="flex items-center justify-between gap-3">
         <div class="min-w-0 flex items-center gap-2 text-sm" data-next-patient>
             <span class="shrink-0 text-xs font-semibold px-2 py-1 rounded-full {{ $statusTone }}">{{ $appointment->statusLabel() }}</span>

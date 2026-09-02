@@ -54,6 +54,23 @@
         summary.btn::-webkit-details-marker { display: none; }
         summary.btn::marker { content: ''; }
 
+        /* Cards: every section sits in its own white panel with a hairline
+           border, so fields never read as floating on the page background. */
+        .card { background: #fff; border: 1px solid #e2e8f0; border-radius: .75rem;
+                box-shadow: 0 1px 2px rgba(15, 23, 42, .05); }
+        details.card > summary { border-radius: .75rem; }
+        details.card > summary:hover { background: #f8fafc; }
+        details.card[open] > summary { border-bottom: 1px solid #f1f5f9; border-radius: .75rem .75rem 0 0; }
+
+        /* Form controls: a visible border at rest, a clear ring when focused. */
+        main input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+        main select, main textarea { border-color: #cbd5e1; background: #fff; color: #0f172a; }
+        main input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):focus,
+        main select:focus, main textarea:focus {
+            outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, .18);
+        }
+        main input::placeholder, main textarea::placeholder { color: #94a3b8; }
+
         /* A file picker that looks like the rest of the form: the native input
            stays for the browser, a button and the chosen name show for people. */
         .file-field { display: flex; align-items: center; gap: .5rem; min-width: 0; cursor: pointer; }
