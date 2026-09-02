@@ -12,77 +12,140 @@
     // this workspace get neither the inbox nor the Alpine it needs — their
     // (vanilla-JS heavy) screens stay exactly as they were.
     $showPatientChat = (bool) $clinicUser?->isDoctor();
+    // The site's own name, not the framework's: it heads every screen and tab.
+    $brand = \App\Support\SiteBrand::name(app()->getLocale());
+    $backToMainLabel = app()->getLocale() === 'ar' ? '← العودة إلى اللوحة الرئيسية' : '← Back to main dashboard';
+    // The three in-clinic screens, listed once so the wide bar and the phone
+    // menu can never drift apart.
+    $kioskLinks = $displayClinic ? [
+        ['href' => route('practice.display.screen', $displayClinic), 'icon' => '📺', 'class' => 'text-slate-800',
+         'label' => __('app.display.counter'), 'hint' => __('app.display.counter_hint')],
+        ['href' => route('practice.display.screen', ['clinic' => $displayClinic, 'checkin' => 1]), 'icon' => '🎫', 'class' => 'text-amber-700',
+         'label' => __('app.display.interactive'), 'hint' => __('app.display.interactive_hint')],
+        ['href' => route('practice.screen'), 'icon' => '🩺', 'class' => 'text-indigo-700',
+         'label' => __('app.display.assistant_screen'), 'hint' => __('app.display.assistant_screen_hint')],
+    ] : [];
 @endphp
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? __('app.clinic.title') }} &middot; {{ config('app.name') }}</title>
+    <title>{{ $title ?? __('app.clinic.title') }} &middot; {{ $brand }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* The practice area's shared controls. Plain CSS on purpose: the Tailwind
+           CDN build cannot see classes that scripts add later, and these are
+           used from partials and cloned templates alike. Buttons carry a role
+           (primary / secondary / danger / status), never a section colour. */
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; border-radius: .5rem;
+               font-size: .875rem; font-weight: 600; line-height: 1.25rem; padding: .5rem 1rem;
+               border: 1px solid transparent; white-space: nowrap; cursor: pointer;
+               transition: background-color .12s, color .12s, border-color .12s; }
+        .btn:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-sm { padding: .3rem .7rem; font-size: .8125rem; }
+        .btn-block { width: 100%; }
+        .btn-primary { background: #4f46e5; color: #fff; }           .btn-primary:hover { background: #4338ca; }
+        .btn-secondary { background: #fff; color: #334155; border-color: #cbd5e1; } .btn-secondary:hover { background: #f8fafc; }
+        .btn-ghost { background: transparent; color: #4f46e5; padding-inline: .5rem; } .btn-ghost:hover { background: #eef2ff; }
+        .btn-danger { background: transparent; color: #dc2626; }    .btn-danger:hover { background: #fef2f2; }
+        .btn-start { background: #f59e0b; color: #1f2937; }         .btn-start:hover { background: #d97706; }
+        .btn-complete { background: #059669; color: #fff; }         .btn-complete:hover { background: #047857; }
+        summary.btn::-webkit-details-marker { display: none; }
+        summary.btn::marker { content: ''; }
+
+        /* A file picker that looks like the rest of the form: the native input
+           stays for the browser, a button and the chosen name show for people. */
+        .file-field { display: flex; align-items: center; gap: .5rem; min-width: 0; cursor: pointer; }
+        .file-field input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+        .file-field .file-name { font-size: .75rem; color: #64748b; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    </style>
     {{-- Counterpart to @stack('scripts') at the end of the body: without it a
          view's @push('styles') is silently dropped. --}}
     @stack('styles')
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen overflow-x-hidden">
     <nav class="bg-white shadow-sm border-b border-slate-200">
-        <div class="max-w-7xl mx-auto px-3 sm:px-4 py-2 min-h-[4rem] flex flex-wrap items-center justify-between gap-x-2 gap-y-2">
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0">
-                <span class="text-2xl">🩺</span>
-                <a href="{{ $homeRoute }}" class="font-bold text-lg text-slate-900 truncate">{{ config('app.name') }}</a>
+                <span class="text-2xl" aria-hidden="true">🩺</span>
+                <a href="{{ $homeRoute }}" class="font-bold text-lg text-slate-900 truncate">{{ $brand }}</a>
                 @auth
-                    <span class="mx-1 sm:mx-3 text-xs px-2 py-1 rounded-full whitespace-nowrap
+                    <span class="hidden sm:inline-block mx-1 text-xs px-2 py-1 rounded-full whitespace-nowrap
                         {{ auth()->user()->isDoctor() ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700' }}">
                         {{ auth()->user()->isDoctor() ? __('app.roles.doctor') : __('app.roles.assistant') }}
                     </span>
                 @endauth
             </div>
-            <div class="flex flex-wrap items-center justify-end gap-2 sm:gap-4">
-                @if (auth()->check() && auth()->user()->isDoctor())
-                    <a href="{{ route('doctor.dashboard') }}"
-                       class="text-sm px-3 py-1 rounded-lg border border-indigo-300 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 whitespace-nowrap">
-                        {{ app()->getLocale() === 'ar' ? '← العودة إلى اللوحة الرئيسية' : '← Back to main dashboard' }}
-                    </a>
-                @endif
-                @if ($displayClinic)
-                    {{-- Kiosk launcher: the three in-clinic screens. --}}
-                    <details data-menu class="relative">
-                        <summary class="list-none cursor-pointer select-none text-sm px-3 py-1 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 whitespace-nowrap flex items-center gap-1">
-                            🖥️ {{ __('app.display.menu') }}
-                            <span class="text-[10px] text-slate-400">▼</span>
-                        </summary>
-                        <div class="absolute end-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50">
-                            <a href="{{ route('practice.display.screen', $displayClinic) }}" target="_blank"
-                               class="block px-4 py-2.5 hover:bg-slate-50">
-                                <div class="text-sm font-medium text-slate-800">📺 {{ __('app.display.counter') }}</div>
-                                <div class="text-xs text-slate-400">{{ __('app.display.counter_hint') }}</div>
-                            </a>
-                            <a href="{{ route('practice.display.screen', ['clinic' => $displayClinic, 'checkin' => 1]) }}" target="_blank"
-                               class="block px-4 py-2.5 hover:bg-amber-50">
-                                <div class="text-sm font-medium text-amber-700">🎫 {{ __('app.display.interactive') }}</div>
-                                <div class="text-xs text-slate-400">{{ __('app.display.interactive_hint') }}</div>
-                            </a>
-                            <a href="{{ route('practice.screen') }}" target="_blank"
-                               class="block px-4 py-2.5 hover:bg-indigo-50">
-                                <div class="text-sm font-medium text-indigo-700">🩺 {{ __('app.display.assistant_screen') }}</div>
-                                <div class="text-xs text-slate-400">{{ __('app.display.assistant_screen_hint') }}</div>
-                            </a>
-                        </div>
-                    </details>
-                @endif
+
+            <div class="flex items-center gap-2 lg:gap-3">
+                {{-- Laptop and up: every action inline. --}}
+                <div class="hidden lg:flex items-center gap-3">
+                    @if (auth()->check() && auth()->user()->isDoctor())
+                        <a href="{{ route('doctor.dashboard') }}" class="btn btn-secondary btn-sm">{{ $backToMainLabel }}</a>
+                    @endif
+                    @if ($kioskLinks)
+                        {{-- Kiosk launcher: the three in-clinic screens. --}}
+                        <details data-menu class="relative">
+                            <summary class="btn btn-secondary btn-sm list-none select-none">
+                                <span aria-hidden="true">🖥️</span> {{ __('app.display.menu') }}
+                                <span class="text-[10px] text-slate-400">▼</span>
+                            </summary>
+                            <div class="absolute end-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50">
+                                @foreach ($kioskLinks as $link)
+                                    <a href="{{ $link['href'] }}" target="_blank" class="block px-4 py-2.5 hover:bg-slate-50">
+                                        <div class="text-sm font-medium {{ $link['class'] }}">{{ $link['icon'] }} {{ $link['label'] }}</div>
+                                        <div class="text-xs text-slate-400">{{ $link['hint'] }}</div>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </details>
+                    @endif
+                </div>
+
                 @if ($showPatientChat)
                     <x-chat-dropdown side="doctor" />
                 @endif
+
                 <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
-                   class="text-sm px-3 py-1 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 whitespace-nowrap">
-                    🌐 {{ __('app.language') }}
+                   class="btn btn-secondary btn-sm" aria-label="{{ __('app.language') }}">
+                    <span aria-hidden="true">🌐</span><span class="hidden sm:inline">{{ __('app.language') }}</span>
                 </a>
+
                 @auth
-                    <span class="hidden sm:inline text-sm text-slate-600">{{ auth()->user()->name }}</span>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button class="text-sm text-red-600 hover:underline">{{ __('app.logout') }}</button>
-                    </form>
+                    <div class="hidden lg:flex items-center gap-3">
+                        <span class="text-sm text-slate-600 max-w-[12rem] truncate">{{ auth()->user()->name }}</span>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button class="btn btn-danger btn-sm">{{ __('app.logout') }}</button>
+                        </form>
+                    </div>
+
+                    {{-- Phone and tablet: one menu holds what the wide bar shows inline. --}}
+                    <details data-menu class="relative lg:hidden">
+                        <summary class="btn btn-secondary btn-sm list-none select-none" aria-label="{{ __('app.examine.menu') }}">
+                            <span aria-hidden="true" class="text-base leading-none">☰</span>
+                        </summary>
+                        <div class="absolute end-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50">
+                            <div class="px-4 py-2 text-xs text-slate-500 border-b border-slate-100 truncate">
+                                {{ auth()->user()->name }}
+                                · {{ auth()->user()->isDoctor() ? __('app.roles.doctor') : __('app.roles.assistant') }}
+                            </div>
+                            @if (auth()->user()->isDoctor())
+                                <a href="{{ route('doctor.dashboard') }}" class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50">{{ $backToMainLabel }}</a>
+                            @endif
+                            @foreach ($kioskLinks as $link)
+                                <a href="{{ $link['href'] }}" target="_blank" class="block px-4 py-2.5 hover:bg-slate-50">
+                                    <div class="text-sm font-medium {{ $link['class'] }}">{{ $link['icon'] }} {{ $link['label'] }}</div>
+                                    <div class="text-xs text-slate-400">{{ $link['hint'] }}</div>
+                                </a>
+                            @endforeach
+                            <form method="POST" action="{{ route('logout') }}" class="border-t border-slate-100 mt-1">
+                                @csrf
+                                <button class="w-full text-start px-4 py-2.5 text-sm text-red-600 hover:bg-red-50">{{ __('app.logout') }}</button>
+                            </form>
+                        </div>
+                    </details>
                 @endauth
             </div>
         </div>
@@ -161,6 +224,18 @@
         function toggle(id) {
             document.getElementById(id).classList.toggle('hidden');
         }
+
+        // Styled file pickers: show what was chosen. Delegated from the document,
+        // so it keeps working after a screen swaps its <main> in the background.
+        document.addEventListener('change', function (e) {
+            var input = e.target;
+            if (!input || input.type !== 'file') return;
+            var field = input.closest('.file-field');
+            var name = field && field.querySelector('.file-name');
+            if (!name) return;
+            var names = Array.prototype.map.call(input.files || [], function (f) { return f.name; });
+            name.textContent = names.length ? names.join(', ') : (name.dataset.empty || '');
+        });
 
         // <details data-menu> dropdowns: only one open at a time, closing on an
         // outside click, on Escape, and once an item inside is chosen (a bare

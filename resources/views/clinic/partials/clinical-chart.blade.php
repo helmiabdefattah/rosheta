@@ -31,9 +31,11 @@
             $selectedRegion = null;
         }
 
-        // The chart is opened automatically when it already holds something, or
-        // when the doctor was just working on a part.
-        $openByDefault = $selectedRegion !== null || $chartNotes->isNotEmpty();
+        // Open by default: for the specialisations that have one, the chart is
+        // the visit's main tool. The script honours a collapse the doctor chose
+        // earlier, unless the chart holds notes or a part was just worked on.
+        $openByDefault = true;
+        $hasNotes = $chartNotes->isNotEmpty();
 
         // Everything the script needs: which parts carry notes, and the pins.
         $chartPayload = [
@@ -68,6 +70,7 @@
              data-chart="{{ $chartKey }}"
              data-points="{{ $usesPoints ? '1' : '0' }}"
              data-selected="{{ $selectedRegion }}"
+             data-has-notes="{{ $hasNotes ? '1' : '0' }}"
              data-payload="{{ json_encode($chartPayload, JSON_UNESCAPED_UNICODE) }}">
 
             <p class="text-xs text-slate-500 mb-3">
@@ -168,6 +171,21 @@
         })(function () {
             var root = document.querySelector('[data-clinical-chart]');
             if (!root) return;
+
+            // Remember a collapse across visits, but never hide a chart that
+            // has something on it or that the doctor is working on right now.
+            var details = root.closest('details');
+            var COLLAPSED = 'examine.chart.collapsed';
+            if (details) {
+                try {
+                    if (localStorage.getItem(COLLAPSED) === '1' && !root.dataset.selected && root.dataset.hasNotes !== '1') {
+                        details.open = false;
+                    }
+                } catch (e) {}
+                details.addEventListener('toggle', function () {
+                    try { localStorage.setItem(COLLAPSED, details.open ? '0' : '1'); } catch (e) {}
+                });
+            }
 
             var config = JSON.parse(root.dataset.payload || '{}');
             var labels = config.labels || {};

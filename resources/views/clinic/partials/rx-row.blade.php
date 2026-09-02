@@ -27,20 +27,20 @@
             <div>
                 <label class="block text-[11px] text-slate-400 mb-0.5">{{ __('app.examine.dose') }}</label>
                 <input name="items[{{ $index }}][dose]" list="rx-dose-{{ $index }}" autocomplete="off"
-                       class="rx-dose w-full border rounded px-2 py-1.5 text-sm" placeholder="500 mg">
+                       class="rx-dose w-full border rounded px-2 py-1.5 text-sm" placeholder="{{ __('app.examine.dose_placeholder') }}">
                 <datalist id="rx-dose-{{ $index }}"></datalist>
             </div>
             <div>
                 <label class="block text-[11px] text-slate-400 mb-0.5">{{ __('app.examine.frequency') }}</label>
-                <input name="items[{{ $index }}][frequency]" class="w-full border rounded px-2 py-1.5 text-sm" placeholder="2x/day">
+                <input name="items[{{ $index }}][frequency]" class="w-full border rounded px-2 py-1.5 text-sm" placeholder="{{ __('app.examine.frequency_placeholder') }}">
             </div>
             <div>
                 <label class="block text-[11px] text-slate-400 mb-0.5">{{ __('app.examine.duration') }}</label>
-                <input name="items[{{ $index }}][duration]" class="w-full border rounded px-2 py-1.5 text-sm" placeholder="7 days">
+                <input name="items[{{ $index }}][duration]" class="w-full border rounded px-2 py-1.5 text-sm" placeholder="{{ __('app.examine.duration_placeholder') }}">
             </div>
             <div>
                 <label class="block text-[11px] text-slate-400 mb-0.5">{{ __('app.examine.instructions') }}</label>
-                <input name="items[{{ $index }}][instructions]" class="w-full border rounded px-2 py-1.5 text-sm" placeholder="after meals">
+                <input name="items[{{ $index }}][instructions]" class="w-full border rounded px-2 py-1.5 text-sm" placeholder="{{ __('app.examine.instructions_placeholder') }}">
             </div>
         </div>
     </div>

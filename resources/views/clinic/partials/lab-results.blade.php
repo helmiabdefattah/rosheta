@@ -6,7 +6,12 @@
     $labTestOptions = $labResults
         ->flatMap(fn ($o) => $o->testLines->map(fn ($l) => optional($l->medicalTest)->test_name_ar ?: optional($l->medicalTest)->test_name_en))
         ->filter()->unique()->sort(SORT_NATURAL | SORT_FLAG_CASE)->values();
+    // Embedded: the caller supplies the card and heading (the examination
+    // screen shows this as one tab of its investigations card), so only the
+    // body renders, already open.
+    $embedded = $embedded ?? false;
 @endphp
+@unless ($embedded)
 <div class="bg-white rounded-xl shadow-sm p-5">
     <button type="button" onclick="toggleLabResults()"
             class="w-full flex items-center justify-between gap-2 text-start">
@@ -18,6 +23,9 @@
     </button>
 
     <div id="lab-results-body" class="hidden mt-4">
+@else
+    <div id="lab-results-body">
+@endunless
         @if ($labResults->isEmpty())
             <p class="text-sm text-slate-400 italic">{{ __('app.examine.no_lab_results') }}</p>
         @else
@@ -116,7 +124,9 @@
             </div>
         @endif
     </div>
+@unless ($embedded)
 </div>
+@endunless
 
 @push('scripts')
 <script>
@@ -129,7 +139,13 @@
         if (chevron) chevron.textContent = body.classList.contains('hidden') ? '▸' : '▾';
     }
 
-    (function () {
+    // Registered on the shared list as well as run now: the examination screen
+    // replaces <main> after each background submit, and the filters must bind
+    // to the new nodes. Elsewhere the list is simply never re-run.
+    (function (init) {
+        (window.examineReady = window.examineReady || []).push(init);
+        init();
+    })(function () {
         const list = document.getElementById('lab-results-list');
         if (!list) return; // no results / empty state
 
@@ -178,6 +194,6 @@
         prevBtn.addEventListener('click', () => { if (page > 1) { page--; render(); } });
         nextBtn.addEventListener('click', () => { page++; render(); });
         render();
-    })();
+    });
 </script>
 @endpush
