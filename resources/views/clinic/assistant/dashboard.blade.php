@@ -377,12 +377,6 @@
                                         <span class="w-5">👤</span> {{ __('app.assistant.view_profile') }}
                                     </a>
 
-                                    {{-- Print queue ticket/receipt --}}
-                                    <a href="{{ route('practice.appointments.ticket', $appt) }}" target="_blank"
-                                       class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                        <span class="w-5">🧾</span> {{ __('app.ticket.print') }}
-                                    </a>
-
                                     {{-- Print on the clinic's Bluetooth ticket printer (via staff mobile app) --}}
                                     <button type="button" onclick="printTicketBt({{ $appt->id }}, this)"
                                             class="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-start">

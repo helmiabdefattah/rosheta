@@ -29,6 +29,31 @@
     </div>
 </div>
 
+{{-- Who is next, and a way to call them from here — the same action the
+     dashboard's "Call next" fires, so the waiting-room counter still announces
+     them. Once the next patient has started, this screen moves on to them. --}}
+<div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+     data-next-patient>
+    <div class="min-w-0 text-sm">
+        <span class="text-xs font-semibold uppercase tracking-wide text-amber-600">{{ __('app.examine.next_patient') }}</span>
+        @if ($nextPatient)
+            <div class="font-semibold text-slate-900 truncate">
+                @if ($nextPatient->queue_number)#{{ $nextPatient->queue_number }} — @endif{{ $nextPatient->client?->name }}
+            </div>
+            <div class="text-xs text-slate-500">{{ $nextPatient->typeLabel() }} · {{ $nextPatient->scheduled_at?->format('H:i') }}</div>
+        @else
+            <div class="text-slate-500">{{ __('app.examine.no_next_patient') }}</div>
+        @endif
+    </div>
+    <button type="button" id="examine-next-btn"
+            data-url="{{ route('practice.display.next', $appointment->clinic_id) }}"
+            data-examine-base="{{ url('practice/doctor/appointments') }}"
+            class="shrink-0 bg-amber-500 hover:bg-amber-400 text-slate-900 text-sm font-bold px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            @disabled(! $nextPatient)>
+        ⏭ {{ __('app.display.next') }}
+    </button>
+</div>
+
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     {{-- LEFT: patient info + attachments --}}
     <div class="space-y-6">
@@ -296,6 +321,36 @@
                             @endif
                         </dl>
                     @endif
+
+                    {{-- What was prescribed that day, with its medicines. --}}
+                    @foreach ($past->appointment?->prescriptions ?? [] as $pastRx)
+                        <div class="mt-3 pt-3 border-t border-dashed border-slate-200">
+                            <div class="flex items-center justify-between gap-2 mb-1.5">
+                                <span class="text-xs font-semibold text-purple-700">
+                                    💊 {{ __('app.examine.history_prescription') }}
+                                    <span class="font-mono font-normal text-slate-400">{{ $pastRx->code }}</span>
+                                </span>
+                                <a href="{{ route('practice.prescriptions.print', $pastRx) }}" target="_blank"
+                                   class="text-xs text-indigo-600 hover:underline">{{ __('app.common.print') }}</a>
+                            </div>
+                            <ol class="text-sm text-slate-700 space-y-0.5 ps-4 list-decimal">
+                                @foreach ($pastRx->items as $it)
+                                    <li>
+                                        <span class="font-medium">{{ $it->medicine_name }}</span>
+                                        @php $meta = array_filter([$it->dose, $it->frequency, $it->duration]); @endphp
+                                        @if ($meta)<span class="text-xs text-slate-500"> — {{ implode(' · ', $meta) }}</span>@endif
+                                        @if ($it->substitute_name)<span class="text-xs text-teal-700"> ↔ {{ $it->substitute_name }}</span>@endif
+                                    </li>
+                                @endforeach
+                            </ol>
+                            @if ($pastRx->sick_leave_days)
+                                <p class="mt-1 text-xs text-slate-500">
+                                    🛌 {{ __('app.print.sick_leave') }}:
+                                    {{ trans_choice('app.print.sick_leave_days', $pastRx->sick_leave_days, ['count' => $pastRx->sick_leave_days]) }}
+                                </p>
+                            @endif
+                        </div>
+                    @endforeach
                 </div>
             @empty
                 <p class="text-sm text-slate-400 italic">{{ __('app.examine.no_history') }}</p>
@@ -731,6 +786,39 @@
         (window.examineReady = window.examineReady || []).push(fn);
         fn();
     }
+
+    // Call the next patient. Completes whoever is in the chair (this visit),
+    // starts the next one, then opens that patient's examination.
+    onExamineReady(function () {
+        var btn = document.getElementById('examine-next-btn');
+        if (!btn) return;
+
+        btn.addEventListener('click', function () {
+            btn.disabled = true;
+            fetch(btn.dataset.url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                cache: 'no-store',
+            })
+                .then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+                .then(function (d) {
+                    if (d.current && d.current.id) {
+                        window.location.href = btn.dataset.examineBase + '/' + d.current.id + '/examine';
+                        return;
+                    }
+                    window.toastr.info(@json(__('app.examine.no_next_patient')));
+                    btn.disabled = false;
+                })
+                .catch(function () {
+                    window.toastr.error(@json(__('app.examine.call_next_failed')));
+                    btn.disabled = false;
+                });
+        });
+    });
 
     // Add another allergy input row.
     function addAllergyRow() {

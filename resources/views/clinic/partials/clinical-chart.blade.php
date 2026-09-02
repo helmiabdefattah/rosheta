@@ -154,10 +154,18 @@
     @push('scripts')
     <script>
         // Registered rather than run once: the examination screen submits in the
-        // background and replaces <main>, so this rebinds to the new chart.
-        // onExamineReady is defined by that screen; fall back to running once
-        // for any other page that includes this partial.
-        (window.onExamineReady || function (fn) { fn(); })(function () {
+        // background and replaces <main>, so this must rebind to the new chart.
+        //
+        // It registers on the examineReady list directly, not through
+        // onExamineReady(): Blade stacks this partial's script before the
+        // examination screen's own, so that helper does not exist yet when this
+        // runs — going through it silently fell back to "run once", which is
+        // why the chart used to need a reload. The list itself is shared: the
+        // screen's helper reuses it if it already exists.
+        (function (init) {
+            (window.examineReady = window.examineReady || []).push(init);
+            init();
+        })(function () {
             var root = document.querySelector('[data-clinical-chart]');
             if (!root) return;
 

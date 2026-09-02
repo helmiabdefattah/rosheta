@@ -13,6 +13,17 @@
     Scripts that bind to elements inside <main> re-register themselves through
     onExamineReady(); see the note there.
 --}}
+<style>
+    /* Own CSS rather than Tailwind's animate-spin: these classes are added at
+       runtime, and the CDN build does not always pick those up in time. */
+    .ajax-busy { opacity: .6; pointer-events: none; }
+    .ajax-spinner {
+        display: inline-block; width: .85em; height: .85em; margin-inline-end: .4em;
+        border: 2px solid currentColor; border-top-color: transparent; border-radius: 999px;
+        vertical-align: -2px; animation: ajax-spin .7s linear infinite;
+    }
+    @keyframes ajax-spin { to { transform: rotate(360deg); } }
+</style>
 <script>
     (function () {
         var main = document.querySelector('main');
@@ -32,8 +43,23 @@
             });
         }
 
+        /**
+         * Show that a submit is in flight: the button gets a spinner and the
+         * form is frozen, so a second tap cannot fire the same action twice
+         * while the first one is still on its way.
+         */
         function busy(form, on) {
+            form.setAttribute('aria-busy', on ? 'true' : 'false');
+            form.classList.toggle('ajax-busy', on);
+
             form.querySelectorAll('button[type="submit"], button:not([type])').forEach(function (b) {
+                if (on) {
+                    b.dataset.idleHtml = b.innerHTML;
+                    b.innerHTML = '<span class="ajax-spinner" aria-hidden="true"></span>' + b.textContent.trim();
+                } else if (b.dataset.idleHtml !== undefined) {
+                    b.innerHTML = b.dataset.idleHtml;
+                    delete b.dataset.idleHtml;
+                }
                 b.disabled = on;
             });
         }

@@ -41,9 +41,10 @@ class DoctorCredentialsController extends Controller
     {
         $this->authorizeAccount($doctor, $user);
 
-        // Letters and digits only: these get read off a screenshot and typed
-        // by hand, so symbols cost more than the entropy they add at 12 chars.
-        $password = Str::password(12, letters: true, numbers: true, symbols: false);
+        // Eight digits, nothing else: these get read off a printed card and typed
+        // on a phone keypad by people who are not going to manage anything more.
+        // Zero-padded so a small draw still comes out eight characters long.
+        $password = str_pad((string) random_int(0, 99999999), 8, '0', STR_PAD_LEFT);
 
         $user->update(['password' => $password]);
 

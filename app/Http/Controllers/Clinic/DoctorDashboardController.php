@@ -58,7 +58,9 @@ class DoctorDashboardController extends Controller
             'client.attachments',
             'client.patientTests' => fn ($q) => $q->with('attachments')->latest(),
             // The patient's examination history across all their visits & doctors.
-            'client.diagnoses' => fn ($q) => $q->with(['doctor', 'appointment'])->latest(),
+            // Each past visit's prescriptions ride along with its diagnosis so the
+            // history can show what was prescribed that day.
+            'client.diagnoses' => fn ($q) => $q->with(['doctor', 'appointment.prescriptions.items'])->latest(),
             'diagnosis',
             'prescriptions.items',
             'medicalRequests',
@@ -101,8 +103,21 @@ class DoctorDashboardController extends Controller
         // doctor's specialisation, so the view needs both.
         $doctor->loadMissing('specialization');
 
+        // Who is next in today's queue at this clinic, so the doctor can call
+        // them from here without going back to the dashboard. Ordered exactly
+        // as the dashboards list the queue.
+        $nextPatient = Appointment::where('doctor_id', $doctor->id)
+            ->where('clinic_id', $appointment->clinic_id)
+            ->whereDate('scheduled_at', today())
+            ->where('status', 'scheduled')
+            ->where('id', '!=', $appointment->id)
+            ->with('client')
+            ->orderBy('queue_number')
+            ->orderBy('scheduled_at')
+            ->first();
+
         return view('clinic.doctor.examine', compact(
-            'appointment', 'doctor', 'billableItems', 'medicalPlans', 'examinationFields',
+            'appointment', 'doctor', 'nextPatient', 'billableItems', 'medicalPlans', 'examinationFields',
             'examinationValues', 'testSuggestions', 'actingDoctorId', 'labResults'
         ));
     }
