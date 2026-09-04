@@ -4,7 +4,10 @@ namespace App\Providers;
 
 use App\Demo\DemoContext;
 use App\Demo\GuardedMySqlConnection;
+use App\Demo\SpecialtyProfile;
+use App\Models\Specialization;
 use Illuminate\Database\Connection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
 class DemoServiceProvider extends ServiceProvider
@@ -32,5 +35,47 @@ class DemoServiceProvider extends ServiceProvider
         view()->composer('*', function ($view) {
             $view->with('demoContext', $this->app->make(DemoContext::class));
         });
+
+        // The specialization picker on the login page. Supplied by a composer
+        // rather than by LoginController, so no production code path changes.
+        view()->composer('auth.login', function ($view) {
+            $view->with('demoSpecializations', $this->specializationChoices());
+        });
+    }
+
+    /**
+     * Specializations for the demo picker, split into those with a purpose-built
+     * clinic and those that fall back to general content — so the doctor knows
+     * what they are getting before they press the button.
+     *
+     * @return array{tailored: \Illuminate\Support\Collection, general: \Illuminate\Support\Collection}
+     */
+    protected function specializationChoices(): array
+    {
+        $empty = ['tailored' => collect(), 'general' => collect()];
+
+        if (! config('demo.enabled')) {
+            return $empty;
+        }
+
+        try {
+            $profiled = array_keys(SpecialtyProfile::all());
+
+            $all = Specialization::query()
+                ->select(['id', 'name', 'slug'])
+                ->orderBy('name')
+                ->get();
+
+            return [
+                'tailored' => $all->filter(fn ($s) => in_array($s->slug, $profiled, true))->values(),
+                'general' => $all->reject(fn ($s) => in_array($s->slug, $profiled, true))->values(),
+            ];
+        } catch (\Throwable $e) {
+            // A missing table or an unreadable profile must never take the
+            // login page down.
+            Log::warning('Demo specialization picker unavailable', ['error' => $e->getMessage()]);
+
+            return $empty;
+        }
     }
 }

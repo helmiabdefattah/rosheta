@@ -1,0 +1,104 @@
+{
+    "label": "نساء وتوليد",
+    "slugs": ["nsaaa-otolyd"],
+    "clinic_name": "عيادة {doctor} للنساء والتوليد",
+    "brief": "استشاري أمراض النساء والتوليد والعقم — حساب تجريبي.",
+    "prices": { "examination": 400, "follow_up": 200 },
+
+    "services": [
+        { "name": "سونار بطني", "price": 400 },
+        { "name": "سونار مهبلي", "price": 500 },
+        { "name": "سونار رباعي الأبعاد", "price": 900 },
+        { "name": "تركيب لولب", "price": 1200 },
+        { "name": "مسحة عنق الرحم (Pap smear)", "price": 700 }
+    ],
+
+    "examination_fields": [
+        { "label": "أسبوع الحمل", "type": "number", "options": null },
+        { "label": "ضغط الدم", "type": "text", "options": null },
+        { "label": "الوزن (كجم)", "type": "number", "options": null },
+        { "label": "نبض الجنين (نبضة/دقيقة)", "type": "number", "options": null },
+        { "label": "وضع الجنين", "type": "select", "options": "رأسي,مقعدي,مستعرض,غير محدد" },
+        { "label": "تقرير السونار", "type": "file", "options": null }
+    ],
+
+    "plans": [
+        {
+            "title": "خطة متابعة الحمل الروتينية",
+            "items": [
+                { "medicine_name": "Folic acid 5mg", "dose": "قرص", "frequency": "مرة يومياً", "duration": "مستمر", "instructions": "صباحاً" },
+                { "medicine_name": "Ferrofolic", "dose": "كبسولة", "frequency": "مرة يومياً", "duration": "مستمر", "instructions": "بعد الأكل مع عصير برتقال" },
+                { "medicine_name": "Calcium + Vitamin D", "dose": "قرص", "frequency": "مرة يومياً", "duration": "مستمر", "instructions": "مساءً بعيداً عن الحديد" }
+            ]
+        },
+        {
+            "title": "خطة علاج التهاب مهبلي فطري",
+            "items": [
+                { "medicine_name": "Fluconazole 150mg", "dose": "كبسولة", "frequency": "جرعة واحدة", "duration": "مرة واحدة", "instructions": "تُكرر بعد 3 أيام عند اللزوم" },
+                { "medicine_name": "Gynomax ovules", "dose": "لبوس مهبلي", "frequency": "مرة ليلاً", "duration": "7 أيام", "instructions": "قبل النوم" }
+            ]
+        },
+        {
+            "title": "خطة تنشيط تبويض",
+            "items": [
+                { "medicine_name": "Clomid 50mg", "dose": "قرص", "frequency": "مرتين يومياً", "duration": "5 أيام", "instructions": "من اليوم الثاني للدورة" },
+                { "medicine_name": "Folic acid 5mg", "dose": "قرص", "frequency": "مرة يومياً", "duration": "مستمر", "instructions": "صباحاً" }
+            ]
+        }
+    ],
+
+    "reasons": [
+        "متابعة حمل — الشهر السادس",
+        "تأخر الدورة الشهرية",
+        "ألم أسفل البطن وإفرازات",
+        "متابعة تنشيط تبويض",
+        "استشارة تأخر إنجاب",
+        "متابعة ما بعد الولادة",
+        "سونار متابعة نمو الجنين"
+    ],
+
+    "cases": [
+        {
+            "diagnosis": "حمل في الأسبوع 26 — متابعة روتينية بدون مضاعفات",
+            "treatment_plan": "خريطة العلاج:\n1) استمرار الحديد وحمض الفوليك والكالسيوم.\n2) تحليل سكر الحمل بين الأسبوع 24 و28.\n3) سونار متابعة نمو كل 4 أسابيع.\n4) تعليمات علامات الخطر: نزيف، تسريب، تقليل حركة الجنين.\n5) المتابعة القادمة بعد شهر.",
+            "notes": "نبض الجنين 148، وضع رأسي، السائل الأمنيوسي طبيعي. الضغط 110/70.",
+            "medicines": [
+                { "medicine_name": "Ferrofolic", "dose": "كبسولة", "frequency": "مرة يومياً", "duration": "مستمر", "instructions": "بعد الأكل" },
+                { "medicine_name": "Calcium + Vitamin D", "dose": "قرص", "frequency": "مرة يومياً", "duration": "مستمر", "instructions": "مساءً" }
+            ],
+            "requests": [
+                { "type": "lab_test", "name": "منحنى تحمل الجلوكوز (GTT)", "notes": "لاستبعاد سكر الحمل" },
+                { "type": "lab_test", "name": "صورة دم كاملة (CBC)" },
+                { "type": "radiology", "name": "سونار متابعة نمو الجنين" }
+            ]
+        },
+        {
+            "diagnosis": "التهاب مهبلي فطري متكرر",
+            "treatment_plan": "خريطة العلاج:\n1) مضاد فطريات فموي جرعة واحدة تُكرر بعد 3 أيام.\n2) لبوس مهبلي لمدة أسبوع.\n3) تجنب الغسول المهبلي والملابس الضيقة.\n4) ضبط سكر الدم إن وُجد ارتفاع.\n5) متابعة بعد أسبوعين.",
+            "notes": "إفرازات بيضاء متجبنة مع حكة شديدة. ثالث نوبة خلال 6 شهور.",
+            "medicines": [
+                { "medicine_name": "Fluconazole 150mg", "dose": "كبسولة", "frequency": "جرعة واحدة", "duration": "مرة واحدة", "instructions": "تُكرر بعد 3 أيام" },
+                { "medicine_name": "Gynomax ovules", "dose": "لبوس مهبلي", "frequency": "مرة ليلاً", "duration": "7 أيام", "instructions": "قبل النوم" }
+            ],
+            "requests": [
+                { "type": "lab_test", "name": "مزرعة إفرازات مهبلية" },
+                { "type": "lab_test", "name": "سكر صائم وتراكمي", "notes": "للنوبات المتكررة" }
+            ]
+        },
+        {
+            "diagnosis": "تكيس المبايض مع عدم انتظام الدورة",
+            "treatment_plan": "خريطة العلاج:\n1) تنظيم الوزن ونظام غذائي منخفض المؤشر الجلايسيمي.\n2) ميتفورمين لتحسين مقاومة الإنسولين.\n3) تنشيط تبويض من اليوم الثاني للدورة.\n4) سونار متابعة تبويض في اليوم 12.\n5) إعادة تقييم بعد 3 دورات.",
+            "notes": "الدورة كل 45-60 يوم مع زيادة وزن وشعرانية خفيفة. السونار يظهر مبايض متعددة الحويصلات.",
+            "medicines": [
+                { "medicine_name": "Glucophage 500mg", "dose": "قرص", "frequency": "مرتين يومياً", "duration": "مستمر", "instructions": "مع الوجبة" },
+                { "medicine_name": "Clomid 50mg", "dose": "قرص", "frequency": "مرتين يومياً", "duration": "5 أيام", "instructions": "من اليوم الثاني للدورة" },
+                { "medicine_name": "Folic acid 5mg", "dose": "قرص", "frequency": "مرة يومياً", "duration": "مستمر", "instructions": "صباحاً" }
+            ],
+            "requests": [
+                { "type": "lab_test", "name": "هرمونات (LH, FSH, Prolactin, AMH)" },
+                { "type": "lab_test", "name": "وظائف الغدة الدرقية (TSH)" },
+                { "type": "radiology", "name": "سونار مهبلي لمتابعة التبويض" }
+            ]
+        }
+    ]
+}

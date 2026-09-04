@@ -91,8 +91,10 @@ harmless — just untidy — and `php artisan demo:purge` clears them at any tim
 ## 3. Using it
 
 1. Open **`/login`**.
-2. Under the sign-in form: **«جرّب كطبيب»** or **«جرّب كمساعد»**.
-3. You land on the doctor or assistant dashboard, in Arabic, already populated.
+2. Under the sign-in form, **pick your specialty** from the dropdown.
+3. Press **«جرّب كطبيب»** or **«جرّب كمساعد»**.
+4. You land on the doctor or assistant dashboard, in Arabic, already populated
+   with a clinic **for that specialty**.
 
 A dark **demo bar** sits at the top (bottom on mobile) with:
 
@@ -103,6 +105,53 @@ A dark **demo bar** sits at the top (bottom on mobile) with:
 | **أعد التجربة** | wipes the tenant and rebuilds it fresh, same session |
 | **أنشئ حسابك الحقيقي** | goes to the real registration form |
 | **إنهاء** | ends the demo and destroys everything immediately |
+
+### Specialties
+
+The dropdown is split into two groups:
+
+- **عيادات مجهزة بمحتوى التخصص** — specialties with a purpose-built clinic.
+  Everything is on-specialty: the services and their prices, the examination
+  fields, the saved treatment plans, the diagnoses and prescriptions on past
+  visits, the lab/radiology requests, and the reason each patient came in.
+- **تخصصات أخرى** — everything else, which gets the general internal-medicine
+  content. Still a complete, working clinic; just not tailored.
+
+Built today: **أسنان** (also covers تقويم أسنان and جراحة فم وأسنان),
+**أطفال**, **جلدية** (also حساسية ومناعة), **نساء وتوليد**, **عظام** (also
+جراحة عظام، روماتيزم، علاج طبيعي), **قلب وأوعية دموية** (also جراحة قلب وصدر).
+Six profiles covering 13 of the 36 specializations.
+
+A dentist, for example, gets حشو عصب / خلع ضرس / تركيبة زيركون on the price
+list, "رقم السن (نظام FDI)" and "حالة اللثة" on the examination form, and a
+patient in the chair complaining of "ألم شديد بضرس العقل السفلي الأيمن".
+
+### Adding a specialty — no code
+
+Drop a JSON file into `resources/demo-templates/specialties/`. Copy an existing
+one as the shape; `asnan.json` is the most complete. Keys:
+
+| Key | Purpose |
+|---|---|
+| `label` | display name (also stored as the tenant's template key) |
+| `slugs` | which `specializations.slug` values this file covers |
+| `clinic_name` | `{doctor}` is replaced with the generated doctor name |
+| `brief`, `prices` | doctor bio, examination and follow-up price |
+| `services` | the chargeable extras price list |
+| `examination_fields` | type must be `text`, `select`, `number`, `percentage` or `file` |
+| `plans` | one-click treatment roadmaps |
+| `cases` | diagnosis + treatment plan + medicines + requests, cycled over past visits |
+| `reasons` | why patients came in, cycled over all appointments |
+
+`requests[].type` must be `examination`, `lab_test` or `radiology`. The file is
+validated on load — a missing `label`, empty `cases`, or a case without
+`diagnosis` / `treatment_plan` / `medicines` throws immediately rather than
+half-seeding a tenant.
+
+Watch out for one constraint: `billable_items` has a unique
+`(doctor_id, name)` index, so a service name that also appears in the generic
+list is handled by a two-pass rename in `SpecialtyOverlay` — you do not need to
+avoid such names, but that is why the rename is not a simple update.
 
 ### Things worth trying in the demo
 

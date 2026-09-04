@@ -1,0 +1,111 @@
+{
+    "label": "أسنان",
+    "slugs": ["asnan", "tkoym-asnan", "grah-fm-oasnan"],
+    "clinic_name": "عيادة {doctor} لطب وجراحة الفم والأسنان",
+    "brief": "استشاري طب وجراحة الفم والأسنان — حساب تجريبي.",
+    "prices": { "examination": 300, "follow_up": 150 },
+
+    "services": [
+        { "name": "حشو عصب (جذر واحد)", "price": 1200 },
+        { "name": "حشو تجميلي ضوئي", "price": 450 },
+        { "name": "خلع ضرس عادي", "price": 350 },
+        { "name": "تنظيف وتلميع (سكيلنج)", "price": 500 },
+        { "name": "تركيبة زيركون", "price": 2500 }
+    ],
+
+    "examination_fields": [
+        { "label": "رقم السن (نظام FDI)", "type": "text", "options": null },
+        { "label": "درجة الألم (1-10)", "type": "number", "options": null },
+        { "label": "حالة اللثة", "type": "select", "options": "سليمة,التهاب بسيط,التهاب متوسط,التهاب متقدم" },
+        { "label": "نزيف عند التسليك", "type": "select", "options": "نعم,لا" },
+        { "label": "التزام المريض بالنظافة", "type": "select", "options": "ممتاز,جيد,ضعيف" },
+        { "label": "صورة الأشعة", "type": "file", "options": null }
+    ],
+
+    "plans": [
+        {
+            "title": "خطة ما بعد حشو العصب",
+            "items": [
+                { "medicine_name": "Augmentin 1g", "dose": "قرص", "frequency": "مرتين يومياً", "duration": "5 أيام", "instructions": "بعد الأكل" },
+                { "medicine_name": "Cataflam 50mg", "dose": "قرص", "frequency": "عند اللزوم", "duration": "3 أيام", "instructions": "بعد الأكل مباشرة" },
+                { "medicine_name": "Hexitol mouthwash", "dose": "غرغرة", "frequency": "مرتين يومياً", "duration": "7 أيام", "instructions": "بعد تنظيف الأسنان" }
+            ]
+        },
+        {
+            "title": "خطة علاج التهاب اللثة",
+            "items": [
+                { "medicine_name": "Dentinox gel", "dose": "دهان موضعي", "frequency": "ثلاث مرات يومياً", "duration": "7 أيام", "instructions": "يوضع على اللثة بعد التجفيف" },
+                { "medicine_name": "Flagyl 500mg", "dose": "قرص", "frequency": "ثلاث مرات يومياً", "duration": "5 أيام", "instructions": "بعد الأكل" }
+            ]
+        },
+        {
+            "title": "خطة ما بعد الخلع الجراحي",
+            "items": [
+                { "medicine_name": "Hostacycline 250mg", "dose": "كبسولة", "frequency": "أربع مرات يومياً", "duration": "5 أيام", "instructions": "بعيداً عن الألبان" },
+                { "medicine_name": "Brufen 600mg", "dose": "قرص", "frequency": "كل 8 ساعات", "duration": "3 أيام", "instructions": "بعد الأكل" }
+            ]
+        }
+    ],
+
+    "reasons": [
+        "ألم شديد بضرس العقل السفلي الأيمن",
+        "متابعة بعد حشو العصب",
+        "تنظيف وإزالة جير",
+        "كسر بحشو قديم",
+        "نزيف باللثة عند تنظيف الأسنان",
+        "استشارة تقويم أسنان",
+        "حساسية من البارد والساخن"
+    ],
+
+    "cases": [
+        {
+            "diagnosis": "التهاب لب مزمن بالضرس السفلي الأيمن الأول (46)",
+            "treatment_plan": "خريطة العلاج:\n1) فتح حجرة اللب وتصريف الالتهاب في الجلسة الأولى.\n2) تحضير وتنظيف القنوات على جلستين.\n3) حشو القنوات نهائياً بالجوتابيركا.\n4) بناء تاج ثم تركيبة زيركون بعد أسبوعين.\n5) متابعة بأشعة بعد 6 شهور.",
+            "notes": "ألم ليلي مستمر منذ 5 أيام يزداد بالحرارة. الاختبار الحيوي إيجابي مطوّل.",
+            "medicines": [
+                { "medicine_name": "Augmentin 1g", "dose": "قرص", "frequency": "مرتين يومياً", "duration": "5 أيام", "instructions": "بعد الأكل" },
+                { "medicine_name": "Cataflam 50mg", "dose": "قرص", "frequency": "عند اللزوم", "duration": "3 أيام", "instructions": "بعد الأكل مباشرة" }
+            ],
+            "requests": [
+                { "type": "radiology", "name": "أشعة بريابيكال على الضرس 46", "notes": "لتقييم القنوات وقمة الجذر" }
+            ]
+        },
+        {
+            "diagnosis": "التهاب لثة متوسط مع تراكم جير فوق وتحت اللثة",
+            "treatment_plan": "خريطة العلاج:\n1) تنظيف وتلميع كامل (سكيلنج) على جلستين.\n2) تسليك جذور للأرباع السفلية.\n3) غسول كلورهكسيدين لمدة أسبوع.\n4) تعليم طريقة الفرشاة والخيط.\n5) إعادة تقييم اللثة بعد شهر.",
+            "notes": "نزيف عند التسليك في معظم المناطق، عمق الجيوب 4 مم بالأرباع السفلية.",
+            "medicines": [
+                { "medicine_name": "Hexitol mouthwash", "dose": "غرغرة", "frequency": "مرتين يومياً", "duration": "10 أيام", "instructions": "بعد تنظيف الأسنان بنصف ساعة" },
+                { "medicine_name": "Flagyl 500mg", "dose": "قرص", "frequency": "ثلاث مرات يومياً", "duration": "5 أيام", "instructions": "بعد الأكل" }
+            ],
+            "requests": [
+                { "type": "radiology", "name": "أشعة بانوراما للفكين", "notes": "لتقييم مستوى العظم" }
+            ]
+        },
+        {
+            "diagnosis": "ضرس عقل سفلي أيسر مطمور جزئياً مع التهاب حوائط التاج",
+            "treatment_plan": "خريطة العلاج:\n1) السيطرة على الالتهاب بمضاد حيوي وغسول.\n2) خلع جراحي للضرس المطمور بعد زوال الالتهاب.\n3) تعليمات ما بعد الخلع وكمادات باردة أول 24 ساعة.\n4) إزالة الغرز بعد أسبوع.\n5) متابعة التئام مكان الخلع بعد أسبوعين.",
+            "notes": "تورم بالخد الأيسر وصعوبة في فتح الفم. حرارة 37.8 درجة.",
+            "medicines": [
+                { "medicine_name": "Hostacycline 250mg", "dose": "كبسولة", "frequency": "أربع مرات يومياً", "duration": "5 أيام", "instructions": "بعيداً عن الألبان" },
+                { "medicine_name": "Brufen 600mg", "dose": "قرص", "frequency": "كل 8 ساعات", "duration": "3 أيام", "instructions": "بعد الأكل" },
+                { "medicine_name": "Hexitol mouthwash", "dose": "غرغرة", "frequency": "ثلاث مرات يومياً", "duration": "7 أيام", "instructions": "بدون شطف بالماء بعدها" }
+            ],
+            "requests": [
+                { "type": "radiology", "name": "أشعة بانوراما للفكين", "notes": "تحديد علاقة الجذور بالعصب السنخي" },
+                { "type": "lab_test", "name": "صورة دم كاملة (CBC)", "notes": "قبل التدخل الجراحي" }
+            ]
+        },
+        {
+            "diagnosis": "تسوس عميق بالسن الأمامي العلوي (21) مع كسر بالحشو التجميلي",
+            "treatment_plan": "خريطة العلاج:\n1) إزالة الحشو القديم وتنظيف التسوس.\n2) وضع بطانة واقية للب.\n3) حشو تجميلي ضوئي بلون مطابق.\n4) تلميع نهائي وضبط الإطباق.\n5) متابعة بعد 3 شهور.",
+            "notes": "شكوى تجميلية بالأساس مع حساسية خفيفة من البارد.",
+            "medicines": [
+                { "medicine_name": "Sensodyne toothpaste", "dose": "معجون", "frequency": "مرتين يومياً", "duration": "شهر", "instructions": "يُدلك على السن الحساس" }
+            ],
+            "requests": [
+                { "type": "examination", "name": "اختبار حيوية اللب", "notes": "للتأكد من عدم وصول التسوس للعصب" }
+            ]
+        }
+    ]
+}

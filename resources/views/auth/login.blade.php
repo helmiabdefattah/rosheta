@@ -190,8 +190,35 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('demo.start') }}" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <form method="POST" action="{{ route('demo.start') }}" class="mt-4">
                     @csrf
+
+                    {{-- Pick a specialization: the seeded clinic matches it. --}}
+                    @if (!empty($demoSpecializations['tailored']) && $demoSpecializations['tailored']->isNotEmpty())
+                        <label for="demo-specialty" class="block text-xs font-semibold text-slate-600 mb-1.5">
+                            {{ app()->getLocale() === 'ar' ? 'اختر تخصصك لتظهر لك عيادة مناسبة' : 'Pick your specialty to get a matching clinic' }}
+                        </label>
+                        <select
+                            name="specialty" id="demo-specialty"
+                            class="w-full mb-3 px-3 py-2.5 rounded-xl border border-emerald-200 bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        >
+                            <optgroup label="{{ app()->getLocale() === 'ar' ? 'عيادات مجهزة بمحتوى التخصص' : 'Clinics with specialty content' }}">
+                                @foreach ($demoSpecializations['tailored'] as $specialization)
+                                    <option value="{{ $specialization->slug }}">{{ $specialization->name }}</option>
+                                @endforeach
+                            </optgroup>
+
+                            @if ($demoSpecializations['general']->isNotEmpty())
+                                <optgroup label="{{ app()->getLocale() === 'ar' ? 'تخصصات أخرى (محتوى باطنة عامة)' : 'Other specialties (general content)' }}">
+                                    @foreach ($demoSpecializations['general'] as $specialization)
+                                        <option value="{{ $specialization->slug }}">{{ $specialization->name }}</option>
+                                    @endforeach
+                                </optgroup>
+                            @endif
+                        </select>
+                    @endif
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                         type="submit" name="role" value="doctor"
                         class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl shadow-md text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300 transform hover:-translate-y-0.5"
@@ -211,6 +238,7 @@
                         </svg>
                         {{ app()->getLocale() === 'ar' ? 'جرّب كمساعد' : 'Try as an assistant' }}
                     </button>
+                    </div>
                 </form>
 
                 <p class="text-[11px] text-slate-400 mt-3 text-center leading-relaxed">

@@ -46,8 +46,9 @@ class DemoSeeder
     public function seed(string $demoSessionId, ?string $specialty = null): array
     {
         $t0 = $this->t0();
+        $profile = SpecialtyProfile::forSlug($specialty);
 
-        $result = $this->onboarding->onboard($this->input($specialty));
+        $result = $this->onboarding->onboard($this->input($specialty, $profile));
 
         /** @var Doctor $doctor */
         $doctor = $result['doctor'];
@@ -59,10 +60,14 @@ class DemoSeeder
         // failure here would strand a half-built tenant the caller cannot even
         // identify — it has no demo_session_id yet. Clean it up ourselves.
         try {
-            DB::transaction(function () use ($doctor, $clinic, $demoSessionId, $t0) {
-                $this->markAsDemoTenant($doctor, $demoSessionId);
+            DB::transaction(function () use ($doctor, $clinic, $demoSessionId, $t0, $profile) {
+                $this->markAsDemoTenant($doctor, $demoSessionId, $profile);
                 $this->openClinicAround($clinic, $t0);
                 $this->retimeTodayAround($doctor, $clinic, $t0);
+
+                if ($profile !== null) {
+                    app(SpecialtyOverlay::class)->apply($doctor, $clinic, $profile);
+                }
             });
         } catch (\Throwable $e) {
             app(DemoPurger::class)->purgeDoctor($doctor->id);
@@ -85,16 +90,25 @@ class DemoSeeder
     }
 
     /** Input for the onboarding service: a full clinic, not a sparse one. */
-    protected function input(?string $specialty): array
+    protected function input(?string $specialty, ?array $profile): array
     {
+        $doctorName = $this->doctorName();
+
         return [
-            'doctor_name' => $this->doctorName(),
+            'doctor_name' => $doctorName,
             'specialization_id' => $this->specializationId($specialty),
-            'brief' => 'حساب تجريبي — بيئة تجربة نظام مستشفى أون.',
+            // Without this the onboarding service falls back to its own
+            // "{name} Clinic", which reads oddly in an Arabic workspace.
+            'clinic_name' => str_replace(
+                '{doctor}',
+                $doctorName,
+                $profile['clinic_name'] ?? 'عيادة {doctor}'
+            ),
+            'brief' => $profile['brief'] ?? 'حساب تجريبي — بيئة تجربة نظام مستشفى أون.',
             'address' => 'التجمع الخامس، القاهرة الجديدة',
             'phone_number' => '0100 000 0000',
-            'medical_examination_price' => 400,
-            'follow_up_price' => 150,
+            'medical_examination_price' => $profile['prices']['examination'] ?? 400,
+            'follow_up_price' => $profile['prices']['follow_up'] ?? 150,
             'appointment_duration' => 30,
 
             // Opening hours are rewritten around T0 immediately afterwards;
@@ -114,14 +128,14 @@ class DemoSeeder
     }
 
     /** Flag the tenant so the middleware, the purge and the demo bar can find it. */
-    protected function markAsDemoTenant(Doctor $doctor, string $demoSessionId): void
+    protected function markAsDemoTenant(Doctor $doctor, string $demoSessionId, ?array $profile): void
     {
         $doctor->forceFill([
             'is_demo' => true,
             'demo_session_id' => $demoSessionId,
             'demo_expires_at' => now()->addMinutes((int) config('demo.max_duration_minutes')),
             'demo_last_activity_at' => now(),
-            'demo_template_key' => 'general_v1',
+            'demo_template_key' => $profile['label'] ?? 'general_v1',
         ])->save();
     }
 

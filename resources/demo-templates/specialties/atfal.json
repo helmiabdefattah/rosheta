@@ -1,0 +1,118 @@
+{
+    "label": "أطفال",
+    "slugs": ["atfal"],
+    "clinic_name": "عيادة {doctor} لطب الأطفال وحديثي الولادة",
+    "brief": "استشاري طب الأطفال وحديثي الولادة — حساب تجريبي.",
+    "prices": { "examination": 300, "follow_up": 150 },
+
+    "services": [
+        { "name": "جلسة تبخيرة (نبيوليزر)", "price": 120 },
+        { "name": "تطعيم غير إجباري", "price": 400 },
+        { "name": "قياس ومتابعة منحنى النمو", "price": 100 },
+        { "name": "فحص حديثي الولادة الشامل", "price": 350 },
+        { "name": "اختبار حساسية جلدي", "price": 500 }
+    ],
+
+    "examination_fields": [
+        { "label": "الوزن (كجم)", "type": "number", "options": null },
+        { "label": "الطول (سم)", "type": "number", "options": null },
+        { "label": "محيط الرأس (سم)", "type": "number", "options": null },
+        { "label": "درجة الحرارة (°م)", "type": "number", "options": null },
+        { "label": "نسبة الأكسجين", "type": "percentage", "options": null },
+        { "label": "حالة التطعيمات", "type": "select", "options": "منتظمة,متأخرة,غير معروفة" },
+        { "label": "الرضاعة", "type": "select", "options": "طبيعية,صناعية,مختلطة,فُطم" }
+    ],
+
+    "plans": [
+        {
+            "title": "خطة علاج نزلة شعبية للأطفال",
+            "items": [
+                { "medicine_name": "Augmentin 156mg/5ml", "dose": "5 مل", "frequency": "مرتين يومياً", "duration": "7 أيام", "instructions": "يُرج جيداً ويُحفظ بالثلاجة" },
+                { "medicine_name": "Ventolin nebules", "dose": "نصف أمبول", "frequency": "ثلاث مرات يومياً", "duration": "5 أيام", "instructions": "تبخيرة مع محلول ملح" },
+                { "medicine_name": "Paracetamol syrup 120mg/5ml", "dose": "حسب الوزن", "frequency": "عند اللزوم", "duration": "5 أيام", "instructions": "كل 6 ساعات للحرارة" }
+            ]
+        },
+        {
+            "title": "خطة علاج النزلة المعوية والجفاف",
+            "items": [
+                { "medicine_name": "Rehydran sachets", "dose": "كيس على 200 مل ماء", "frequency": "بعد كل إسهال", "duration": "3 أيام", "instructions": "يُعطى بالتدريج بالملعقة" },
+                { "medicine_name": "Antinal suspension", "dose": "5 مل", "frequency": "مرتين يومياً", "duration": "3 أيام", "instructions": "بعد الأكل" },
+                { "medicine_name": "Zinc syrup", "dose": "5 مل", "frequency": "مرة يومياً", "duration": "10 أيام", "instructions": "بعد الأكل" }
+            ]
+        },
+        {
+            "title": "خطة أنيميا نقص الحديد للأطفال",
+            "items": [
+                { "medicine_name": "Ferro-6 syrup", "dose": "5 مل", "frequency": "مرة يومياً", "duration": "60 يوم", "instructions": "مع عصير برتقال بعيداً عن اللبن" },
+                { "medicine_name": "Vitamin D drops", "dose": "10 نقاط", "frequency": "مرة يومياً", "duration": "مستمر", "instructions": "صباحاً" }
+            ]
+        }
+    ],
+
+    "reasons": [
+        "ارتفاع في الحرارة منذ يومين",
+        "كحة وصعوبة في التنفس",
+        "إسهال وقيء منذ أمس",
+        "متابعة نمو ووزن",
+        "متابعة تطعيمات",
+        "طفح جلدي بعد تناول دواء",
+        "ضعف شهية وشحوب"
+    ],
+
+    "cases": [
+        {
+            "diagnosis": "التهاب شعبي حاد مع صفير — طفل عمره سنتان",
+            "treatment_plan": "خريطة العلاج:\n1) تبخيرة موسعة للشعب ثلاث مرات يومياً لمدة 5 أيام.\n2) مضاد حيوي شراب حسب الوزن لمدة أسبوع.\n3) خافض حرارة عند تجاوز 38.5 درجة.\n4) سوائل دافئة ورفع الرأس أثناء النوم.\n5) العودة فوراً عند سرعة التنفس أو ازرقاق الشفاه.",
+            "notes": "صفير منتشر بالصدر مع سحب بين الضلوع بسيط. الأكسجين 96%.",
+            "medicines": [
+                { "medicine_name": "Augmentin 156mg/5ml", "dose": "5 مل", "frequency": "مرتين يومياً", "duration": "7 أيام", "instructions": "يُحفظ بالثلاجة" },
+                { "medicine_name": "Ventolin nebules", "dose": "نصف أمبول", "frequency": "ثلاث مرات يومياً", "duration": "5 أيام", "instructions": "مع محلول ملح" },
+                { "medicine_name": "Paracetamol syrup 120mg/5ml", "dose": "7 مل", "frequency": "عند اللزوم", "duration": "5 أيام", "instructions": "كل 6 ساعات" }
+            ],
+            "requests": [
+                { "type": "lab_test", "name": "صورة دم كاملة (CBC)", "notes": "لتقييم شدة الالتهاب" },
+                { "type": "radiology", "name": "أشعة عادية على الصدر", "notes": "عند عدم التحسن خلال 48 ساعة" }
+            ]
+        },
+        {
+            "diagnosis": "نزلة معوية فيروسية مع جفاف بسيط",
+            "treatment_plan": "خريطة العلاج:\n1) محلول معالجة الجفاف بعد كل مرة إسهال.\n2) الاستمرار في الرضاعة الطبيعية بدون انقطاع.\n3) الزنك لمدة 10 أيام لتقليل مدة الإسهال.\n4) تجنب العصائر المحلاة والمياه الغازية.\n5) العودة عند جفاف الفم أو قلة التبول أو خمول.",
+            "notes": "إسهال 5 مرات يومياً مع قيء مرتين. الوزن نقص 300 جم عن آخر زيارة.",
+            "medicines": [
+                { "medicine_name": "Rehydran sachets", "dose": "كيس على 200 مل", "frequency": "بعد كل إسهال", "duration": "3 أيام", "instructions": "بالملعقة بالتدريج" },
+                { "medicine_name": "Antinal suspension", "dose": "5 مل", "frequency": "مرتين يومياً", "duration": "3 أيام", "instructions": "بعد الأكل" },
+                { "medicine_name": "Zinc syrup", "dose": "5 مل", "frequency": "مرة يومياً", "duration": "10 أيام", "instructions": "بعد الأكل" }
+            ],
+            "requests": [
+                { "type": "lab_test", "name": "تحليل براز كامل", "notes": "لاستبعاد سبب بكتيري" },
+                { "type": "lab_test", "name": "أملاح الدم (Na, K)" }
+            ]
+        },
+        {
+            "diagnosis": "أنيميا نقص حديد — طفل عمره 4 سنوات",
+            "treatment_plan": "خريطة العلاج:\n1) مكمل حديد شراب لمدة شهرين.\n2) نظام غذائي غني بالحديد وتقليل الألبان بين الوجبات.\n3) فيتامين د يومياً.\n4) إعادة صورة الدم بعد 6 أسابيع.\n5) متابعة منحنى النمو كل 3 شهور.",
+            "notes": "شحوب وضعف شهية. الهيموجلوبين 9.6 جم/دل.",
+            "medicines": [
+                { "medicine_name": "Ferro-6 syrup", "dose": "5 مل", "frequency": "مرة يومياً", "duration": "60 يوم", "instructions": "مع عصير برتقال" },
+                { "medicine_name": "Vitamin D drops", "dose": "10 نقاط", "frequency": "مرة يومياً", "duration": "مستمر", "instructions": "صباحاً" }
+            ],
+            "requests": [
+                { "type": "lab_test", "name": "صورة دم كاملة + مخزون الحديد" },
+                { "type": "lab_test", "name": "تحليل براز للطفيليات" }
+            ]
+        },
+        {
+            "diagnosis": "التهاب لوزتين صديدي متكرر",
+            "treatment_plan": "خريطة العلاج:\n1) مضاد حيوي لمدة 10 أيام كاملة بدون توقف.\n2) غرغرة بمحلول ملح دافئ للأطفال فوق 6 سنوات.\n3) خافض حرارة ومسكن عند اللزوم.\n4) سوائل باردة وأطعمة لينة.\n5) تقييم استئصال اللوزتين عند تكرار النوبات أكثر من 6 مرات سنوياً.",
+            "notes": "خامس نوبة خلال هذا العام. اللوزتان متضخمتان مع بقع صديدية.",
+            "medicines": [
+                { "medicine_name": "Ospen 1000 syrup", "dose": "5 مل", "frequency": "ثلاث مرات يومياً", "duration": "10 أيام", "instructions": "قبل الأكل بساعة" },
+                { "medicine_name": "Brufen syrup 100mg/5ml", "dose": "7 مل", "frequency": "كل 8 ساعات", "duration": "4 أيام", "instructions": "بعد الأكل" }
+            ],
+            "requests": [
+                { "type": "lab_test", "name": "مسحة من الحلق (Throat swab)" },
+                { "type": "lab_test", "name": "تحليل ASOT", "notes": "لمتابعة الحمى الروماتيزمية" }
+            ]
+        }
+    ]
+}
