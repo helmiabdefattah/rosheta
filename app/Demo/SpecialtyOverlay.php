@@ -82,8 +82,11 @@ class SpecialtyOverlay
                 continue;
             }
 
+            // The name is deliberately not set here: DemoPatientLabeller names
+            // every patient after what their file demonstrates, and runs after
+            // this overlay. A roster supplies demographics and medical profile
+            // only — which is what a specialty actually changes.
             $client->forceFill([
-                'name' => $person['name'],
                 'gender' => $person['gender'],
                 'dob' => $this->resolveDob($person),
                 'blood_type' => $person['blood'] ?? $client->blood_type,

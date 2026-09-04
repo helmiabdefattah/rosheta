@@ -3,12 +3,14 @@
 namespace App\Demo;
 
 use App\Models\Appointment;
+use App\Models\Client;
 use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\Specialization;
 use App\Services\ClinicOnboardingService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Creates one demo tenant: a doctor, their clinic, an assistant, and a clinic
@@ -68,6 +70,13 @@ class DemoSeeder
                 if ($profile !== null) {
                     app(SpecialtyOverlay::class)->apply($doctor, $clinic, $profile);
                 }
+
+                $this->addBookingOnlyCases($doctor, $clinic, $t0);
+
+                // Last: the label describes the finished state of each file, so
+                // it has to run after the queue is re-timed and the specialty
+                // overlay has been applied.
+                app(DemoPatientLabeller::class)->label($doctor);
             });
         } catch (\Throwable $e) {
             app(DemoPurger::class)->purgeDoctor($doctor->id);
@@ -225,6 +234,64 @@ class DemoSeeder
                 $finished->count() + ($inProgress ? 1 : 0) + $i + 1
             );
         }
+    }
+
+    /**
+     * Two cases that the onboarding service never produces, because every
+     * patient it creates ends up with a history: a patient who is only booked
+     * for next week, and one who booked and did not turn up.
+     *
+     * Both have deliberately empty files. That is the point — one shows what a
+     * brand-new booking looks like before the first visit, the other feeds the
+     * attendance report. Without them the demo has no "حالة بموعد قادم" and no
+     * "حالة لم تحضر" to open.
+     */
+    protected function addBookingOnlyCases(Doctor $doctor, Clinic $clinic, Carbon $t0): void
+    {
+        $cases = [
+            ['when' => $t0->copy()->addDays(2)->setTime(11, 30), 'status' => 'scheduled', 'source' => 'reservation'],
+            ['when' => $t0->copy()->subDays(2)->setTime(12, 0), 'status' => 'missed', 'source' => 'system'],
+        ];
+
+        foreach ($cases as $case) {
+            // Named by DemoPatientLabeller once the appointment exists.
+            $client = Client::create([
+                'name' => 'حالة جديدة',
+                'phone_number' => $this->uniquePhone(),
+                'email' => 'patient.'.Str::lower(Str::random(12)).'@demo.rosheta.test',
+                'password' => Str::random(32),
+                'gender' => 'female',
+                'dob' => now()->subYears(31)->toDateString(),
+            ]);
+
+            Appointment::create([
+                'doctor_id' => $doctor->id,
+                'clinic_id' => $clinic->id,
+                'client_id' => $client->id,
+                'scheduled_at' => $case['when'],
+                'appointment_date' => $case['when']->toDateString(),
+                'appointment_time' => $case['when']->format('H:i:s'),
+                'queue_number' => 1,
+                'source' => $case['source'],
+                'type' => 'medical_examination',
+                'price' => $clinic->medical_examination_price,
+                'status' => $case['status'],
+                'reason' => $case['status'] === 'missed' ? 'لم يحضر في الموعد' : 'كشف أول — حجز جديد',
+            ]);
+        }
+    }
+
+    /** Unique across users and clients, matching the onboarding convention. */
+    protected function uniquePhone(): string
+    {
+        do {
+            $phone = '01'.random_int(0, 2).str_pad((string) random_int(0, 99999999), 8, '0', STR_PAD_LEFT);
+        } while (
+            Client::where('phone_number', $phone)->exists()
+            || \App\Models\User::where('phone_number', $phone)->exists()
+        );
+
+        return $phone;
     }
 
     /** Appointment carries three views of its time; keep them consistent. */

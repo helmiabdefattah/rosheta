@@ -22,14 +22,14 @@
     ],
 
     "patients": [
-        { "name": "سارة محمود عبد العزيز", "gender": "female", "age": 29, "blood": "A+", "allergies": ["الأسبرين"], "chronic": [], "history": "حمل أول. متابعة منتظمة منذ الأسبوع الثامن." },
-        { "name": "نورهان عادل فؤاد", "gender": "female", "age": 33, "blood": "O+", "allergies": [], "chronic": ["أنيميا نقص الحديد"], "history": "ولادة قيصرية سابقة 2021. متابعة أنيميا." },
-        { "name": "هالة رمضان عثمان", "gender": "female", "age": 38, "blood": "AB-", "allergies": [], "chronic": [], "history": "ولادتان طبيعيتان. لا أمراض مزمنة." },
-        { "name": "إيمان جمال الدسوقي", "gender": "female", "age": 26, "blood": "B+", "allergies": [], "chronic": ["تكيس المبايض"], "history": "تأخر إنجاب سنتان. دورة غير منتظمة." },
-        { "name": "منى صلاح الدين", "gender": "female", "age": 41, "blood": "A-", "allergies": ["اليود"], "chronic": ["الغدة الدرقية"], "history": "ثلاث ولادات سابقة. على Eltroxin يومياً." },
-        { "name": "دعاء أشرف السيد", "gender": "female", "age": 31, "blood": "O-", "allergies": [], "chronic": ["سكري الحمل"], "history": "سكري حمل في الحمل السابق — ضُبط بالنظام الغذائي." },
-        { "name": "ريهام محمد الشناوي", "gender": "female", "age": 24, "blood": "B-", "allergies": ["البنسلين"], "chronic": [], "history": "حمل أول. لا مضاعفات حتى الآن." },
-        { "name": "شيماء طارق زكي", "gender": "female", "age": 35, "blood": "AB+", "allergies": [], "chronic": ["ارتفاع ضغط الدم"], "history": "ارتفاع ضغط مزمن — متابعة مشتركة مع الباطنة." }
+        { "gender": "female", "age": 29, "blood": "A+", "allergies": ["الأسبرين"], "chronic": [], "history": "حمل أول. متابعة منتظمة منذ الأسبوع الثامن." },
+        { "gender": "female", "age": 33, "blood": "O+", "allergies": [], "chronic": ["أنيميا نقص الحديد"], "history": "ولادة قيصرية سابقة 2021. متابعة أنيميا." },
+        { "gender": "female", "age": 38, "blood": "AB-", "allergies": [], "chronic": [], "history": "ولادتان طبيعيتان. لا أمراض مزمنة." },
+        { "gender": "female", "age": 26, "blood": "B+", "allergies": [], "chronic": ["تكيس المبايض"], "history": "تأخر إنجاب سنتان. دورة غير منتظمة." },
+        { "gender": "female", "age": 41, "blood": "A-", "allergies": ["اليود"], "chronic": ["الغدة الدرقية"], "history": "ثلاث ولادات سابقة. على Eltroxin يومياً." },
+        { "gender": "female", "age": 31, "blood": "O-", "allergies": [], "chronic": ["سكري الحمل"], "history": "سكري حمل في الحمل السابق — ضُبط بالنظام الغذائي." },
+        { "gender": "female", "age": 24, "blood": "B-", "allergies": ["البنسلين"], "chronic": [], "history": "حمل أول. لا مضاعفات حتى الآن." },
+        { "gender": "female", "age": 35, "blood": "AB+", "allergies": [], "chronic": ["ارتفاع ضغط الدم"], "history": "ارتفاع ضغط مزمن — متابعة مشتركة مع الباطنة." }
     ],
 
     "results": [

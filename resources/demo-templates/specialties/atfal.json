@@ -24,16 +24,16 @@
     ],
 
     "patients": [
-        { "name": "يوسف طارق منصور", "gender": "male", "age": 2, "blood": "B+", "allergies": ["الفول السوداني"], "chronic": ["حساسية الصدر"], "history": "نزلات شعبية متكررة في الشتاء. تطعيمات مكتملة حتى سن سنتين." },
-        { "name": "ملك أحمد عبد الله", "gender": "female", "age": 4, "blood": "O+", "allergies": [], "chronic": [], "history": "الولادة طبيعية في موعدها. النمو ضمن المعدل الطبيعي." },
-        { "name": "عمر خالد الشناوي", "gender": "male", "age": 6, "blood": "A+", "allergies": ["البنسلين"], "chronic": ["الربو"], "history": "تشخيص ربو منذ سن الرابعة، على بخاخ وقائي في الشتاء." },
-        { "name": "جنى محمود السيد", "gender": "female", "age": 1, "age_months": 3, "blood": "AB+", "allergies": [], "chronic": [], "history": "رضاعة مختلطة. تطعيمات منتظمة. لا مشاكل صحية." },
-        { "name": "آدم مصطفى فؤاد", "gender": "male", "age": 8, "blood": "O-", "allergies": [], "chronic": ["أنيميا نقص الحديد"], "history": "متابعة أنيميا منذ عام. تحسن بعد العلاج بالحديد." },
-        { "name": "لينا عمرو زكي", "gender": "female", "age": 3, "blood": "B-", "allergies": ["اللاكتوز"], "chronic": [], "history": "حساسية لبن البقر — على لبن خالٍ من اللاكتوز." },
-        { "name": "زياد هشام الجندي", "gender": "male", "age": 0, "age_months": 7, "blood": "A-", "allergies": [], "chronic": [], "history": "رضيع سليم. رضاعة طبيعية. متابعة نمو دورية." },
-        { "name": "حبيبة وليد رشدي", "gender": "female", "age": 10, "blood": "O+", "allergies": [], "chronic": [], "history": "لا يوجد تاريخ مرضي يُذكر. تطعيمات مكتملة." },
-        { "name": "مالك سامي حلمي", "gender": "male", "age": 5, "blood": "AB-", "allergies": ["البيض"], "chronic": [], "history": "التهاب لوزتين متكرر — 5 نوبات خلال العام." },
-        { "name": "تالة كريم عثمان", "gender": "female", "age": 7, "blood": "B+", "allergies": [], "chronic": [], "history": "كسر بالساعد الأيسر منذ عامين — التئم بالكامل." }
+        { "gender": "male", "age": 2, "blood": "B+", "allergies": ["الفول السوداني"], "chronic": ["حساسية الصدر"], "history": "نزلات شعبية متكررة في الشتاء. تطعيمات مكتملة حتى سن سنتين." },
+        { "gender": "female", "age": 4, "blood": "O+", "allergies": [], "chronic": [], "history": "الولادة طبيعية في موعدها. النمو ضمن المعدل الطبيعي." },
+        { "gender": "male", "age": 6, "blood": "A+", "allergies": ["البنسلين"], "chronic": ["الربو"], "history": "تشخيص ربو منذ سن الرابعة، على بخاخ وقائي في الشتاء." },
+        { "gender": "female", "age": 1, "age_months": 3, "blood": "AB+", "allergies": [], "chronic": [], "history": "رضاعة مختلطة. تطعيمات منتظمة. لا مشاكل صحية." },
+        { "gender": "male", "age": 8, "blood": "O-", "allergies": [], "chronic": ["أنيميا نقص الحديد"], "history": "متابعة أنيميا منذ عام. تحسن بعد العلاج بالحديد." },
+        { "gender": "female", "age": 3, "blood": "B-", "allergies": ["اللاكتوز"], "chronic": [], "history": "حساسية لبن البقر — على لبن خالٍ من اللاكتوز." },
+        { "gender": "male", "age": 0, "age_months": 7, "blood": "A-", "allergies": [], "chronic": [], "history": "رضيع سليم. رضاعة طبيعية. متابعة نمو دورية." },
+        { "gender": "female", "age": 10, "blood": "O+", "allergies": [], "chronic": [], "history": "لا يوجد تاريخ مرضي يُذكر. تطعيمات مكتملة." },
+        { "gender": "male", "age": 5, "blood": "AB-", "allergies": ["البيض"], "chronic": [], "history": "التهاب لوزتين متكرر — 5 نوبات خلال العام." },
+        { "gender": "female", "age": 7, "blood": "B+", "allergies": [], "chronic": [], "history": "كسر بالساعد الأيسر منذ عامين — التئم بالكامل." }
     ],
 
     "results": [

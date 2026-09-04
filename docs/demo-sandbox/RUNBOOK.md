@@ -14,7 +14,22 @@ clinic that is live right now** — no signup, no password:
 - **Two visits already finished** earlier today.
 - **~15 past visits** going back about three months, each with a diagnosis, a
   prescription, lab/radiology requests and results, and a paid collection.
-- **12 patients** with medical history, allergies and chronic conditions.
+- **14 patients**, each **named after what their file demonstrates** rather than
+  given an invented identity — so the queue reads as a menu of things to try:
+
+  ```
+  حالة تحت الكشف الآن 1 — تحاليل، روشتة ومستحقات
+  حالة في الانتظار اليوم 2 — تحاليل، روشتة وموعد قادم
+  حالة سابقة 3 — تحاليل، روشتة وحساسية دواء
+  حالة بموعد قادم 1
+  حالة لم تحضر 1
+  ```
+
+  The label is derived from the seeded rows after everything else is in place,
+  so it is always true: the qualifiers appear only when that patient really has
+  results, a prescription, an unpaid balance, insurance, a drug allergy or a
+  future booking. Roles are `تحت الكشف الآن`, `في الانتظار اليوم`,
+  `انتهى كشفها اليوم`, `سابقة`, `بموعد قادم`, `لم تحضر`.
 - **A clinic** with opening hours, prices, chargeable extras, treatment-plan
   templates and custom examination fields.
 - **An assistant account**, switchable from the demo bar without a password.
@@ -143,7 +158,7 @@ one as the shape; `asnan.json` is the most complete. Keys:
 | `cases` | diagnosis + treatment plan + medicines + requests, cycled over past visits |
 | `reasons` | why patients came in, cycled over all appointments |
 | `results` | lab/radiology results filed against past visits. `lines` is the English text of the generated PDF the doctor opens |
-| `patients` | *optional.* Rewrites the patient roster — essential where the specialty implies an age group. Use `age` (+ optional `age_months`) rather than `dob`, so the roster does not silently age as the file sits in the repo |
+| `patients` | *optional.* Rewrites the patient roster — essential where the specialty implies an age group. Use `age` (+ optional `age_months`) rather than `dob`, so the roster does not silently age as the file sits in the repo. **No `name`**: patients are named after what their file demonstrates, by `DemoPatientLabeller`, which runs last |
 
 Constraints, all enforced when the file loads so a bad profile fails
 immediately rather than half-seeding a tenant:
