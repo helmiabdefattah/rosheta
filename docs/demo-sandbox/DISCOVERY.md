@@ -14,15 +14,11 @@ Companion file: `SCHEMA_MAP.md` (placeholder → real names).
 > `04claudecodeprompts.md`. Both moved to `docs/demo-sandbox/` as
 > `IMPLEMENTATION_BRIEF.md` and `PROMPTS.md` in commit `55f9c1c`, on its own.
 >
-> **The Arabic design document is not in this repository.** The brief references it as
-> `01-demo-sandbox-design-AR.md` and Prompt 2 expects `docs/demo-sandbox/DESIGN_AR.md`
-> for the §8.1/§8.2 Arabic UI copy. I searched the full tree by filename
-> (`*demo*`, `*design*`, `*-ar*`, `01*`, `03*`) and by content (`بيئة التجربة`,
-> `DEMO_PROD_WRITE_GUARD`) — the only hits are the two files above and this report.
-> **UNKNOWN — needs Helmi's input:** everything the brief defers to the design doc,
-> namely §2.1 (the isolation-mode rationale I am asked to choose between), §5.3 (the
-> `general_v1` content table), §8.1 (demo-bar Arabic copy) and §8.2 (the 8-step
-> checklist copy). Phase 2 cannot start without §5.3 and §8.1.
+> **The Arabic design document** (v1.1) was supplied separately and is now saved as
+> `docs/demo-sandbox/DESIGN_AR.md`. It is **older than the brief (v1.3)**, so Appendix B
+> supersedes it wherever they disagree. Its §2.1, §5.3, §8.1 and §8.2 are reconciled
+> against the codebase in **§11** below — including several content items the template
+> requires that this application cannot currently represent.
 
 ---
 
@@ -785,12 +781,88 @@ Ranked by how much a wrong guess would cost:
 
 ---
 
+## Q11. Reconciliation with `DESIGN_AR.md` (v1.1)
+
+The design doc predates the Phase 0 findings, so parts of it are already answered and
+parts are contradicted by the code. Nothing below changes the architecture — the doc's
+central decision is correct — but several content requirements need adjusting before
+Phase 2.
+
+### 11.1 Its open questions (§14), answered by Phase 0
+
+| # | Question | Answer |
+|---|---|---|
+| 0 | PostgreSQL or MySQL? | **MySQL** (`DB_CONNECTION=mysql`, InnoDB). So §2.1's pattern 1 (schema-per-session) is **unavailable**, and pattern 2 (database-per-session) is impractical at 500 concurrent demos with 132 migrations. **Pattern 3 — tenant inside one demo database — is the only viable option**, which is what the doc recommends starting with anyway |
+| 1 | Is everything keyed by `clinic_id` or `doctor_id`? | **`doctor_id`.** Five clinical/financial tables have no `clinic_id` at all (Q2). The purge must walk both paths. This is Appendix B.1 |
+| 2 | `mostashfaon.com/demo` or `demo.mostashfaon.com`? | Still yours. Appendix B.3 requires demo detection from **path or host before `StartSession`** — either satisfies it. Path-prefix is simpler on Laragon and for cookies; I lean the same way the doc does |
+| 3 | Copy clinic settings on conversion? | Still yours, but note §3 above: the "assistant permission preset" the brief wants to copy **does not exist as data** — there is no permission system. Copyable today: clinic name, address, phone, working hours, `appointment_duration`, the two visit prices, and `billable_items` |
+| 4 | Which specialties in phase 1? | Still yours. `specializations` has 35 rows, so any choice is seedable |
+| 5 | Where do leads go? | Still yours — no CRM, webhook or WhatsApp Business integration exists in the code |
+
+### 11.2 Factual corrections to the design doc
+
+| Doc says | Reality |
+|---|---|
+| §12.1 "DST غير موجود في مصر" (no DST in Egypt) | **Wrong since April 2023.** `Africa/Cairo` has **8 transitions in 2023–2026**; today is `EEST +03:00` and the next change is **2026-10-29**. See 11.3 — this is a live bug risk in the seeder, and the doc explicitly tells us to skip testing it |
+| §2.1 `DEMO_DB_PORT=5432` | PostgreSQL's port. MySQL: **3306** |
+| §2.1 `DEMO_REFERENCE_TABLES=medications,icd_codes,lab_tests,specialties,governorates,cities` | **None of these table names exist.** The real set is `medicines`, `medical_tests`, `specializations`, `governorates`, `cities`, **`areas`**, **`insurance_companies`**, **`laboratories`** (Q9). There are **no ICD codes** and **no subscription-plans table** in this application at all |
+| §4.2 `demo_sessions.clinic_id` / `converted_clinic_id` | `doctor_id` / `converted_doctor_id` (Appendix B.1) |
+| §6.1 `DEMO_ACCESS_TOKEN_TTL`, §6.2 step 2, §9, §10 (token-based) | The clinic system is **session/`web` guard**; no tokens (Appendix B.4) |
+| §4.4 "lifecycle rule حذف بعد 48 ساعة" | An S3 concept. Storage here is a **local disk**; this becomes a scheduled cleanup command |
+| §7 rows for SMS, WhatsApp, payment gateway, pharmacy/lab partner APIs, calendar/social integrations | **None of these integrations exist** (Q4). DemoGuard reduces to FCM + `MAIL_MAILER=log` (Appendix B.7) |
+| §1.3 / §7 "شاشة محاكاة للاتصال المرئي" (mock video call) | There is **no telemedicine feature** to mock. Nothing to build or stub — the "كشف أونلاين" service in §5.3 is just a price-list row, which is fine |
+| §13 Phase 1 estimate: 4–6 days | My estimate is **8.5–12.5 days** (10.4). The delta is the migration-pipeline repair and the test harness, neither of which the doc could have known about |
+
+### 11.3 The DST finding, concretely
+
+Verified with `DateTimeZone::getTransitions()` on this PHP install:
+
+```
+2025-04-24 → EEST +03:00      2026-04-23 → EEST +03:00
+2025-10-30 → EET  +02:00      2026-10-29 → EET  +02:00
+```
+
+§5.2's offsets (`D-45`, `D+10`) will straddle a transition for any demo started within
+~6 weeks of late October or late April. **Calendar arithmetic is safe; epoch arithmetic
+is not.** `Carbon::copy()->addDays($n)->setTimeFromTimeString($t)` gives the intended
+wall-clock time; `$t0 + $n * 86400` silently shifts by an hour across the boundary.
+`ClinicOnboardingService` already uses the safe form
+(`$date->copy()->setTimeFromTimeString(...)`), so the requirement is simply: **keep it
+that way in the `T0` resolver, and add a DST-boundary case to the unit test** that §12.1
+tells us to skip.
+
+### 11.4 Template items in §5.3 that this application cannot represent
+
+Each of these needs a decision before Phase 2 — build the capability, or change the
+template.
+
+| §5.3 item | Problem |
+|---|---|
+| Assistant "بدون رؤية الملاحظات الطبية" (cannot see medical notes) — explicitly there to **showcase the permission system** | **There is no permission system** (Q3). The assistant's limits are route-level only. Either build a real capability check for medical notes, or drop this from the template and stop advertising a feature that does not exist |
+| "فاتورة **مدفوعة** (نقدي/فيزا/محفظة)" — cash / card / wallet | **`collections` has no payment-method column** — only `amount`, `collected_by`, `collected_at`, `note`. The method can go in `note` as free text, or a column must be added |
+| "تقييم من مريض 5 نجوم" (a 5-star patient review) | **`reviews` cannot target a doctor or clinic.** `reviewable_type` in use is `Laboratory`, `NurseVisit`, `Pharmacy`; neither `Doctor` nor `Clinic` declares a `reviews()` morph relation. Nowhere to put it |
+| "طلب تعديل موعد" (a reschedule request) | **No such feature exists** — no reschedule-request table, model or route |
+| "إشعار حقيقي بعد دقيقة (`T0+60s`)" | Feasible, but needs a **delayed queued job on the demo queue and a worker running for it** (Appendix A.5). No worker runs today; `app/Jobs/` does not exist |
+| "شعار افتراضي" (default clinic logo) | `clinics` has no logo column; media-library collections are registered on `Doctor` and `User`, not `Clinic` |
+
+Items that map cleanly and need no change: the clinic, the 5 priced services
+(`billable_items` + the two clinic prices), 18 patients, 12 completed visits with
+diagnosis/prescription/lab result, the in-progress visit at `T0−12m`
+(`status='under_examination'`), today's waiting queue, 6 upcoming appointments, the
+no-show (`status='missed'`), 2 unpaid invoices (`remainingAmount() > 0`), the penicillin
+allergy alert (`clients.allergies`), and non-zero monthly revenue.
+
+---
+
 ## Open questions for Helmi
 
-1. **The Arabic design document is missing from the repo.** Please add it as
-   `docs/demo-sandbox/DESIGN_AR.md`. Phase 2 needs §5.3 (the `general_v1` content table)
-   and §8.1/§8.2 (Arabic UI copy) verbatim, and §2.1 is the isolation-mode rationale I
-   was asked to choose against.
+1. **Six items in the `general_v1` template cannot be represented by this application**
+   (Q11.4) — most importantly the assistant permission restriction, which exists in the
+   template specifically to showcase a permission system that **does not exist**. For
+   each: build the capability, or cut it from the template? My recommendation is to cut
+   the review, the reschedule request and the assistant restriction from `general_v1`,
+   put the payment method in `collections.note`, and keep the `T0+60s` notification
+   (it needs the demo queue worker anyway).
 2. **The migration pipeline is broken** (Q8 blocker) — `migrate` on an empty database
    dies at migration 18 because six migration files were deleted after running. Do you
    want me to repair it by restoring the missing migrations (my recommendation, ~0.5–1
