@@ -47,6 +47,20 @@ return [
             'report' => false,
         ],
 
+        /*
+         * Demo sandbox uploads. Kept off the production "public" disk so a
+         * purge can delete a tenant's files by prefix and never touch a real
+         * patient's file. Served through the same /storage symlink.
+         */
+        'demo' => [
+            'driver' => 'local',
+            'root' => storage_path('app/demo'),
+            'url' => env('APP_URL').'/storage-demo',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

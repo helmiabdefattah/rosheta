@@ -21,6 +21,28 @@ return Application::configure(basePath: dirname(__DIR__))
             'client.api' => \App\Http\Middleware\EnsureAuthenticatedClient::class,
         ]);
 
+        // The demo switch MUST run before StartSession and Authenticate:
+        // it repoints the default database connection (and the session store)
+        // at the demo database. Anything later would already have read the
+        // session and the user from production. See StartDemoSession.
+        $middleware->prependToGroup('web', \App\Http\Middleware\StartDemoSession::class);
+
+        // Read before EncryptCookies runs, so it carries its own HMAC instead.
+        $middleware->encryptCookies(except: [
+            'mo_demo',
+        ]);
+
+        // Starting a demo is the one place where CSRF cannot apply: the token
+        // on the login page belongs to a session in the PRODUCTION database,
+        // while this request already reads sessions from the demo database, so
+        // the token could never match. There is no user session to protect at
+        // this point either — the endpoint is anonymous by design. Abuse is
+        // handled by the per-IP and global limits in DemoController.
+        // Every other demo route runs inside the demo session and keeps CSRF.
+        $middleware->validateCsrfTokens(except: [
+            'demo/start',
+        ]);
+
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\MostashfaOnClientContext::class,
