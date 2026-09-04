@@ -14,13 +14,53 @@
     ],
 
     "examination_fields": [
-        { "label": "الوزن (كجم)", "type": "number", "options": null },
-        { "label": "الطول (سم)", "type": "number", "options": null },
-        { "label": "محيط الرأس (سم)", "type": "number", "options": null },
-        { "label": "درجة الحرارة (°م)", "type": "number", "options": null },
-        { "label": "نسبة الأكسجين", "type": "percentage", "options": null },
-        { "label": "حالة التطعيمات", "type": "select", "options": "منتظمة,متأخرة,غير معروفة" },
-        { "label": "الرضاعة", "type": "select", "options": "طبيعية,صناعية,مختلطة,فُطم" }
+        { "label": "الوزن (كجم)", "type": "number", "options": null, "values": ["12.4", "9.8", "18.5", "6.2", "22.0"] },
+        { "label": "الطول (سم)", "type": "number", "options": null, "values": ["87", "74", "108", "63", "119"] },
+        { "label": "محيط الرأس (سم)", "type": "number", "options": null, "values": ["48", "45", "50", "42", "51"] },
+        { "label": "درجة الحرارة (°م)", "type": "number", "options": null, "values": ["38.4", "37.1", "39.0", "36.9", "37.6"] },
+        { "label": "نسبة الأكسجين", "type": "percentage", "options": null, "values": ["96", "98", "94", "99", "97"] },
+        { "label": "حالة التطعيمات", "type": "select", "options": "منتظمة,متأخرة,غير معروفة", "values": ["منتظمة", "منتظمة", "متأخرة", "منتظمة"] },
+        { "label": "الرضاعة", "type": "select", "options": "طبيعية,صناعية,مختلطة,فُطم", "values": ["طبيعية", "مختلطة", "فُطم", "صناعية"] }
+    ],
+
+    "patients": [
+        { "name": "يوسف طارق منصور", "gender": "male", "age": 2, "blood": "B+", "allergies": ["الفول السوداني"], "chronic": ["حساسية الصدر"], "history": "نزلات شعبية متكررة في الشتاء. تطعيمات مكتملة حتى سن سنتين." },
+        { "name": "ملك أحمد عبد الله", "gender": "female", "age": 4, "blood": "O+", "allergies": [], "chronic": [], "history": "الولادة طبيعية في موعدها. النمو ضمن المعدل الطبيعي." },
+        { "name": "عمر خالد الشناوي", "gender": "male", "age": 6, "blood": "A+", "allergies": ["البنسلين"], "chronic": ["الربو"], "history": "تشخيص ربو منذ سن الرابعة، على بخاخ وقائي في الشتاء." },
+        { "name": "جنى محمود السيد", "gender": "female", "age": 1, "age_months": 3, "blood": "AB+", "allergies": [], "chronic": [], "history": "رضاعة مختلطة. تطعيمات منتظمة. لا مشاكل صحية." },
+        { "name": "آدم مصطفى فؤاد", "gender": "male", "age": 8, "blood": "O-", "allergies": [], "chronic": ["أنيميا نقص الحديد"], "history": "متابعة أنيميا منذ عام. تحسن بعد العلاج بالحديد." },
+        { "name": "لينا عمرو زكي", "gender": "female", "age": 3, "blood": "B-", "allergies": ["اللاكتوز"], "chronic": [], "history": "حساسية لبن البقر — على لبن خالٍ من اللاكتوز." },
+        { "name": "زياد هشام الجندي", "gender": "male", "age": 0, "age_months": 7, "blood": "A-", "allergies": [], "chronic": [], "history": "رضيع سليم. رضاعة طبيعية. متابعة نمو دورية." },
+        { "name": "حبيبة وليد رشدي", "gender": "female", "age": 10, "blood": "O+", "allergies": [], "chronic": [], "history": "لا يوجد تاريخ مرضي يُذكر. تطعيمات مكتملة." },
+        { "name": "مالك سامي حلمي", "gender": "male", "age": 5, "blood": "AB-", "allergies": ["البيض"], "chronic": [], "history": "التهاب لوزتين متكرر — 5 نوبات خلال العام." },
+        { "name": "تالة كريم عثمان", "gender": "female", "age": 7, "blood": "B+", "allergies": [], "chronic": [], "history": "كسر بالساعد الأيسر منذ عامين — التئم بالكامل." }
+    ],
+
+    "results": [
+        {
+            "type": "lab",
+            "title": "صورة دم كاملة (CBC)",
+            "notes": "كرات دم بيضاء مرتفعة قليلاً مع سيادة ليمفاوية — يتوافق مع عدوى فيروسية.",
+            "lines": ["Complete Blood Count (CBC) - Paediatric", "WBC: 11.8 x10^3/uL (mildly high)", "Lymphocyte predominance: 62%", "Hemoglobin: 10.9 g/dL (low for age)", "Platelets: 312 x10^3/uL", "Impression: Viral infection with mild anaemia."]
+        },
+        {
+            "type": "radiology",
+            "title": "أشعة عادية على الصدر",
+            "notes": "زيادة بالعلامات القصبية بدون تجمعات — يتوافق مع التهاب شعبي.",
+            "lines": ["Chest X-Ray - Paediatric AP view", "Increased bronchovascular markings bilaterally.", "No focal consolidation or effusion.", "Cardiothymic silhouette normal for age.", "Impression: Acute bronchiolitis."]
+        },
+        {
+            "type": "lab",
+            "title": "مخزون الحديد والفيريتين",
+            "notes": "مخزون الحديد منخفض — يؤكد أنيميا نقص الحديد.",
+            "lines": ["Iron Studies - Paediatric", "Serum Iron: 32 ug/dL (low)", "Ferritin: 9 ng/mL (low)", "TIBC: 445 ug/dL (high)", "Transferrin saturation: 7%", "Impression: Iron deficiency anaemia."]
+        },
+        {
+            "type": "lab",
+            "title": "تحليل براز كامل",
+            "notes": "لا توجد طفيليات؛ كرات صديد قليلة.",
+            "lines": ["Stool Analysis - Paediatric", "Consistency: loose", "Pus cells: 4-6 /HPF", "RBCs: nil", "Ova and parasites: not detected", "Impression: Non-specific enteritis."]
+        }
     ],
 
     "plans": [

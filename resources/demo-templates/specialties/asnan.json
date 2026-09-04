@@ -14,12 +14,38 @@
     ],
 
     "examination_fields": [
-        { "label": "رقم السن (نظام FDI)", "type": "text", "options": null },
-        { "label": "درجة الألم (1-10)", "type": "number", "options": null },
-        { "label": "حالة اللثة", "type": "select", "options": "سليمة,التهاب بسيط,التهاب متوسط,التهاب متقدم" },
-        { "label": "نزيف عند التسليك", "type": "select", "options": "نعم,لا" },
-        { "label": "التزام المريض بالنظافة", "type": "select", "options": "ممتاز,جيد,ضعيف" },
-        { "label": "صورة الأشعة", "type": "file", "options": null }
+        { "label": "رقم السن (نظام FDI)", "type": "text", "options": null, "values": ["46", "21", "38", "16", "36"] },
+        { "label": "درجة الألم (1-10)", "type": "number", "options": null, "values": ["8", "3", "9", "2", "6"] },
+        { "label": "حالة اللثة", "type": "select", "options": "سليمة,التهاب بسيط,التهاب متوسط,التهاب متقدم", "values": ["التهاب بسيط", "التهاب متوسط", "سليمة", "التهاب متقدم"] },
+        { "label": "نزيف عند التسليك", "type": "select", "options": "نعم,لا", "values": ["لا", "نعم", "نعم", "لا"] },
+        { "label": "التزام المريض بالنظافة", "type": "select", "options": "ممتاز,جيد,ضعيف", "values": ["جيد", "ضعيف", "ممتاز", "جيد"] }
+    ],
+
+    "results": [
+        {
+            "type": "radiology",
+            "title": "أشعة بريابيكال على الضرس 46",
+            "notes": "تكهف عميق يصل للب مع اتساع بالرباط حول القمي.",
+            "lines": ["Periapical Radiograph - Tooth 46", "Deep occlusal radiolucency reaching the pulp chamber.", "Widening of the periapical ligament space.", "No root fracture identified.", "Impression: Chronic pulpitis with early periapical change."]
+        },
+        {
+            "type": "radiology",
+            "title": "أشعة بانوراما للفكين",
+            "notes": "ضرس عقل سفلي أيسر مطمور بزاوية أفقية قريب من العصب السنخي.",
+            "lines": ["Panoramic Radiograph (OPG)", "Impacted lower left third molar, horizontal angulation.", "Roots in close proximity to the inferior alveolar canal.", "Generalised mild horizontal bone loss.", "Impression: Impacted 38 requiring surgical extraction."]
+        },
+        {
+            "type": "lab",
+            "title": "صورة دم كاملة قبل التدخل الجراحي",
+            "notes": "جميع القيم داخل المعدل الطبيعي — مناسب للخلع الجراحي.",
+            "lines": ["Complete Blood Count (CBC)", "WBC: 8.1 x10^3/uL", "Hemoglobin: 13.9 g/dL", "Platelets: 274 x10^3/uL", "INR: 1.0", "Impression: Fit for minor oral surgery."]
+        },
+        {
+            "type": "radiology",
+            "title": "أشعة بايت وينج للأضراس الخلفية",
+            "notes": "تسوس بين الأسنان بالضرسين 16 و17 لم يصل للب.",
+            "lines": ["Bitewing Radiograph - Right posterior", "Interproximal caries at 16 distal and 17 mesial.", "Lesions confined to dentine, not reaching pulp.", "Existing amalgam at 46 with marginal breakdown.", "Impression: Restorable interproximal caries."]
+        }
     ],
 
     "plans": [

@@ -39,28 +39,75 @@ class DemoPurgeCommand extends Command
         }
 
         $sessions = $this->sessions();
-
-        if ($sessions->isEmpty()) {
-            $this->info('Nothing to purge.');
-
-            return self::SUCCESS;
-        }
-
-        $this->info("Purging {$sessions->count()} demo tenant(s) …");
-
         $failures = 0;
 
-        foreach ($sessions as $session) {
-            try {
-                $deleted = $purger->purgeSession($session, $session->expiryReason() ?? 'purged');
-                $this->report((string) $session->id, $deleted);
-            } catch (\Throwable $e) {
-                $failures++;
-                $this->error("  {$session->id}: {$e->getMessage()}");
+        if ($sessions->isNotEmpty()) {
+            $this->info("Purging {$sessions->count()} demo tenant(s) …");
+
+            foreach ($sessions as $session) {
+                try {
+                    $deleted = $purger->purgeSession($session, $session->expiryReason() ?? 'purged');
+                    $this->report((string) $session->id, $deleted);
+                } catch (\Throwable $e) {
+                    $failures++;
+                    $this->error("  {$session->id}: {$e->getMessage()}");
+                }
             }
         }
 
+        $failures += $this->purgeOrphans($purger);
+
+        if ($sessions->isEmpty() && $failures === 0) {
+            $this->info('Nothing to purge.');
+        }
+
         return $failures === 0 ? self::SUCCESS : self::FAILURE;
+    }
+
+    /**
+     * Purge demo tenants that no session record points at any more.
+     *
+     * The session row is the normal handle on a tenant, but it lives in a
+     * different database — so if it is deleted, trimmed or lost, the tenant
+     * becomes invisible to the session-driven purge and sits in the demo
+     * database forever. This sweep works from the demo side instead, finding
+     * expired tenants and tenants whose session no longer exists.
+     */
+    protected function purgeOrphans(DemoPurger $purger): int
+    {
+        $liveSessionIds = DemoSession::whereNotNull('doctor_id')->pluck('id')->all();
+
+        $query = $purger->connection()->table('doctors')->where('is_demo', true);
+
+        if (! $this->option('all')) {
+            $query->where(function ($q) use ($liveSessionIds) {
+                $q->whereNull('demo_session_id')
+                    ->orWhereNotIn('demo_session_id', $liveSessionIds)
+                    ->orWhere('demo_expires_at', '<', now());
+            });
+        }
+
+        $orphans = $query->pluck('id');
+
+        if ($orphans->isEmpty()) {
+            return 0;
+        }
+
+        $this->warn("Found {$orphans->count()} orphaned demo tenant(s) with no live session …");
+
+        $failures = 0;
+
+        foreach ($orphans as $doctorId) {
+            try {
+                $deleted = $purger->purgeDoctor((int) $doctorId);
+                $this->report("orphan doctor #{$doctorId}", $deleted);
+            } catch (\Throwable $e) {
+                $failures++;
+                $this->error("  doctor #{$doctorId}: {$e->getMessage()}");
+            }
+        }
+
+        return $failures;
     }
 
     /** @return \Illuminate\Support\Collection<int, DemoSession> */

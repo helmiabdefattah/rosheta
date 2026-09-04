@@ -14,13 +14,39 @@
     ],
 
     "examination_fields": [
-        { "label": "ضغط الدم", "type": "text", "options": null },
-        { "label": "النبض (نبضة/دقيقة)", "type": "number", "options": null },
-        { "label": "نسبة الأكسجين", "type": "percentage", "options": null },
-        { "label": "درجة ضيق النفس (NYHA)", "type": "select", "options": "I,II,III,IV" },
-        { "label": "تورم بالقدمين", "type": "select", "options": "لا يوجد,بسيط,متوسط,شديد" },
-        { "label": "مدخّن", "type": "select", "options": "نعم,لا,أقلع" },
-        { "label": "تقرير الإيكو", "type": "file", "options": null }
+        { "label": "ضغط الدم", "type": "text", "options": null, "values": ["155/95", "130/80", "145/90", "120/75", "165/100"] },
+        { "label": "النبض (نبضة/دقيقة)", "type": "number", "options": null, "values": ["82", "96", "74", "108", "68"] },
+        { "label": "نسبة الأكسجين", "type": "percentage", "options": null, "values": ["97", "95", "98", "93", "96"] },
+        { "label": "درجة ضيق النفس (NYHA)", "type": "select", "options": "I,II,III,IV", "values": ["II", "I", "III", "II"] },
+        { "label": "تورم بالقدمين", "type": "select", "options": "لا يوجد,بسيط,متوسط,شديد", "values": ["لا يوجد", "بسيط", "متوسط", "لا يوجد"] },
+        { "label": "مدخّن", "type": "select", "options": "نعم,لا,أقلع", "values": ["نعم", "أقلع", "لا", "نعم"] }
+    ],
+
+    "results": [
+        {
+            "type": "radiology",
+            "title": "إيكو على القلب",
+            "notes": "كسر القذف 40% مع ارتخاء بالبطين الأيسر.",
+            "lines": ["Transthoracic Echocardiography", "LV ejection fraction: 40% (mildly to moderately reduced).", "LV internal diameter (diastole): 58 mm.", "Mild mitral regurgitation.", "No pericardial effusion.", "Impression: Mild to moderate LV systolic dysfunction."]
+        },
+        {
+            "type": "radiology",
+            "title": "دوبلر على شرايين الرقبة",
+            "notes": "تصلب بسيط بالشريان السباتي الأيمن بدون ضيق مؤثر.",
+            "lines": ["Carotid Duplex Ultrasound", "Right ICA: intima-media thickness 1.1 mm.", "Small calcified plaque at the right carotid bulb.", "Peak systolic velocity within normal limits.", "No haemodynamically significant stenosis.", "Impression: Mild atherosclerosis, no significant stenosis."]
+        },
+        {
+            "type": "lab",
+            "title": "دهون الدم (Lipid profile)",
+            "notes": "الكوليسترول الضار مرتفع — يحتاج ستاتين عالي الجرعة.",
+            "lines": ["Fasting Lipid Profile", "Total cholesterol: 248 mg/dL (high)", "LDL: 168 mg/dL (high)", "HDL: 36 mg/dL (low)", "Triglycerides: 210 mg/dL (high)", "Impression: Mixed dyslipidaemia - high cardiovascular risk."]
+        },
+        {
+            "type": "lab",
+            "title": "وظائف كلى وأملاح",
+            "notes": "الوظائف والأملاح داخل المعدل الطبيعي — آمن لبدء المدر.",
+            "lines": ["Renal Function and Electrolytes", "Creatinine: 1.0 mg/dL", "eGFR: 84 mL/min/1.73m2", "Sodium: 139 mmol/L", "Potassium: 4.2 mmol/L", "Impression: Normal renal function."]
+        }
     ],
 
     "plans": [

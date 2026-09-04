@@ -14,12 +14,38 @@
     ],
 
     "examination_fields": [
-        { "label": "مكان الإصابة", "type": "text", "options": null },
-        { "label": "نوع الآفة", "type": "select", "options": "بقعة,حطاطة,بثرة,عقدة,قرحة,قشور" },
-        { "label": "المساحة المصابة %", "type": "percentage", "options": null },
-        { "label": "درجة الحكة (1-10)", "type": "number", "options": null },
-        { "label": "نمط البشرة (فيتزباتريك)", "type": "select", "options": "I,II,III,IV,V,VI" },
-        { "label": "صورة قبل العلاج", "type": "file", "options": null }
+        { "label": "مكان الإصابة", "type": "text", "options": null, "values": ["الوجه والظهر", "ثنيات المرفقين", "الظهر والصدر", "فروة الرأس", "الساقين"] },
+        { "label": "نوع الآفة", "type": "select", "options": "بقعة,حطاطة,بثرة,عقدة,قرحة,قشور", "values": ["بثرة", "قشور", "بقعة", "حطاطة"] },
+        { "label": "المساحة المصابة %", "type": "percentage", "options": null, "values": ["12", "8", "25", "4", "18"] },
+        { "label": "درجة الحكة (1-10)", "type": "number", "options": null, "values": ["2", "8", "5", "1", "7"] },
+        { "label": "نمط البشرة (فيتزباتريك)", "type": "select", "options": "I,II,III,IV,V,VI", "values": ["IV", "III", "IV", "V"] }
+    ],
+
+    "results": [
+        {
+            "type": "lab",
+            "title": "مسحة فطرية (KOH)",
+            "notes": "خيوط فطرية قصيرة وأبواغ — يتوافق مع التينيا الملونة.",
+            "lines": ["KOH Mount - Skin Scraping", "Short hyphae and clusters of spores seen.", "Classic spaghetti-and-meatballs appearance.", "No dermatophyte hyphae.", "Impression: Pityriasis versicolor."]
+        },
+        {
+            "type": "lab",
+            "title": "هرمونات (LH, FSH, Testosterone)",
+            "notes": "نسبة LH/FSH مرتفعة قليلاً — يُنصح باستبعاد تكيس المبايض.",
+            "lines": ["Hormonal Profile - Female", "LH: 12.4 mIU/mL", "FSH: 5.1 mIU/mL", "LH/FSH ratio: 2.4 (elevated)", "Total testosterone: 68 ng/dL (upper normal)", "Impression: Suggestive of PCOS - correlate clinically."]
+        },
+        {
+            "type": "lab",
+            "title": "صورة دم كاملة ونسبة الإيوزينوفيل",
+            "notes": "ارتفاع الإيوزينوفيل يدعم الطبيعة التحسسية.",
+            "lines": ["Complete Blood Count with Differential", "WBC: 8.9 x10^3/uL", "Eosinophils: 9% (high)", "Hemoglobin: 13.2 g/dL", "Total IgE: 410 IU/mL (high)", "Impression: Atopic pattern."]
+        },
+        {
+            "type": "lab",
+            "title": "عينة جلدية (هيستوباثولوجي)",
+            "notes": "التهاب جلدي إسفنجي مزمن — يتوافق مع الإكزيما.",
+            "lines": ["Skin Punch Biopsy - Histopathology", "Epidermis: spongiosis with mild acanthosis.", "Dermis: perivascular lymphocytic infiltrate.", "No atypia or malignancy.", "Impression: Chronic spongiotic dermatitis."]
+        }
     ],
 
     "plans": [

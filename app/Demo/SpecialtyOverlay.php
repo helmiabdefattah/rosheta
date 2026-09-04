@@ -4,14 +4,21 @@ namespace App\Demo;
 
 use App\Models\Appointment;
 use App\Models\AppointmentItem;
+use App\Models\Attachment;
 use App\Models\BillableItem;
+use App\Models\Client;
 use App\Models\Clinic;
 use App\Models\Diagnosis;
 use App\Models\Doctor;
 use App\Models\ExaminationField;
+use App\Models\ExaminationFieldValue;
 use App\Models\MedicalPlan;
 use App\Models\MedicalRequest;
+use App\Models\Offer;
+use App\Models\PatientTest;
 use App\Models\Prescription;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * Rewrites a freshly seeded tenant's clinical content in the chosen specialty.
@@ -32,11 +39,76 @@ class SpecialtyOverlay
 {
     public function apply(Doctor $doctor, Clinic $clinic, array $profile): void
     {
+        $this->replacePatients($doctor, $profile);
         $this->replaceBillableItems($doctor, $profile);
-        $this->replaceExaminationFields($doctor, $profile);
+        $fields = $this->replaceExaminationFields($doctor, $profile);
+        $this->replaceExaminationValues($doctor, $fields);
         $this->replaceMedicalPlans($doctor, $profile);
         $this->replaceVisitContent($doctor, $profile);
         $this->replaceVisitReasons($doctor, $profile);
+        $this->replaceTestResults($doctor, $profile);
+    }
+
+    /**
+     * Rewrite the patient roster when the specialty needs different people —
+     * a paediatric clinic full of 40-year-olds with hypertension is not a
+     * paediatric clinic.
+     *
+     * Rows are rewritten in place rather than recreated, so every appointment,
+     * prescription, invoice and attachment that already points at a patient
+     * keeps pointing at the same one.
+     */
+    protected function replacePatients(Doctor $doctor, array $profile): void
+    {
+        if (empty($profile['patients'])) {
+            return;
+        }
+
+        $people = $profile['patients'];
+
+        $clientIds = Appointment::where('doctor_id', $doctor->id)
+            ->orderBy('id')
+            ->pluck('client_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        foreach ($clientIds as $i => $clientId) {
+            $person = $people[$i % count($people)];
+
+            $client = Client::find($clientId);
+
+            if ($client === null) {
+                continue;
+            }
+
+            $client->forceFill([
+                'name' => $person['name'],
+                'gender' => $person['gender'],
+                'dob' => $this->resolveDob($person),
+                'blood_type' => $person['blood'] ?? $client->blood_type,
+                'allergies' => $person['allergies'] ?? null,
+                'chronic_diseases' => $person['chronic'] ?? null,
+                'medical_history' => $person['history'] ?? null,
+            ])->save();
+        }
+    }
+
+    /**
+     * A profile gives an age rather than a date of birth, so the roster stays
+     * correct however long the file sits in the repository — a "3 year old"
+     * hard-coded as 2023-05-01 quietly becomes a schoolchild.
+     */
+    protected function resolveDob(array $person): string
+    {
+        if (isset($person['dob'])) {
+            return $person['dob'];
+        }
+
+        $months = (int) ($person['age_months'] ?? 0);
+        $years = (int) ($person['age'] ?? 0);
+
+        return now()->subYears($years)->subMonths($months)->toDateString();
     }
 
     /**
@@ -91,17 +163,23 @@ class SpecialtyOverlay
         );
     }
 
-    /** Fields the doctor records on every examination. */
-    protected function replaceExaminationFields(Doctor $doctor, array $profile): void
+    /**
+     * Fields the doctor records on every examination.
+     *
+     * @return array<int, array{model: ExaminationField, values: array}> the
+     *         fields with the sample values their profile supplies
+     */
+    protected function replaceExaminationFields(Doctor $doctor, array $profile): array
     {
         if (empty($profile['examination_fields'])) {
-            return;
+            return [];
         }
 
         $existing = ExaminationField::where('doctor_id', $doctor->id)->orderBy('sort_order')->get();
+        $applied = [];
 
         foreach ($profile['examination_fields'] as $i => $field) {
-            $model = $existing[$i] ?? new ExaminationField(['doctor_id' => $doctor->id]);
+            $model = $existing[$i] ?? new ExaminationField;
 
             $model->forceFill([
                 'doctor_id' => $doctor->id,
@@ -111,10 +189,67 @@ class SpecialtyOverlay
                 'sort_order' => $i,
                 'is_active' => true,
             ])->save();
+
+            $applied[] = ['model' => $model, 'values' => $field['values'] ?? []];
         }
 
         $existing->slice(count($profile['examination_fields']))
             ->each(fn (ExaminationField $f) => $f->forceFill(['is_active' => false])->save());
+
+        return $applied;
+    }
+
+    /**
+     * Re-record the values captured against those fields.
+     *
+     * This is the step whose absence was most obvious: the onboarding service
+     * writes values keyed to ITS field labels (blood pressure, temperature),
+     * and renaming the fields left a dental clinic showing
+     * "رقم السن (نظام FDI) = 120/80" and "حالة اللثة = 78". The value belongs
+     * to the field, so it has to be rewritten whenever the field is.
+     *
+     * @param  array<int, array{model: ExaminationField, values: array}>  $fields
+     */
+    protected function replaceExaminationValues(Doctor $doctor, array $fields): void
+    {
+        if ($fields === []) {
+            return;
+        }
+
+        $fieldIds = collect($fields)->pluck('model.id')->all();
+
+        $visits = Appointment::where('doctor_id', $doctor->id)
+            ->whereIn('status', ['completed', 'under_examination'])
+            ->orderBy('id')
+            ->pluck('id');
+
+        // Values for a field the profile gave no samples for would be
+        // meaningless; drop them rather than leave the old number behind.
+        ExaminationFieldValue::whereIn('appointment_id', $visits)
+            ->whereNotIn('examination_field_id', $fieldIds)
+            ->delete();
+
+        foreach ($visits as $visitIndex => $visitId) {
+            foreach ($fields as $field) {
+                $samples = $field['values'];
+
+                if ($samples === []) {
+                    ExaminationFieldValue::where('appointment_id', $visitId)
+                        ->where('examination_field_id', $field['model']->id)
+                        ->delete();
+
+                    continue;
+                }
+
+                ExaminationFieldValue::updateOrCreate(
+                    [
+                        'appointment_id' => $visitId,
+                        'examination_field_id' => $field['model']->id,
+                    ],
+                    ['value' => $samples[$visitIndex % count($samples)]]
+                );
+            }
+        }
     }
 
     /** One-click treatment roadmaps saved by the doctor. */
@@ -217,6 +352,86 @@ class SpecialtyOverlay
         }
 
         $existing->slice(count($requests))->each(fn (MedicalRequest $r) => $r->delete());
+    }
+
+    /**
+     * The lab and radiology results already filed against past visits, and the
+     * PDFs behind them.
+     *
+     * Without this a dental clinic files a chest X-ray and an abdominal
+     * ultrasound — the onboarding service's four generic reports — against
+     * every case, and the file the doctor opens says "Chest X-Ray - PA view".
+     */
+    protected function replaceTestResults(Doctor $doctor, array $profile): void
+    {
+        if (empty($profile['results'])) {
+            return;
+        }
+
+        $results = $profile['results'];
+
+        $tests = PatientTest::where('doctor_id', $doctor->id)->orderBy('id')->get();
+
+        foreach ($tests as $i => $test) {
+            $result = $results[$i % count($results)];
+
+            $test->forceFill([
+                'type' => $result['type'],
+                'title' => $result['title'],
+                'notes' => $result['notes'] ?? null,
+            ])->save();
+
+            $this->rewriteAttachment(
+                Attachment::where('attachable_type', PatientTest::class)
+                    ->where('attachable_id', $test->id)
+                    ->get(),
+                $result
+            );
+        }
+
+        // The marketplace lab panel on the examine screen reads its files from
+        // the offers the onboarding service created; those carry the same
+        // generic reports.
+        $offerAttachments = Attachment::where('attachable_type', Offer::class)->orderBy('id')->get();
+
+        foreach ($offerAttachments as $i => $attachment) {
+            $this->rewriteAttachment(collect([$attachment]), $results[$i % count($results)]);
+        }
+    }
+
+    /**
+     * Swap an attachment's file for one that matches the specialty, deleting
+     * the old one so the demo does not leave orphans on disk.
+     *
+     * @param  \Illuminate\Support\Collection<int, Attachment>  $attachments
+     */
+    protected function rewriteAttachment($attachments, array $result): void
+    {
+        foreach ($attachments as $attachment) {
+            $lines = $result['lines'] ?? [$result['title']];
+            $bytes = DemoPdf::render($lines);
+
+            // Name the file from the English report heading, not the Arabic
+            // title: Str::slug keeps Arabic characters, and an Arabic filename
+            // in a URL is needless trouble.
+            $fileName = (Str::slug($lines[0]) ?: 'result').'-'.Str::random(6).'.pdf';
+            $path = 'test-results/'.$fileName;
+
+            if ($attachment->file_path) {
+                Storage::disk('public')->delete($attachment->file_path);
+            }
+
+            Storage::disk('public')->put($path, $bytes);
+
+            $attachment->forceFill([
+                'title' => $result['lines'][0] ?? $result['title'],
+                'file_type' => $result['type'] === 'radiology' ? 'radiology' : 'lab',
+                'file_path' => $path,
+                'file_name' => $fileName,
+                'mime_type' => 'application/pdf',
+                'file_size' => strlen($bytes),
+            ])->save();
+        }
     }
 
     /** Why each patient came in — shown on the queue and the visit card. */

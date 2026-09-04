@@ -14,12 +14,38 @@
     ],
 
     "examination_fields": [
-        { "label": "المفصل / الطرف المصاب", "type": "text", "options": null },
-        { "label": "درجة الألم (1-10)", "type": "number", "options": null },
-        { "label": "مدى الحركة", "type": "select", "options": "كامل,محدود قليلاً,محدود بشدة,منعدم" },
-        { "label": "وجود تورم", "type": "select", "options": "لا يوجد,بسيط,متوسط,شديد" },
-        { "label": "القدرة على تحميل الوزن", "type": "select", "options": "كاملة,جزئية,غير قادر" },
-        { "label": "تقرير الأشعة", "type": "file", "options": null }
+        { "label": "المفصل / الطرف المصاب", "type": "text", "options": null, "values": ["الركبة اليمنى", "الفقرات القطنية", "الساعد الأيمن", "الكتف الأيسر", "الكاحل الأيمن"] },
+        { "label": "درجة الألم (1-10)", "type": "number", "options": null, "values": ["6", "8", "3", "5", "7"] },
+        { "label": "مدى الحركة", "type": "select", "options": "كامل,محدود قليلاً,محدود بشدة,منعدم", "values": ["محدود قليلاً", "محدود بشدة", "كامل", "محدود قليلاً"] },
+        { "label": "وجود تورم", "type": "select", "options": "لا يوجد,بسيط,متوسط,شديد", "values": ["بسيط", "لا يوجد", "متوسط", "بسيط"] },
+        { "label": "القدرة على تحميل الوزن", "type": "select", "options": "كاملة,جزئية,غير قادر", "values": ["كاملة", "جزئية", "كاملة", "غير قادر"] }
+    ],
+
+    "results": [
+        {
+            "type": "radiology",
+            "title": "أشعة عادية على الركبتين (وقوف)",
+            "notes": "ضيق بمسافة المفصل الإنسي مع نتوءات عظمية — خشونة الدرجة الثانية.",
+            "lines": ["Weight-Bearing Knee X-Ray - AP and Lateral", "Medial joint space narrowing, right more than left.", "Marginal osteophytes at the tibial spines.", "Subchondral sclerosis present.", "No fracture or loose body.", "Impression: Kellgren-Lawrence grade 2 osteoarthritis."]
+        },
+        {
+            "type": "radiology",
+            "title": "رنين مغناطيسي على الفقرات القطنية",
+            "notes": "انزلاق غضروفي L4-L5 يضغط على الجذر العصبي الأيسر.",
+            "lines": ["MRI Lumbar Spine - Without Contrast", "L4-L5: posterolateral disc herniation, left paracentral.", "Compression of the traversing left L5 nerve root.", "L5-S1: mild disc desiccation, no herniation.", "No canal stenosis at other levels.", "Impression: L4-L5 disc herniation with left L5 radiculopathy."]
+        },
+        {
+            "type": "radiology",
+            "title": "أشعة متابعة على الساعد الأيمن",
+            "notes": "بداية تكوّن كالس بدون إزاحة — الالتئام يسير بشكل جيد.",
+            "lines": ["Follow-up Forearm X-Ray - AP and Lateral", "Transverse fracture of the mid ulnar shaft.", "Early callus formation at the fracture site.", "Alignment maintained, no displacement.", "Radius intact.", "Impression: Satisfactory healing at 3 weeks."]
+        },
+        {
+            "type": "lab",
+            "title": "فيتامين د ونسبة الكالسيوم",
+            "notes": "نقص واضح بفيتامين د — يحتاج جرعة تعويضية.",
+            "lines": ["Bone Profile", "25-OH Vitamin D: 14 ng/mL (deficient)", "Serum Calcium: 9.1 mg/dL", "Phosphorus: 3.4 mg/dL", "Alkaline phosphatase: 96 U/L", "Impression: Vitamin D deficiency."]
+        }
     ],
 
     "plans": [

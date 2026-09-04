@@ -97,6 +97,36 @@ class SpecialtyProfile
                     throw new \RuntimeException("Demo specialty profile {$file}, case {$i}: missing '{$required}'.");
                 }
             }
+
+            // medical_requests.type is an enum in the database.
+            foreach ($case['requests'] ?? [] as $request) {
+                if (! in_array($request['type'] ?? null, ['examination', 'lab_test', 'radiology'], true)) {
+                    throw new \RuntimeException(
+                        "Demo specialty profile {$file}, case {$i}: request type must be "
+                        ."examination, lab_test or radiology."
+                    );
+                }
+            }
+        }
+
+        // patient_tests.type only has Arabic labels for these two
+        // (lang/*/app.php -> test_types); anything else renders as raw English
+        // in an Arabic workspace.
+        foreach ($profile['results'] ?? [] as $i => $result) {
+            if (! in_array($result['type'] ?? null, ['lab', 'radiology'], true)) {
+                throw new \RuntimeException(
+                    "Demo specialty profile {$file}, result {$i}: type must be 'lab' or 'radiology'."
+                );
+            }
+        }
+
+        // examination_fields.type is an enum too.
+        foreach ($profile['examination_fields'] ?? [] as $i => $field) {
+            if (! in_array($field['type'] ?? null, ['text', 'select', 'number', 'percentage', 'file'], true)) {
+                throw new \RuntimeException(
+                    "Demo specialty profile {$file}, examination field {$i}: unsupported type."
+                );
+            }
         }
     }
 

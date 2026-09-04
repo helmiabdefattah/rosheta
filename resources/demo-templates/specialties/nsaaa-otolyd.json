@@ -14,12 +14,49 @@
     ],
 
     "examination_fields": [
-        { "label": "أسبوع الحمل", "type": "number", "options": null },
-        { "label": "ضغط الدم", "type": "text", "options": null },
-        { "label": "الوزن (كجم)", "type": "number", "options": null },
-        { "label": "نبض الجنين (نبضة/دقيقة)", "type": "number", "options": null },
-        { "label": "وضع الجنين", "type": "select", "options": "رأسي,مقعدي,مستعرض,غير محدد" },
-        { "label": "تقرير السونار", "type": "file", "options": null }
+        { "label": "أسبوع الحمل", "type": "number", "options": null, "values": ["26", "12", "34", "8", "38"] },
+        { "label": "ضغط الدم", "type": "text", "options": null, "values": ["110/70", "125/80", "100/65", "135/85"] },
+        { "label": "الوزن (كجم)", "type": "number", "options": null, "values": ["71", "64", "82", "58", "77"] },
+        { "label": "نبض الجنين (نبضة/دقيقة)", "type": "number", "options": null, "values": ["148", "155", "142", "150"] },
+        { "label": "وضع الجنين", "type": "select", "options": "رأسي,مقعدي,مستعرض,غير محدد", "values": ["رأسي", "غير محدد", "مقعدي", "رأسي"] }
+    ],
+
+    "patients": [
+        { "name": "سارة محمود عبد العزيز", "gender": "female", "age": 29, "blood": "A+", "allergies": ["الأسبرين"], "chronic": [], "history": "حمل أول. متابعة منتظمة منذ الأسبوع الثامن." },
+        { "name": "نورهان عادل فؤاد", "gender": "female", "age": 33, "blood": "O+", "allergies": [], "chronic": ["أنيميا نقص الحديد"], "history": "ولادة قيصرية سابقة 2021. متابعة أنيميا." },
+        { "name": "هالة رمضان عثمان", "gender": "female", "age": 38, "blood": "AB-", "allergies": [], "chronic": [], "history": "ولادتان طبيعيتان. لا أمراض مزمنة." },
+        { "name": "إيمان جمال الدسوقي", "gender": "female", "age": 26, "blood": "B+", "allergies": [], "chronic": ["تكيس المبايض"], "history": "تأخر إنجاب سنتان. دورة غير منتظمة." },
+        { "name": "منى صلاح الدين", "gender": "female", "age": 41, "blood": "A-", "allergies": ["اليود"], "chronic": ["الغدة الدرقية"], "history": "ثلاث ولادات سابقة. على Eltroxin يومياً." },
+        { "name": "دعاء أشرف السيد", "gender": "female", "age": 31, "blood": "O-", "allergies": [], "chronic": ["سكري الحمل"], "history": "سكري حمل في الحمل السابق — ضُبط بالنظام الغذائي." },
+        { "name": "ريهام محمد الشناوي", "gender": "female", "age": 24, "blood": "B-", "allergies": ["البنسلين"], "chronic": [], "history": "حمل أول. لا مضاعفات حتى الآن." },
+        { "name": "شيماء طارق زكي", "gender": "female", "age": 35, "blood": "AB+", "allergies": [], "chronic": ["ارتفاع ضغط الدم"], "history": "ارتفاع ضغط مزمن — متابعة مشتركة مع الباطنة." }
+    ],
+
+    "results": [
+        {
+            "type": "radiology",
+            "title": "سونار متابعة نمو الجنين",
+            "notes": "النمو مطابق لعمر الحمل، السائل الأمنيوسي طبيعي.",
+            "lines": ["Obstetric Ultrasound - Growth Scan", "Single live intrauterine fetus.", "Fetal heart rate: 148 bpm, regular.", "Estimated fetal weight: 890 g (52nd centile).", "Amniotic fluid index: 14 cm (normal).", "Placenta: fundal, grade I.", "Impression: Appropriate growth for gestational age."]
+        },
+        {
+            "type": "lab",
+            "title": "منحنى تحمل الجلوكوز (GTT)",
+            "notes": "القراءة بعد ساعتين حدية — يُنصح بالنظام الغذائي والمتابعة.",
+            "lines": ["Oral Glucose Tolerance Test (75g)", "Fasting: 88 mg/dL", "1 hour: 172 mg/dL", "2 hours: 146 mg/dL (borderline)", "Impression: Borderline - dietary control and repeat in 4 weeks."]
+        },
+        {
+            "type": "lab",
+            "title": "هرمونات (LH, FSH, Prolactin, AMH)",
+            "notes": "نسبة LH/FSH مرتفعة مع AMH مرتفع — يتوافق مع تكيس المبايض.",
+            "lines": ["Hormonal Profile - Day 3", "LH: 14.2 mIU/mL", "FSH: 5.6 mIU/mL", "Prolactin: 18 ng/mL (normal)", "AMH: 6.8 ng/mL (high)", "Impression: Polycystic ovarian pattern."]
+        },
+        {
+            "type": "radiology",
+            "title": "سونار مهبلي لمتابعة التبويض",
+            "notes": "حويصلة مهيمنة 18 مم بالمبيض الأيمن — موعد التبويض خلال 48 ساعة.",
+            "lines": ["Transvaginal Ultrasound - Follicular Tracking", "Right ovary: dominant follicle 18 mm.", "Left ovary: multiple small follicles.", "Endometrial thickness: 9 mm, trilaminar.", "Impression: Imminent ovulation."]
+        }
     ],
 
     "plans": [

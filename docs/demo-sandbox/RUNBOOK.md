@@ -138,15 +138,28 @@ one as the shape; `asnan.json` is the most complete. Keys:
 | `clinic_name` | `{doctor}` is replaced with the generated doctor name |
 | `brief`, `prices` | doctor bio, examination and follow-up price |
 | `services` | the chargeable extras price list |
-| `examination_fields` | type must be `text`, `select`, `number`, `percentage` or `file` |
+| `examination_fields` | type must be `text`, `select`, `number`, `percentage` or `file`. **Give each one a `values` array** — the sample readings recorded on past visits, cycled per visit |
 | `plans` | one-click treatment roadmaps |
 | `cases` | diagnosis + treatment plan + medicines + requests, cycled over past visits |
 | `reasons` | why patients came in, cycled over all appointments |
+| `results` | lab/radiology results filed against past visits. `lines` is the English text of the generated PDF the doctor opens |
+| `patients` | *optional.* Rewrites the patient roster — essential where the specialty implies an age group. Use `age` (+ optional `age_months`) rather than `dob`, so the roster does not silently age as the file sits in the repo |
 
-`requests[].type` must be `examination`, `lab_test` or `radiology`. The file is
-validated on load — a missing `label`, empty `cases`, or a case without
-`diagnosis` / `treatment_plan` / `medicines` throws immediately rather than
-half-seeding a tenant.
+Constraints, all enforced when the file loads so a bad profile fails
+immediately rather than half-seeding a tenant:
+
+- `requests[].type` — `examination`, `lab_test` or `radiology`
+- `results[].type` — **only `lab` or `radiology`**; those are the only two with
+  Arabic labels in `lang/*/app.php`, and anything else renders as raw English
+- `examination_fields[].type` — the enum above
+- `label` and a non-empty `cases` are required; each case needs `diagnosis`,
+  `treatment_plan` and `medicines`
+
+**A field's `values` matter as much as its label.** The onboarding service
+records readings against *its* fields (blood pressure, temperature), so a
+profile that renames the fields without supplying values leaves a dental clinic
+showing "رقم السن (نظام FDI) = 120/80". Values with no matching field, and
+fields with no values, are both deleted rather than left inconsistent.
 
 Watch out for one constraint: `billable_items` has a unique
 `(doctor_id, name)` index, so a service name that also appears in the generic
@@ -211,6 +224,7 @@ demo-database writes all pass.
 
 ```bash
 php artisan demo:purge                      # everything expired, idle or ended (scheduled every 5 min)
+                                            # also sweeps orphaned tenants whose session row is gone
 php artisan demo:purge --all                # every demo tenant, even active ones
 php artisan demo:purge --session=<uuid>     # one session
 php artisan demo:purge --doctor=<id>        # one tenant, even with no session record
