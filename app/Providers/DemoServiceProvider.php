@@ -36,9 +36,12 @@ class DemoServiceProvider extends ServiceProvider
             $view->with('demoContext', $this->app->make(DemoContext::class));
         });
 
-        // The specialization picker on the login page. Supplied by a composer
-        // rather than by LoginController, so no production code path changes.
-        view()->composer('auth.login', function ($view) {
+        // The specialization picker inside the demo card. Bound to the card
+        // itself rather than to the pages that show it — the login page, the
+        // landing page, whatever comes next — so including the card is the
+        // whole of what a page has to do. A composer rather than a controller,
+        // so no production code path changes.
+        view()->composer('demo.start-card', function ($view) {
             $view->with('demoSpecializations', $this->specializationChoices());
         });
     }

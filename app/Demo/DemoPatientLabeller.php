@@ -65,9 +65,10 @@ class DemoPatientLabeller
             $qualifiers = $this->qualifiersFor($doctor, (int) $clientId, $visits);
 
             // "حالة بموعد قادم — موعد قادم" says the same thing twice.
-            if ($role === self::ROLE_UPCOMING) {
-                $qualifiers = array_values(array_diff($qualifiers, ['موعد قادم']));
-            }
+            $qualifiers = array_values(array_diff(
+                $qualifiers,
+                self::REDUNDANT_QUALIFIERS[$role] ?? []
+            ));
 
             $facts[$clientId] = ['role' => $role, 'qualifiers' => $qualifiers];
         }
@@ -98,6 +99,24 @@ class DemoPatientLabeller
         self::ROLE_UPCOMING,
         self::ROLE_NO_SHOW,
         self::ROLE_PAST,
+    ];
+
+    /**
+     * Attendance, worth saying out loud: these are the rows that make the
+     * "لم يحضر" filter and the attendance report non-empty, and a doctor
+     * scanning the patient list should be able to find one without opening
+     * every file.
+     */
+    private const ATTENDANCE_QUALIFIERS = [
+        'missed' => 'موعد فائت',
+        'escaped' => 'موعد فائت',
+        'cancelled' => 'موعد ملغى',
+    ];
+
+    /** What a role already says, and a qualifier would only repeat. */
+    private const REDUNDANT_QUALIFIERS = [
+        self::ROLE_UPCOMING => ['موعد قادم'],
+        self::ROLE_NO_SHOW => ['موعد فائت'],
     ];
 
     private const ROLE_LABELS = [
@@ -135,18 +154,18 @@ class DemoPatientLabeller
             return self::ROLE_DONE_TODAY;
         }
 
-        if ($visits->contains(fn (Appointment $a) => in_array($a->status, ['missed', 'escaped'], true))) {
-            return self::ROLE_NO_SHOW;
-        }
-
         // A patient with a finished visit is an "examined case" first and
         // foremost — that file holds the diagnosis, prescription and results
-        // the doctor came to look at. That they also have a booking next week
-        // is a detail, and it is added as a qualifier rather than overriding
-        // the whole label. Only a patient with nothing behind them is
-        // introduced by their upcoming appointment.
+        // the doctor came to look at. That they also have a booking next week,
+        // or missed an appointment last week, is a detail: it is added as a
+        // qualifier rather than overriding the whole label. Only a patient with
+        // nothing behind them is introduced by an appointment.
         if ($visits->contains(fn (Appointment $a) => $a->status === 'completed')) {
             return self::ROLE_PAST;
+        }
+
+        if ($visits->contains(fn (Appointment $a) => in_array($a->status, ['missed', 'escaped'], true))) {
+            return self::ROLE_NO_SHOW;
         }
 
         return self::ROLE_UPCOMING;
@@ -183,6 +202,13 @@ class DemoPatientLabeller
 
         if (round($outstanding, 2) > 0) {
             $qualifiers[] = 'مستحقات';
+        }
+
+        foreach (self::ATTENDANCE_QUALIFIERS as $status => $label) {
+            if ($visits->contains(fn (Appointment $a) => $a->status === $status)
+                && ! in_array($label, $qualifiers, true)) {
+                $qualifiers[] = $label;
+            }
         }
 
         $client = $db->table('clients')->where('id', $clientId)->first();

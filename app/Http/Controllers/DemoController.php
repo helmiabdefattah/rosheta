@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
@@ -34,17 +35,21 @@ class DemoController extends Controller
     }
 
     /**
-     * Create a fully populated clinic and log the visitor into it.
+     * Open a demo: claim a session, then hand the visitor the loading page.
+     *
+     * The clinic itself is built by build() on the request that page sends,
+     * not here. Seeding takes several seconds — long enough that doing it
+     * inside this request means the visitor stares at a dead browser tab with
+     * nothing to tell them anything is happening, and long enough that some of
+     * them give up and never see the product at all.
      *
      * Idempotent: reloading with a live demo cookie returns to the existing
      * workspace instead of building a second tenant.
      */
     public function start(Request $request): RedirectResponse
     {
-        if (! config('demo.enabled')) {
-            return redirect()->route('login')->withErrors([
-                'email' => __('التجربة متوقفة مؤقتاً. برجاء المحاولة لاحقاً.'),
-            ]);
+        if ($off = $this->rejectIfDisabled()) {
+            return $off;
         }
 
         $role = $request->input('role') === 'assistant' ? 'assistant' : 'doctor';
@@ -53,28 +58,136 @@ class DemoController extends Controller
             return $this->enterWorkspace($existing, $role);
         }
 
-        if ($problem = $this->rejectIfOverLimit($request)) {
-            return $problem;
+        // A session that was claimed but never built — the visitor closed the
+        // loading page, or pressed the button twice. Reuse it instead of
+        // leaving an orphan behind to count against their own limits.
+        $session = $this->unbuiltSession($request);
+
+        if ($session !== null) {
+            $session->forceFill([
+                'started_role' => $role,
+                'specialty' => $request->input('specialty'),
+                'last_activity_at' => now(),
+                'expires_at' => now()->addMinutes((int) config('demo.max_duration_minutes')),
+            ])->save();
+        } else {
+            if ($problem = $this->rejectIfOverLimit($request)) {
+                return $problem;
+            }
+
+            $session = DemoSession::create([
+                'started_role' => $role,
+                'template_key' => 'general_v1',
+                'specialty' => $request->input('specialty'),
+                'started_at' => now(),
+                'last_activity_at' => now(),
+                'expires_at' => now()->addMinutes((int) config('demo.max_duration_minutes')),
+                'steps_completed' => [],
+                'ip_hash' => hash('sha256', (string) $request->ip()),
+                'device' => $request->userAgent() && str_contains($request->userAgent(), 'Mobile') ? 'mobile' : 'desktop',
+            ] + $this->attribution($request));
         }
 
-        $session = DemoSession::create([
-            'started_role' => $role,
-            'template_key' => 'general_v1',
-            'specialty' => $request->input('specialty'),
-            'started_at' => now(),
-            'last_activity_at' => now(),
-            'expires_at' => now()->addMinutes((int) config('demo.max_duration_minutes')),
-            'steps_completed' => [],
-            'ip_hash' => hash('sha256', (string) $request->ip()),
-            'device' => $request->userAgent() && str_contains($request->userAgent(), 'Mobile') ? 'mobile' : 'desktop',
-        ] + $this->attribution($request));
+        $this->rememberDoctorName($request);
 
-        // The context is already "demo" (path based), but the seeder needs the
-        // session id to stamp on the tenant.
+        return redirect()->route('demo.preparing')->withCookie($this->demoCookie($session));
+    }
+
+    /**
+     * The loading page: "we are preparing your journey".
+     *
+     * A GET of its own so a refresh re-renders it instead of re-posting, and
+     * so reset() can send the visitor back to the same screen while their
+     * clinic is rebuilt.
+     */
+    public function preparing(Request $request): View|RedirectResponse
+    {
+        if ($off = $this->rejectIfDisabled()) {
+            return $off;
+        }
+
+        $session = $this->sessionFromCookie($request);
+
+        if ($session === null || ! $session->isActive()) {
+            return redirect()->route('login');
+        }
+
+        // Already built — a refresh after the build finished, or the back
+        // button. Go straight in rather than showing a spinner for nothing.
+        if ($session->doctor_id) {
+            return $this->enterWorkspace($session, $this->roleOf($session));
+        }
+
+        return view('demo.preparing', [
+            'role' => $this->roleOf($session),
+            'doctorName' => $this->rememberedDoctorName(),
+        ]);
+    }
+
+    /**
+     * Build the clinic and log the visitor into it.
+     *
+     * Called by the loading page as soon as it has painted, so everything slow
+     * happens while the visitor is watching something that explains itself.
+     *
+     * The loading page asks for this over fetch and navigates itself when the
+     * answer arrives, so the answer has to be JSON for it — a form submit was
+     * the obvious way to do it, but a pending cross-document navigation stops
+     * the browser painting the very page whose whole job is to be on screen
+     * for those seconds. The redirect is built either way, login and cookies
+     * included, and only its target is repackaged.
+     */
+    public function build(Request $request): RedirectResponse|\Illuminate\Http\JsonResponse
+    {
+        $response = $this->runBuild($request);
+
+        if (! $request->expectsJson()) {
+            return $response;
+        }
+
+        // Same response, described instead of followed: the cookies it sets
+        // (demo tenant, regenerated session) still have to ride along, or the
+        // page navigates as a stranger.
+        $json = response()
+            ->json(['redirect' => $response->getTargetUrl()])
+            ->withHeaders(['Cache-Control' => 'no-store']);
+
+        foreach ($response->headers->getCookies() as $cookie) {
+            $json->withCookie($cookie);
+        }
+
+        return $json;
+    }
+
+    protected function runBuild(Request $request): RedirectResponse
+    {
+        if ($off = $this->rejectIfDisabled()) {
+            return $off;
+        }
+
+        $session = $this->sessionFromCookie($request);
+
+        if ($session === null || ! $session->isActive()) {
+            return redirect()->route('demo.ended', ['reason' => 'expired']);
+        }
+
+        $role = $this->roleOf($session);
+
+        // Double submit: the tenant is already there.
+        if ($session->doctor_id) {
+            return $this->enterWorkspace($session, $role);
+        }
+
+        // The context is already "demo" (cookie based), but the seeder needs
+        // the session id to stamp on the tenant.
         $this->context->activate($session->id);
 
         try {
-            $seeded = $this->seeder->seed($session->id, $request->input('specialty'));
+            $seeded = $this->seeder->seed(
+                $session->id,
+                $session->specialty,
+                $this->rememberedDoctorName(),
+            );
         } catch (\Throwable $e) {
             Log::error('Demo seeding failed', [
                 'demo_session' => $session->id,
@@ -102,6 +215,10 @@ class DemoController extends Controller
     /** Swap between the doctor and the assistant inside the same tenant. */
     public function switchRole(Request $request): RedirectResponse
     {
+        if ($off = $this->rejectIfDisabled()) {
+            return $off;
+        }
+
         $session = $this->activeSession($request);
 
         if (! $session) {
@@ -113,9 +230,19 @@ class DemoController extends Controller
         return $this->enterWorkspace($session, $role);
     }
 
-    /** Wipe the tenant and build a fresh one, keeping the same demo session. */
+    /**
+     * Wipe the tenant and build a fresh one, keeping the same demo session.
+     *
+     * The rebuild is left to build(), reached through the same loading page as
+     * the first one: it takes exactly as long, and a frozen dashboard is a
+     * worse answer to "أعد التجربة" than a screen that says what it is doing.
+     */
     public function reset(Request $request): RedirectResponse
     {
+        if ($off = $this->rejectIfDisabled()) {
+            return $off;
+        }
+
         $session = $this->activeSession($request);
 
         if (! $session) {
@@ -123,28 +250,35 @@ class DemoController extends Controller
         }
 
         $role = Auth::id() === $session->assistant_user_id ? 'assistant' : 'doctor';
+        $doctorName = $this->rememberedDoctorName();
 
         $this->logoutDemoUser($request);
         $this->purger->purgeDoctor((int) $session->doctor_id);
 
-        $seeded = $this->seeder->seed($session->id, $session->specialty);
-
         $session->forceFill([
-            'doctor_id' => $seeded['doctor']->id,
-            'doctor_user_id' => $seeded['doctor_user']->id,
-            'assistant_user_id' => $seeded['assistant_user']->id,
+            'doctor_id' => null,
+            'doctor_user_id' => null,
+            'assistant_user_id' => null,
+            'started_role' => $role,
             'expires_at' => now()->addMinutes((int) config('demo.max_duration_minutes')),
             'last_activity_at' => now(),
             'steps_completed' => [],
             'purged_at' => null,
         ])->save();
 
-        return $this->enterWorkspace($session, $role);
+        // logoutDemoUser() invalidated the session the name was living in.
+        $this->rememberDoctorName($request, $doctorName);
+
+        return redirect()->route('demo.preparing');
     }
 
     /** End the demo on purpose: destroy every trace, then return to login. */
     public function end(Request $request): RedirectResponse
     {
+        if ($off = $this->rejectIfDisabled()) {
+            return $off;
+        }
+
         $session = $this->sessionFromCookie($request);
 
         if ($session) {
@@ -168,7 +302,7 @@ class DemoController extends Controller
     /** Countdown and progress for the demo bar. */
     public function status(Request $request)
     {
-        $session = $this->activeSession($request);
+        $session = config('demo.enabled') ? $this->activeSession($request) : null;
 
         if (! $session) {
             return response()->json(['code' => 'DEMO_ENDED'], 401);
@@ -183,6 +317,57 @@ class DemoController extends Controller
     }
 
     // =====================================================================
+
+    /**
+     * Where the visitor's own name is kept.
+     *
+     * In the demo session, deliberately — NOT on demo_sessions, which is a
+     * marketing record on the production database. The name is typed to dress
+     * one sandbox and is thrown away with it; it has no business outliving the
+     * tenant it decorates.
+     */
+    protected const NAME_KEY = 'demo_doctor_name';
+
+    /** Keep the name the visitor typed, if they typed one. */
+    protected function rememberDoctorName(Request $request, ?string $name = null): void
+    {
+        $name = trim((string) ($name ?? $request->input('doctor_name')));
+
+        if ($name === '') {
+            $request->session()->forget(self::NAME_KEY);
+
+            return;
+        }
+
+        // Cut here only to bound what goes into the session; DemoSeeder is
+        // what decides whether it is usable as a name at all.
+        $request->session()->put(self::NAME_KEY, Str::limit($name, 60, ''));
+    }
+
+    protected function rememberedDoctorName(): ?string
+    {
+        $name = session(self::NAME_KEY);
+
+        return is_string($name) && $name !== '' ? $name : null;
+    }
+
+    /** The role this session was opened as. */
+    protected function roleOf(DemoSession $session): string
+    {
+        return $session->started_role === 'assistant' ? 'assistant' : 'doctor';
+    }
+
+    /** The signed cookie that marks every later request as this demo. */
+    protected function demoCookie(DemoSession $session): \Symfony\Component\HttpFoundation\Cookie
+    {
+        return cookie(
+            name: config('demo.cookie'),
+            value: DemoContext::cookieValue($session->id),
+            minutes: (int) config('demo.max_duration_minutes'),
+            httpOnly: true,
+            sameSite: 'lax',
+        );
+    }
 
     /** Log in as the requested role and land on that role's dashboard. */
     protected function enterWorkspace(DemoSession $session, string $role): RedirectResponse
@@ -205,20 +390,32 @@ class DemoController extends Controller
 
         $route = $role === 'assistant' ? 'practice.assistant.dashboard' : 'practice.doctor.dashboard';
 
-        return redirect()->route($route)->withCookie(
-            cookie(
-                name: config('demo.cookie'),
-                value: DemoContext::cookieValue($session->id),
-                minutes: (int) config('demo.max_duration_minutes'),
-                httpOnly: true,
-                sameSite: 'lax',
-            )
-        );
+        return redirect()->route($route)->withCookie($this->demoCookie($session));
     }
 
     protected function firstClinicId(DemoSession $session): ?int
     {
         return Doctor::find($session->doctor_id)?->clinics()->value('id');
+    }
+
+    /**
+     * Nothing here may run with the demo switched off.
+     *
+     * StartDemoSession only redirects the connection when demo.enabled is
+     * true, so a request arriving here after the master switch has been thrown
+     * — an old cookie, a bookmarked URL — is pointed at PRODUCTION while still
+     * carrying a demo session id. Logging in, purging or reseeding against
+     * that would act on whichever production rows happen to share those ids.
+     */
+    protected function rejectIfDisabled(): ?RedirectResponse
+    {
+        if (config('demo.enabled')) {
+            return null;
+        }
+
+        return redirect()->route('login')->withErrors([
+            'email' => __('التجربة متوقفة مؤقتاً. برجاء المحاولة لاحقاً.'),
+        ]);
     }
 
     /** The session behind the cookie, whatever its state. */
@@ -235,6 +432,14 @@ class DemoController extends Controller
         $session = $this->sessionFromCookie($request);
 
         return $session && $session->isActive() && $session->doctor_id ? $session : null;
+    }
+
+    /** A live session whose clinic has not been built yet. */
+    protected function unbuiltSession(Request $request): ?DemoSession
+    {
+        $session = $this->sessionFromCookie($request);
+
+        return $session && $session->isActive() && ! $session->doctor_id ? $session : null;
     }
 
     protected function logoutDemoUser(Request $request): void

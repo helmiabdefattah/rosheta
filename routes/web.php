@@ -557,6 +557,8 @@ Route::prefix('practice')->name('practice.')->group(function () {
 */
 Route::prefix('demo')->name('demo.')->group(function () {
     Route::post('/start', [App\Http\Controllers\DemoController::class, 'start'])->name('start');
+    Route::get('/preparing', [App\Http\Controllers\DemoController::class, 'preparing'])->name('preparing');
+    Route::post('/build', [App\Http\Controllers\DemoController::class, 'build'])->name('build');
     Route::post('/switch-role', [App\Http\Controllers\DemoController::class, 'switchRole'])->name('switch-role');
     Route::post('/reset', [App\Http\Controllers\DemoController::class, 'reset'])->name('reset');
     Route::post('/end', [App\Http\Controllers\DemoController::class, 'end'])->name('end');

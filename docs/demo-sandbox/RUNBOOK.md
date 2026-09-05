@@ -6,14 +6,29 @@ How to set up, use, operate and disable the doctor/assistant demo environment.
 
 ## 1. What it does
 
-A visitor presses a button on the login page and lands inside a **fully working
-clinic that is live right now** — no signup, no password:
+A visitor presses a button on the login page, watches a short **"نجهّز رحلتك"**
+screen while their clinic is built, and lands inside a **fully working clinic
+that is live right now** — no signup, no password:
 
 - **A patient on the chair**, examination started ~12 minutes ago.
 - **A waiting queue** at roughly *now +20m*, *+45m*, *+75m*.
 - **Two visits already finished** earlier today.
-- **~15 past visits** going back about three months, each with a diagnosis, a
-  prescription, lab/radiology requests and results, and a paid collection.
+- **The last three days**, each holding four finished visits — with a diagnosis,
+  a prescription, lab/radiology requests and results, and a paid collection —
+  plus **one cancellation and one no-show**, so the attendance report and the
+  "لم يحضر" filter have something in them. Neither is charged: a visit that
+  never happened owes nothing, and the outstanding-money figure has to be one
+  the visitor can trust.
+- **The next three days**, holding nothing but appointments still to come, each
+  day mixing the three states one can be in — `scheduled` (the clinic booked
+  it), `confirmed` (the patient confirmed) and `pending` (a platform request
+  the front desk has not accepted yet).
+- **Bookings that are consequences.** Every upcoming appointment whose patient
+  has a file is a *follow-up of their last visit*, and says so: "متابعة نتيجة
+  أشعة بانوراما للفكين" where that visit left an order whose result is still
+  missing, "متابعة — التهاب لب مزمن…" where it left a diagnosis. What is left
+  as a plain first visit is exactly what should be — the patient with nothing
+  behind them.
 - **14 patients**, each **named after what their file demonstrates** rather than
   given an invented identity — so the queue reads as a menu of things to try:
 
@@ -27,12 +42,19 @@ clinic that is live right now** — no signup, no password:
 
   The label is derived from the seeded rows after everything else is in place,
   so it is always true: the qualifiers appear only when that patient really has
-  results, a prescription, an unpaid balance, insurance, a drug allergy or a
-  future booking. Roles are `تحت الكشف الآن`, `في الانتظار اليوم`,
-  `انتهى كشفها اليوم`, `سابقة`, `بموعد قادم`, `لم تحضر`.
+  results, a prescription, an unpaid balance, insurance, a drug allergy, a
+  future booking, a missed or a cancelled appointment. Roles are
+  `تحت الكشف الآن`, `في الانتظار اليوم`, `انتهى كشفها اليوم`, `سابقة`,
+  `بموعد قادم`, `لم تحضر` — and a patient with a real file keeps that file's
+  role even if they also missed an appointment last week; the miss becomes a
+  qualifier rather than the headline.
 - **A clinic** with opening hours, prices, chargeable extras, treatment-plan
   templates and custom examination fields.
 - **An assistant account**, switchable from the demo bar without a password.
+- **The visitor's own name**, if they typed one on the login page — on the
+  clinic sign, the prescriptions and the reports, so they are looking at their
+  clinic rather than someone else's. It is optional; left empty, a believable
+  name is generated.
 
 Every date is computed from the moment the visitor pressed the button, so the
 clinic is always mid-session — even at 2am, and even on a Friday.
@@ -105,10 +127,16 @@ harmless — just untidy — and `php artisan demo:purge` clears them at any tim
 
 ## 3. Using it
 
-1. Open **`/login`**.
-2. Under the sign-in form, **pick your specialty** from the dropdown.
+1. Open the **home page** (the card sits between the hero and the features)
+   or **`/login`** (under the sign-in form). Both show the same card —
+   `resources/views/demo/start-card.blade.php` — so a change to one is a
+   change to both.
+2. **Type your name** if you want it used (optional), and **pick your
+   specialty** from the dropdown.
 3. Press **«جرّب كطبيب»** or **«جرّب كمساعد»**.
-4. You land on the doctor or assistant dashboard, in Arabic, already populated
+4. A loading screen says what is being built while it is built — it takes
+   around 7 seconds.
+5. You land on the doctor or assistant dashboard, in Arabic, already populated
    with a clinic **for that specialty**.
 
 A dark **demo bar** sits at the top (bottom on mobile) with:
@@ -117,7 +145,7 @@ A dark **demo bar** sits at the top (bottom on mobile) with:
 |---|---|
 | countdown | time left before the hard expiry (default 4 hours) |
 | **تحوّل إلى المساعد / الطبيب** | switches role inside the same clinic, no password |
-| **أعد التجربة** | wipes the tenant and rebuilds it fresh, same session |
+| **أعد التجربة** | wipes the tenant and rebuilds it fresh, same session (and the same loading screen — the rebuild is not instant either) |
 | **أنشئ حسابك الحقيقي** | goes to the real registration form |
 | **إنهاء** | ends the demo and destroys everything immediately |
 
@@ -193,6 +221,33 @@ avoid such names, but that is why the rename is not a simple update.
 ---
 
 ## 4. How the isolation works
+
+The start is three requests, not one, because building a clinic takes several
+seconds and a visitor should never spend them looking at a blank tab:
+
+```
+POST /demo/start      claims a demo_sessions row, sets the signed cookie,
+                      redirects — no seeding, so it always answers instantly
+GET  /demo/preparing  the "نجهّز رحلتك" screen, which calls the next request
+                      as soon as it has painted
+POST /demo/build      seeds the tenant, logs the visitor in, and answers with
+                      the workspace to go to
+```
+
+`/demo/preparing` calls `build` over **fetch** and navigates itself with the
+answer, rather than submitting a form. That is not a preference: a pending
+cross-document navigation stops the browser painting the page it started from,
+so a form submit would blank the loading screen for the whole build — the exact
+thing it is there to prevent. `build` therefore answers JSON when asked for it
+and an ordinary redirect otherwise, which is what the no-JS and retry paths
+get. The page is also **self-contained** — no Tailwind CDN, no render-blocking
+font — because it must paint before anything else can.
+
+`build` is idempotent (a second one on a built session just enters the
+workspace) and `start` reuses a session that was claimed but never built, so a
+visitor who closes the loading page and comes back does not strand a row that
+counts against their own concurrency limit. **أعد التجربة** goes back through
+`/demo/preparing` for the same reason the first build does.
 
 ```
 visitor ──► /demo/start ──► StartDemoSession (runs BEFORE StartSession)
@@ -272,22 +327,42 @@ purpose.
 DEMO_ENABLED=false
 ```
 
-then `php artisan config:clear`. The login button disappears, `/demo/start`
+then `php artisan config:clear`. The card disappears from both the home page
+and the login page, `/demo/start`
 turns visitors away politely, and existing demos end on their next request.
 Production is unaffected either way. Clean up leftovers with
 `php artisan demo:purge --all`.
 
 ### Changing what the demo contains
 
-Content lives in `app/Demo/DemoSeeder.php`:
+`DemoSeeder` orchestrates; each part of the tenant has its own class:
 
-- `input()` — patient count, history depth, appointments per day, days ahead,
-  prices, opening hours.
-- `WAITING_OFFSETS`, `FINISHED_OFFSETS`, `IN_PROGRESS_STARTED_MINUTES_AGO` —
-  where today's queue sits relative to "now".
+- `DemoSeeder::input()` — patient count, history depth, appointments per day,
+  days ahead, prices, opening hours.
+- `DemoWindow` — how wide the window is (`DEMO_HISTORY_DAYS`,
+  `DEMO_FUTURE_DAYS`), which days count as working days, and where a given slot
+  falls inside one.
+- `DemoSchedule` — where every appointment sits: `WAITING_OFFSETS`,
+  `FINISHED_OFFSETS`, `IN_PROGRESS_STARTED_MINUTES_AGO` for today's queue,
+  `UPCOMING_STATUSES` for the days ahead, `UNATTENDED` for the cancellations
+  and no-shows behind.
+- `DemoPatientRecords` — makes sure no patient's file opens empty.
+- `DemoFollowUps` — why each upcoming appointment exists.
+- `DemoPatientLabeller` — what each patient is called. Runs last, off the
+  finished rows.
+- `resources/views/demo/start-card.blade.php` — the invitation card itself.
+  Its specialization picker comes from a view composer bound to that view
+  (`DemoServiceProvider`), so putting the demo on another page is one
+  `@include` and nothing else.
 - Clinical content (diagnoses, prescriptions, lab results, billable items) comes
   from `ClinicOnboardingService`, which the seeder **composes over and does not
   modify** — it is production onboarding code shared with the admin panel.
+  `SpecialtyOverlay` then rewrites it into the chosen specialty.
+
+**Order matters.** Anything that writes an appointment `reason` must run *after*
+`SpecialtyOverlay`, which rewrites every reason from the specialty's list; that
+is why the cancellations, the no-shows and the follow-up reasons are added at
+the end of `DemoSeeder::seed()`.
 
 ---
 

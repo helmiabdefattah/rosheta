@@ -52,6 +52,13 @@ return [
     // be mistaken for a production one.
     'session_cookie' => env('DEMO_SESSION_COOKIE', 'rosheta_demo_session'),
 
+    // The demo window. History sits in the last N days and bookings in the
+    // next N, so every seeded row is within a few days of "now": the doctor
+    // opens the calendar and finds yesterday full and tomorrow booked, instead
+    // of a queue today and an archive three months back that nothing links to.
+    'history_days' => (int) env('DEMO_HISTORY_DAYS', 3),
+    'future_days' => (int) env('DEMO_FUTURE_DAYS', 3),
+
     // Lifetime.
     'max_duration_minutes' => (int) env('DEMO_MAX_DURATION_MINUTES', 240),
     'idle_timeout_minutes' => (int) env('DEMO_IDLE_TIMEOUT_MINUTES', 45),
