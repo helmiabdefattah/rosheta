@@ -1,0 +1,129 @@
+{
+    "label": "عظام",
+    "slugs": ["aatham", "grah-aatham", "romatyzm", "aalag-tbyaay"],
+    "clinic_name": "عيادة {doctor} لجراحة العظام والمفاصل",
+    "brief": "استشاري جراحة العظام والمفاصل والإصابات — حساب تجريبي.",
+    "prices": { "examination": 400, "follow_up": 200 },
+
+    "services": [
+        { "name": "تركيب جبس", "price": 600 },
+        { "name": "حقن موضعي بالمفصل", "price": 800 },
+        { "name": "سحب سائل من الركبة", "price": 700 },
+        { "name": "تركيب دعامة طبية", "price": 900 },
+        { "name": "جلسة علاج طبيعي", "price": 200 }
+    ],
+
+    "examination_fields": [
+        { "label": "المفصل / الطرف المصاب", "type": "text", "options": null, "values": ["الركبة اليمنى", "الفقرات القطنية", "الساعد الأيمن", "الكتف الأيسر", "الكاحل الأيمن"] },
+        { "label": "درجة الألم (1-10)", "type": "number", "options": null, "values": ["6", "8", "3", "5", "7"] },
+        { "label": "مدى الحركة", "type": "select", "options": "كامل,محدود قليلاً,محدود بشدة,منعدم", "values": ["محدود قليلاً", "محدود بشدة", "كامل", "محدود قليلاً"] },
+        { "label": "وجود تورم", "type": "select", "options": "لا يوجد,بسيط,متوسط,شديد", "values": ["بسيط", "لا يوجد", "متوسط", "بسيط"] },
+        { "label": "القدرة على تحميل الوزن", "type": "select", "options": "كاملة,جزئية,غير قادر", "values": ["كاملة", "جزئية", "كاملة", "غير قادر"] }
+    ],
+
+    "results": [
+        {
+            "type": "radiology",
+            "title": "أشعة عادية على الركبتين (وقوف)",
+            "notes": "ضيق بمسافة المفصل الإنسي مع نتوءات عظمية — خشونة الدرجة الثانية.",
+            "lines": ["Weight-Bearing Knee X-Ray - AP and Lateral", "Medial joint space narrowing, right more than left.", "Marginal osteophytes at the tibial spines.", "Subchondral sclerosis present.", "No fracture or loose body.", "Impression: Kellgren-Lawrence grade 2 osteoarthritis."]
+        },
+        {
+            "type": "radiology",
+            "title": "رنين مغناطيسي على الفقرات القطنية",
+            "notes": "انزلاق غضروفي L4-L5 يضغط على الجذر العصبي الأيسر.",
+            "lines": ["MRI Lumbar Spine - Without Contrast", "L4-L5: posterolateral disc herniation, left paracentral.", "Compression of the traversing left L5 nerve root.", "L5-S1: mild disc desiccation, no herniation.", "No canal stenosis at other levels.", "Impression: L4-L5 disc herniation with left L5 radiculopathy."]
+        },
+        {
+            "type": "radiology",
+            "title": "أشعة متابعة على الساعد الأيمن",
+            "notes": "بداية تكوّن كالس بدون إزاحة — الالتئام يسير بشكل جيد.",
+            "lines": ["Follow-up Forearm X-Ray - AP and Lateral", "Transverse fracture of the mid ulnar shaft.", "Early callus formation at the fracture site.", "Alignment maintained, no displacement.", "Radius intact.", "Impression: Satisfactory healing at 3 weeks."]
+        },
+        {
+            "type": "lab",
+            "title": "فيتامين د ونسبة الكالسيوم",
+            "notes": "نقص واضح بفيتامين د — يحتاج جرعة تعويضية.",
+            "lines": ["Bone Profile", "25-OH Vitamin D: 14 ng/mL (deficient)", "Serum Calcium: 9.1 mg/dL", "Phosphorus: 3.4 mg/dL", "Alkaline phosphatase: 96 U/L", "Impression: Vitamin D deficiency."]
+        }
+    ],
+
+    "plans": [
+        {
+            "title": "خطة علاج خشونة الركبة",
+            "items": [
+                { "medicine_name": "Voltaren 75mg", "dose": "قرص", "frequency": "مرتين يومياً", "duration": "10 أيام", "instructions": "بعد الأكل مباشرة" },
+                { "medicine_name": "Glucosamine 1500mg", "dose": "قرص", "frequency": "مرة يومياً", "duration": "3 شهور", "instructions": "بعد الغداء" },
+                { "medicine_name": "Calcium + Vitamin D", "dose": "قرص", "frequency": "مرة يومياً", "duration": "مستمر", "instructions": "مساءً" }
+            ]
+        },
+        {
+            "title": "خطة علاج آلام أسفل الظهر",
+            "items": [
+                { "medicine_name": "Myolgin", "dose": "كبسولة", "frequency": "ثلاث مرات يومياً", "duration": "7 أيام", "instructions": "بعد الأكل" },
+                { "medicine_name": "Neurorubine forte", "dose": "قرص", "frequency": "مرة يومياً", "duration": "30 يوم", "instructions": "بعد الأكل" },
+                { "medicine_name": "Voltaren emulgel", "dose": "دهان موضعي", "frequency": "ثلاث مرات يومياً", "duration": "14 يوم", "instructions": "تدليك لطيف" }
+            ]
+        },
+        {
+            "title": "خطة ما بعد الكسر",
+            "items": [
+                { "medicine_name": "Calcium + Vitamin D", "dose": "قرص", "frequency": "مرتين يومياً", "duration": "3 شهور", "instructions": "مع الوجبات" },
+                { "medicine_name": "Cataflam 50mg", "dose": "قرص", "frequency": "عند اللزوم", "duration": "5 أيام", "instructions": "بعد الأكل" }
+            ]
+        }
+    ],
+
+    "reasons": [
+        "ألم بالركبة عند صعود السلم",
+        "ألم أسفل الظهر يمتد للساق",
+        "متابعة بعد تركيب جبس",
+        "إصابة رياضية بالكاحل",
+        "خشونة وتيبس بالكتف",
+        "متابعة بعد عملية تركيب مفصل",
+        "تنميل بأصابع اليد"
+    ],
+
+    "cases": [
+        {
+            "diagnosis": "خشونة بالركبة اليمنى — الدرجة الثانية",
+            "treatment_plan": "خريطة العلاج:\n1) مضاد التهاب غير ستيرويدي لمدة 10 أيام مع واقي معدة.\n2) جلوكوزامين لمدة 3 شهور.\n3) برنامج علاج طبيعي لتقوية العضلة الرباعية — 12 جلسة.\n4) إنقاص الوزن وتجنب صعود السلم والقرفصاء.\n5) إعادة تقييم بعد شهرين والنظر في حقن حمض الهيالورونيك.",
+            "notes": "ألم عند الحركة يخف بالراحة، مع فرقعة وتيبس صباحي أقل من 30 دقيقة.",
+            "medicines": [
+                { "medicine_name": "Voltaren 75mg", "dose": "قرص", "frequency": "مرتين يومياً", "duration": "10 أيام", "instructions": "بعد الأكل مباشرة" },
+                { "medicine_name": "Glucosamine 1500mg", "dose": "قرص", "frequency": "مرة يومياً", "duration": "3 شهور", "instructions": "بعد الغداء" },
+                { "medicine_name": "Nexium 20mg", "dose": "كبسولة", "frequency": "مرة يومياً", "duration": "10 أيام", "instructions": "قبل الإفطار" }
+            ],
+            "requests": [
+                { "type": "radiology", "name": "أشعة عادية على الركبتين (وقوف)", "notes": "لتقييم مسافة المفصل" },
+                { "type": "lab_test", "name": "فيتامين د ونسبة الكالسيوم" }
+            ]
+        },
+        {
+            "diagnosis": "انزلاق غضروفي قطني L4-L5 مع ضغط على العصب",
+            "treatment_plan": "خريطة العلاج:\n1) راحة نسبية 3 أيام مع تجنب الانحناء ورفع الأثقال.\n2) مرخي عضلات ومسكن لمدة أسبوع.\n3) فيتامينات أعصاب لمدة شهر.\n4) علاج طبيعي وتمارين تقوية عضلات البطن والظهر بعد زوال الألم الحاد.\n5) رنين مغناطيسي، والتدخل الجراحي فقط عند ضعف حركي أو فشل العلاج التحفظي.",
+            "notes": "ألم يمتد من أسفل الظهر للساق اليسرى حتى القدم. اختبار رفع الساق إيجابي عند 40 درجة.",
+            "medicines": [
+                { "medicine_name": "Myolgin", "dose": "كبسولة", "frequency": "ثلاث مرات يومياً", "duration": "7 أيام", "instructions": "بعد الأكل" },
+                { "medicine_name": "Neurorubine forte", "dose": "قرص", "frequency": "مرة يومياً", "duration": "30 يوم", "instructions": "بعد الأكل" },
+                { "medicine_name": "Lyrica 75mg", "dose": "كبسولة", "frequency": "مرة ليلاً", "duration": "14 يوم", "instructions": "قد يسبب دوخة" }
+            ],
+            "requests": [
+                { "type": "radiology", "name": "رنين مغناطيسي على الفقرات القطنية", "notes": "بدون صبغة" },
+                { "type": "examination", "name": "رسم عصب للطرف السفلي الأيسر" }
+            ]
+        },
+        {
+            "diagnosis": "كسر بالزند الأيمن — متابعة بعد 3 أسابيع من الجبس",
+            "treatment_plan": "خريطة العلاج:\n1) استمرار الجبس أسبوعين إضافيين.\n2) كالسيوم وفيتامين د لمدة 3 شهور.\n3) تحريك الأصابع يومياً لتجنب التيبس.\n4) أشعة متابعة بعد أسبوعين لتقييم الالتئام.\n5) بدء علاج طبيعي فور رفع الجبس.",
+            "notes": "الأشعة تُظهر بداية تكوّن كالس. لا يوجد إزاحة. الأصابع سليمة الحركة والإحساس.",
+            "medicines": [
+                { "medicine_name": "Calcium + Vitamin D", "dose": "قرص", "frequency": "مرتين يومياً", "duration": "3 شهور", "instructions": "مع الوجبات" },
+                { "medicine_name": "Cataflam 50mg", "dose": "قرص", "frequency": "عند اللزوم", "duration": "5 أيام", "instructions": "بعد الأكل" }
+            ],
+            "requests": [
+                { "type": "radiology", "name": "أشعة متابعة على الساعد الأيمن", "notes": "وضع أمامي وجانبي" }
+            ]
+        }
+    ]
+}

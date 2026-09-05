@@ -146,6 +146,18 @@
         </div>
     </section>
 
+    {{-- Try it for real, before any of the claims below. Doctors and their
+         assistants are the ones who have to be convinced by more than a
+         screenshot, and this is a whole working clinic they can open in a few
+         seconds without handing over anything. --}}
+    <section id="demo" class="py-16 sm:py-20 relative">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-2xl mx-auto reveal">
+                @include('demo.start-card', ['wrapperClass' => ''])
+            </div>
+        </div>
+    </section>
+
     <section id="features" class="py-24 bg-white relative">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-20 reveal">

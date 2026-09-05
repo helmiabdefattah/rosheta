@@ -570,3 +570,26 @@ Route::prefix('practice')->name('practice.')->group(function () {
 });
 
 
+
+/*
+|--------------------------------------------------------------------------
+| Demo sandbox
+|--------------------------------------------------------------------------
+| A visitor can open a fully populated clinic with no signup, try the doctor
+| and assistant workspaces, and have every trace hard-deleted when they end.
+|
+| Everything lives under the "demo" prefix on purpose: StartDemoSession keys
+| off the request path (and afterwards a signed cookie), so it can point the
+| request at the demo database BEFORE the session starts.
+| See docs/demo-sandbox/RUNBOOK.md.
+*/
+Route::prefix('demo')->name('demo.')->group(function () {
+    Route::post('/start', [App\Http\Controllers\DemoController::class, 'start'])->name('start');
+    Route::get('/preparing', [App\Http\Controllers\DemoController::class, 'preparing'])->name('preparing');
+    Route::post('/build', [App\Http\Controllers\DemoController::class, 'build'])->name('build');
+    Route::post('/switch-role', [App\Http\Controllers\DemoController::class, 'switchRole'])->name('switch-role');
+    Route::post('/reset', [App\Http\Controllers\DemoController::class, 'reset'])->name('reset');
+    Route::post('/end', [App\Http\Controllers\DemoController::class, 'end'])->name('end');
+    Route::get('/ended', [App\Http\Controllers\DemoController::class, 'ended'])->name('ended');
+    Route::get('/status', [App\Http\Controllers\DemoController::class, 'status'])->name('status');
+});

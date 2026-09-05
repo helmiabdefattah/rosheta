@@ -173,6 +173,9 @@
             </form>
         </div>
 
+        {{-- Demo sandbox: a populated clinic, no signup, wiped when it ends. --}}
+        @include('demo.start-card')
+
         <div class="text-center text-xs text-slate-400 mt-8 font-medium">
             &copy; {{ date('Y') }} Mostashfa-on. {{ app()->getLocale() === 'ar' ? 'جميع الحقوق محفوظة.' : 'All rights reserved.' }}
         </div>

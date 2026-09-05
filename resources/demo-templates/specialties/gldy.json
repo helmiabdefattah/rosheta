@@ -1,0 +1,128 @@
+{
+    "label": "جلدية",
+    "slugs": ["gldy", "hsasy-omnaaa"],
+    "clinic_name": "عيادة {doctor} للجلدية والتجميل",
+    "brief": "استشاري الأمراض الجلدية والتناسلية — حساب تجريبي.",
+    "prices": { "examination": 350, "follow_up": 200 },
+
+    "services": [
+        { "name": "جلسة ليزر إزالة شعر (منطقة صغيرة)", "price": 600 },
+        { "name": "جلسة تقشير كيميائي", "price": 800 },
+        { "name": "حقن فيلر (سيرنجة)", "price": 3500 },
+        { "name": "كي كهربائي للثآليل", "price": 400 },
+        { "name": "أخذ عينة جلدية (بيوبسي)", "price": 900 }
+    ],
+
+    "examination_fields": [
+        { "label": "مكان الإصابة", "type": "text", "options": null, "values": ["الوجه والظهر", "ثنيات المرفقين", "الظهر والصدر", "فروة الرأس", "الساقين"] },
+        { "label": "نوع الآفة", "type": "select", "options": "بقعة,حطاطة,بثرة,عقدة,قرحة,قشور", "values": ["بثرة", "قشور", "بقعة", "حطاطة"] },
+        { "label": "المساحة المصابة %", "type": "percentage", "options": null, "values": ["12", "8", "25", "4", "18"] },
+        { "label": "درجة الحكة (1-10)", "type": "number", "options": null, "values": ["2", "8", "5", "1", "7"] },
+        { "label": "نمط البشرة (فيتزباتريك)", "type": "select", "options": "I,II,III,IV,V,VI", "values": ["IV", "III", "IV", "V"] }
+    ],
+
+    "results": [
+        {
+            "type": "lab",
+            "title": "مسحة فطرية (KOH)",
+            "notes": "خيوط فطرية قصيرة وأبواغ — يتوافق مع التينيا الملونة.",
+            "lines": ["KOH Mount - Skin Scraping", "Short hyphae and clusters of spores seen.", "Classic spaghetti-and-meatballs appearance.", "No dermatophyte hyphae.", "Impression: Pityriasis versicolor."]
+        },
+        {
+            "type": "lab",
+            "title": "هرمونات (LH, FSH, Testosterone)",
+            "notes": "نسبة LH/FSH مرتفعة قليلاً — يُنصح باستبعاد تكيس المبايض.",
+            "lines": ["Hormonal Profile - Female", "LH: 12.4 mIU/mL", "FSH: 5.1 mIU/mL", "LH/FSH ratio: 2.4 (elevated)", "Total testosterone: 68 ng/dL (upper normal)", "Impression: Suggestive of PCOS - correlate clinically."]
+        },
+        {
+            "type": "lab",
+            "title": "صورة دم كاملة ونسبة الإيوزينوفيل",
+            "notes": "ارتفاع الإيوزينوفيل يدعم الطبيعة التحسسية.",
+            "lines": ["Complete Blood Count with Differential", "WBC: 8.9 x10^3/uL", "Eosinophils: 9% (high)", "Hemoglobin: 13.2 g/dL", "Total IgE: 410 IU/mL (high)", "Impression: Atopic pattern."]
+        },
+        {
+            "type": "lab",
+            "title": "عينة جلدية (هيستوباثولوجي)",
+            "notes": "التهاب جلدي إسفنجي مزمن — يتوافق مع الإكزيما.",
+            "lines": ["Skin Punch Biopsy - Histopathology", "Epidermis: spongiosis with mild acanthosis.", "Dermis: perivascular lymphocytic infiltrate.", "No atypia or malignancy.", "Impression: Chronic spongiotic dermatitis."]
+        }
+    ],
+
+    "plans": [
+        {
+            "title": "خطة علاج حب الشباب المتوسط",
+            "items": [
+                { "medicine_name": "Doxycycline 100mg", "dose": "كبسولة", "frequency": "مرة يومياً", "duration": "30 يوم", "instructions": "بعد الأكل مع ماء كثير وتجنب الشمس" },
+                { "medicine_name": "Adapalene gel 0.1%", "dose": "دهان موضعي", "frequency": "مرة ليلاً", "duration": "شهرين", "instructions": "على بشرة جافة نظيفة" },
+                { "medicine_name": "Benzoyl peroxide 5%", "dose": "دهان موضعي", "frequency": "مرة صباحاً", "duration": "شهرين", "instructions": "يُغسل بعد 10 دقائق أول أسبوع" }
+            ]
+        },
+        {
+            "title": "خطة علاج الإكزيما التأتبية",
+            "items": [
+                { "medicine_name": "Elica cream", "dose": "دهان موضعي", "frequency": "مرة يومياً", "duration": "10 أيام", "instructions": "طبقة رقيقة على المناطق الملتهبة فقط" },
+                { "medicine_name": "Cetirizine 10mg", "dose": "قرص", "frequency": "مرة ليلاً", "duration": "14 يوم", "instructions": "للحكة" },
+                { "medicine_name": "Cetaphil moisturizer", "dose": "مرطب", "frequency": "مرتين يومياً", "duration": "مستمر", "instructions": "بعد الاستحمام مباشرة" }
+            ]
+        },
+        {
+            "title": "خطة علاج التينيا الجلدية",
+            "items": [
+                { "medicine_name": "Itraconazole 100mg", "dose": "كبسولة", "frequency": "مرتين يومياً", "duration": "14 يوم", "instructions": "بعد الأكل الدسم" },
+                { "medicine_name": "Ketoconazole cream", "dose": "دهان موضعي", "frequency": "مرتين يومياً", "duration": "21 يوم", "instructions": "يمتد 2 سم خارج حدود البقعة" }
+            ]
+        }
+    ],
+
+    "reasons": [
+        "حبوب بالوجه لا تستجيب للعلاج",
+        "حكة وجفاف بالجلد منذ شهر",
+        "بقع بيضاء بالظهر",
+        "تساقط شعر ملحوظ",
+        "متابعة جلسات الليزر",
+        "طفح جلدي بعد دواء جديد",
+        "استشارة تجميلية"
+    ],
+
+    "cases": [
+        {
+            "diagnosis": "حب شباب التهابي متوسط الشدة بالوجه والظهر",
+            "treatment_plan": "خريطة العلاج:\n1) مضاد حيوي فموي لمدة شهر مع واقي شمس يومي.\n2) ريتينويد موضعي ليلاً بالتدريج لتجنب التهيج.\n3) بنزويل بيروكسايد صباحاً.\n4) غسول لطيف مرتين يومياً وعدم العصر.\n5) إعادة تقييم بعد 6 أسابيع وتصوير للمقارنة.",
+            "notes": "آفات التهابية متعددة مع بعض العقد بالخد الأيمن. لا توجد ندبات عميقة بعد.",
+            "medicines": [
+                { "medicine_name": "Doxycycline 100mg", "dose": "كبسولة", "frequency": "مرة يومياً", "duration": "30 يوم", "instructions": "بعد الأكل وتجنب الشمس" },
+                { "medicine_name": "Adapalene gel 0.1%", "dose": "دهان موضعي", "frequency": "مرة ليلاً", "duration": "شهرين", "instructions": "على بشرة جافة" },
+                { "medicine_name": "Sunscreen SPF 50", "dose": "دهان", "frequency": "كل 3 ساعات نهاراً", "duration": "مستمر", "instructions": "ضروري مع الريتينويد" }
+            ],
+            "requests": [
+                { "type": "lab_test", "name": "هرمونات (LH, FSH, Testosterone)", "notes": "للحالات المقاومة عند الإناث" }
+            ]
+        },
+        {
+            "diagnosis": "إكزيما تأتبية نشطة بثنيات المرفقين والركبتين",
+            "treatment_plan": "خريطة العلاج:\n1) كورتيزون موضعي متوسط القوة لمدة 10 أيام ثم تقليل تدريجي.\n2) مرطب مكثف مرتين يومياً مدى الحياة.\n3) مضاد هيستامين ليلاً للحكة.\n4) تجنب الصابون القلوي والمياه شديدة السخونة.\n5) متابعة بعد أسبوعين لتقييم الاستجابة.",
+            "notes": "جفاف شديد مع تحزز بالجلد وأثر هرش. لا توجد علامات عدوى ثانوية.",
+            "medicines": [
+                { "medicine_name": "Elica cream", "dose": "دهان موضعي", "frequency": "مرة يومياً", "duration": "10 أيام", "instructions": "طبقة رقيقة" },
+                { "medicine_name": "Cetirizine 10mg", "dose": "قرص", "frequency": "مرة ليلاً", "duration": "14 يوم", "instructions": "قد يسبب نعاس" },
+                { "medicine_name": "Cetaphil moisturizer", "dose": "مرطب", "frequency": "مرتين يومياً", "duration": "مستمر", "instructions": "بعد الاستحمام" }
+            ],
+            "requests": [
+                { "type": "lab_test", "name": "صورة دم كاملة + نسبة الإيوزينوفيل" },
+                { "type": "lab_test", "name": "IgE الكلي" }
+            ]
+        },
+        {
+            "diagnosis": "تينيا ملونة منتشرة بالظهر والصدر",
+            "treatment_plan": "خريطة العلاج:\n1) مضاد فطريات فموي لمدة أسبوعين.\n2) كريم موضعي لمدة 3 أسابيع يتجاوز حدود البقع.\n3) شامبو كيتوكونازول مرتين أسبوعياً على الجسم.\n4) توضيح أن عودة اللون الطبيعي تستغرق شهوراً بعد الشفاء.\n5) متابعة بعد شهر.",
+            "notes": "بقع فاتحة متقشرة بالظهر تزداد بالعرق. فحص الوود إيجابي.",
+            "medicines": [
+                { "medicine_name": "Itraconazole 100mg", "dose": "كبسولة", "frequency": "مرتين يومياً", "duration": "14 يوم", "instructions": "بعد الأكل الدسم" },
+                { "medicine_name": "Ketoconazole cream", "dose": "دهان موضعي", "frequency": "مرتين يومياً", "duration": "21 يوم", "instructions": "يمتد خارج حدود البقعة" }
+            ],
+            "requests": [
+                { "type": "lab_test", "name": "مسحة فطرية (KOH)", "notes": "لتأكيد التشخيص" }
+            ]
+        }
+    ]
+}

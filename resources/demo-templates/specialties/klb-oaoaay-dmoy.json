@@ -1,0 +1,136 @@
+{
+    "label": "قلب وأوعية دموية",
+    "slugs": ["klb-oaoaay-dmoy", "grah-klb-osdr"],
+    "clinic_name": "عيادة {doctor} لأمراض القلب والأوعية الدموية",
+    "brief": "استشاري أمراض القلب والقسطرة — حساب تجريبي.",
+    "prices": { "examination": 500, "follow_up": 250 },
+
+    "services": [
+        { "name": "رسم قلب (ECG)", "price": 150 },
+        { "name": "إيكو على القلب", "price": 800 },
+        { "name": "رسم قلب بالمجهود", "price": 1200 },
+        { "name": "هولتر مراقبة 24 ساعة", "price": 1500 },
+        { "name": "دوبلر على شرايين الرقبة", "price": 900 }
+    ],
+
+    "examination_fields": [
+        { "label": "ضغط الدم", "type": "text", "options": null, "values": ["155/95", "130/80", "145/90", "120/75", "165/100"] },
+        { "label": "النبض (نبضة/دقيقة)", "type": "number", "options": null, "values": ["82", "96", "74", "108", "68"] },
+        { "label": "نسبة الأكسجين", "type": "percentage", "options": null, "values": ["97", "95", "98", "93", "96"] },
+        { "label": "درجة ضيق النفس (NYHA)", "type": "select", "options": "I,II,III,IV", "values": ["II", "I", "III", "II"] },
+        { "label": "تورم بالقدمين", "type": "select", "options": "لا يوجد,بسيط,متوسط,شديد", "values": ["لا يوجد", "بسيط", "متوسط", "لا يوجد"] },
+        { "label": "مدخّن", "type": "select", "options": "نعم,لا,أقلع", "values": ["نعم", "أقلع", "لا", "نعم"] }
+    ],
+
+    "results": [
+        {
+            "type": "radiology",
+            "title": "إيكو على القلب",
+            "notes": "كسر القذف 40% مع ارتخاء بالبطين الأيسر.",
+            "lines": ["Transthoracic Echocardiography", "LV ejection fraction: 40% (mildly to moderately reduced).", "LV internal diameter (diastole): 58 mm.", "Mild mitral regurgitation.", "No pericardial effusion.", "Impression: Mild to moderate LV systolic dysfunction."]
+        },
+        {
+            "type": "radiology",
+            "title": "دوبلر على شرايين الرقبة",
+            "notes": "تصلب بسيط بالشريان السباتي الأيمن بدون ضيق مؤثر.",
+            "lines": ["Carotid Duplex Ultrasound", "Right ICA: intima-media thickness 1.1 mm.", "Small calcified plaque at the right carotid bulb.", "Peak systolic velocity within normal limits.", "No haemodynamically significant stenosis.", "Impression: Mild atherosclerosis, no significant stenosis."]
+        },
+        {
+            "type": "lab",
+            "title": "دهون الدم (Lipid profile)",
+            "notes": "الكوليسترول الضار مرتفع — يحتاج ستاتين عالي الجرعة.",
+            "lines": ["Fasting Lipid Profile", "Total cholesterol: 248 mg/dL (high)", "LDL: 168 mg/dL (high)", "HDL: 36 mg/dL (low)", "Triglycerides: 210 mg/dL (high)", "Impression: Mixed dyslipidaemia - high cardiovascular risk."]
+        },
+        {
+            "type": "lab",
+            "title": "وظائف كلى وأملاح",
+            "notes": "الوظائف والأملاح داخل المعدل الطبيعي — آمن لبدء المدر.",
+            "lines": ["Renal Function and Electrolytes", "Creatinine: 1.0 mg/dL", "eGFR: 84 mL/min/1.73m2", "Sodium: 139 mmol/L", "Potassium: 4.2 mmol/L", "Impression: Normal renal function."]
+        }
+    ],
+
+    "plans": [
+        {
+            "title": "خطة ضبط ضغط الدم",
+            "items": [
+                { "medicine_name": "Concor 5mg", "dose": "قرص", "frequency": "مرة صباحاً", "duration": "30 يوم", "instructions": "قبل الإفطار" },
+                { "medicine_name": "Amlodipine 5mg", "dose": "قرص", "frequency": "مرة مساءً", "duration": "30 يوم", "instructions": "في نفس الموعد يومياً" },
+                { "medicine_name": "Aspocid 75mg", "dose": "قرص", "frequency": "مرة يومياً", "duration": "مستمر", "instructions": "بعد الغداء" }
+            ]
+        },
+        {
+            "title": "خطة ما بعد قسطرة الشرايين التاجية",
+            "items": [
+                { "medicine_name": "Plavix 75mg", "dose": "قرص", "frequency": "مرة يومياً", "duration": "12 شهر", "instructions": "لا يُوقف إلا بأمر الطبيب" },
+                { "medicine_name": "Aspocid 75mg", "dose": "قرص", "frequency": "مرة يومياً", "duration": "مستمر", "instructions": "بعد الغداء" },
+                { "medicine_name": "Lipitor 40mg", "dose": "قرص", "frequency": "مرة ليلاً", "duration": "مستمر", "instructions": "قبل النوم" }
+            ]
+        },
+        {
+            "title": "خطة علاج هبوط عضلة القلب",
+            "items": [
+                { "medicine_name": "Lasix 40mg", "dose": "قرص", "frequency": "مرة صباحاً", "duration": "مستمر", "instructions": "مع متابعة الأملاح" },
+                { "medicine_name": "Entresto 50mg", "dose": "قرص", "frequency": "مرتين يومياً", "duration": "مستمر", "instructions": "مع متابعة الضغط" },
+                { "medicine_name": "Aldactone 25mg", "dose": "قرص", "frequency": "مرة يومياً", "duration": "مستمر", "instructions": "بعد الإفطار" }
+            ]
+        }
+    ],
+
+    "reasons": [
+        "ألم بالصدر عند المجهود",
+        "متابعة ضغط الدم",
+        "خفقان ونبض غير منتظم",
+        "ضيق نفس عند صعود السلم",
+        "متابعة بعد قسطرة",
+        "تورم بالقدمين",
+        "ارتفاع دهون الدم"
+    ],
+
+    "cases": [
+        {
+            "diagnosis": "ارتفاع ضغط الدم من الدرجة الثانية — غير منضبط على الجرعة الحالية",
+            "treatment_plan": "خريطة العلاج:\n1) إضافة حاصر قنوات الكالسيوم للجرعة الحالية.\n2) نظام غذائي قليل الملح (أقل من 5 جم يومياً).\n3) قياس الضغط مرتين يومياً وتسجيل القراءات بدفتر.\n4) مشي 30 دقيقة يومياً 5 أيام أسبوعياً.\n5) إعادة تقييم بعد شهر مع وظائف كلى وأملاح.",
+            "notes": "قراءات منزلية 155/95 بشكل متكرر. لا توجد أعراض قصور قلب. قاع العين لم يُفحص بعد.",
+            "medicines": [
+                { "medicine_name": "Concor 5mg", "dose": "قرص", "frequency": "مرة صباحاً", "duration": "30 يوم", "instructions": "قبل الإفطار" },
+                { "medicine_name": "Amlodipine 5mg", "dose": "قرص", "frequency": "مرة مساءً", "duration": "30 يوم", "instructions": "في نفس الموعد يومياً" },
+                { "medicine_name": "Aspocid 75mg", "dose": "قرص", "frequency": "مرة يومياً", "duration": "مستمر", "instructions": "بعد الغداء" }
+            ],
+            "requests": [
+                { "type": "lab_test", "name": "وظائف كلى وأملاح" },
+                { "type": "lab_test", "name": "دهون الدم (Lipid profile)" },
+                { "type": "examination", "name": "رسم قلب (ECG)" }
+            ]
+        },
+        {
+            "diagnosis": "ذبحة صدرية مستقرة — يُشتبه في نقص تروية بالمجهود",
+            "treatment_plan": "خريطة العلاج:\n1) بدء مضاد صفائح وستاتين عالي الجرعة.\n2) نيترات تحت اللسان عند الألم مع تعليمات الاستخدام.\n3) رسم قلب بالمجهود لتحديد الحاجة للقسطرة.\n4) الإقلاع الفوري عن التدخين.\n5) العودة الفورية لأقرب طوارئ عند ألم يستمر أكثر من 20 دقيقة.",
+            "notes": "ألم عاصر خلف عظمة القص عند صعود دورين، يزول بالراحة خلال دقائق. عامل خطر: تدخين وسكري.",
+            "medicines": [
+                { "medicine_name": "Aspocid 75mg", "dose": "قرص", "frequency": "مرة يومياً", "duration": "مستمر", "instructions": "بعد الغداء" },
+                { "medicine_name": "Lipitor 40mg", "dose": "قرص", "frequency": "مرة ليلاً", "duration": "مستمر", "instructions": "قبل النوم" },
+                { "medicine_name": "Nitrostat 0.5mg", "dose": "قرص تحت اللسان", "frequency": "عند الألم", "duration": "عند اللزوم", "instructions": "جلوساً، ويُكرر بعد 5 دقائق بحد أقصى 3 مرات" }
+            ],
+            "requests": [
+                { "type": "examination", "name": "رسم قلب بالمجهود", "notes": "بروتوكول بروس" },
+                { "type": "examination", "name": "إيكو على القلب" },
+                { "type": "lab_test", "name": "السكر التراكمي (HbA1c) ودهون الدم" }
+            ]
+        },
+        {
+            "diagnosis": "هبوط بعضلة القلب — كسر القذف 40% (NYHA II)",
+            "treatment_plan": "خريطة العلاج:\n1) مدر بول مع متابعة الوزن اليومي.\n2) بدء العلاج الرباعي لقصور القلب بجرعات متدرجة.\n3) تقييد السوائل بـ 1.5 لتر يومياً وتقليل الملح.\n4) متابعة وظائف الكلى والبوتاسيوم بعد أسبوعين.\n5) إعادة إيكو بعد 3 شهور لتقييم الاستجابة.",
+            "notes": "ضيق نفس عند المجهود المتوسط مع تورم بسيط بالقدمين. الوزن زاد 2 كجم خلال أسبوع.",
+            "medicines": [
+                { "medicine_name": "Lasix 40mg", "dose": "قرص", "frequency": "مرة صباحاً", "duration": "مستمر", "instructions": "مع متابعة الأملاح" },
+                { "medicine_name": "Entresto 50mg", "dose": "قرص", "frequency": "مرتين يومياً", "duration": "مستمر", "instructions": "مع متابعة الضغط" },
+                { "medicine_name": "Aldactone 25mg", "dose": "قرص", "frequency": "مرة يومياً", "duration": "مستمر", "instructions": "بعد الإفطار" }
+            ],
+            "requests": [
+                { "type": "examination", "name": "إيكو على القلب", "notes": "لقياس كسر القذف" },
+                { "type": "lab_test", "name": "وظائف كلى وأملاح (Na, K)" },
+                { "type": "lab_test", "name": "BNP" }
+            ]
+        }
+    ]
+}
