@@ -25,6 +25,12 @@ use Illuminate\Support\Facades\Storage;
  */
 class DemoPurger
 {
+    public function __construct(
+        private readonly DemoActivityAnalyzer $analyzer,
+        private readonly DemoActivityRecorder $recorder,
+    ) {
+    }
+
     /** Tenant-owned tables reached through appointments, in delete order. */
     private const APPOINTMENT_CHILDREN = [
         'examination_field_values',
@@ -55,6 +61,14 @@ class DemoPurger
     public function purgeSession(DemoSession $session, string $reason = 'purged'): array
     {
         $deleted = [];
+
+        // LAST CHANCE. Everything the visitor built is about to stop existing,
+        // so the analysis is taken here — before the first DELETE — and not in
+        // whatever code path decided the run was over. All four of those paths
+        // (the end button, the expiry, the idle sweep, a failed build) come
+        // through this method, and none of them can count rows afterwards.
+        $this->recorder->endingMilestone($session->id, $session->end_reason ?? $reason);
+        $this->analyzer->finalize($session, $session->end_reason ?? $reason);
 
         if ($session->doctor_id !== null) {
             $deleted = $this->purgeDoctor((int) $session->doctor_id);

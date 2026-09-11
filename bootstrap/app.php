@@ -46,6 +46,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\MostashfaOnClientContext::class,
+
+            // Appended last on purpose: it reads the authenticated user and
+            // the bound route parameters, so it has to be the innermost
+            // wrapper. Outside a demo it returns immediately.
+            \App\Http\Middleware\RecordDemoActivity::class,
         ]);
 
         $middleware->api(append: [

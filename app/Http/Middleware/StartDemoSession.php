@@ -49,6 +49,10 @@ class StartDemoSession
 
         $context->setDoctorId($demoSession->doctor_id);
 
+        // So the activity recorder can tell doctor from assistant later in
+        // the request without reading demo_sessions a second time.
+        $context->setAssistantUserId($demoSession->assistant_user_id);
+
         $this->touch($demoSession);
 
         return $next($request);
@@ -119,10 +123,18 @@ class StartDemoSession
     protected function rejectEndedSession(Request $request, ?DemoSession $demoSession): Response
     {
         if ($demoSession !== null && $demoSession->ended_at === null) {
+            $reason = $demoSession->expiryReason() ?? 'expired';
+
             $demoSession->forceFill([
                 'ended_at' => now(),
-                'end_reason' => $demoSession->expiryReason() ?? 'expired',
+                'end_reason' => $reason,
             ])->save();
+
+            // The last thing that happens to a run nobody closed on purpose.
+            // Written here because this is where the application first notices
+            // — demo:purge may not run for another five minutes.
+            app(\App\Demo\DemoActivityRecorder::class)
+                ->milestone('demo.ended.'.$reason, $demoSession->id);
         }
 
         $reason = $demoSession?->end_reason ?? 'expired';
