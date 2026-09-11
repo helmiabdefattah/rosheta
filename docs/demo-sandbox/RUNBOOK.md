@@ -107,7 +107,21 @@ guard.
 
 Then: `php artisan config:clear`.
 
-### 2.3 Run the scheduler (required)
+### 2.3 Contact details on the demo pages
+
+The invitation card and the "demo ended" page each show a Facebook / WhatsApp /
+phone row so a visitor who wants a walkthrough, a second trial or a real account
+can reach a person. **The defaults are placeholders.** Replace them:
+
+```dotenv
+DEMO_CONTACT_FACEBOOK="https://facebook.com/your-page"
+DEMO_CONTACT_WHATSAPP=201234567890   # digits only, international, no "+"
+DEMO_CONTACT_PHONE="+20 123 456 7890"
+```
+
+An empty value hides that one button; empty all three and the row disappears.
+
+### 2.4 Run the scheduler (required)
 
 Nothing else in this application is scheduled, so the scheduler is probably not
 running. Expired demos are only cleaned up if it is:
@@ -148,6 +162,25 @@ A dark **demo bar** sits at the top (bottom on mobile) with:
 | **أعد التجربة** | wipes the tenant and rebuilds it fresh, same session (and the same loading screen — the rebuild is not instant either) |
 | **أنشئ حسابك الحقيقي** | goes to the real registration form |
 | **إنهاء** | ends the demo and destroys everything immediately |
+
+### The exit survey
+
+However the demo ends — **إنهاء**, expiry or idle timeout — the ended page asks
+three questions:
+
+1. Was the system useful? (yes / no — the only required answer)
+2. Anything you would add? (free text)
+3. Anything you disliked or would remove? (free text)
+
+Answers land in `demo_surveys` **on the production database**, for the same
+reason as `demo_sessions`: the demo database they were typed against is deleted
+seconds later. Read them in the admin panel under **آراء المجربين**
+(`/admin/demo-surveys`) — with the useful / not-useful split, the written
+comments, and which specialty and role each visitor tried.
+
+The ended page carries a signed `t=` token so an answer can be attached to the
+run it is about after the demo cookie is gone. A missing or tampered token does
+not lose the answer; it is stored unattributed instead.
 
 ### Specialties
 

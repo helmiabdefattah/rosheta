@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Clinic;
 
+use App\Demo\DemoContext;
 use App\Http\Controllers\Clinic\Concerns\BuildsClinicCalendar;
 use App\Http\Controllers\Clinic\Concerns\ClinicContext;
 use App\Http\Controllers\Controller;
@@ -26,6 +27,16 @@ class AssistantDashboardController extends Controller
     {
         $doctor = $this->clinicDoctor($request);
         abort_unless($appointment->doctor_id === $doctor->id, 403);
+
+        // A demo clinic has no staff phone and no Bluetooth printer, so pushing
+        // the ticket would succeed silently and print nothing. Hand the caller
+        // the paper to show on screen instead.
+        if (app(DemoContext::class)->isDemo()) {
+            return response()->json([
+                'ok' => true,
+                'preview' => route('demo.print.ticket', $appointment),
+            ]);
+        }
 
         try {
             PrintQueueTicketNotification::sendToClinicStaff($appointment);

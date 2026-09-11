@@ -101,8 +101,19 @@ class DemoContext
      */
     public static function readCookie(Request $request): ?string
     {
-        $raw = $request->cookies->get(config('demo.cookie'));
+        return static::verifyToken($request->cookies->get(config('demo.cookie')));
+    }
 
+    /**
+     * Read a "{uuid}.{hmac}" demo token from anywhere but a cookie.
+     *
+     * The ended page carries one in its URL so the exit survey can be attached
+     * to the run it is about: by then the cookie is gone (ending the demo
+     * forgets it), and an unsigned id in a form field would let anyone post a
+     * survey against someone else's session.
+     */
+    public static function verifyToken(?string $raw): ?string
+    {
         if (! is_string($raw) || ! str_contains($raw, '.')) {
             return null;
         }

@@ -1020,7 +1020,11 @@
             },
         })
         .then(res => res.ok ? res.json() : Promise.reject(res))
-        .then(() => {
+        .then(data => {
+            // Demo: no Bluetooth printer to send to — show the paper instead.
+            if (data && data.preview && window.demoPrintPreview) {
+                window.demoPrintPreview(data.preview);
+            }
             btn.innerHTML = '✅';
             setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2500);
         })

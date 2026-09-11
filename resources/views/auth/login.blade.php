@@ -51,6 +51,17 @@
     </div>
 
     <div class="w-full max-w-md relative z-10">
+
+        {{-- Inside a running demo the sign-in card is noise: the demo database
+             holds no real accounts, and "Register" would send the visitor out
+             of the sandbox. Only the demo card is shown. --}}
+        @php($inDemo = ($demoContext ?? null) && $demoContext->isDemo())
+
+        @if ($inDemo)
+            @include('auth.partials.alerts')
+        @endif
+
+        @unless ($inDemo)
         <div class="bg-white/90 backdrop-blur-xl border border-sky-100 rounded-2xl shadow-xl p-8">
             <div class="flex flex-col items-center justify-center gap-4 mb-8">
                 <img src="{{ url('/images/mo-logo.png') }}" alt="Mostashfa-on" class="w-24 h-24 rounded-2xl ring-2 ring-sky-200 shadow-md object-contain transition-transform hover:scale-105 duration-300">
@@ -62,35 +73,7 @@
                 </div>
             </div>
 
-            @if (session('info'))
-                <div class="mb-6 p-4 bg-sky-50 border-s-4 border-sky-500 rounded-lg">
-                    <p class="text-sm font-medium text-sky-900">{{ session('info') }}</p>
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="mb-6 p-4 bg-red-50 border-s-4 border-red-500 rounded-lg">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                        <div class="ms-3">
-                            <h3 class="text-sm font-bold text-red-800">
-                                {{ app()->getLocale() === 'ar' ? 'فشل تسجيل الدخول' : 'Login Failed' }}
-                            </h3>
-                            <div class="mt-2 text-sm text-red-700">
-                                <ul class="list-disc list-inside space-y-1">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endif
+            @include('auth.partials.alerts')
 
             <form method="POST" action="{{ route('login') }}" class="space-y-6">
                 @csrf
@@ -172,9 +155,10 @@
                 </div>
             </form>
         </div>
+        @endunless
 
         {{-- Demo sandbox: a populated clinic, no signup, wiped when it ends. --}}
-        @include('demo.start-card')
+        @include('demo.start-card', ['wrapperClass' => $inDemo ? '' : 'mt-6'])
 
         <div class="text-center text-xs text-slate-400 mt-8 font-medium">
             &copy; {{ date('Y') }} Mostashfa-on. {{ app()->getLocale() === 'ar' ? 'جميع الحقوق محفوظة.' : 'All rights reserved.' }}
