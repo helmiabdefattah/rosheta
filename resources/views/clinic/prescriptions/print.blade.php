@@ -28,6 +28,10 @@
             background: var(--teal); color: #fff; border: 0; padding: 9px 18px;
             border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;
         }
+        /* Embedded in the demo's print viewer: no page chrome around the sheet. */
+        body.embedded { background: #e2e8f0; overflow-x: hidden; }
+        body.embedded .sheet { margin: 8px auto 0; }
+
         /* The sheet: A5 portrait. */
         .sheet {
             width: 148mm; min-height: 210mm; margin: 0 auto 24px; background: #fff;
@@ -112,11 +116,13 @@
         }
     </style>
 </head>
-<body>
-    <div class="toolbar">
-        <a href="{{ url()->previous() }}">← {{ __('app.common.back') }}</a>
-        <button onclick="window.print()">🖨️ {{ __('app.print.print_pdf') }}</button>
-    </div>
+<body @class(['embedded' => $embedded ?? false])>
+    @unless ($embedded ?? false)
+        <div class="toolbar">
+            <a href="{{ url()->previous() }}">← {{ __('app.common.back') }}</a>
+            <button onclick="window.print()">🖨️ {{ __('app.print.print_pdf') }}</button>
+        </div>
+    @endunless
 
     <div class="sheet">
         {{-- Letterhead --}}
@@ -239,9 +245,37 @@
         </div>
     </div>
 
-    <script>
-        // Auto-open the print dialog when arriving with ?auto=1
-        if (new URLSearchParams(location.search).get('auto')) window.print();
-    </script>
+    @if ($embedded ?? false)
+        <script>
+            // Shown inside the demo's print viewer. A5 is 148mm wide — wider
+            // than the panel — so the sheet is scaled down to fit. A transform
+            // does not affect layout, so the body is given the scaled height
+            // explicitly; that is what the viewer measures to size its frame.
+            (function () {
+                var sheet = document.querySelector('.sheet');
+
+                function fit() {
+                    sheet.style.transform = 'none';
+                    sheet.style.transformOrigin = 'top center';
+
+                    var available = document.documentElement.clientWidth - 16;
+                    var scale = Math.min(1, available / sheet.offsetWidth);
+
+                    sheet.style.transform = 'scale(' + scale + ')';
+                    document.body.style.height = (sheet.offsetHeight * scale + 16) + 'px';
+                }
+
+                fit();
+                // Re-measure once the letterhead logo and the QR have decoded.
+                window.addEventListener('load', fit);
+                window.addEventListener('resize', fit);
+            })();
+        </script>
+    @else
+        <script>
+            // Auto-open the print dialog when arriving with ?auto=1
+            if (new URLSearchParams(location.search).get('auto')) window.print();
+        </script>
+    @endif
 </body>
 </html>

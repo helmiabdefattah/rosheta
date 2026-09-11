@@ -1085,7 +1085,15 @@
             },
         })
             .then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
-            .then(function () { toastr.success(@json(__('app.assistant.rx_bt_sent'))); })
+            .then(function (data) {
+                // Demo: no Bluetooth printer to send to — show the paper instead.
+                if (data && data.preview && window.demoPrintPreview) {
+                    window.demoPrintPreview(data.preview);
+
+                    return;
+                }
+                toastr.success(@json(__('app.assistant.rx_bt_sent')));
+            })
             .catch(function () { toastr.error(@json(__('app.assistant.rx_bt_failed'))); })
             .finally(function () { btn.disabled = false; btn.innerHTML = original; });
     }
@@ -1106,7 +1114,11 @@
             },
         })
         .then(res => res.ok ? res.json() : Promise.reject(res))
-        .then(() => {
+        .then(data => {
+            // Demo: no Bluetooth printer to send to — show the paper instead.
+            if (data && data.preview && window.demoPrintPreview) {
+                window.demoPrintPreview(data.preview);
+            }
             btn.textContent = '✅';
             setTimeout(() => { btn.textContent = '🎫'; btn.disabled = false; }, 2000);
         })

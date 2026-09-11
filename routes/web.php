@@ -396,6 +396,10 @@ Route::middleware([
     // Clients
     Route::resource('clients', App\Http\Controllers\Admin\ClientController::class);
 
+    // Demo exit surveys: what visitors said about the trial on their way out.
+    Route::get('/demo-surveys', [App\Http\Controllers\Admin\DemoSurveyController::class, 'index'])->name('demo-surveys.index');
+    Route::delete('/demo-surveys/{demoSurvey}', [App\Http\Controllers\Admin\DemoSurveyController::class, 'destroy'])->name('demo-surveys.destroy');
+
     // Feedback
     Route::get('/feedback', [App\Http\Controllers\Admin\FeedbackController::class, 'index'])->name('feedback.index');
     Route::get('/feedback/{feedback}', [App\Http\Controllers\Admin\FeedbackController::class, 'show'])->name('feedback.show');
@@ -592,4 +596,20 @@ Route::prefix('demo')->name('demo.')->group(function () {
     Route::post('/end', [App\Http\Controllers\DemoController::class, 'end'])->name('end');
     Route::get('/ended', [App\Http\Controllers\DemoController::class, 'ended'])->name('ended');
     Route::get('/status', [App\Http\Controllers\DemoController::class, 'status'])->name('status');
+
+    // The three exit questions on the "demo ended" page. Throttled because it
+    // is the one public write in the sandbox that outlives the sandbox.
+    Route::post('/survey', [App\Http\Controllers\DemoSurveyController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('survey');
+
+    // "What the printer would have produced." A demo tenant has no staff phone
+    // and no Bluetooth printer, so the thermal prints are shown on screen
+    // instead of pushed to hardware. Under /demo on purpose: these read the
+    // demo database, and they 404 outside a running demo.
+    Route::middleware(['auth', 'clinic.role:doctor,assistant'])->prefix('print')->name('print.')->group(function () {
+        Route::get('/ticket/{appointment}', [App\Http\Controllers\DemoPrintPreviewController::class, 'ticket'])->name('ticket');
+        Route::get('/prescription/{prescription}', [App\Http\Controllers\DemoPrintPreviewController::class, 'prescription'])->name('prescription');
+        Route::get('/sheet/{prescription}', [App\Http\Controllers\DemoPrintPreviewController::class, 'sheet'])->name('sheet');
+    });
 });

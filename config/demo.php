@@ -33,7 +33,7 @@ return [
 
     // Tables a demo request may still write on the PRODUCTION connection.
     // These are marketing records that must outlive the demo tenant.
-    'prod_write_allowlist' => ['demo_sessions'],
+    'prod_write_allowlist' => ['demo_sessions', 'demo_surveys'],
 
     // Filesystem disk for demo uploads. Files are written under
     // demo/{doctor_id}/ so a purge can delete them by prefix.
@@ -67,6 +67,24 @@ return [
     'max_starts_per_ip_per_day' => (int) env('DEMO_MAX_STARTS_PER_IP_PER_DAY', 10),
     'max_concurrent_per_ip' => (int) env('DEMO_MAX_CONCURRENT_PER_IP', 3),
     'global_max_active' => (int) env('DEMO_GLOBAL_MAX_ACTIVE', 500),
+
+    // Who to call when the demo raises a question the demo cannot answer.
+    // Shown on the invitation card and again on the "demo ended" page, next
+    // to "run it again" and "open a real account".
+    //
+    // PLACEHOLDERS — these are deliberately fake until the real handles exist.
+    // Set the three env vars and nothing else has to change. A value left
+    // empty simply hides its button.
+    'contact' => [
+        'facebook' => env('DEMO_CONTACT_FACEBOOK', 'https://facebook.com/mostashfaon'),
+
+        // Digits only, international form, no "+" — it goes straight into a
+        // wa.me link.
+        'whatsapp' => env('DEMO_CONTACT_WHATSAPP', '201000000000'),
+
+        // Dialled as typed.
+        'phone' => env('DEMO_CONTACT_PHONE', '+20 100 000 0000'),
+    ],
 
     // Uploads.
     'max_file_mb' => (int) env('DEMO_MAX_FILE_MB', 5),
@@ -102,6 +120,6 @@ return [
     // database rather than mirrored.
     'skip_tables' => [
         'telescope_entries', 'telescope_entries_tags', 'telescope_monitoring',
-        'demo_sessions',
+        'demo_sessions', 'demo_surveys',
     ],
 ];

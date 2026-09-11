@@ -134,8 +134,15 @@ class StartDemoSession
             ], 401)->withoutCookie(config('demo.cookie'));
         }
 
+        // A signed copy of the session id rides along so the ended page can
+        // ask the exit survey about THIS run — the cookie is being dropped on
+        // this same response, and a run that expired is worth asking about
+        // just as much as one the visitor closed on purpose.
         return redirect()
-            ->route('demo.ended', ['reason' => $reason])
+            ->route('demo.ended', array_filter([
+                'reason' => $reason,
+                't' => $demoSession ? DemoContext::cookieValue($demoSession->id) : null,
+            ]))
             ->withoutCookie(config('demo.cookie'));
     }
 }

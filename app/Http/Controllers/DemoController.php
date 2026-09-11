@@ -6,6 +6,7 @@ use App\Demo\DemoContext;
 use App\Demo\DemoPurger;
 use App\Demo\DemoSeeder;
 use App\Models\DemoSession;
+use App\Models\DemoSurvey;
 use App\Models\Doctor;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -287,15 +288,30 @@ class DemoController extends Controller
             $this->purger->purgeSession($session, 'user_ended');
         }
 
-        return redirect()->route('demo.ended', ['reason' => 'user_ended'])
-            ->withCookie(Cookie::forget(config('demo.cookie')));
+        return redirect()->route('demo.ended', array_filter([
+            'reason' => 'user_ended',
+            // The cookie is being dropped on this very response, so the exit
+            // survey gets its own signed copy of the session id to post back.
+            't' => $session ? DemoContext::cookieValue($session->id) : null,
+        ]))->withCookie(Cookie::forget(config('demo.cookie')));
     }
 
-    /** Explains why the workspace is gone, and offers another run. */
+    /**
+     * Explains why the workspace is gone, asks the three exit questions, and
+     * offers another run, a real account, or a human to talk to.
+     */
     public function ended(Request $request): View
     {
+        $token = (string) $request->query('t', '');
+        $sessionId = DemoContext::verifyToken($token);
+
         return view('demo.ended', [
             'reason' => $request->query('reason', 'user_ended'),
+            'surveyToken' => $sessionId ? $token : '',
+            // Already answered — a refresh, or the back button after posting.
+            // Thank them instead of asking the same three questions again.
+            'answered' => $request->boolean('thanks')
+                || ($sessionId !== null && DemoSurvey::where('demo_session_id', $sessionId)->exists()),
         ]);
     }
 

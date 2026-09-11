@@ -356,6 +356,10 @@
              own inline script still registers chatWidget() before Alpine boots. --}}
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @endif
+    {{-- Demo sandbox: shows the paper a thermal print would have produced,
+         since a demo clinic has no Bluetooth printer to send it to. --}}
+    @include('demo.print-preview')
+
     @stack('scripts')
 </body>
 </html>

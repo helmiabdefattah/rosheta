@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Clinic;
 
+use App\Demo\DemoContext;
 use App\Http\Controllers\Clinic\Concerns\ClinicContext;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
@@ -144,6 +145,15 @@ class PrescriptionController extends Controller
     public function printThermal(Request $request, Prescription $prescription): JsonResponse
     {
         $this->authorizePrescription($request, $prescription);
+
+        // No staff phone and no Bluetooth printer inside a demo: return the
+        // paper to show on screen rather than pushing a print nothing can do.
+        if (app(DemoContext::class)->isDemo()) {
+            return response()->json([
+                'ok' => true,
+                'preview' => route('demo.print.prescription', $prescription),
+            ]);
+        }
 
         try {
             PrintPrescriptionNotification::sendToClinicStaff($prescription);

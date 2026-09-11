@@ -98,5 +98,9 @@
             ? 'بيانات التجربة وهمية ومعزولة تماماً عن بيانات المرضى الحقيقية.'
             : 'Demo data is fictional and fully isolated from real patient records.' }}
     </p>
+
+    {{-- A way to reach a person before the demo, not only after it: some
+         visitors want an account or a walkthrough rather than a sandbox. --}}
+    @include('demo.contact')
 </div>
 @endif
