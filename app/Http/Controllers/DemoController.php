@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Demo\DemoActivityAnalyzer;
+use App\Demo\DemoActivityRecorder;
 use App\Demo\DemoContext;
 use App\Demo\DemoPurger;
 use App\Demo\DemoSeeder;
@@ -32,6 +34,8 @@ class DemoController extends Controller
         private readonly DemoSeeder $seeder,
         private readonly DemoPurger $purger,
         private readonly DemoContext $context,
+        private readonly DemoActivityRecorder $recorder,
+        private readonly DemoActivityAnalyzer $analyzer,
     ) {
     }
 
@@ -90,6 +94,12 @@ class DemoController extends Controller
         }
 
         $this->rememberDoctorName($request);
+
+        $this->recorder->milestone('demo.started', $session->id, [
+            'role' => $role,
+            'specialty' => $session->specialty,
+            'device' => $session->device,
+        ]);
 
         return redirect()->route('demo.preparing')->withCookie($this->demoCookie($session));
     }
@@ -210,6 +220,14 @@ class DemoController extends Controller
             'assistant_user_id' => $seeded['assistant_user']->id,
         ])->save();
 
+        $this->context->setAssistantUserId($session->assistant_user_id);
+
+        // The fixture, counted before the visitor has touched anything. Every
+        // "they created N" in the admin analysis is measured from here.
+        $this->analyzer->baseline($session);
+
+        $this->recorder->milestone('demo.built', $session->id, ['role' => $role]);
+
         return $this->enterWorkspace($session, $role);
     }
 
@@ -227,6 +245,8 @@ class DemoController extends Controller
         }
 
         $role = Auth::id() === $session->assistant_user_id ? 'doctor' : 'assistant';
+
+        $this->recorder->milestone('demo.role.switched', $session->id, ['to' => $role]);
 
         return $this->enterWorkspace($session, $role);
     }
@@ -252,6 +272,11 @@ class DemoController extends Controller
 
         $role = Auth::id() === $session->assistant_user_id ? 'assistant' : 'doctor';
         $doctorName = $this->rememberedDoctorName();
+
+        // Bank what they built before it is thrown away, or a visitor who
+        // tried everything and then pressed "start over" reads as idle.
+        $this->analyzer->carryOverBeforeReset($session);
+        $this->recorder->milestone('demo.reset', $session->id);
 
         $this->logoutDemoUser($request);
         $this->purger->purgeDoctor((int) $session->doctor_id);
@@ -284,6 +309,11 @@ class DemoController extends Controller
 
         if ($session) {
             $session->forceFill(['ended_at' => now(), 'end_reason' => 'user_ended'])->save();
+
+            // Recorded before the purge, so it is part of the trail the
+            // analysis is built from a line later.
+            $this->recorder->milestone('demo.ended.user_ended', $session->id);
+
             $this->logoutDemoUser($request);
             $this->purger->purgeSession($session, 'user_ended');
         }

@@ -342,6 +342,45 @@ mistake fails loudly instead of leaving orphans.
 It also deletes the tenant's uploaded files, found via `attachments.file_path`
 before the rows are removed.
 
+### Reading what visitors did
+
+`/admin/demo-surveys` is the analysis page. It lists **every run**, not only
+the ones that answered the exit survey — a visitor who could not find how to
+write a prescription and left never fills in a form about it, and those are the
+runs worth reading.
+
+Each run shows how far up the ladder it got (opened → patient → booked →
+examined → prescribed → ordered → billed → printed → configured), what it
+created inside the clinic, the individual actions it took, the feedback if any,
+and the full click-by-click journey.
+
+How it is collected:
+
+| Piece | Where | When |
+|---|---|---|
+| The journey | `demo_activity_events` (production connection) | Live, one row per meaningful request — `RecordDemoActivity` middleware → `DemoActivityRecorder` |
+| What it means in words | `App\Demo\DemoActivityCatalog` | Route name → Arabic/English sentence + feature. Uncatalogued routes still record, with a derived label |
+| What they created | `demo_sessions.activity_summary` | `DemoActivityAnalyzer::finalize()`, called from `DemoPurger::purgeSession()` **immediately before the first DELETE** — the only moment the tenant can still be counted |
+| The baseline it is measured against | `demo_sessions.baseline_counts` | Right after seeding, so the fixture is never credited to the visitor |
+
+Both endings are covered: the **End** button (`DemoController::end`) purges
+inline, and an **expired or idle** run is analysed by `demo:purge`. A run that
+is reset mid-way banks its counts first (`carryOverBeforeReset`) so "start over"
+does not erase what they had already built.
+
+> **The scheduler must be running** for expired runs to be analysed and purged
+> — `php artisan schedule:work` locally, cron on the server. Without it, a
+> visitor who simply closes the tab is analysed only when `demo:purge` is next
+> run by hand.
+
+Recorded: route names, labels, route parameters (ids), timestamps, role.
+**Never** request payloads or anything the visitor typed — the tenant that
+could identify them is deleted minutes later, and these rows are kept.
+
+Pollers (`demo.status`, printer status, display refresh) are excluded, repeated
+reads inside 20 seconds collapse into one, and failed requests (4xx/5xx) are
+not recorded as things the visitor did.
+
 ### Check what is running
 
 ```sql
@@ -413,7 +452,7 @@ the end of `DemoSeeder::seed()`.
 | Friday is not a day off if the demo starts on a Friday | Otherwise the clinic would be closed and the dashboard empty — the demo would look broken. Realism loses to a working first impression. |
 | Anonymous `sessions` rows with `user_id = NULL` survive purge | They belong to no user, carry nothing, and Laravel's session GC removes them. |
 | No Turnstile/captcha | None exists in this application. The per-IP and global limits are the only protection today. |
-| No analytics events yet | Meta Pixel / CAPI / GA4 are not built. `demo_sessions` already stores UTMs and click ids for when they are. |
+| No *external* analytics events yet | Meta Pixel / CAPI / GA4 are not built. `demo_sessions` already stores UTMs and click ids for when they are. The internal trail (`demo_activity_events`, §5) is complete. |
 | Guided checklist, lead capture, convert-to-real-account | Not built — these are Phase 3 of the brief. |
 
 **Not yet covered by automated tests.** Everything above was verified by hand
