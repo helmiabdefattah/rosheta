@@ -49,6 +49,13 @@
                         <a href="{{ route('login') }}" class="px-8 py-4 bg-white text-slate-700 border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-all hover:-translate-y-1">
                             {{ app()->getLocale() === 'ar' ? 'تسجيل الدخول' : 'Login' }}
                         </a>
+
+                        {{-- The sandbox runs on its own deployment, so from
+                             here it is a link out to it. Shown only while an
+                             administrator has it switched on. --}}
+                        @include('demo.try-free', [
+                            'class' => 'px-8 py-4 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 hover:-translate-y-1 flex items-center justify-center gap-2',
+                        ])
                         <a href="{{ $playStoreUrl }}" target="_blank" rel="noopener noreferrer" class="lg:hidden px-8 py-4 bg-primary text-white rounded-xl font-bold hover:bg-blue-600 transition-all shadow-xl shadow-primary/20 hover:-translate-y-1 flex items-center justify-center gap-2">
                             <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                 <path d="M3.609 1.814L13.792 12 3.61 22.186a1.003 1.003 0 0 1-.61-.92V2.734a1.003 1.003 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 9.99l-2.302 2.302-8.634-8.634z"/>

@@ -6,6 +6,7 @@ use App\Demo\DemoContext;
 use App\Demo\GuardedMySqlConnection;
 use App\Demo\SpecialtyProfile;
 use App\Models\Specialization;
+use App\Support\DemoInvite;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
@@ -43,6 +44,13 @@ class DemoServiceProvider extends ServiceProvider
         // so no production code path changes.
         view()->composer('demo.start-card', function ($view) {
             $view->with('demoSpecializations', $this->specializationChoices());
+        });
+
+        // Same idea for the production-side "Try it free" link: the pages that
+        // show it — the landing hero, the login card — should not each have to
+        // know that its address lives in a settings row.
+        view()->composer('demo.try-free', function ($view) {
+            $view->with('demoInviteUrl', DemoInvite::enabled() ? DemoInvite::url() : null);
         });
     }
 

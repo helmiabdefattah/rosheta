@@ -52,16 +52,29 @@
 
     <div class="w-full max-w-md relative z-10">
 
-        {{-- Inside a running demo the sign-in card is noise: the demo database
-             holds no real accounts, and "Register" would send the visitor out
-             of the sandbox. Only the demo card is shown. --}}
-        @php($inDemo = ($demoContext ?? null) && $demoContext->isDemo())
+        {{-- On the demo installation the sign-in card is noise from the first
+             visit, not only once a sandbox is running: that database holds no
+             real accounts to sign into, and "Register" would send the visitor
+             out of the demo entirely. So the whole form goes and the demo card
+             becomes the page — with the logo above it, which the form used to
+             carry. --}}
+        @php($demoOnly = config('demo.enabled'))
 
-        @if ($inDemo)
+        @if ($demoOnly)
+            <div class="flex flex-col items-center justify-center gap-4 mb-6">
+                <img src="{{ url('/images/mo-logo.png') }}" alt="Mostashfa-on" class="w-24 h-24 rounded-2xl ring-2 ring-sky-200 shadow-md object-contain transition-transform hover:scale-105 duration-300">
+                <div class="text-center leading-tight">
+                    <div class="text-3xl font-black text-slate-900 tracking-tight">Mostashfa-on</div>
+                    <div class="text-base font-medium text-slate-500 mt-1">
+                        {{ app()->getLocale() === 'ar' ? 'بيئة تجربة كاملة' : 'The demo environment' }}
+                    </div>
+                </div>
+            </div>
+
             @include('auth.partials.alerts')
         @endif
 
-        @unless ($inDemo)
+        @unless ($demoOnly)
         <div class="bg-white/90 backdrop-blur-xl border border-sky-100 rounded-2xl shadow-xl p-8">
             <div class="flex flex-col items-center justify-center gap-4 mb-8">
                 <img src="{{ url('/images/mo-logo.png') }}" alt="Mostashfa-on" class="w-24 h-24 rounded-2xl ring-2 ring-sky-200 shadow-md object-contain transition-transform hover:scale-105 duration-300">
@@ -158,7 +171,13 @@
         @endunless
 
         {{-- Demo sandbox: a populated clinic, no signup, wiped when it ends. --}}
-        @include('demo.start-card', ['wrapperClass' => $inDemo ? '' : 'mt-6'])
+        @include('demo.start-card', ['wrapperClass' => $demoOnly ? '' : 'mt-6'])
+
+        {{-- Production: the sandbox lives on another deployment, so the
+             invitation is a link out to it rather than a card. --}}
+        @include('demo.try-free', [
+            'class' => 'mt-6 w-full py-3.5 px-4 rounded-xl shadow-lg text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2',
+        ])
 
         <div class="text-center text-xs text-slate-400 mt-8 font-medium">
             &copy; {{ date('Y') }} Mostashfa-on. {{ app()->getLocale() === 'ar' ? 'جميع الحقوق محفوظة.' : 'All rights reserved.' }}
