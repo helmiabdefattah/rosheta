@@ -69,13 +69,13 @@
             <input
                 type="url" name="url" id="url" dir="ltr"
                 value="{{ old('url', $url) }}"
-                placeholder="https://demo.example.com"
+                placeholder="{{ \App\Support\DemoInvite::DEFAULT_URL }}"
                 class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
             >
             <p class="mt-2 text-xs text-slate-400 leading-relaxed">
                 {{ $ar
-                    ? 'عنوان النسخة التي تعمل بوضع التجربة. الزر لا يظهر إذا كان الحقل فارغاً.'
-                    : 'Address of the installation running in demo mode. The button stays hidden while this is empty.' }}
+                    ? 'عنوان النسخة التي تعمل بوضع التجربة. إذا تُرك فارغاً يُستخدم العنوان الافتراضي ' . \App\Support\DemoInvite::DEFAULT_URL
+                    : 'Address of the installation running in demo mode. Left empty, the button falls back to ' . \App\Support\DemoInvite::DEFAULT_URL }}
             </p>
         </div>
 
