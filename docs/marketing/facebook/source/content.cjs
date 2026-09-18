@@ -5,11 +5,21 @@ const covers = [
     sub: 'Appointments, patient files, e-prescriptions, invoices and mobile apps — for your clinic and for your patients.',
     pills: ['Bookings &amp; reminders', 'E-prescriptions', 'Invoices &amp; reports', 'Clinic + patient apps', 'Waiting-room screen'],
     cta: 'Free trial:' },
+  { file: 'cover-en-phone', lang: 'en',
+    title: 'Run your whole clinic online.',
+    sub: 'Appointments, patient files, e-prescriptions, invoices and mobile apps — for your clinic and for your patients.',
+    pills: ['Bookings &amp; reminders', 'E-prescriptions', 'Invoices &amp; reports', 'Clinic + patient apps', 'Waiting-room screen'],
+    cta: 'Free trial:', phoneLabel: 'Call or WhatsApp', phone: '01094636590' },
   { file: 'cover-ar', lang: 'ar',
     title: 'أدِر عيادتك بالكامل أونلاين',
     sub: 'المواعيد وملفات المرضى والروشتة الإلكترونية والفواتير، وتطبيق للعيادة وآخر للمريض.',
     pills: ['حجز وتذكير', 'روشتة إلكترونية', 'فواتير وتقارير', 'تطبيق العيادة والمريض', 'شاشة الانتظار'],
     cta: 'جرّبه مجاناً:' },
+  { file: 'cover-ar-phone', lang: 'ar',
+    title: 'أدِر عيادتك بالكامل أونلاين',
+    sub: 'المواعيد وملفات المرضى والروشتة الإلكترونية والفواتير، وتطبيق للعيادة وآخر للمريض.',
+    pills: ['حجز وتذكير', 'روشتة إلكترونية', 'فواتير وتقارير', 'تطبيق العيادة والمريض', 'شاشة الانتظار'],
+    cta: 'جرّبه مجاناً:', phoneLabel: 'اتصل أو واتساب', phone: '01094636590' },
 ];
 
 const posts = [
@@ -135,4 +145,19 @@ const posts = [
     cta: 'مصمم لاحتياجك' },
 ];
 
-module.exports = { covers, posts };
+
+/* Contact cards — the phone number, for calls and WhatsApp */
+const contacts = [
+  { file: 'contact-en', lang: 'en', eyebrow: 'Talk to us',
+    title: 'One call, and your<br>clinic is online.',
+    sub: 'Ask anything, see a live walkthrough, or have your own clinic set up — by phone or on WhatsApp.',
+    callLabel: 'Call us', waLabel: 'WhatsApp', phone: '01094636590',
+    waLink: 'wa.me/201094636590', cta: 'Call or message us' },
+  { file: 'contact-ar', lang: 'ar', eyebrow: 'تواصل معنا',
+    title: 'مكالمة واحدة<br>وعيادتك أونلاين',
+    sub: 'اسأل عن أي حاجة، أو اطلب عرضاً مباشراً على النظام، أو جهّز عيادتك — اتصال أو واتساب.',
+    callLabel: 'للاتصال', waLabel: 'واتساب', phone: '01094636590',
+    waLink: 'wa.me/201094636590', cta: 'اتصل أو راسلنا' },
+];
+
+module.exports = { covers, posts, contacts };

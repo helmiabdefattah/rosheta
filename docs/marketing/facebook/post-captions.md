@@ -249,6 +249,29 @@ One caption per image in `images/`. Facebook shows roughly the first two lines b
 
 ---
 
+## Contact card → `contact-{en,ar}.png`
+
+Use this one whenever someone asks about price or setup, as a reply image in comments, and once a
+month on the page so the number stays near the top.
+
+**EN**
+> Easier to just ask? Call us or send a WhatsApp message — we'll answer, show you the system live,
+> and set your clinic up if you want it.
+>
+> 📞 01094636590 — calls and WhatsApp
+> 💬 https://wa.me/201094636590
+> 🌐 Try it yourself first: https://dev.mostashfaon.com
+
+**AR**
+> تحب تسأل على طول؟ اتصل بينا أو ابعتلنا واتساب — هنرد عليك، ونوريك النظام مباشرة، ونجهّزلك عيادتك
+> لو حابب.
+>
+> 📞 01094636590 — اتصال وواتساب
+> 💬 https://wa.me/201094636590
+> 🌐 أو جرّبه بنفسك الأول: https://dev.mostashfaon.com
+
+---
+
 ## Suggested launch plan (2 weeks, 3 posts a week)
 
 Pin post **01** to the top of the page, and boost **02** (free trial) to doctors and clinic owners
@@ -267,6 +290,7 @@ in your city.
 | 19 | 09 · Reception app | Speaks to the staff who will champion you |
 | 22 | 10 · Medical history | Depth: this is a real medical record |
 | 24 | 11 · Website + features on demand | Ends on "we build for you", drives messages |
+| 26 | Contact card | Leaves the phone number as the most recent post |
 
 **Which language?** If most of your audience is Egyptian, post the Arabic image with the Arabic
 caption and keep the English set for the international or multilingual page version. Posting both
