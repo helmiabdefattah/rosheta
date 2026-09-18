@@ -258,16 +258,16 @@ month on the page so the number stays near the top.
 > Easier to just ask? Call us or send a WhatsApp message — we'll answer, show you the system live,
 > and set your clinic up if you want it.
 >
-> 📞 01094636590 — calls and WhatsApp
-> 💬 https://wa.me/201094636590
+> 📞 01070711504 — calls and WhatsApp
+> 💬 https://wa.me/201070711504
 > 🌐 Try it yourself first: https://dev.mostashfaon.com
 
 **AR**
 > تحب تسأل على طول؟ اتصل بينا أو ابعتلنا واتساب — هنرد عليك، ونوريك النظام مباشرة، ونجهّزلك عيادتك
 > لو حابب.
 >
-> 📞 01094636590 — اتصال وواتساب
-> 💬 https://wa.me/201094636590
+> 📞 01070711504 — اتصال وواتساب
+> 💬 https://wa.me/201070711504
 > 🌐 أو جرّبه بنفسك الأول: https://dev.mostashfaon.com
 
 ---

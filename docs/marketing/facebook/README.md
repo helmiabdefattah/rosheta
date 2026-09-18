@@ -25,7 +25,7 @@ Cairo/Tajawal for Arabic. Every image carries `dev.mostashfaon.com`.
 
 - `cover-en.png`, `cover-ar.png` — all text sits in the centre safe area, so nothing is lost when
   Facebook crops the cover on mobile or hides the bottom-left corner behind the profile picture
-- `cover-en-phone.png`, `cover-ar-phone.png` — the same covers with **01094636590** (call and
+- `cover-en-phone.png`, `cover-ar-phone.png` — the same covers with **01070711504** (call and
   WhatsApp) on a pill under the trial link
 
 **Posts** (1080 × 1080 square — best reach in the feed). Each theme exists as `-en` and `-ar`:
@@ -43,7 +43,7 @@ Cairo/Tajawal for Arabic. Every image carries `dev.mostashfaon.com`.
 | 09 | `post-09-reception-{en,ar}.png` | Reception app and self check-in |
 | 10 | `post-10-medical-history-{en,ar}.png` | Patient file and medical history |
 | 11 | `post-11-website-{en,ar}.png` | Doctor profile website + features on demand |
-| — | `contact-{en,ar}.png` | Contact card: **01094636590** for calls and WhatsApp (`wa.me/201094636590`) |
+| — | `contact-{en,ar}.png` | Contact card: **01070711504** for calls and WhatsApp (`wa.me/201070711504`) |
 
 ## Editing the text and re-rendering
 
