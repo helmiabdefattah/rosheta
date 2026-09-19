@@ -51,8 +51,8 @@
                         </a>
 
                         {{-- The sandbox runs on its own deployment, so from
-                             here it is a link out to it. Shown only while an
-                             administrator has it switched on. --}}
+                             here it is a link out to it. Shown unless an
+                             administrator has switched it off. --}}
                         @include('demo.try-free', [
                             'class' => 'px-8 py-4 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 hover:-translate-y-1 flex items-center justify-center gap-2',
                         ])

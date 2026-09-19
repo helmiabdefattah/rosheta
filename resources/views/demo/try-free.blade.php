@@ -2,9 +2,10 @@
     "Try it free" — the link from the PRODUCTION site to the demo deployment.
 
     The sandbox is its own installation with its own database, so from here it
-    is an outbound link rather than a form. Whether it shows at all and where
-    it points are admin settings (Admin → Free Trial Invitation), not env
-    vars, so the demo can move or go quiet without a deploy.
+    is an outbound link rather than a form. It is on by default and points at
+    the sandbox we run; whether it shows at all and where it points are admin
+    settings (Admin → Free Trial Invitation), not env vars, so the demo can
+    move or go quiet without a deploy.
 
     Hidden inside the demo installation itself: there the invitation is the
     start card, and this would be a link to the page you are already on.

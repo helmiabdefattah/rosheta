@@ -22,8 +22,14 @@ class DemoInviteController extends Controller
     public function edit(): View
     {
         return view('admin.demo-invite.edit', [
-            'enabled' => Setting::getBool(DemoInvite::ENABLED_KEY),
-            'url' => Setting::get(DemoInvite::URL_KEY, ''),
+            // The stored intent, with the same defaults the public pages
+            // fall back to — an administrator who has never touched this must
+            // not read "off / blank" while the button is up. Deliberately not
+            // DemoInvite::enabled(), which also answers "are we inside the
+            // demo installation?" and would render the form permanently off
+            // there.
+            'enabled' => Setting::getBool(DemoInvite::ENABLED_KEY, true),
+            'url' => DemoInvite::url(),
         ]);
     }
 
