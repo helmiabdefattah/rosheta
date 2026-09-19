@@ -25,6 +25,16 @@ class DemoContext
     /** doctors.id of the demo tenant, once the session has been looked up. */
     protected ?int $doctorId = null;
 
+    /**
+     * users.id of the tenant's assistant.
+     *
+     * Carried here so anything running later in the request can tell which
+     * hat the visitor is wearing without re-reading demo_sessions — the
+     * middleware has the row in its hand anyway, and the activity recorder
+     * needs the answer on every single request.
+     */
+    protected ?int $assistantUserId = null;
+
     /** True once the connection/session/cache switch has been applied. */
     protected bool $switched = false;
 
@@ -62,6 +72,16 @@ class DemoContext
     public function setDoctorId(?int $doctorId): void
     {
         $this->doctorId = $doctorId;
+    }
+
+    public function assistantUserId(): ?int
+    {
+        return $this->assistantUserId;
+    }
+
+    public function setAssistantUserId(?int $userId): void
+    {
+        $this->assistantUserId = $userId;
     }
 
     /**

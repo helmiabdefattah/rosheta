@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * A visitor's demo run. Pinned to the production connection so it survives
@@ -30,7 +32,47 @@ class DemoSession extends Model
         'ended_at' => 'datetime',
         'purged_at' => 'datetime',
         'steps_completed' => 'array',
+        'activity_summary' => 'array',
+        'baseline_counts' => 'array',
+        'analyzed_at' => 'datetime',
     ];
+
+    /** What they said on the way out, if they said anything. */
+    public function survey(): HasOne
+    {
+        return $this->hasOne(DemoSurvey::class, 'demo_session_id');
+    }
+
+    /** Everything they did, in order. */
+    public function events(): HasMany
+    {
+        return $this->hasMany(DemoActivityEvent::class, 'demo_session_id')->orderBy('occurred_at');
+    }
+
+    /**
+     * The stored analysis, or an empty array for a run that ended before this
+     * was ever recorded.
+     */
+    public function analysis(): array
+    {
+        return (array) ($this->activity_summary ?? []);
+    }
+
+    /** A run nobody has closed yet, tenant still standing. */
+    public function isRunning(): bool
+    {
+        return $this->ended_at === null && $this->purged_at === null;
+    }
+
+    /** How long the run lasted, in seconds, however it ended. */
+    public function durationSeconds(): ?int
+    {
+        $end = $this->ended_at ?? ($this->isRunning() ? now() : null);
+
+        // Carbon returns a float here; the column and everything reading it
+        // are whole seconds.
+        return $this->started_at && $end ? (int) max(0, round($this->started_at->diffInSeconds($end))) : null;
+    }
 
     /** Still running: not ended, not expired, not idle. */
     public function isActive(): bool

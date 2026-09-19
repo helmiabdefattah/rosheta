@@ -33,7 +33,7 @@ return [
 
     // Tables a demo request may still write on the PRODUCTION connection.
     // These are marketing records that must outlive the demo tenant.
-    'prod_write_allowlist' => ['demo_sessions', 'demo_surveys'],
+    'prod_write_allowlist' => ['demo_sessions', 'demo_surveys', 'demo_activity_events'],
 
     // Filesystem disk for demo uploads. Files are written under
     // demo/{doctor_id}/ so a purge can delete them by prefix.
@@ -120,6 +120,6 @@ return [
     // database rather than mirrored.
     'skip_tables' => [
         'telescope_entries', 'telescope_entries_tags', 'telescope_monitoring',
-        'demo_sessions', 'demo_surveys',
+        'demo_sessions', 'demo_surveys', 'demo_activity_events',
     ],
 ];

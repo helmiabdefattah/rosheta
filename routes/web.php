@@ -397,6 +397,9 @@ Route::middleware([
     // Demo exit surveys: what visitors said about the trial on their way out.
     Route::get('/demo-surveys', [App\Http\Controllers\Admin\DemoSurveyController::class, 'index'])->name('demo-surveys.index');
     Route::delete('/demo-surveys/{demoSurvey}', [App\Http\Controllers\Admin\DemoSurveyController::class, 'destroy'])->name('demo-surveys.destroy');
+    // The whole run — journey, answers and funnel record — rather than just
+    // the comment attached to it.
+    Route::delete('/demo-runs/{demoSession}', [App\Http\Controllers\Admin\DemoSurveyController::class, 'destroySession'])->name('demo-runs.destroy');
 
     // The "Try it free" invitation on the public site: whether to show it and
     // which demo deployment it points at.

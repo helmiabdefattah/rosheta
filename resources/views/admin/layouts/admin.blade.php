@@ -272,11 +272,11 @@
                     <span>{{ app()->getLocale() === 'ar' ? 'ملاحظات العملاء' : 'Client Feedback' }}</span>
                 </a>
 
-                <a href="{{ route('admin.demo-surveys.index') }}" class="nav-item {{ request()->routeIs('admin.demo-surveys.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.demo-surveys.index') }}" class="nav-item {{ request()->routeIs('admin.demo-surveys.*', 'admin.demo-runs.*') ? 'active' : '' }}">
                     <svg class="w-5 h-5 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                     </svg>
-                    <span>{{ app()->getLocale() === 'ar' ? 'آراء المجربين' : 'Demo Feedback' }}</span>
+                    <span>{{ app()->getLocale() === 'ar' ? 'تحليل التجارب' : 'Demo Analytics' }}</span>
                 </a>
 
                 <a href="{{ route('admin.demo-invite.edit') }}" class="nav-item {{ request()->routeIs('admin.demo-invite.*') ? 'active' : '' }}">
