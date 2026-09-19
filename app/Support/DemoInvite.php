@@ -10,12 +10,17 @@ use App\Models\Setting;
  *
  * The demo sandbox runs as its own installation with DEMO_ENABLED=true and its
  * own database. Production does not host it, so on production the invitation
- * is an outbound link, not a form: an administrator turns it on and sets the
- * address in the admin panel (Settings → Try it free), which is why this is a
- * setting row rather than an env var — the URL changes without a deploy.
+ * is an outbound link, not a form: the address lives in the admin panel
+ * (Settings → Try it free) rather than in an env var, so the sandbox can move
+ * or go quiet without a deploy.
  *
  * Inside the demo installation itself the link is hidden: the visitor is
  * already there, and the real invitation is the start card.
+ *
+ * Both halves have a default, so a production database with no settings rows
+ * yet still shows the invitation pointing at the sandbox we actually run. An
+ * administrator overrides either half at any time; nothing here needs a
+ * deploy.
  */
 class DemoInvite
 {
@@ -23,19 +28,25 @@ class DemoInvite
 
     public const URL_KEY = 'demo_invite.url';
 
-    /** Show the button? Off unless switched on AND given somewhere to go. */
+    /** Where the invitation points until an administrator says otherwise. */
+    public const DEFAULT_URL = 'https://dev.mostashfaon.com';
+
+    /**
+     * Show the button? On unless an administrator has switched it off — and
+     * never inside the demo installation itself, where it would point at the
+     * page the visitor is already on.
+     */
     public static function enabled(): bool
     {
         return ! config('demo.enabled')
-            && Setting::getBool(self::ENABLED_KEY)
-            && static::url() !== null;
+            && Setting::getBool(self::ENABLED_KEY, true);
     }
 
-    /** The demo installation's address, or null if none is configured. */
-    public static function url(): ?string
+    /** The demo installation's address: the configured one, or the default. */
+    public static function url(): string
     {
         $url = trim((string) Setting::get(self::URL_KEY, ''));
 
-        return $url === '' ? null : $url;
+        return $url === '' ? self::DEFAULT_URL : $url;
     }
 }

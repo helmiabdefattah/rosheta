@@ -102,8 +102,8 @@
                          out to it. In the header rather than only in the hero:
                          a visitor who has scrolled into the features or the
                          pricing is exactly who wants to try it, and the partial
-                         hides itself unless an administrator has switched the
-                         invitation on (Admin → Free Trial Invitation). --}}
+                         hides itself if an administrator switches the
+                         invitation off (Admin → Free Trial Invitation). --}}
                     @include('demo.try-free', [
                         'class' => 'px-5 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 font-medium text-sm flex items-center gap-2',
                     ])
