@@ -272,4 +272,20 @@
             </div>
         </div>
     </section>
+
+    {{-- Get in touch: the same contact channels used across the app (config/demo.contact) --}}
+    @if (config('demo.contact.facebook') || config('demo.contact.whatsapp') || config('demo.contact.phone'))
+        @php $isAr = app()->getLocale() === 'ar'; @endphp
+        <section class="py-20 bg-white">
+            <div class="max-w-2xl mx-auto px-4 text-center">
+                <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-3">
+                    {{ $isAr ? 'تواصل معنا' : 'Get in touch' }}
+                </h2>
+                <p class="text-lg text-slate-500">
+                    {{ $isAr ? 'فريقنا جاهز للإجابة على أسئلتك ومساعدتك على البدء.' : 'Our team is ready to answer your questions and help you get started.' }}
+                </p>
+                @include('demo.contact', ['heading' => $isAr ? 'تحدث مع فريقنا' : 'Talk to our team'])
+            </div>
+        </section>
+    @endif
 @endsection

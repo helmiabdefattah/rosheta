@@ -27,6 +27,14 @@ return [
     // (build it with: php artisan demo:setup).
     'connection' => env('DEMO_DB_CONNECTION', 'demo'),
 
+    // Connection that holds the demo FUNNEL records (demo_sessions, demo_surveys,
+    // demo_activity_events). These are written on the "production" connection of
+    // whichever deployment ran the demo — NOT the demo-tenant connection above.
+    //   • On the demo deployment: leave it 'mysql' (writes/reads locally).
+    //   • On the MAIN system, to show demo-user reports written by a SEPARATE
+    //     demo deployment, point this at a connection to that deployment's DB.
+    'records_connection' => env('DEMO_RECORDS_CONNECTION', 'mysql'),
+
     // Throws the moment a demo request attempts a write on the production
     // connection. This is the actual guarantee, not the second connection.
     'prod_write_guard' => env('DEMO_PROD_WRITE_GUARD', true),
@@ -76,14 +84,14 @@ return [
     // Set the three env vars and nothing else has to change. A value left
     // empty simply hides its button.
     'contact' => [
-        'facebook' => env('DEMO_CONTACT_FACEBOOK', 'https://facebook.com/mostashfaon'),
+        'facebook' => env('DEMO_CONTACT_FACEBOOK', 'https://www.facebook.com/profile.php?id=61594651822886'),
 
         // Digits only, international form, no "+" — it goes straight into a
         // wa.me link.
-        'whatsapp' => env('DEMO_CONTACT_WHATSAPP', '201000000000'),
+        'whatsapp' => env('DEMO_CONTACT_WHATSAPP', '+201070711504'),
 
         // Dialled as typed.
-        'phone' => env('DEMO_CONTACT_PHONE', '+20 100 000 0000'),
+        'phone' => env('DEMO_CONTACT_PHONE', '+201070711504'),
     ],
 
     // Uploads.

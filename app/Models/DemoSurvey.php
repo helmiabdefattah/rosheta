@@ -16,8 +16,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class DemoSurvey extends Model
 {
-    /** Never follows the demo connection switch. */
-    protected $connection = 'mysql';
+    /**
+     * Never follows the demo tenant switch. Resolves to the funnel-records
+     * connection (default 'mysql'); the main system can point this at a separate
+     * demo deployment's DB via DEMO_RECORDS_CONNECTION to read demo-user reports.
+     */
+    public function getConnectionName()
+    {
+        return config('demo.records_connection', 'mysql');
+    }
 
     protected $guarded = [];
 
