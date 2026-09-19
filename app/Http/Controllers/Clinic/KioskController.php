@@ -187,6 +187,13 @@ class KioskController extends Controller
             report($e);
         }
 
+        // Tell the patient their number and how many are still ahead.
+        try {
+            \App\Notifications\QueueReservationNotification::sendTo($appointment);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
         if ($clinic->hasConnectedPrinter()) {
             // Ticket auto-prints on the clinic's Bluetooth printer (FCM); send
             // the patient straight back to the waiting-room check-in display.

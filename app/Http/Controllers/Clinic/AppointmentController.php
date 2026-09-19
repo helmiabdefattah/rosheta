@@ -55,7 +55,7 @@ class AppointmentController extends Controller
 
         $scheduledAt = Carbon::parse($data['scheduled_at']);
 
-        Appointment::create([
+        $appointment = Appointment::create([
             'client_id' => $clientId,
             'doctor_id' => $doctor->id,
             'clinic_id' => $clinic->id,
@@ -67,6 +67,13 @@ class AppointmentController extends Controller
             'price' => $clinic->priceFor($data['type']),
             'reason' => $data['reason'] ?? null,
         ]);
+
+        // Notify the patient of their queue number and how many are ahead.
+        try {
+            \App\Notifications\QueueReservationNotification::sendTo($appointment);
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return back()->with('status', __('app.appointment.created'));
     }
