@@ -168,40 +168,203 @@
     <section id="features" class="py-24 bg-white relative">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-20 reveal">
-                <span class="text-primary font-bold tracking-wider uppercase text-sm mb-2 block">{{ app()->getLocale() === 'ar' ? 'لماذا نحن' : 'Why Choose Us' }}</span>
+                <span class="text-primary font-bold tracking-wider uppercase text-sm mb-2 block">{{ app()->getLocale() === 'ar' ? 'مميزات النظام' : 'System Features' }}</span>
                 <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-6">
-                    {{ app()->getLocale() === 'ar' ? 'كل ما تحتاجه لصحة أفضل' : 'Everything you need for better health' }}
+                    {{ app()->getLocale() === 'ar' ? 'نظام متكامل لإدارة العيادات' : 'A complete clinic management system' }}
                 </h2>
+                <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+                    {{ app()->getLocale() === 'ar'
+                        ? 'من الاستقبال والحجز حتى الكشف والطباعة، مع تطبيق جوال يربط المريض بعيادتك.'
+                        : 'From reception and booking to examination and printing, with a mobile app that connects patients to your clinic.' }}
+                </p>
             </div>
             
-            <div class="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-                @php
-                    $features = app()->getLocale() === 'ar' ? [
-                        ['icon' => 'calendar', 'color' => 'bg-blue-500', 'title' => 'حجز فوري', 'desc' => 'لا مزيد من الانتظار في العيادات. احجز موعدك بنقرة واحدة.'],
-                        ['icon' => 'video', 'color' => 'bg-teal-500', 'title' => 'استشارات فيديو', 'desc' => 'تحدث مع نخبة الأطباء من منزلك عبر مكالمات فيديو آمنة ومشفرة.'],
-                        ['icon' => 'folder', 'color' => 'bg-indigo-500', 'title' => 'ملف طبي إلكتروني', 'desc' => 'تاريخك الطبي بالكامل، الوصفات، والتحاليل في جيبك.'],
-                        ['icon' => 'truck', 'color' => 'bg-rose-500', 'title' => 'صيدلية أونلاين', 'desc' => 'اطلب الدواء ليصلك إلى باب منزلك في أقل من 60 دقيقة.'],
-                        ['icon' => 'bell', 'color' => 'bg-amber-500', 'title' => 'تذكيرات ذكية', 'desc' => 'لن تنسى موعد الدواء مرة أخرى مع نظام التنبيهات الذكي.'],
-                        ['icon' => 'shield', 'color' => 'bg-emerald-500', 'title' => 'شبكة معتمدة', 'desc' => 'جميع الأطباء والمراكز الطبية تم التحقق من هوياتهم وتراخيصهم.']
-                    ] : [
-                        ['icon' => 'calendar', 'color' => 'bg-blue-500', 'title' => 'Instant Booking', 'desc' => 'No more waiting rooms. Book appointments in one tap.'],
-                        ['icon' => 'video', 'color' => 'bg-teal-500', 'title' => 'Video Consultations', 'desc' => 'Talk to top doctors from home via secure encrypted calls.'],
-                        ['icon' => 'folder', 'color' => 'bg-indigo-500', 'title' => 'Digital Records', 'desc' => 'Your entire history, prescriptions, and labs in your pocket.'],
-                        ['icon' => 'truck', 'color' => 'bg-rose-500', 'title' => 'Online Pharmacy', 'desc' => 'Order medicine delivered to your doorstep in under 60 mins.'],
-                        ['icon' => 'bell', 'color' => 'bg-amber-500', 'title' => 'Smart Reminders', 'desc' => 'Never miss a pill again with our intelligent notification system.'],
-                        ['icon' => 'shield', 'color' => 'bg-emerald-500', 'title' => 'Verified Network', 'desc' => 'All doctors and centers are thoroughly vetted and licensed.']
-                    ];
-                @endphp
+            @php $isAr = app()->getLocale() === 'ar'; @endphp
 
+            {{-- ── Workflow infographic: the patient journey through the system ── --}}
+            @php
+                $steps = [
+                    ['label' => $isAr ? 'الاستقبال' : 'Reception',        'text' => 'text-blue-600',    'border' => 'border-blue-200',    'icon' => '<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>'],
+                    ['label' => $isAr ? 'حجز إلكتروني' : 'Online Booking', 'text' => 'text-teal-600',    'border' => 'border-teal-200',    'icon' => '<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>'],
+                    ['label' => $isAr ? 'الكشف' : 'Examination',           'text' => 'text-indigo-600',  'border' => 'border-indigo-200',  'icon' => '<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>'],
+                    ['label' => $isAr ? 'الطباعة' : 'Print',               'text' => 'text-rose-600',    'border' => 'border-rose-200',    'icon' => '<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>'],
+                    ['label' => $isAr ? 'تطبيق المريض' : 'Patient App',    'text' => 'text-emerald-600', 'border' => 'border-emerald-200', 'icon' => '<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>'],
+                ];
+            @endphp
+            <div class="max-w-6xl mx-auto mb-24 reveal">
+                <div class="relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-y-10 gap-x-4">
+                    <div class="hidden md:block absolute top-8 left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 rtl:bg-gradient-to-l"></div>
+                    @foreach($steps as $i => $step)
+                        <div class="relative flex flex-col items-center text-center gap-3">
+                            <div class="relative z-10 w-16 h-16 rounded-2xl bg-white border-2 {{ $step['border'] }} shadow-lg shadow-slate-900/5 flex items-center justify-center {{ $step['text'] }}">
+                                {!! $step['icon'] !!}
+                            </div>
+                            <span class="text-sm font-bold text-slate-700">{{ $step['label'] }}</span>
+                            <span class="absolute -top-2 {{ $isAr ? 'left-1/2 translate-x-8' : 'right-1/2 -translate-x-8' }} text-xs font-black text-slate-300">0{{ $i + 1 }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- ── Illustrated feature cards: each with a hand-built SVG drawing ── --}}
+            @php
+                $features = $isAr ? [
+                    ['title' => 'إدارة عيادة متكاملة',        'desc' => 'إدارة كاملة للعيادة تشمل السجل الطبي، الاستقبال، شركات التأمين، والحجز الإلكتروني في مكان واحد.'],
+                    ['title' => 'شاشة كشف قابلة للتخصيص',     'desc' => 'صمّم شاشة الكشف بالكامل بما يناسب تخصصك وطريقة عملك — حقول وأقسام مرنة تُفعّلها كما تريد.'],
+                    ['title' => 'شاشات تفاعلية للانتظار',     'desc' => 'شاشات عرض تفاعلية توضّح الحجوزات ودور المريض الحالي ومن يليه في قائمة الانتظار.'],
+                    ['title' => 'طباعة الحجوزات والروشتات والفواتير', 'desc' => 'اطبع تذاكر الحجز، الوصفات الطبية، والفواتير مباشرة على طابعة العيادة الحرارية.'],
+                    ['title' => 'تطبيق جوال للمريض',          'desc' => 'يتابع المريض دوره في الطابور وسجله الطبي، يتواصل مباشرة، ويستقبل إشعارات مخصصة من مساعد الطبيب.'],
+                ] : [
+                    ['title' => 'Full Clinic Management',      'desc' => 'Complete clinic operations — medical history, reception, insurance companies, and online reservation in one place.'],
+                    ['title' => 'Customizable Examination Screen', 'desc' => 'Shape the examination screen entirely around your specialty and workflow, with flexible fields you switch on as you need.'],
+                    ['title' => 'Interactive Waiting Screens', 'desc' => 'Interactive display screens showing reservations, the current patient in service, and who is next in the queue.'],
+                    ['title' => 'Bookings, Prescriptions & Invoices', 'desc' => 'Print booking tickets, prescriptions, and invoices straight to the clinic\'s thermal printer.'],
+                    ['title' => 'Patient Mobile App',          'desc' => 'Patients track their queue turn and medical history, communicate directly, and receive custom notifications from the assistant.'],
+                ];
+            @endphp
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
                 @foreach($features as $index => $feature)
-                <div class="group p-8 rounded-[2rem] bg-slate-50 border border-slate-100 hover:border-blue-100 hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-300 hover:-translate-y-2 reveal" style="transition-delay: {{ $index * 100 }}ms">
-                    <div class="w-14 h-14 {{ $feature['color'] }} rounded-2xl flex items-center justify-center mb-6 text-white shadow-lg {{ str_replace('bg-', 'shadow-', $feature['color']) }}/30 group-hover:scale-110 transition-transform">
-                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                <div class="group flex flex-col rounded-[2rem] bg-slate-50 border border-slate-100 hover:border-blue-100 hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-300 hover:-translate-y-2 overflow-hidden reveal {{ $index === 4 ? 'lg:col-span-1 md:col-span-2' : '' }}" style="transition-delay: {{ $index * 100 }}ms">
+                    <div class="p-5 bg-gradient-to-br from-white to-slate-100 border-b border-slate-100">
+                        @switch($index)
+                            @case(0)
+                                {{-- Clinic management dashboard --}}
+                                <svg viewBox="0 0 260 150" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
+                                    <rect x="8" y="10" width="244" height="130" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+                                    <circle cx="26" cy="28" r="3" fill="#cbd5e1"/><circle cx="38" cy="28" r="3" fill="#cbd5e1"/><circle cx="50" cy="28" r="3" fill="#cbd5e1"/>
+                                    <line x1="8" y1="42" x2="252" y2="42" stroke="#e2e8f0" stroke-width="2"/>
+                                    <rect x="20" y="54" width="56" height="76" rx="8" fill="#eff6ff"/>
+                                    <rect x="30" y="66" width="36" height="6" rx="3" fill="#60a5fa"/>
+                                    <rect x="30" y="80" width="36" height="6" rx="3" fill="#bfdbfe"/>
+                                    <rect x="30" y="94" width="36" height="6" rx="3" fill="#bfdbfe"/>
+                                    <rect x="30" y="108" width="36" height="6" rx="3" fill="#bfdbfe"/>
+                                    <rect x="90" y="56" width="150" height="20" rx="6" fill="#f1f5f9"/>
+                                    <rect x="98" y="63" width="70" height="6" rx="3" fill="#94a3b8"/>
+                                    <rect x="90" y="84" width="150" height="20" rx="6" fill="#f1f5f9"/>
+                                    <rect x="98" y="91" width="92" height="6" rx="3" fill="#cbd5e1"/>
+                                    <rect x="90" y="112" width="150" height="20" rx="6" fill="#eff6ff"/>
+                                    <path d="M104 116l8-3 8 3v5c0 4-4 6-8 8-4-2-8-4-8-8v-5z" fill="#3b82f6"/>
+                                    <rect x="128" y="119" width="60" height="6" rx="3" fill="#93c5fd"/>
+                                </svg>
+                                @break
+                            @case(1)
+                                {{-- Customizable examination screen: sliders & toggles --}}
+                                <svg viewBox="0 0 260 150" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
+                                    <rect x="8" y="10" width="244" height="130" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+                                    <line x1="8" y1="42" x2="252" y2="42" stroke="#e2e8f0" stroke-width="2"/>
+                                    <rect x="26" y="24" width="70" height="8" rx="4" fill="#99f6e4"/>
+                                    <rect x="30" y="60" width="150" height="6" rx="3" fill="#e2e8f0"/>
+                                    <circle cx="120" cy="63" r="9" fill="#14b8a6"/>
+                                    <rect x="196" y="54" width="40" height="18" rx="9" fill="#99f6e4"/><circle cx="227" cy="63" r="7" fill="#14b8a6"/>
+                                    <rect x="30" y="88" width="150" height="6" rx="3" fill="#e2e8f0"/>
+                                    <circle cx="70" cy="91" r="9" fill="#14b8a6"/>
+                                    <rect x="196" y="82" width="40" height="18" rx="9" fill="#e2e8f0"/><circle cx="205" cy="91" r="7" fill="#94a3b8"/>
+                                    <rect x="30" y="116" width="150" height="6" rx="3" fill="#e2e8f0"/>
+                                    <circle cx="150" cy="119" r="9" fill="#14b8a6"/>
+                                    <rect x="196" y="110" width="40" height="18" rx="9" fill="#99f6e4"/><circle cx="227" cy="119" r="7" fill="#14b8a6"/>
+                                </svg>
+                                @break
+                            @case(2)
+                                {{-- Interactive queue display: NOW SERVING --}}
+                                <svg viewBox="0 0 260 150" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
+                                    <rect x="8" y="10" width="244" height="130" rx="16" fill="#0f172a"/>
+                                    <rect x="24" y="30" width="128" height="90" rx="12" fill="#1e1b4b"/>
+                                    <text x="88" y="58" text-anchor="middle" font-size="10" fill="#a5b4fc" font-family="sans-serif" font-weight="700">NOW SERVING</text>
+                                    <text x="88" y="102" text-anchor="middle" font-size="42" fill="#c7d2fe" font-family="sans-serif" font-weight="800">12</text>
+                                    <rect x="166" y="30" width="70" height="20" rx="6" fill="#6366f1"/>
+                                    <text x="201" y="44" text-anchor="middle" font-size="10" fill="#ffffff" font-family="sans-serif" font-weight="700">NEXT</text>
+                                    <rect x="166" y="58" width="70" height="18" rx="6" fill="#312e81"/><text x="176" y="71" font-size="10" fill="#c7d2fe" font-family="sans-serif" font-weight="700">13</text>
+                                    <rect x="166" y="82" width="70" height="18" rx="6" fill="#312e81"/><text x="176" y="95" font-size="10" fill="#a5b4fc" font-family="sans-serif" font-weight="700">14</text>
+                                    <rect x="166" y="106" width="70" height="18" rx="6" fill="#312e81"/><text x="176" y="119" font-size="10" fill="#a5b4fc" font-family="sans-serif" font-weight="700">15</text>
+                                </svg>
+                                @break
+                            @case(3)
+                                {{-- Thermal printer with a receipt --}}
+                                <svg viewBox="0 0 260 150" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
+                                    <rect x="8" y="10" width="244" height="130" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+                                    <rect x="86" y="20" width="88" height="52" rx="4" fill="#fff1f2" stroke="#fecdd3" stroke-width="2"/>
+                                    <rect x="98" y="30" width="46" height="5" rx="2.5" fill="#fb7185"/>
+                                    <rect x="98" y="42" width="64" height="3" rx="1.5" fill="#fda4af"/>
+                                    <rect x="98" y="50" width="64" height="3" rx="1.5" fill="#fda4af"/>
+                                    <rect x="98" y="58" width="40" height="3" rx="1.5" fill="#fda4af"/>
+                                    <rect x="64" y="70" width="132" height="44" rx="10" fill="#0f172a"/>
+                                    <rect x="80" y="80" width="100" height="7" rx="3.5" fill="#334155"/>
+                                    <circle cx="180" cy="98" r="4" fill="#f43f5e"/>
+                                    <rect x="86" y="110" width="88" height="26" rx="4" fill="#fff1f2" stroke="#fecdd3" stroke-width="2"/>
+                                    <rect x="98" y="119" width="64" height="3" rx="1.5" fill="#fda4af"/>
+                                    <rect x="98" y="127" width="44" height="3" rx="1.5" fill="#fda4af"/>
+                                </svg>
+                                @break
+                            @case(4)
+                                {{-- Patient phone: your turn + notification bell --}}
+                                <svg viewBox="0 0 260 150" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
+                                    <rect x="8" y="10" width="244" height="130" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+                                    <rect x="96" y="16" width="68" height="120" rx="14" fill="#0f172a"/>
+                                    <rect x="102" y="26" width="56" height="100" rx="7" fill="#ecfdf5"/>
+                                    <rect x="120" y="20" width="20" height="4" rx="2" fill="#334155"/>
+                                    <text x="130" y="48" text-anchor="middle" font-size="7" fill="#059669" font-family="sans-serif" font-weight="700">YOUR TURN</text>
+                                    <text x="130" y="76" text-anchor="middle" font-size="26" fill="#047857" font-family="sans-serif" font-weight="800">3</text>
+                                    <text x="130" y="90" text-anchor="middle" font-size="6" fill="#10b981" font-family="sans-serif" font-weight="600">2 ahead of you</text>
+                                    <rect x="112" y="100" width="36" height="4" rx="2" fill="#a7f3d0"/>
+                                    <rect x="112" y="110" width="36" height="4" rx="2" fill="#d1fae5"/>
+                                    <rect x="112" y="120" width="24" height="4" rx="2" fill="#d1fae5"/>
+                                    <circle cx="164" cy="30" r="15" fill="#10b981"/>
+                                    <path d="M158 33c1.2-1 1.8-2.2 1.8-4.2a4.2 4.2 0 018.4 0c0 2 .6 3.2 1.8 4.2h-12z" fill="#ffffff"/>
+                                    <circle cx="164" cy="35.5" r="1.6" fill="#ffffff"/>
+                                </svg>
+                                @break
+                        @endswitch
                     </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">{{ $feature['title'] }}</h3>
-                    <p class="text-slate-600 leading-relaxed">{{ $feature['desc'] }}</p>
+                    <div class="p-8 flex-1">
+                        <h3 class="text-xl font-bold text-slate-900 mb-3">{{ $feature['title'] }}</h3>
+                        <p class="text-slate-600 leading-relaxed">{{ $feature['desc'] }}</p>
+                    </div>
                 </div>
                 @endforeach
+
+                {{-- Charts panel: a clinic-at-a-glance infographic (illustrative data) --}}
+                <div class="md:col-span-2 lg:col-span-2 rounded-[2rem] bg-slate-900 text-white p-8 sm:p-10 flex flex-col reveal overflow-hidden" style="transition-delay: 500ms">
+                    <div class="flex items-baseline justify-between mb-8 flex-wrap gap-2">
+                        <h3 class="text-2xl font-black">{{ $isAr ? 'عيادتك في لمحة' : 'Your clinic at a glance' }}</h3>
+                        <span class="text-xs text-slate-500">{{ $isAr ? 'بيانات توضيحية' : 'illustrative data' }}</span>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-10 items-center">
+                        {{-- Bar chart: patients per hour --}}
+                        <div>
+                            <p class="text-sm font-semibold text-slate-400 mb-4">{{ $isAr ? 'المرضى في كل ساعة' : 'Patients per hour' }}</p>
+                            <svg viewBox="0 0 240 130" class="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#3b82f6"/>
+                                    </linearGradient>
+                                </defs>
+                                <line x1="26" y1="104" x2="234" y2="104" stroke="#334155" stroke-width="1.5"/>
+                                @php $bars = [34, 52, 44, 70, 40, 58]; $labels = ['9','10','11','12','1','2']; @endphp
+                                @foreach($bars as $bi => $bh)
+                                    <rect x="{{ 32 + $bi * 34 }}" y="{{ 104 - $bh }}" width="20" height="{{ $bh }}" rx="5" fill="url(#barGrad)"/>
+                                    <text x="{{ 42 + $bi * 34 }}" y="118" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif">{{ $labels[$bi] }}</text>
+                                @endforeach
+                            </svg>
+                        </div>
+                        {{-- Donut: appointment types --}}
+                        <div class="flex items-center gap-6">
+                            <svg viewBox="0 0 100 100" class="w-32 h-32 shrink-0" xmlns="http://www.w3.org/2000/svg">
+                                <g transform="rotate(-90 50 50)" fill="none" stroke-width="14">
+                                    <circle cx="50" cy="50" r="36" stroke="#334155"/>
+                                    <circle cx="50" cy="50" r="36" stroke="#3b82f6" stroke-dasharray="101.8 226.2" stroke-dashoffset="0"/>
+                                    <circle cx="50" cy="50" r="36" stroke="#14b8a6" stroke-dasharray="67.9 226.2" stroke-dashoffset="-101.8"/>
+                                    <circle cx="50" cy="50" r="36" stroke="#f59e0b" stroke-dasharray="56.5 226.2" stroke-dashoffset="-169.7"/>
+                                </g>
+                            </svg>
+                            <ul class="space-y-3 text-sm">
+                                <li class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span><span class="text-slate-300">{{ $isAr ? 'كشف' : 'New visits' }} <b class="text-white">45%</b></span></li>
+                                <li class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-teal-500"></span><span class="text-slate-300">{{ $isAr ? 'متابعة' : 'Follow-ups' }} <b class="text-white">30%</b></span></li>
+                                <li class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-amber-500"></span><span class="text-slate-300">{{ $isAr ? 'تأمين' : 'Insurance' }} <b class="text-white">25%</b></span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
