@@ -175,7 +175,7 @@
                             </p>
                         </div>
 
-                        <a href="{{ $ctaUrl }}" class="block w-full text-center py-3.5 rounded-xl font-bold text-white {{ $a['btn'] }} transition-all shadow-lg hover:-translate-y-0.5 mb-8">
+                        <a href="{{ route('subscribe.create', ['plan' => $p['key']]) }}" data-plan-cta class="block w-full text-center py-3.5 rounded-xl font-bold text-white {{ $a['btn'] }} transition-all shadow-lg hover:-translate-y-0.5 mb-8">
                             {{ $isAr ? 'ابدأ الآن' : 'Get started' }}
                         </a>
 
@@ -224,7 +224,7 @@
                             <span class="text-4xl font-black text-teal-300">200</span>
                             <span class="text-lg font-bold text-slate-400 mb-1">{{ $isAr ? 'ج.م / شهر' : 'EGP / mo' }}</span>
                         </div>
-                        <a href="{{ $ctaUrl }}" class="inline-flex items-center gap-2 px-7 py-3.5 bg-teal-500 hover:bg-teal-400 text-slate-900 rounded-xl font-bold transition-all shadow-lg hover:-translate-y-0.5">
+                        <a href="{{ route('subscribe.create', ['addon' => 'profile']) }}" class="inline-flex items-center gap-2 px-7 py-3.5 bg-teal-500 hover:bg-teal-400 text-slate-900 rounded-xl font-bold transition-all shadow-lg hover:-translate-y-0.5">
                             {{ $isAr ? 'أضِفه إلى أي باقة' : 'Add to any plan' }}
                         </a>
                     </div>
@@ -320,11 +320,21 @@
                 else { btn.classList.remove.apply(btn.classList, activeCls); btn.classList.add.apply(btn.classList, idleCls); }
             }
 
+            var planCtas = document.querySelectorAll('[data-plan-cta]');
+
             function show(annual) {
                 monthlyEls.forEach(function (el) { el.classList.toggle('hidden', annual); });
                 annualEls.forEach(function (el) { el.classList.toggle('hidden', !annual); });
                 setActive(annualBtn, annual);
                 setActive(monthlyBtn, !annual);
+                // Carry the chosen billing cycle into the subscribe links.
+                planCtas.forEach(function (a) {
+                    try {
+                        var url = new URL(a.href, window.location.origin);
+                        url.searchParams.set('billing', annual ? 'annual' : 'monthly');
+                        a.href = url.pathname + url.search;
+                    } catch (e) {}
+                });
             }
 
             monthlyBtn.addEventListener('click', function () { show(false); });

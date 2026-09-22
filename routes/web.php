@@ -24,6 +24,11 @@ Route::get('/pricing', function () {
     return view('pricing');
 })->name('pricing');
 
+// Public "subscribe to a package" flow (captures details, no account created).
+Route::get('/subscribe', [App\Http\Controllers\SubscribeController::class, 'create'])->name('subscribe.create');
+Route::post('/subscribe', [App\Http\Controllers\SubscribeController::class, 'store'])->name('subscribe.store');
+Route::get('/subscribe/thank-you', [App\Http\Controllers\SubscribeController::class, 'thanks'])->name('subscribe.thanks');
+
 Route::get('/feedback', function () {
     if (Auth::guard('client')->check()) {
         return redirect()->route('client.feedback.create');
@@ -397,6 +402,12 @@ Route::middleware([
 
     // Clients
     Route::resource('clients', App\Http\Controllers\Admin\ClientController::class);
+
+    // Subscription requests from the public pricing page — the setup queue.
+    Route::get('/subscription-requests', [App\Http\Controllers\Admin\SubscriptionRequestController::class, 'index'])->name('subscription-requests.index');
+    Route::get('/subscription-requests/{subscriptionRequest}', [App\Http\Controllers\Admin\SubscriptionRequestController::class, 'show'])->name('subscription-requests.show');
+    Route::patch('/subscription-requests/{subscriptionRequest}/status', [App\Http\Controllers\Admin\SubscriptionRequestController::class, 'updateStatus'])->name('subscription-requests.status');
+    Route::delete('/subscription-requests/{subscriptionRequest}', [App\Http\Controllers\Admin\SubscriptionRequestController::class, 'destroy'])->name('subscription-requests.destroy');
 
     // Demo exit surveys: what visitors said about the trial on their way out.
     Route::get('/demo-surveys', [App\Http\Controllers\Admin\DemoSurveyController::class, 'index'])->name('demo-surveys.index');

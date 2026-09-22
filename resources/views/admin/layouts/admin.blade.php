@@ -323,6 +323,13 @@
 
                 <div class="menu-header">{{ app()->getLocale() === 'ar' ? 'الأطباء والعيادات' : 'DOCTORS & CLINICS' }}</div>
 
+                <a href="{{ route('admin.subscription-requests.index') }}" class="nav-item {{ request()->routeIs('admin.subscription-requests.*') ? 'active' : '' }}">
+                    <svg class="w-5 h-5 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                    </svg>
+                    <span>{{ app()->getLocale() === 'ar' ? 'طلبات الاشتراك' : 'Subscription Requests' }}</span>
+                </a>
+
                 <a href="{{ route('admin.clinic-onboarding.create') }}" class="nav-item {{ request()->routeIs('admin.clinic-onboarding.*') ? 'active' : '' }}">
                     <svg class="w-5 h-5 me-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
