@@ -60,7 +60,7 @@ class AddressesRelationManager extends RelationManager
                 ->zoom(12)
                 // CARTO basemap with API key (the OSM public tile server blocks
                 // production use; CARTO now requires the key set in services.carto).
-                ->tilesUrl('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?api_key=' . config('services.carto.api_key'))
+                ->tilesUrl('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=' . config('services.carto.api_key'))
                 ->afterStateUpdated(function ($set, ?array $state) {
                     if ($state) {
                         $set('lat', $state['lat']);

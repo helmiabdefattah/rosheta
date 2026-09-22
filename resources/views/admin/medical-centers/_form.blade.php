@@ -223,7 +223,7 @@
     var startLat = parseFloat(latInput.value) || 30.0444;
     var startLng = parseFloat(lngInput.value) || 31.2357;
     var map = L.map('mc_map').setView([startLat, startLng], (latInput.value ? 14 : 11));
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?api_key={{ config('services.carto.api_key') }}', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key={{ config('services.carto.api_key') }}', {
         attribution: '&copy; OpenStreetMap contributors &copy; CARTO', maxZoom: 19
     }).addTo(map);
     var marker = (latInput.value && lngInput.value) ? L.marker([startLat, startLng]).addTo(map) : null;
