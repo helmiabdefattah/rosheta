@@ -366,6 +366,17 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Pricing CTA --}}
+            <div class="max-w-3xl mx-auto mt-20 text-center reveal">
+                <p class="text-lg text-slate-600 mb-5">
+                    {{ $isAr ? 'باقات تبدأ من 1000 جنيه شهريًا — مع خصم 20% للاشتراك السنوي.' : 'Plans start at 1,000 EGP / month — with 20% off annual subscriptions.' }}
+                </p>
+                <a href="{{ route('pricing') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/20 hover:-translate-y-1">
+                    <span>{{ $isAr ? 'اطّلع على الأسعار والباقات' : 'View pricing & plans' }}</span>
+                    <svg class="w-5 h-5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                </a>
+            </div>
         </div>
     </section>
 

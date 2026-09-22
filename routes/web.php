@@ -20,6 +20,10 @@ Route::get('/privacy', function () {
     return view('privacy');
 })->name('privacy');
 
+Route::get('/pricing', function () {
+    return view('pricing');
+})->name('pricing');
+
 Route::get('/feedback', function () {
     if (Auth::guard('client')->check()) {
         return redirect()->route('client.feedback.create');

@@ -77,18 +77,19 @@
 
     @stack('background-blobs')
 
-    <nav class="fixed w-full top-0 z-50 transition-all duration-300 @if(request()->is('terms') || request()->is('privacy')) bg-slate-900 @endif" id="navbar" data-page="{{ request()->is('/') ? 'welcome' : 'other' }}">
+    <nav class="fixed w-full top-0 z-50 transition-all duration-300 @if(request()->is('terms') || request()->is('privacy') || request()->is('pricing')) bg-slate-900 @endif" id="navbar" data-page="{{ request()->is('/') ? 'welcome' : 'other' }}">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
                 <a href="{{ url('/') }}" class="flex items-center gap-3">
                     <img src="/images/full-logo.png" alt="{{ app()->getLocale() === 'ar' ? 'شعار مستشفي اون' : 'Mostashfa-on Logo' }}" class="h-12 w-auto object-contain">
-                    <span id="logo-text" class="text-2xl font-black transition-colors duration-300 @if(request()->is('terms') || request()->is('privacy')) text-white @endif">
+                    <span id="logo-text" class="text-2xl font-black transition-colors duration-300 @if(request()->is('terms') || request()->is('privacy') || request()->is('pricing')) text-white @endif">
                         {{ app()->getLocale() === 'ar' ? 'مستشفى-أون' : 'Mostashfa-on' }}
                     </span>
                 </a>
 
                 <div class="hidden md:flex items-center gap-8 bg-white/50 backdrop-blur-md px-6 py-2.5 rounded-full border border-white/40 shadow-sm">
                     <a href="{{ url('/') }}#features" class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors">{{ app()->getLocale() === 'ar' ? 'المميزات' : 'Features' }}</a>
+                    <a href="{{ route('pricing') }}" class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors">{{ app()->getLocale() === 'ar' ? 'الأسعار' : 'Pricing' }}</a>
                     <a href="{{ url('/') }}#about" class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors">{{ app()->getLocale() === 'ar' ? 'عن التطبيق' : 'About' }}</a>
                     <a href="{{ url('/') }}#contact" class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors">{{ app()->getLocale() === 'ar' ? 'اتصل بنا' : 'Contact' }}</a>
                 </div>
@@ -130,6 +131,7 @@
 
         <div id="mobile-menu" class="hidden absolute top-20 left-0 w-full bg-white border-b border-gray-100 shadow-xl p-4 flex-col gap-4 md:hidden">
             <a href="{{ url('/') }}#features" class="block py-2 text-slate-600 font-medium">{{ app()->getLocale() === 'ar' ? 'المميزات' : 'Features' }}</a>
+            <a href="{{ route('pricing') }}" class="block py-2 text-slate-600 font-medium">{{ app()->getLocale() === 'ar' ? 'الأسعار' : 'Pricing' }}</a>
             <a href="{{ url('/') }}#about" class="block py-2 text-slate-600 font-medium">{{ app()->getLocale() === 'ar' ? 'عن التطبيق' : 'About' }}</a>
             @auth
                 <a href="{{ url('/admin') }}" class="block py-2 text-primary font-bold">{{ app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard' }}</a>
