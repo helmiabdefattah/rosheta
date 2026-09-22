@@ -58,9 +58,9 @@ class AddressesRelationManager extends RelationManager
                 ->showMarker(true)
                 ->clickable(true)
                 ->zoom(12)
-                // CARTO basemap: the OSM public tile server blocks production
-                // use ("tile usage policy" notice); CARTO permits it.
-                ->tilesUrl('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png')
+                // CARTO basemap with API key (the OSM public tile server blocks
+                // production use; CARTO now requires the key set in services.carto).
+                ->tilesUrl('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?api_key=' . config('services.carto.api_key'))
                 ->afterStateUpdated(function ($set, ?array $state) {
                     if ($state) {
                         $set('lat', $state['lat']);

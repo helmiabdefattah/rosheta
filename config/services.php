@@ -47,6 +47,12 @@ return [
         'graph_version' => env('FB_GRAPH_VERSION', 'v21.0'),
     ],
 
+    // CARTO basemap tiles (client-side map tiles). CARTO now gates their public
+    // basemaps behind an API key; this key is appended to the tile URLs.
+    'carto' => [
+        'api_key' => env('CARTO_API_KEY'),
+    ],
+
     'fcm' => [
         // Service account JSON file path (for FCM HTTP v1 API)
         'service_account_path' => env('FCM_SERVICE_ACCOUNT_PATH', storage_path('app/firebase-service-account.json')),

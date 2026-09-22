@@ -189,7 +189,7 @@ $(function() {
 
     var lat = parseFloat($('#latitude').val()) || 30.0444, lng = parseFloat($('#longitude').val()) || 31.2357;
     var map = L.map('locationMap').setView([lat, lng], 13);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors &copy; CARTO', maxZoom: 19 }).addTo(map);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?api_key={{ config('services.carto.api_key') }}', { attribution: '&copy; OpenStreetMap contributors &copy; CARTO', maxZoom: 19 }).addTo(map);
     var marker = L.marker([lat, lng], { draggable: true }).addTo(map);
     function updateLoc(la, ln) {
         marker.setLatLng([la, ln]);
