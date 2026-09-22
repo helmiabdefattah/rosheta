@@ -476,6 +476,10 @@ Route::middleware([
 
     Route::resource('clinics', App\Http\Controllers\Admin\ClinicController::class);
 
+    // Medical centers (a center groups several clinics; clinics may have no doctor).
+    Route::resource('medical-centers', App\Http\Controllers\Admin\MedicalCenterController::class)
+        ->except(['show']);
+
     Route::get('/appointments/available-slots', [App\Http\Controllers\Admin\AppointmentController::class, 'availableSlots'])->name('appointments.available-slots');
     Route::resource('appointments', App\Http\Controllers\Admin\AppointmentController::class);
 });

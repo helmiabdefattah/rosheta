@@ -439,13 +439,13 @@
 
         const map = L.map('serviceProviderMap').setView([mapCenter.lat, mapCenter.lng], 12);
 
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
             maxZoom: 19
         }).addTo(map);
 
         const mapMarkers = [];
-        const iconColors = { laboratory: 'blue', pharmacy: 'green', clinic: '#0d9488' };
+        const iconColors = { laboratory: 'blue', pharmacy: 'green', clinic: '#0d9488', medical_center: '#6366f1' };
         markers.forEach(function(markerData) {
             const iconColor = iconColors[markerData.type] || 'gray';
             const customIcon = L.divIcon({
@@ -458,6 +458,7 @@
             let typeLabel = isArabic ? 'مختبر' : 'Laboratory';
             if (markerData.type === 'pharmacy') typeLabel = isArabic ? 'صيدلية' : 'Pharmacy';
             if (markerData.type === 'clinic') typeLabel = isArabic ? 'عيادة / طبيب' : 'Clinic / Doctor';
+            if (markerData.type === 'medical_center') typeLabel = isArabic ? 'مركز طبي' : 'Medical Center';
 
             let popupContent = `
                 <div style="min-width: 200px;">
@@ -465,6 +466,7 @@
                     <p style="margin: 2px 0; font-size: 12px;">${typeLabel}</p>
                     ${markerData.doctor_name ? `<p style="margin: 2px 0; font-size: 12px;">${markerData.doctor_name}</p>` : ''}
                     ${markerData.specialization ? `<p style="margin: 2px 0; font-size: 12px; color: #0d9488;">${markerData.specialization}</p>` : ''}
+                    ${markerData.clinics_count ? `<p style="margin: 2px 0; font-size: 12px; color: #6366f1;">${markerData.clinics_count} ${isArabic ? 'عيادة' : 'clinics'}</p>` : ''}
                     ${markerData.phone ? `<p style="margin: 2px 0; font-size: 12px;">📞 ${markerData.phone}</p>` : ''}
                     ${markerData.address ? `<p style="margin: 2px 0; font-size: 12px;">📍 ${markerData.address}</p>` : ''}
                     ${markerData.book_url ? `<a href="${markerData.book_url}" style="display: inline-block; margin-top: 8px; padding: 4px 12px; background: #0d9488; color: white; border-radius: 6px; font-size: 12px; text-decoration: none;">${isArabic ? 'حجز موعد' : 'Book Appointment'}</a>` : ''}

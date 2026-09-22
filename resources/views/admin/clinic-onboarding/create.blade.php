@@ -422,7 +422,7 @@ $(function () {
         hasStart ? [startLat, startLng] : [30.0444, 31.2357],
         hasStart ? 15 : 11
     );
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap', maxZoom: 19 }).addTo(map);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors &copy; CARTO', maxZoom: 19 }).addTo(map);
 
     let marker = null;
 

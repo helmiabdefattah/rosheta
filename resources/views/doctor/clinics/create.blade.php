@@ -307,7 +307,7 @@ $(function() {
     var hasCoords = !!($('#latitude').val() && $('#longitude').val());
     var lat = parseFloat($('#latitude').val()) || 30.0444, lng = parseFloat($('#longitude').val()) || 31.2357;
     var map = L.map('locationMap').setView([lat, lng], hasCoords ? 16 : 13);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap', maxZoom: 19 }).addTo(map);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors &copy; CARTO', maxZoom: 19 }).addTo(map);
     var marker = L.marker([lat, lng], { draggable: true }).addTo(map);
     var accuracyCircle = null;
     var $status = $('#location-status');

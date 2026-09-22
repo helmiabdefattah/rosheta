@@ -16,6 +16,7 @@ class Clinic extends Model
     protected $fillable = [
         'doctor_id',
         'user_id',
+        'medical_center_id',
         'name',
         'address',
         'phone_number',
@@ -206,6 +207,12 @@ class Clinic extends Model
     public function manager(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /** The medical center this clinic belongs to (nullable — standalone clinics have none). */
+    public function medicalCenter(): BelongsTo
+    {
+        return $this->belongsTo(MedicalCenter::class);
     }
 
     /** All doctors linked to this clinic (many-to-many). Pivot may have medical_examination_price, follow_up_price. */
