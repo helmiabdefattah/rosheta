@@ -41,6 +41,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Every other demo route runs inside the demo session and keeps CSRF.
         $middleware->validateCsrfTokens(except: [
             'demo/start',
+            // Facebook posts lead notifications server-to-server; it carries no
+            // CSRF token. The endpoint is protected instead by the verify token
+            // and the X-Hub-Signature-256 app-secret check.
+            'webhooks/facebook/leads',
         ]);
 
         $middleware->web(append: [

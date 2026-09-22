@@ -50,7 +50,9 @@ return new class extends Migration
 
             $table->text('notes')->nullable();
 
-            // Handling.
+            // Where it came from and how it's being handled.
+            $table->string('source')->default('web');          // web | facebook
+            $table->string('external_ref')->nullable();        // e.g. Facebook leadgen_id
             $table->string('status')->default('new');          // new | contacted | activated
             $table->timestamp('reviewed_at')->nullable();
 
@@ -61,6 +63,7 @@ return new class extends Migration
 
             $table->index('status');
             $table->index('plan');
+            $table->index('source');
         });
     }
 

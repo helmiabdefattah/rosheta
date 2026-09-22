@@ -25,7 +25,7 @@ class SubscriptionRequest extends Model
         'contact_name', 'contact_phone', 'contact_email',
         'doctor_name', 'doctor_specialty', 'doctor_username', 'doctor_phone', 'doctor_email', 'doctor_password',
         'clinic_name', 'clinic_address', 'clinic_city', 'clinic_phone',
-        'assistants', 'notes', 'status', 'reviewed_at', 'locale', 'ip',
+        'assistants', 'notes', 'source', 'external_ref', 'status', 'reviewed_at', 'locale', 'ip',
     ];
 
     protected $casts = [

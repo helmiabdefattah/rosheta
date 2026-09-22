@@ -29,6 +29,11 @@ Route::get('/subscribe', [App\Http\Controllers\SubscribeController::class, 'crea
 Route::post('/subscribe', [App\Http\Controllers\SubscribeController::class, 'store'])->name('subscribe.store');
 Route::get('/subscribe/thank-you', [App\Http\Controllers\SubscribeController::class, 'thanks'])->name('subscribe.thanks');
 
+// Facebook Lead Ads → CRM webhook. Paste this URL into the ad's "Connect your
+// CRM" integration. GET verifies the callback; POST receives new leads.
+Route::get('/webhooks/facebook/leads', [App\Http\Controllers\FacebookLeadWebhookController::class, 'verify'])->name('webhooks.facebook.leads.verify');
+Route::post('/webhooks/facebook/leads', [App\Http\Controllers\FacebookLeadWebhookController::class, 'handle'])->name('webhooks.facebook.leads');
+
 Route::get('/feedback', function () {
     if (Auth::guard('client')->check()) {
         return redirect()->route('client.feedback.create');

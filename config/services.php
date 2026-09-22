@@ -35,6 +35,18 @@ return [
         ],
     ],
 
+    // Facebook Lead Ads → CRM webhook. Point the ad's "Connect your CRM"
+    // integration at /webhooks/facebook/leads. The verify token is the string
+    // you type into Facebook when it asks you to verify the callback URL. The
+    // page access token (optional but recommended) lets the webhook pull the
+    // full lead field data (name, phone, ...) from the Graph API.
+    'facebook_leads' => [
+        'verify_token' => env('FB_LEADS_VERIFY_TOKEN'),
+        'page_access_token' => env('FB_LEADS_PAGE_TOKEN'),
+        'app_secret' => env('FB_APP_SECRET'),
+        'graph_version' => env('FB_GRAPH_VERSION', 'v21.0'),
+    ],
+
     'fcm' => [
         // Service account JSON file path (for FCM HTTP v1 API)
         'service_account_path' => env('FCM_SERVICE_ACCOUNT_PATH', storage_path('app/firebase-service-account.json')),
