@@ -225,9 +225,26 @@
                                     {{ $session->started_role === 'assistant' ? ($ar ? 'بدأ كمساعد' : 'As assistant') : ($ar ? 'بدأ كطبيب' : 'As doctor') }}
                                 </span>
 
+                                ```blade
                                 @if($session->specialty)
-                                    <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-sky-100 text-sky-800">{{ $session->specialty }}</span>
+                                    <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-sky-100 text-sky-800">
+        {{ $session->specialty }}
+    </span>
                                 @endif
+
+                                @if($session->contact)
+                                    <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-amber-100 text-amber-800 inline-flex items-center gap-1">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M3 5a2 2 0 012-2h3.28a2 2 0 011.94 1.515l.7 2.807a2 2 0 01-.55 1.94l-1.27 1.27a16.001 16.001 0 006.363 6.363l1.27-1.27a2 2 0 011.94-.55l2.807.7A2 2 0 0121 17.72V21a2 2 0 01-2 2C9.611 23 1 14.389 1 4a2 2 0 012-2z"/>
+        </svg>
+        {{ $session->contact }}
+    </span>
+                                @endif
+
+                                @if($session->device)
+                                    ```
+
 
                                 @if($session->device)
                                     <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-slate-100 text-slate-600">

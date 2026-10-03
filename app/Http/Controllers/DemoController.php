@@ -51,58 +51,62 @@ class DemoController extends Controller
      * Idempotent: reloading with a live demo cookie returns to the existing
      * workspace instead of building a second tenant.
      */
-    public function start(Request $request): RedirectResponse
-    {
-        if ($off = $this->rejectIfDisabled()) {
-            return $off;
-        }
-
-        $role = $request->input('role') === 'assistant' ? 'assistant' : 'doctor';
-
-        if ($existing = $this->activeSession($request)) {
-            return $this->enterWorkspace($existing, $role);
-        }
-
-        // A session that was claimed but never built — the visitor closed the
-        // loading page, or pressed the button twice. Reuse it instead of
-        // leaving an orphan behind to count against their own limits.
-        $session = $this->unbuiltSession($request);
-
-        if ($session !== null) {
-            $session->forceFill([
-                'started_role' => $role,
-                'specialty' => $request->input('specialty'),
-                'last_activity_at' => now(),
-                'expires_at' => now()->addMinutes((int) config('demo.max_duration_minutes')),
-            ])->save();
-        } else {
-            if ($problem = $this->rejectIfOverLimit($request)) {
-                return $problem;
-            }
-
-            $session = DemoSession::create([
-                'started_role' => $role,
-                'template_key' => 'general_v1',
-                'specialty' => $request->input('specialty'),
-                'started_at' => now(),
-                'last_activity_at' => now(),
-                'expires_at' => now()->addMinutes((int) config('demo.max_duration_minutes')),
-                'steps_completed' => [],
-                'ip_hash' => hash('sha256', (string) $request->ip()),
-                'device' => $request->userAgent() && str_contains($request->userAgent(), 'Mobile') ? 'mobile' : 'desktop',
-            ] + $this->attribution($request));
-        }
-
-        $this->rememberDoctorName($request);
-
-        $this->recorder->milestone('demo.started', $session->id, [
-            'role' => $role,
-            'specialty' => $session->specialty,
-            'device' => $session->device,
-        ]);
-
-        return redirect()->route('demo.preparing')->withCookie($this->demoCookie($session));
+public function start(Request $request): RedirectResponse
+{
+    if ($off = $this->rejectIfDisabled()) {
+        return $off;
     }
+
+    $role = $request->input('role') === 'assistant' ? 'assistant' : 'doctor';
+
+    if ($existing = $this->activeSession($request)) {
+        return $this->enterWorkspace($existing, $role);
+    }
+
+    // A session that was claimed but never built — the visitor closed the
+    // loading page, or pressed the button twice. Reuse it instead of
+    // leaving an orphan behind to count against their own limits.
+    $session = $this->unbuiltSession($request);
+
+    if ($session !== null) {
+        $session->forceFill([
+            'started_role' => $role,
+            'specialty' => $request->input('specialty'),
+            'contact' => $request->input('contact'),
+            'last_activity_at' => now(),
+            'expires_at' => now()->addMinutes((int) config('demo.max_duration_minutes')),
+        ])->save();
+    } else {
+        if ($problem = $this->rejectIfOverLimit($request)) {
+            return $problem;
+        }
+
+        $session = DemoSession::create([
+            'started_role' => $role,
+            'template_key' => 'general_v1',
+            'specialty' => $request->input('specialty'),
+            'contact' => $request->input('contact'),
+            'started_at' => now(),
+            'last_activity_at' => now(),
+            'expires_at' => now()->addMinutes((int) config('demo.max_duration_minutes')),
+            'steps_completed' => [],
+            'ip_hash' => hash('sha256', (string) $request->ip()),
+            'device' => $request->userAgent() && str_contains($request->userAgent(), 'Mobile')
+                ? 'mobile'
+                : 'desktop',
+        ] + $this->attribution($request));
+    }
+
+    $this->rememberDoctorName($request);
+
+    $this->recorder->milestone('demo.started', $session->id, [
+        'role' => $role,
+        'specialty' => $session->specialty,
+        'device' => $session->device,
+    ]);
+
+    return redirect()->route('demo.preparing')->withCookie($this->demoCookie($session));
+}
 
     /**
      * The loading page: "we are preparing your journey".

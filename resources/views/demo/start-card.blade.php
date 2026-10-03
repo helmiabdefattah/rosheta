@@ -44,7 +44,23 @@
             placeholder="{{ app()->getLocale() === 'ar' ? 'مثال: أحمد سامي — ليظهر اسمك داخل التجربة' : 'e.g. Ahmed Sami — shown across your demo clinic' }}"
             class="w-full mb-3 px-3 py-2.5 rounded-xl border border-emerald-200 bg-white text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
         >
+        {{-- Optional: visitor contact information --}}
+        <label for="demo-contact" class="block text-xs font-semibold text-slate-600 mb-1.5">
+            {{ app()->getLocale() === 'ar' ? 'رقم الموبايل أو البريد الإلكتروني (اختياري)' : 'Mobile number or email (optional)' }}
+        </label>
 
+        <input
+            type="text"
+            name="contact"
+            id="demo-contact"
+            maxlength="100"
+            autocomplete="email tel"
+            inputmode="text"
+            placeholder="{{ app()->getLocale() === 'ar'
+        ? 'مثال: 01012345678 أو doctor@example.com'
+        : 'e.g. 01012345678 or doctor@example.com' }}"
+            class="w-full mb-3 px-3 py-2.5 rounded-xl border border-emerald-200 bg-white text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+        />
         {{-- Pick a specialization: the seeded clinic matches it. --}}
         @if (!empty($demoSpecializations['tailored']) && $demoSpecializations['tailored']->isNotEmpty())
             <label for="demo-specialty" class="block text-xs font-semibold text-slate-600 mb-1.5">
@@ -69,6 +85,9 @@
                 @endif
             </select>
         @endif
+
+
+
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <button
