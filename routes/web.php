@@ -79,6 +79,11 @@ Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLog
 Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::post('/admin/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
+// Developer mode only: one-click sign-in as an admin from the login page.
+if (app()->environment('local')) {
+    Route::post('/dev/login-admin', [App\Http\Controllers\Auth\LoginController::class, 'devLoginAdmin'])->name('dev.login-admin');
+}
+
 // Registration routes
 Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);

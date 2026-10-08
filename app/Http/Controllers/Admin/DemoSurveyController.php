@@ -21,8 +21,8 @@ use Illuminate\Support\Facades\DB;
  * did, how far they got, what they created, and — if they bothered — what
  * they said.
  *
- * Read-only apart from deleting. There is nobody to reply to: a demo visitor
- * leaves no account, no email and no phone behind.
+ * Read-only apart from deleting. A visitor may leave a phone number or email
+ * on the start card (optional) — that is the only way to follow up with them.
  */
 class DemoSurveyController extends Controller
 {
@@ -64,6 +64,12 @@ class DemoSurveyController extends Controller
             $query->where('started_role', $request->input('role'));
         }
 
+        if ($request->input('contact') === 'yes') {
+            $query->whereNotNull('contact')->where('contact', '!=', '');
+        } elseif ($request->input('contact') === 'no') {
+            $query->where(fn ($q) => $q->whereNull('contact')->orWhere('contact', ''));
+        }
+
         if ($request->filled('reason')) {
             $query->where('end_reason', $request->input('reason'));
         }
@@ -73,6 +79,7 @@ class DemoSurveyController extends Controller
 
             $query->where(function ($q) use ($search) {
                 $q->where('specialty', 'like', "%{$search}%")
+                    ->orWhere('contact', 'like', "%{$search}%")
                     ->orWhere('utm_source', 'like', "%{$search}%")
                     ->orWhere('id', 'like', "%{$search}%")
                     ->orWhereHas('survey', function ($s) use ($search) {
