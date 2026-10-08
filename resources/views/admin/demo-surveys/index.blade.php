@@ -145,7 +145,7 @@
         <form method="GET" action="{{ route('admin.demo-surveys.index') }}" class="flex flex-wrap gap-3">
             <div class="flex-1 min-w-[200px]">
                 <input type="text" name="search" value="{{ request('search') }}"
-                    placeholder="{{ $ar ? 'ابحث في الملاحظات أو التخصص أو المصدر...' : 'Search comments, specialty, source...' }}"
+                    placeholder="{{ $ar ? 'ابحث في الملاحظات أو التخصص أو المصدر أو رقم التواصل...' : 'Search comments, specialty, source, phone/email...' }}"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
             </div>
 
@@ -172,6 +172,12 @@
                 <option value="assistant" {{ request('role') === 'assistant' ? 'selected' : '' }}>{{ $ar ? 'بدأ كمساعد' : 'Started as assistant' }}</option>
             </select>
 
+            <select name="contact" class="px-4 py-2 border border-gray-300 rounded-lg">
+                <option value="">{{ $ar ? 'التواصل: الكل' : 'Contact: any' }}</option>
+                <option value="yes" {{ request('contact') === 'yes' ? 'selected' : '' }}>{{ $ar ? 'ترك رقم/بريد' : 'Left phone/email' }}</option>
+                <option value="no" {{ request('contact') === 'no' ? 'selected' : '' }}>{{ $ar ? 'بدون بيانات تواصل' : 'No contact' }}</option>
+            </select>
+
             <select name="reason" class="px-4 py-2 border border-gray-300 rounded-lg">
                 <option value="">{{ $ar ? 'النهاية: الكل' : 'Ending: any' }}</option>
                 @foreach($reasonBadge as $key => $badge)
@@ -183,7 +189,7 @@
                 {{ $ar ? 'تصفية' : 'Filter' }}
             </button>
 
-            @if(request()->hasAny(['search', 'useful', 'has_text', 'engagement', 'role', 'reason']))
+            @if(request()->hasAny(['search', 'useful', 'has_text', 'engagement', 'role', 'reason', 'contact']))
                 <a href="{{ route('admin.demo-surveys.index') }}" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
                     {{ $ar ? 'إعادة تعيين' : 'Reset' }}
                 </a>
@@ -225,26 +231,11 @@
                                     {{ $session->started_role === 'assistant' ? ($ar ? 'بدأ كمساعد' : 'As assistant') : ($ar ? 'بدأ كطبيب' : 'As doctor') }}
                                 </span>
 
-                                ```blade
                                 @if($session->specialty)
                                     <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-sky-100 text-sky-800">
         {{ $session->specialty }}
     </span>
                                 @endif
-
-                                @if($session->contact)
-                                    <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-amber-100 text-amber-800 inline-flex items-center gap-1">
-        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M3 5a2 2 0 012-2h3.28a2 2 0 011.94 1.515l.7 2.807a2 2 0 01-.55 1.94l-1.27 1.27a16.001 16.001 0 006.363 6.363l1.27-1.27a2 2 0 011.94-.55l2.807.7A2 2 0 0121 17.72V21a2 2 0 01-2 2C9.611 23 1 14.389 1 4a2 2 0 012-2z"/>
-        </svg>
-        {{ $session->contact }}
-    </span>
-                                @endif
-
-                                @if($session->device)
-                                    ```
-
 
                                 @if($session->device)
                                     <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-slate-100 text-slate-600">
@@ -278,6 +269,35 @@
                                     </button>
                                 </form>
                             </div>
+                        </div>
+
+                        <!-- How to reach them (optional field on the demo start card) -->
+                        @php
+                            $contact = trim((string) $session->contact);
+                            $isEmail = $contact !== '' && filter_var($contact, FILTER_VALIDATE_EMAIL);
+                            $digits = preg_replace('/\D/', '', $contact);
+                            // Egyptian local mobile (01xxxxxxxxx) -> international for WhatsApp.
+                            $waNumber = preg_match('/^01\d{9}$/', $digits) ? '2'.$digits : $digits;
+                        @endphp
+                        <div class="flex flex-wrap items-center gap-3 px-5 py-2.5 border-b border-gray-200 {{ $contact !== '' ? 'bg-amber-50' : 'bg-white' }}">
+                            <span class="text-[11px] font-bold text-slate-500">{{ $ar ? 'التواصل:' : 'Contact:' }}</span>
+                            @if($contact === '')
+                                <span class="text-xs text-slate-400">{{ $ar ? 'لم يترك رقماً أو بريداً' : 'No phone or email left' }}</span>
+                            @elseif($isEmail)
+                                <a href="mailto:{{ $contact }}" dir="ltr" class="text-sm font-bold text-amber-900 hover:underline">✉ {{ $contact }}</a>
+                            @else
+                                <a href="tel:{{ $contact }}" dir="ltr" class="text-sm font-bold text-amber-900 hover:underline">☎ {{ $contact }}</a>
+                                @if(strlen($digits) >= 8)
+                                    <a href="https://wa.me/{{ $waNumber }}" target="_blank" rel="noopener"
+                                       class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-emerald-100 text-emerald-800 hover:bg-emerald-200">WhatsApp</a>
+                                @endif
+                            @endif
+                            @if($contact !== '')
+                                <button type="button" onclick="navigator.clipboard.writeText(@js($contact)); this.textContent='{{ $ar ? 'تم النسخ' : 'Copied' }}'"
+                                        class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-white border border-amber-200 text-amber-800 hover:bg-amber-100">
+                                    {{ $ar ? 'نسخ' : 'Copy' }}
+                                </button>
+                            @endif
                         </div>
 
                         <div class="p-5 space-y-4">

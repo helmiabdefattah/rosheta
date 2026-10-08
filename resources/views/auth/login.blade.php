@@ -170,6 +170,20 @@
         </div>
         @endunless
 
+        {{-- Developer mode only (APP_ENV=local): one-click admin sign-in. --}}
+        @if (Route::has('dev.login-admin'))
+            <form method="POST" action="{{ route('dev.login-admin') }}" class="mt-6">
+                @csrf
+                <button type="submit"
+                        class="w-full py-3 px-4 rounded-xl border-2 border-dashed border-amber-400 bg-amber-50 text-sm font-bold text-amber-800 hover:bg-amber-100 transition-colors">
+                    Login
+                    <span class="block text-xs font-medium text-amber-600">
+                        {{ app()->getLocale() === 'ar' ? 'دخول كمسؤول (وضع المطور)' : 'as admin (developer mode)' }}
+                    </span>
+                </button>
+            </form>
+        @endif
+
         {{-- Demo sandbox: a populated clinic, no signup, wiped when it ends. --}}
         @include('demo.start-card', ['wrapperClass' => $demoOnly ? '' : 'mt-6'])
 

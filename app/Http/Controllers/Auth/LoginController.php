@@ -157,6 +157,45 @@ class LoginController extends Controller
     }
 
     /**
+     * Developer mode only: sign in as an admin without a password.
+     *
+     * There is no admin flag — an admin is a User with no lab, pharmacy, nurse,
+     * charity, assistant, doctor or clinic attached (the login() fallthrough).
+     * DEV_ADMIN_EMAIL in .env pins a specific account.
+     */
+    public function devLoginAdmin(Request $request)
+    {
+        abort_unless(app()->environment('local'), 404);
+
+        $email = env('DEV_ADMIN_EMAIL');
+
+        $admin = $email
+            ? User::where('email', $email)->first()
+            : User::where('is_active', true)
+                ->whereNull('laboratory_id')
+                ->whereNull('pharmacy_id')
+                ->whereNull('nurse_id')
+                ->whereNull('charitable_organization_id')
+                ->whereNull('doctor_id')
+                ->whereDoesntHave('doctor')
+                ->whereDoesntHave('managedClinic')
+                ->orderBy('id')
+                ->first();
+
+        if (! $admin) {
+            throw ValidationException::withMessages([
+                'email' => ['No admin account found for developer login.'],
+            ]);
+        }
+
+        Auth::guard('client')->logout();
+        Auth::login($admin);
+        $request->session()->regenerate();
+
+        return redirect()->route('admin.dashboard');
+    }
+
+    /**
      * Log the user out.
      */
     public function logout(Request $request)
