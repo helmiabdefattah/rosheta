@@ -90,8 +90,8 @@
                 <div class="hidden md:flex items-center gap-8 bg-white/50 backdrop-blur-md px-6 py-2.5 rounded-full border border-white/40 shadow-sm">
                     <a href="{{ url('/') }}#features" class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors">{{ app()->getLocale() === 'ar' ? 'المميزات' : 'Features' }}</a>
                     <a href="{{ route('pricing') }}" class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors">{{ app()->getLocale() === 'ar' ? 'الأسعار' : 'Pricing' }}</a>
-                    <a href="{{ url('/') }}#about" class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors">{{ app()->getLocale() === 'ar' ? 'عن التطبيق' : 'About' }}</a>
-                    <a href="{{ url('/') }}#contact" class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors">{{ app()->getLocale() === 'ar' ? 'اتصل بنا' : 'Contact' }}</a>
+                    <a href="{{ route('about') }}" class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors">{{ app()->getLocale() === 'ar' ? 'عن التطبيق' : 'About' }}</a>
+                    <a href="{{ route('contact') }}" class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors">{{ app()->getLocale() === 'ar' ? 'اتصل بنا' : 'Contact' }}</a>
                 </div>
 
                 <div class="hidden md:flex items-center gap-4">
@@ -132,7 +132,8 @@
         <div id="mobile-menu" class="hidden absolute top-20 left-0 w-full bg-white border-b border-gray-100 shadow-xl p-4 flex-col gap-4 md:hidden">
             <a href="{{ url('/') }}#features" class="block py-2 text-slate-600 font-medium">{{ app()->getLocale() === 'ar' ? 'المميزات' : 'Features' }}</a>
             <a href="{{ route('pricing') }}" class="block py-2 text-slate-600 font-medium">{{ app()->getLocale() === 'ar' ? 'الأسعار' : 'Pricing' }}</a>
-            <a href="{{ url('/') }}#about" class="block py-2 text-slate-600 font-medium">{{ app()->getLocale() === 'ar' ? 'عن التطبيق' : 'About' }}</a>
+            <a href="{{ route('about') }}" class="block py-2 text-slate-600 font-medium">{{ app()->getLocale() === 'ar' ? 'عن التطبيق' : 'About' }}</a>
+            <a href="{{ route('contact') }}" class="block py-2 text-slate-600 font-medium">{{ app()->getLocale() === 'ar' ? 'اتصل بنا' : 'Contact' }}</a>
             @auth
                 <a href="{{ url('/admin') }}" class="block py-2 text-primary font-bold">{{ app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard' }}</a>
             @else
@@ -167,7 +168,7 @@
                 <div>
                     <h4 class="font-bold text-slate-900 mb-4">{{ app()->getLocale() === 'ar' ? 'الشركة' : 'Company' }}</h4>
                     <ul class="space-y-2 text-sm text-slate-500">
-                        <li><a href="#" class="hover:text-primary">{{ app()->getLocale() === 'ar' ? 'من نحن' : 'About' }}</a></li>
+                        <li><a href="{{ route('about') }}" class="hover:text-primary">{{ app()->getLocale() === 'ar' ? 'من نحن' : 'About' }}</a></li>
                         <li><a href="#" class="hover:text-primary">{{ app()->getLocale() === 'ar' ? 'الوظائف' : 'Careers' }}</a></li>
                         <li><a href="#" class="hover:text-primary">{{ app()->getLocale() === 'ar' ? 'الأخبار' : 'News' }}</a></li>
                     </ul>
@@ -182,8 +183,8 @@
                 </div>
 
                 <div>
-                    <h4 class="font-bold text-slate-900 mb-4">{{ app()->getLocale() === 'ar' ? 'تواصل معنا' : 'Contact' }}</h4>
-                    <p class="text-sm text-slate-500 mb-2">support@mostashfaon.com</p>
+                    <h4 class="font-bold text-slate-900 mb-4"><a href="{{ route('contact') }}" class="hover:text-primary">{{ app()->getLocale() === 'ar' ? 'تواصل معنا' : 'Contact' }}</a></h4>
+                    <p class="text-sm text-slate-500 mb-2"><a href="mailto:support@mostashfaon.com" class="hover:text-primary">support@mostashfaon.com</a></p>
                     <div class="flex gap-4 mt-4">
                         <a href="#" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-primary hover:text-white transition-colors">fb</a>
                         <a href="#" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-primary hover:text-white transition-colors">tw</a>
@@ -252,6 +253,48 @@
         }, observerOptions);
 
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Anchor links (#features, #about, #contact …): the fixed navbar hides
+        // the target under the native jump, and arriving from another page
+        // often doesn't scroll at all. Handle both, with the navbar offset.
+        (function () {
+            var NAV_OFFSET = 96; // fixed navbar height + a little breathing room
+
+            function scrollToHash(hash, smooth) {
+                if (!hash || hash === '#') return;
+                var el;
+                try { el = document.querySelector(hash); } catch (e) { return; }
+                if (!el) return;
+                var y = el.getBoundingClientRect().top + window.pageYOffset - NAV_OFFSET;
+                window.scrollTo({ top: y, behavior: smooth ? 'smooth' : 'auto' });
+            }
+
+            // Same-page clicks: smooth-scroll with the offset instead of jumping.
+            document.addEventListener('click', function (e) {
+                var a = e.target.closest('a[href*="#"]');
+                if (!a) return;
+                var url;
+                try { url = new URL(a.href, window.location.href); } catch (e) { return; }
+                if (url.pathname === window.location.pathname && url.hash && url.hash !== '#') {
+                    var target;
+                    try { target = document.querySelector(url.hash); } catch (e) { return; }
+                    if (target) {
+                        e.preventDefault();
+                        history.pushState(null, '', url.hash);
+                        scrollToHash(url.hash, true);
+                        var menu = document.getElementById('mobile-menu');
+                        if (menu) { menu.classList.add('hidden'); menu.classList.remove('flex'); }
+                    }
+                }
+            });
+
+            // Arriving with a #hash from another page: scroll once laid out.
+            if (window.location.hash) {
+                window.addEventListener('load', function () {
+                    setTimeout(function () { scrollToHash(window.location.hash, false); }, 150);
+                });
+            }
+        })();
     </script>
 
     @stack('scripts')

@@ -24,6 +24,21 @@ Route::get('/pricing', function () {
     return view('pricing');
 })->name('pricing');
 
+Route::get('/about', function () {
+    return view('about');
+})->name('about');
+
+Route::get('/contact', function () {
+    return view('contact');
+})->name('contact');
+
+// Post-demo landing: "create your real account". Deliberately NOT the register
+// form (a logged-in demo user would be bounced to a dashboard) — it presents
+// the system features and funnels to pricing / contact instead.
+Route::get('/create-account', function () {
+    return view('create-account');
+})->name('create-account');
+
 // Public "subscribe to a package" flow (captures details, no account created).
 Route::get('/subscribe', [App\Http\Controllers\SubscribeController::class, 'create'])->name('subscribe.create');
 Route::post('/subscribe', [App\Http\Controllers\SubscribeController::class, 'store'])->name('subscribe.store');
