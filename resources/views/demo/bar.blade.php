@@ -54,7 +54,7 @@
                         </button>
                     </form>
 
-                    <a href="{{ route('register') }}"
+                    <a href="{{ route('create-account') }}"
                        class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-900 text-xs font-bold transition-colors whitespace-nowrap">
                         أنشئ حسابك الحقيقي
                     </a>

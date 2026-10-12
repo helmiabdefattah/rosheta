@@ -9,13 +9,17 @@ use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\Governorate;
 use App\Models\MedicalCenter;
+use App\Models\Specialization;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Admin CRUD for medical centers. A center groups several clinics; each clinic
- * may have a doctor assigned or none. Clinics inherit the center's location so
- * the whole center plots as one point on the client map.
+ * may have a doctor assigned (existing or created inline) or none. Clinics
+ * inherit the center's location so the whole center plots as one point on the
+ * client map, and each clinic carries its own pricing and weekly schedule.
  */
 class MedicalCenterController extends Controller
 {
@@ -37,6 +41,7 @@ class MedicalCenterController extends Controller
     public function store(Request $request)
     {
         $data = $this->validateCenter($request);
+        $this->validateClinics($request);
 
         DB::transaction(function () use ($data, $request) {
             $center = MedicalCenter::create($data);
@@ -49,7 +54,7 @@ class MedicalCenterController extends Controller
 
     public function edit(MedicalCenter $medicalCenter)
     {
-        $medicalCenter->load('clinics');
+        $medicalCenter->load('clinics.workingHours');
 
         return view('admin.medical-centers.edit', array_merge(
             $this->formData(),
@@ -60,6 +65,7 @@ class MedicalCenterController extends Controller
     public function update(Request $request, MedicalCenter $medicalCenter)
     {
         $data = $this->validateCenter($request);
+        $this->validateClinics($request);
 
         DB::transaction(function () use ($data, $request, $medicalCenter) {
             $medicalCenter->update($data);
@@ -89,6 +95,7 @@ class MedicalCenterController extends Controller
             'cities' => City::where('is_active', true)->orderBy('name')->get(['id', 'name', 'name_ar', 'governorate_id']),
             'areas' => Area::where('is_active', true)->orderBy('name')->get(['id', 'name', 'name_ar', 'city_id']),
             'doctors' => Doctor::with('specialization')->orderBy('name')->get(),
+            'specializations' => Specialization::orderBy('name')->get(),
         ];
     }
 
@@ -107,10 +114,6 @@ class MedicalCenterController extends Controller
             'close_time' => 'nullable|date_format:H:i',
             'is_active' => 'nullable|boolean',
             'clinics' => 'nullable|array|max:50',
-            'clinics.*.id' => 'nullable|integer|exists:clinics,id',
-            'clinics.*.name' => 'nullable|string|max:255',
-            'clinics.*.doctor_id' => 'nullable|exists:doctors,id',
-            'clinics.*.medical_examination_price' => 'nullable|numeric|min:0',
         ]);
 
         // Only the center's own columns (clinics are handled separately).
@@ -130,8 +133,55 @@ class MedicalCenterController extends Controller
     }
 
     /**
+     * Validate the per-clinic rows. Rules are built only for rows that carry a
+     * name (blank rows are skipped on save), and a row creating a new doctor
+     * gets the extra doctor rules — including login-account rules only when any
+     * account field was filled in.
+     */
+    private function validateClinics(Request $request): void
+    {
+        $rows = $request->input('clinics', []);
+        $rules = [];
+
+        foreach ((array) $rows as $i => $row) {
+            if (! is_array($row) || trim($row['name'] ?? '') === '') {
+                continue; // blank row — ignored on save
+            }
+
+            $rules["clinics.$i.name"] = 'required|string|max:255';
+            $rules["clinics.$i.phone_number"] = 'nullable|string|max:50';
+            $rules["clinics.$i.doctor_id"] = 'nullable|exists:doctors,id';
+            $rules["clinics.$i.medical_examination_price"] = 'nullable|numeric|min:0';
+            $rules["clinics.$i.follow_up_price"] = 'nullable|numeric|min:0';
+            $rules["clinics.$i.appointment_duration"] = 'nullable|integer|min:5|max:240';
+            $rules["clinics.$i.slots_per_interval"] = 'nullable|integer|min:1|max:50';
+
+            if (($row['doctor_mode'] ?? 'existing') === 'new') {
+                $rules["clinics.$i.new_doctor.name"] = 'required|string|max:255';
+                $rules["clinics.$i.new_doctor.specialization_id"] = 'required|exists:specializations,id';
+
+                $nd = $row['new_doctor'] ?? [];
+                $wantsLogin = trim($nd['email'] ?? '') !== ''
+                    || trim($nd['phone'] ?? '') !== ''
+                    || ($nd['password'] ?? '') !== '';
+
+                if ($wantsLogin) {
+                    $rules["clinics.$i.new_doctor.email"] = 'required|email|unique:users,email';
+                    $rules["clinics.$i.new_doctor.phone"] = 'required|string|max:50|unique:users,phone_number';
+                    $rules["clinics.$i.new_doctor.password"] = 'required|string|min:8';
+                }
+            }
+        }
+
+        if ($rules) {
+            $request->validate($rules);
+        }
+    }
+
+    /**
      * Create/update/delete the center's clinics from the submitted rows.
-     * Clinics inherit the center's location and area fields.
+     * Clinics inherit the center's location; each keeps its own pricing,
+     * appointment settings and weekly opening hours.
      */
     private function syncClinics(MedicalCenter $center, array $rows): void
     {
@@ -145,7 +195,8 @@ class MedicalCenterController extends Controller
 
             $attrs = [
                 'name' => $name,
-                'doctor_id' => $row['doctor_id'] ?? null,
+                'phone_number' => $row['phone_number'] ?? null,
+                'doctor_id' => $this->resolveDoctorId($row),
                 'medical_center_id' => $center->id,
                 'governorate_id' => $center->governorate_id,
                 'city_id' => $center->city_id,
@@ -154,18 +205,25 @@ class MedicalCenterController extends Controller
                 'latitude' => $center->latitude,
                 'longitude' => $center->longitude,
                 'medical_examination_price' => $row['medical_examination_price'] ?? 0,
+                'follow_up_price' => ($row['follow_up_price'] ?? '') !== '' ? $row['follow_up_price'] : null,
+                'appointment_duration' => (int) ($row['appointment_duration'] ?? 30) ?: 30,
+                'slots_per_interval' => (int) ($row['slots_per_interval'] ?? 1) ?: 1,
+                'opening_hours' => $this->normalizeHours($row['hours'] ?? []),
             ];
 
+            $clinic = null;
             if (! empty($row['id'])) {
                 $clinic = Clinic::where('medical_center_id', $center->id)->find($row['id']);
-                if ($clinic) {
-                    $clinic->update($attrs);
-                    $keptIds[] = $clinic->id;
-                    continue;
-                }
             }
 
-            $clinic = Clinic::create($attrs);
+            if ($clinic) {
+                $clinic->update($attrs);
+            } else {
+                $clinic = Clinic::create($attrs);
+            }
+
+            // Keep the booking-side workingHours rows in step with the JSON.
+            $clinic->syncWorkingHoursFromOpeningHours();
             $keptIds[] = $clinic->id;
         }
 
@@ -173,5 +231,71 @@ class MedicalCenterController extends Controller
         Clinic::where('medical_center_id', $center->id)
             ->whereNotIn('id', $keptIds ?: [0])
             ->delete();
+    }
+
+    /**
+     * Resolve the doctor for a clinic row: an existing doctor, a brand-new one
+     * created inline (optionally with a login account), or none.
+     */
+    private function resolveDoctorId(array $row): ?int
+    {
+        if (($row['doctor_mode'] ?? 'existing') !== 'new') {
+            return ! empty($row['doctor_id']) ? (int) $row['doctor_id'] : null;
+        }
+
+        $nd = $row['new_doctor'] ?? [];
+        $name = trim($nd['name'] ?? '');
+        if ($name === '') {
+            return null;
+        }
+
+        $userId = null;
+        $email = trim($nd['email'] ?? '');
+        $phone = trim($nd['phone'] ?? '');
+        $password = $nd['password'] ?? '';
+
+        // A login account is created only when email, phone and password are all
+        // present (validateClinics already guaranteed this when any was filled).
+        if ($email !== '' && $phone !== '' && $password !== '') {
+            $userId = User::create([
+                'name' => $name,
+                'email' => $email,
+                'phone_number' => $phone,
+                'password' => $password,
+                'is_active' => true,
+            ])->id;
+        }
+
+        $doctor = Doctor::create([
+            'name' => $name,
+            'specialization_id' => $nd['specialization_id'] ?? null,
+            'slug' => Str::slug($name) . '-' . Str::lower(Str::random(5)),
+            'user_id' => $userId,
+            'assistant_limit' => Doctor::DEFAULT_ASSISTANT_LIMIT,
+        ]);
+
+        return $doctor->id;
+    }
+
+    /**
+     * Shape the submitted weekly hours into the opening_hours JSON the Clinic
+     * model expects: every weekday present, with null times when closed.
+     */
+    private function normalizeHours(array $hours): array
+    {
+        $out = [];
+
+        foreach (Clinic::DAYS as $day) {
+            $h = $hours[$day] ?? [];
+            $closed = ! empty($h['closed']);
+
+            $out[$day] = [
+                'open' => $closed ? null : (($h['open'] ?? '') ?: null),
+                'close' => $closed ? null : (($h['close'] ?? '') ?: null),
+                'closed' => $closed,
+            ];
+        }
+
+        return $out;
     }
 }

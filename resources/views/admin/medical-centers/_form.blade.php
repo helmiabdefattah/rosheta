@@ -1,20 +1,77 @@
 @php
+    use App\Models\Clinic;
+
     $l = app()->getLocale() === 'ar';
     $center = $center ?? null;
     $val = fn ($key, $default = null) => old($key, $center->{$key} ?? $default);
 
-    // Rows for the clinics repeater: old input, else the center's clinics, else one blank.
-    $clinicRows = old('clinics');
-    if (!is_array($clinicRows)) {
-        $clinicRows = $center && $center->clinics->count()
-            ? $center->clinics->map(fn ($c) => ['id' => $c->id, 'name' => $c->name, 'doctor_id' => $c->doctor_id, 'medical_examination_price' => $c->medical_examination_price])->all()
-            : [['id' => '', 'name' => '', 'doctor_id' => '', 'medical_examination_price' => '']];
+    $days = Clinic::DAYS;
+    $dayLabels = $l
+        ? ['saturday' => 'السبت', 'sunday' => 'الأحد', 'monday' => 'الاثنين', 'tuesday' => 'الثلاثاء', 'wednesday' => 'الأربعاء', 'thursday' => 'الخميس', 'friday' => 'الجمعة']
+        : ['saturday' => 'Saturday', 'sunday' => 'Sunday', 'monday' => 'Monday', 'tuesday' => 'Tuesday', 'wednesday' => 'Wednesday', 'thursday' => 'Thursday', 'friday' => 'Friday'];
+
+    // A blank clinic row: weekdays open 9–5, Friday closed by default.
+    $blankHours = [];
+    foreach ($days as $d) {
+        $blankHours[$d] = ['open' => '09:00', 'close' => '17:00', 'closed' => $d === 'friday'];
     }
+    $blankRow = [
+        'id' => '', 'name' => '', 'phone_number' => '', 'doctor_mode' => 'existing', 'doctor_id' => '',
+        'medical_examination_price' => '', 'follow_up_price' => '', 'appointment_duration' => 30,
+        'slots_per_interval' => 1, 'hours' => $blankHours,
+    ];
+
+    // Rows: old input (validation bounce), else the center's saved clinics, else one blank.
+    $clinicRows = old('clinics');
+    if (! is_array($clinicRows)) {
+        $clinicRows = ($center && $center->clinics->count())
+            ? $center->clinics->map(function ($c) use ($days) {
+                // Prefer the canonical workingHours rows (eager-loaded in edit())
+                // so a clinic scheduled elsewhere shows its real times; fall back
+                // to the opening_hours JSON / defaults otherwise.
+                $whByDay = $c->relationLoaded('workingHours') ? $c->workingHours->keyBy('day') : collect();
+                $hours = [];
+                foreach ($days as $d) {
+                    $wh = $whByDay->get($d);
+                    if ($wh) {
+                        $closed = (bool) $wh->is_closed || ! $wh->from || ! $wh->to;
+                        $fmt = fn ($t) => $t instanceof \Carbon\Carbon ? $t->format('H:i') : \Carbon\Carbon::parse($t)->format('H:i');
+                        $hours[$d] = [
+                            'open' => $closed ? '09:00' : $fmt($wh->from),
+                            'close' => $closed ? '17:00' : $fmt($wh->to),
+                            'closed' => $closed,
+                        ];
+                    } else {
+                        $hours[$d] = $c->hoursFor($d);
+                    }
+                }
+                return [
+                    'id' => $c->id,
+                    'name' => $c->name,
+                    'phone_number' => $c->phone_number,
+                    'doctor_mode' => 'existing',
+                    'doctor_id' => $c->doctor_id,
+                    'medical_examination_price' => $c->medical_examination_price,
+                    'follow_up_price' => $c->follow_up_price,
+                    'appointment_duration' => $c->appointment_duration ?: 30,
+                    'slots_per_interval' => $c->slots_per_interval ?: 1,
+                    'hours' => $hours,
+                ];
+            })->all()
+            : [$blankRow];
+    }
+
     $inp = 'w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none';
     $lbl = 'block text-sm font-semibold text-slate-700 mb-1';
 @endphp
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    details.clinic-row > summary::-webkit-details-marker,
+    details.hours-block > summary::-webkit-details-marker { display: none; }
+    details.clinic-row > summary,
+    details.hours-block > summary { list-style: none; }
+</style>
 
 @if ($errors->any())
     <div class="mb-6 bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
@@ -24,9 +81,8 @@
     </div>
 @endif
 
-<div class="grid lg:grid-cols-3 gap-6">
+<div class="space-y-6">
     {{-- Center details --}}
-    <div class="lg:col-span-2 space-y-6">
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <h3 class="font-black text-slate-900 mb-4">{{ $l ? 'بيانات المركز' : 'Center details' }}</h3>
             <div class="grid sm:grid-cols-2 gap-4">
@@ -71,11 +127,11 @@
                     </select>
                 </div>
                 <div>
-                    <label class="{{ $lbl }}">{{ $l ? 'وقت الفتح' : 'Open time' }}</label>
+                    <label class="{{ $lbl }}">{{ $l ? 'وقت فتح المركز' : 'Center open time' }}</label>
                     <input type="time" name="open_time" value="{{ $val('open_time') ? \Carbon\Carbon::parse($val('open_time'))->format('H:i') : '' }}" class="{{ $inp }}">
                 </div>
                 <div>
-                    <label class="{{ $lbl }}">{{ $l ? 'وقت الإغلاق' : 'Close time' }}</label>
+                    <label class="{{ $lbl }}">{{ $l ? 'وقت إغلاق المركز' : 'Center close time' }}</label>
                     <input type="time" name="close_time" value="{{ $val('close_time') ? \Carbon\Carbon::parse($val('close_time'))->format('H:i') : '' }}" class="{{ $inp }}">
                 </div>
                 <div>
@@ -97,37 +153,13 @@
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <div class="flex items-center justify-between mb-1">
                 <h3 class="font-black text-slate-900">{{ $l ? 'العيادات داخل المركز' : 'Clinics in this center' }}</h3>
+                <span class="text-xs font-semibold text-slate-400"><span id="clinic-count">{{ count($clinicRows) }}</span> {{ $l ? 'عيادة' : 'clinics' }}</span>
             </div>
-            <p class="text-sm text-slate-500 mb-4">{{ $l ? 'كل عيادة يمكن أن يكون لها طبيب أو بدون طبيب.' : 'Each clinic may have a doctor assigned or none.' }}</p>
+            <p class="text-sm text-slate-500 mb-4">{{ $l ? 'لكل عيادة طبيبها وأسعارها ومواعيدها. يمكنك اختيار طبيب موجود أو إنشاء طبيب جديد.' : 'Each clinic has its own doctor, pricing and schedule. Pick an existing doctor or create a new one.' }}</p>
 
             <div id="clinics-wrap" class="space-y-4">
                 @foreach($clinicRows as $i => $row)
-                    <div class="clinic-row rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-sm font-bold text-slate-500 clinic-index">{{ $l ? 'عيادة' : 'Clinic' }} {{ $i + 1 }}</span>
-                            <button type="button" class="remove-clinic text-red-500 text-sm font-semibold hover:underline">{{ $l ? 'إزالة' : 'Remove' }}</button>
-                        </div>
-                        <input type="hidden" name="clinics[{{ $i }}][id]" value="{{ $row['id'] ?? '' }}" data-key="id">
-                        <div class="grid sm:grid-cols-3 gap-3">
-                            <div>
-                                <label class="{{ $lbl }}">{{ $l ? 'اسم العيادة' : 'Clinic name' }}</label>
-                                <input type="text" name="clinics[{{ $i }}][name]" value="{{ $row['name'] ?? '' }}" class="{{ $inp }}" data-key="name">
-                            </div>
-                            <div>
-                                <label class="{{ $lbl }}">{{ $l ? 'الطبيب' : 'Doctor' }}</label>
-                                <select name="clinics[{{ $i }}][doctor_id]" class="{{ $inp }}" data-key="doctor_id">
-                                    <option value="">{{ $l ? 'بدون طبيب' : 'No doctor' }}</option>
-                                    @foreach($doctors as $doc)
-                                        <option value="{{ $doc->id }}" @selected(($row['doctor_id'] ?? '') == $doc->id)>{{ $doc->name }}@if($doc->specialization) — {{ $doc->specialization->name }}@endif</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div>
-                                <label class="{{ $lbl }}">{{ $l ? 'سعر الكشف' : 'Exam price' }}</label>
-                                <input type="number" step="0.01" min="0" name="clinics[{{ $i }}][medical_examination_price]" value="{{ $row['medical_examination_price'] ?? '' }}" class="{{ $inp }}" data-key="medical_examination_price">
-                            </div>
-                        </div>
-                    </div>
+                    @include('admin.medical-centers._clinic-row', ['row' => $row, 'i' => $i])
                 @endforeach
             </div>
 
@@ -136,49 +168,21 @@
                 {{ $l ? 'إضافة عيادة' : 'Add clinic' }}
             </button>
         </div>
-    </div>
 
-    {{-- Actions --}}
-    <div>
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sticky top-6">
-            <button type="submit" class="w-full py-3 bg-primary text-white rounded-xl font-bold hover:opacity-90 transition-all">
-                {{ $l ? 'حفظ' : 'Save' }}
-            </button>
-            <a href="{{ route('admin.medical-centers.index') }}" class="block text-center mt-3 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-semibold hover:bg-slate-200 transition-all">
-                {{ $l ? 'إلغاء' : 'Cancel' }}
-            </a>
-        </div>
+    {{-- Actions: a full-width bar under the form (kept in view while scrolling). --}}
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sticky bottom-0 z-10 flex items-center gap-3">
+        <button type="submit" class="flex-1 py-3 bg-primary text-white rounded-xl font-bold hover:opacity-90 transition-all">
+            {{ $l ? 'حفظ' : 'Save' }}
+        </button>
+        <a href="{{ route('admin.medical-centers.index') }}" class="px-8 py-3 bg-slate-100 text-slate-700 rounded-xl font-semibold hover:bg-slate-200 transition-all">
+            {{ $l ? 'إلغاء' : 'Cancel' }}
+        </a>
     </div>
 </div>
 
 {{-- Hidden template for a new clinic row --}}
 <template id="clinic-template">
-    <div class="clinic-row rounded-xl border border-slate-100 bg-slate-50 p-4">
-        <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-bold text-slate-500 clinic-index">{{ $l ? 'عيادة' : 'Clinic' }}</span>
-            <button type="button" class="remove-clinic text-red-500 text-sm font-semibold hover:underline">{{ $l ? 'إزالة' : 'Remove' }}</button>
-        </div>
-        <input type="hidden" data-key="id" value="">
-        <div class="grid sm:grid-cols-3 gap-3">
-            <div>
-                <label class="{{ $lbl }}">{{ $l ? 'اسم العيادة' : 'Clinic name' }}</label>
-                <input type="text" data-key="name" class="{{ $inp }}">
-            </div>
-            <div>
-                <label class="{{ $lbl }}">{{ $l ? 'الطبيب' : 'Doctor' }}</label>
-                <select data-key="doctor_id" class="{{ $inp }}">
-                    <option value="">{{ $l ? 'بدون طبيب' : 'No doctor' }}</option>
-                    @foreach($doctors as $doc)
-                        <option value="{{ $doc->id }}">{{ $doc->name }}@if($doc->specialization) — {{ $doc->specialization->name }}@endif</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="{{ $lbl }}">{{ $l ? 'سعر الكشف' : 'Exam price' }}</label>
-                <input type="number" step="0.01" min="0" data-key="medical_examination_price" class="{{ $inp }}">
-            </div>
-        </div>
-    </div>
+    @include('admin.medical-centers._clinic-row', ['row' => $blankRow, 'i' => null])
 </template>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -238,27 +242,76 @@
     var wrap = document.getElementById('clinics-wrap');
     var tpl = document.getElementById('clinic-template');
     var addBtn = document.getElementById('add-clinic');
+    var countEl = document.getElementById('clinic-count');
+    var baseLabel = isAr ? 'عيادة ' : 'Clinic ';
+
+    function summaryLabel(row, i) {
+        var nameInput = row.querySelector('.clinic-name-input');
+        var name = nameInput && nameInput.value.trim() ? ' — ' + nameInput.value.trim() : '';
+        return baseLabel + (i + 1) + name;
+    }
 
     function reindex() {
         var rows = wrap.querySelectorAll('.clinic-row');
         rows.forEach(function (row, i) {
-            row.querySelector('.clinic-index').textContent = (isAr ? 'عيادة ' : 'Clinic ') + (i + 1);
             row.querySelectorAll('[data-key]').forEach(function (el) {
-                el.setAttribute('name', 'clinics[' + i + '][' + el.getAttribute('data-key') + ']');
+                el.setAttribute('name', 'clinics[' + i + ']' + el.getAttribute('data-key'));
             });
-            row.querySelector('.remove-clinic').classList.toggle('hidden', rows.length <= 1);
+            var idx = row.querySelector('.clinic-index');
+            if (idx) idx.textContent = summaryLabel(row, i);
+            var rm = row.querySelector('.remove-clinic');
+            if (rm) rm.classList.toggle('hidden', rows.length <= 1);
         });
+        if (countEl) countEl.textContent = rows.length;
     }
+
     addBtn.addEventListener('click', function () {
         var node = tpl.content.firstElementChild.cloneNode(true);
+        node.open = true;
         wrap.appendChild(node);
         reindex();
     });
+
     wrap.addEventListener('click', function (e) {
-        if (e.target.closest('.remove-clinic')) {
-            if (wrap.querySelectorAll('.clinic-row').length > 1) { e.target.closest('.clinic-row').remove(); reindex(); }
+        var rm = e.target.closest('.remove-clinic');
+        if (rm) {
+            e.preventDefault();
+            if (wrap.querySelectorAll('.clinic-row').length > 1) {
+                rm.closest('.clinic-row').remove();
+                reindex();
+            }
         }
     });
+
+    // Doctor mode (existing / new) toggle.
+    wrap.addEventListener('change', function (e) {
+        if (e.target.classList.contains('doctor-mode')) {
+            var rowEl = e.target.closest('.clinic-row');
+            var isNew = e.target.value === 'new' && e.target.checked;
+            rowEl.querySelector('.doctor-existing').classList.toggle('hidden', isNew);
+            rowEl.querySelector('.doctor-new').classList.toggle('hidden', !isNew);
+        }
+        // Dim a day's time inputs when it is marked closed.
+        if (e.target.classList.contains('day-closed')) {
+            var times = e.target.closest('.day-row').querySelector('.day-times');
+            if (times) {
+                times.classList.toggle('opacity-40', e.target.checked);
+                times.classList.toggle('pointer-events-none', e.target.checked);
+            }
+        }
+    });
+
+    // Live-update the card summary as the clinic name is typed.
+    wrap.addEventListener('input', function (e) {
+        if (e.target.classList.contains('clinic-name-input')) {
+            var rows = wrap.querySelectorAll('.clinic-row');
+            rows.forEach(function (row, i) {
+                var idx = row.querySelector('.clinic-index');
+                if (idx) idx.textContent = summaryLabel(row, i);
+            });
+        }
+    });
+
     reindex();
 })();
 </script>
