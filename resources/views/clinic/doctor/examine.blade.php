@@ -28,6 +28,7 @@
         {{ __('app.examine.queue', ['num' => $appointment->queue_number]) }} &middot; {{ $appointment->typeLabel() }}
         &middot; {{ $appointment->scheduled_at->format('H:i') }}
     </p>
+
 </div>
 
 {{-- Action bar: sticks to the top so the visit's controls are always one tap
@@ -80,14 +81,22 @@
             </button>
         </div>
     </div>
-    {{-- Laptop: jump straight to a part of the visit. --}}
-    <nav class="hidden lg:flex items-center gap-4 mt-1.5 text-xs text-slate-500" aria-label="{{ __('app.examine.jump_to') }}">
-        <span class="text-slate-400">{{ __('app.examine.jump_to') }}:</span>
-        <a href="#diagnosis" class="hover:text-indigo-700">{{ __('app.examine.history_diagnosis') }}</a>
-        <a href="#investigations" class="hover:text-indigo-700">{{ __('app.examine.investigations') }}</a>
-        <a href="#prescription" class="hover:text-indigo-700">{{ __('app.examine.history_prescription') }}</a>
-        <a href="#charges" class="hover:text-indigo-700">{{ __('app.items.heading') }}</a>
-        <a href="#patient-info" class="hover:text-indigo-700">{{ __('app.examine.patient_info') }}</a>
+    {{-- Tablet & up: jump straight to a part of the visit. Pill chips with the
+         current section highlighted as the doctor scrolls (scroll-spy). --}}
+    <nav id="examine-jump" class="hidden md:flex items-center gap-1.5 mt-2 overflow-x-auto" aria-label="{{ __('app.examine.jump_to') }}">
+        <span class="shrink-0 text-[11px] font-medium text-slate-400 me-0.5">{{ __('app.examine.jump_to') }}</span>
+        <a href="#diagnosis" data-jump class="jump-chip">🩺 <span>{{ __('app.examine.history_diagnosis') }}</span></a>
+        @php $jumpChartKey = \App\Support\ClinicalChart::forSpecialization($doctor->specialization); @endphp
+        @if ($jumpChartKey)
+            <a href="#clinical-chart" data-jump class="jump-chip">🦷 <span>{{ \App\Support\ClinicalChart::title($jumpChartKey) }}</span></a>
+        @endif
+        <a href="#investigations" data-jump class="jump-chip">🔬 <span>{{ __('app.examine.investigations') }}</span></a>
+        @if ($jumpChartKey === \App\Support\ClinicalChart::TEETH)
+            <a href="#dental-lab" data-jump class="jump-chip">🧪 <span>{{ __('app.dental.nav') }}</span></a>
+        @endif
+        <a href="#prescription" data-jump class="jump-chip">💊 <span>{{ __('app.examine.history_prescription') }}</span></a>
+        <a href="#charges" data-jump class="jump-chip">💰 <span>{{ __('app.items.heading') }}</span></a>
+        <a href="#patient-info" data-jump class="jump-chip">👤 <span>{{ __('app.examine.patient_info') }}</span></a>
     </nav>
 </div>
 
@@ -135,6 +144,9 @@
         {{-- The specialisation's body chart. Renders nothing for specialisations
              that do not use one. --}}
         @include('clinic.partials.clinical-chart', ['appointment' => $appointment, 'doctor' => $doctor])
+
+        {{-- Dental lab orders for this patient (dental clinics only). --}}
+        @include('clinic.partials.dental-lab-orders', ['appointment' => $appointment, 'doctor' => $doctor])
 
         {{-- Investigations: what was requested, what came back, and what the labs
              system holds. One card, three tabs. --}}
@@ -640,6 +652,73 @@
                 </table>
             </div>
 
+            {{-- Dental lab work owed by this patient (a separate ledger from the
+                 visit charges, so shown on its own rather than merged in). --}}
+            @if (\App\Support\ClinicalChart::forSpecialization($doctor->specialization) === \App\Support\ClinicalChart::TEETH)
+                @php
+                    $labOrders = \App\Models\DentalLabOrder::where('clinic_id', $appointment->clinic_id)
+                        ->where('client_id', $appointment->client_id)
+                        ->with(['lab', 'items', 'payments', 'patientPayments'])
+                        ->latest()
+                        ->get()
+                        ->filter->isPatientBilled();
+                    // Two separate debts: what the patient still owes the clinic, and
+                    // what the clinic still owes the lab. The total is both together.
+                    $clinicDue = round($labOrders->sum(fn ($o) => $o->patientBalance()), 2);
+                    $labDue = round($labOrders->sum(fn ($o) => $o->balance()), 2);
+                    $totalDue = round($clinicDue + $labDue, 2);
+                @endphp
+                @if ($labOrders->isNotEmpty())
+                    <div class="mt-4 border-t border-slate-100 pt-4">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <h3 class="text-sm font-semibold text-slate-800">🦷 {{ __('app.dental.patient_account.file_title') }}</h3>
+                            <span class="text-xs {{ $totalDue > 0 ? 'text-amber-700 font-semibold' : 'text-emerald-700' }}">
+                                {{ __('app.dental.patient_account.total_outstanding') }}: {{ number_format($totalDue, 2) }}
+                            </span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="text-[11px] text-slate-400 text-end">
+                                        <th class="text-start font-medium">#</th>
+                                        <th class="font-medium">{{ __('app.dental.patient_account.charge') }}</th>
+                                        <th class="font-medium">{{ __('app.dental.patient_account.clinic_due') }}</th>
+                                        <th class="font-medium">{{ __('app.dental.patient_account.lab_due') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    @foreach ($labOrders as $o)
+                                        @php $cDue = $o->patientBalance(); $lDue = $o->balance(); @endphp
+                                        <tr>
+                                            <td class="py-2">
+                                                <button type="button" data-dental-modal="{{ route('practice.dental-lab.orders.show', [$o, 'embed' => 1]) }}"
+                                                        class="text-indigo-600 hover:underline">{{ __('app.dental.order.number', ['id' => $o->id]) }}</button>
+                                                <span class="px-2 py-0.5 rounded-full text-[11px] font-medium {{ $o->status->color() }}">{{ $o->status->label() }}</span>
+                                            </td>
+                                            <td class="py-2 text-end text-slate-500 w-20">{{ number_format($o->patientCharge(), 2) }}</td>
+                                            <td class="py-2 text-end font-medium w-20 {{ $cDue > 0 ? 'text-amber-700' : 'text-slate-400' }}">{{ number_format($cDue, 2) }}</td>
+                                            <td class="py-2 text-end font-medium w-20 {{ $lDue > 0 ? 'text-red-600' : 'text-slate-400' }}">{{ number_format($lDue, 2) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot class="border-t-2 border-slate-200">
+                                    <tr class="font-semibold text-slate-800">
+                                        <td class="py-2 text-xs text-slate-500">{{ __('app.dental.patient_account.total_outstanding') }}</td>
+                                        <td></td>
+                                        <td class="py-2 text-end {{ $clinicDue > 0 ? 'text-amber-700' : 'text-slate-400' }}">{{ number_format($clinicDue, 2) }}</td>
+                                        <td class="py-2 text-end {{ $labDue > 0 ? 'text-red-600' : 'text-slate-400' }}">{{ number_format($labDue, 2) }}</td>
+                                    </tr>
+                                    <tr class="text-xs {{ $totalDue > 0 ? 'text-amber-700' : 'text-emerald-700' }}">
+                                        <td class="py-1" colspan="3">{{ __('app.dental.patient_account.clinic_due') }} + {{ __('app.dental.patient_account.lab_due') }}</td>
+                                        <td class="py-1 text-end font-bold">{{ number_format($totalDue, 2) }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                @endif
+            @endif
+
             {{-- Add a charge: pick from the price list, or name a new one --}}
             <form method="POST" action="{{ route('practice.appointment-items.store', $appointment) }}"
                   class="flex flex-wrap items-end gap-2 border-t border-slate-100 pt-4" id="add-item-form">
@@ -882,19 +961,41 @@
                 </form>
             </div>
         </details>
+
+        {{-- The dental chart's selected-tooth panel + legend are moved here by the
+             chart script, so they sit under the attachments. --}}
+        @if (\App\Support\ClinicalChart::forSpecialization($doctor->specialization) === \App\Support\ClinicalChart::TEETH)
+            <div id="clinical-chart-panel-slot" class="card p-4 sm:p-5"></div>
+        @endif
     </div>
 </div>
 
 @push('styles')
 <style>
     /* Anchored sections land below the sticky action bar, not under it. */
-    #diagnosis, #investigations, #prescription, #charges, #patient-info, #clinical-chart { scroll-margin-top: 5.5rem; }
+    #diagnosis, #investigations, #prescription, #charges, #patient-info, #clinical-chart, #dental-lab { scroll-margin-top: 5.5rem; }
     /* Folded cards: hide the native triangle. */
     details.card > summary::-webkit-details-marker { display: none; }
     details.card > summary::marker { content: ''; }
     /* The tab strip scrolls sideways on narrow screens without showing a bar. */
     .tab-strip { scrollbar-width: none; }
     .tab-strip::-webkit-scrollbar { display: none; }
+
+    /* Jump-to pill navigation (scroll-spy). */
+    #examine-jump { scrollbar-width: none; }
+    #examine-jump::-webkit-scrollbar { display: none; }
+    .jump-chip {
+        display: inline-flex; align-items: center; gap: .25rem; flex: none;
+        padding: .25rem .625rem; border-radius: 9999px;
+        font-size: .75rem; font-weight: 500; line-height: 1.1;
+        background: #f1f5f9; color: #475569;
+        transition: background-color .12s, color .12s, box-shadow .12s;
+    }
+    .jump-chip:hover { background: #e0e7ff; color: #4338ca; }
+    .jump-chip.is-active {
+        background: #4f46e5; color: #fff;
+        box-shadow: 0 1px 2px rgba(79, 70, 229, .4);
+    }
 </style>
 @endpush
 
@@ -977,6 +1078,45 @@
         if (!initial) { try { initial = sessionStorage.getItem(KEY) || ''; } catch (e) {} }
         if (!initial || !card.querySelector('[data-tab="' + initial + '"]')) initial = 'requested';
         show(initial);
+    });
+
+    // Jump-to pills: smooth-scroll on click and highlight the section in view.
+    onExamineReady(function () {
+        var nav = document.getElementById('examine-jump');
+        if (!nav) return;
+
+        var chips = Array.prototype.slice.call(nav.querySelectorAll('[data-jump]'));
+        var sections = [];
+        chips.forEach(function (c) {
+            var sec = document.getElementById((c.getAttribute('href') || '').slice(1));
+            if (sec) sections.push(sec);
+        });
+        if (!sections.length) return;
+
+        function setActive(id) {
+            chips.forEach(function (c) {
+                var on = c.getAttribute('href') === '#' + id;
+                c.classList.toggle('is-active', on);
+                if (on) c.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            });
+        }
+
+        nav.addEventListener('click', function (e) {
+            var c = e.target.closest('[data-jump]');
+            if (!c) return;
+            var sec = document.getElementById((c.getAttribute('href') || '').slice(1));
+            if (!sec) return;
+            e.preventDefault();
+            sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setActive(sec.id);
+        });
+
+        // Scroll-spy: a section becomes active as its top enters the band just
+        // below the sticky action bar.
+        var spy = new IntersectionObserver(function (entries) {
+            entries.forEach(function (en) { if (en.isIntersecting) setActive(en.target.id); });
+        }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+        sections.forEach(function (s) { spy.observe(s); });
     });
 
     // Add another allergy input row.

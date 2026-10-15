@@ -540,6 +540,8 @@ Route::prefix('practice')->name('practice.')->group(function () {
         // Behind auth because it lists patient names (the public display doesn't).
         Route::get('/screen', [App\Http\Controllers\Clinic\AssistantScreenController::class, 'index'])->name('screen');
         Route::get('/screen/queue', [App\Http\Controllers\Clinic\AssistantScreenController::class, 'queue'])->name('screen.queue');
+        // Per-user workspace navigation preference (buttons vs side menu).
+        Route::post('/nav-style', [App\Http\Controllers\Clinic\NavPreferenceController::class, 'update'])->name('nav-style');
         Route::get('/patients/{patient}', [App\Http\Controllers\Clinic\PatientController::class, 'show'])->name('patients.show');
         Route::put('/patients/{patient}', [App\Http\Controllers\Clinic\PatientController::class, 'update'])->name('patients.update');
         Route::post('/appointments/{appointment}/status', [App\Http\Controllers\Clinic\AppointmentController::class, 'updateStatus'])->name('appointments.status');
@@ -621,6 +623,47 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::post('/manager/insurance-collections', [App\Http\Controllers\Clinic\ManagerController::class, 'storeInsuranceCollection'])->name('manager.insurance-collections.store');
         Route::get('/manager/insurance-report', [App\Http\Controllers\Clinic\ManagerController::class, 'insuranceReport'])->name('manager.insurance-report');
     });
+
+    // ---- Dental Lab module (dental clinics only; doctor or assistant) ----
+    Route::middleware(['auth', 'clinic.role:doctor,assistant', 'clinic.dental'])
+        ->prefix('dental-lab')->name('dental-lab.')->group(function () {
+            // Module landing → the orders list.
+            Route::get('/', fn () => redirect()->route('practice.dental-lab.orders.index'))->name('index');
+
+            Route::resource('labs', App\Http\Controllers\Clinic\DentalLabController::class)->except(['show']);
+            // Per-lab account statement: that lab's orders, payments and balance.
+            Route::get('/labs/{lab}/statement', [App\Http\Controllers\Clinic\DentalLabController::class, 'statement'])->name('labs.statement');
+            // Orders / payments exports (PDF + Excel/CSV) over a date range.
+            Route::get('/exports/orders', [App\Http\Controllers\Clinic\DentalLabController::class, 'exportOrders'])->name('exports.orders');
+            Route::get('/exports/payments', [App\Http\Controllers\Clinic\DentalLabController::class, 'exportPayments'])->name('exports.payments');
+
+            // A patient's teeth marks (condition/treatment) for the order chart.
+            Route::get('/patient-marks/{client}', [App\Http\Controllers\Clinic\DentalLabOrderController::class, 'patientMarks'])->name('patient-marks');
+
+            Route::resource('orders', App\Http\Controllers\Clinic\DentalLabOrderController::class);
+            // Set the order to any workflow status (not just the next one).
+            Route::post('/orders/{order}/status', [App\Http\Controllers\Clinic\DentalLabOrderController::class, 'setStatus'])->name('orders.status');
+            // Mark a received material line used (out of stock) or return it.
+            Route::post('/orders/{order}/items/{item}/toggle-used', [App\Http\Controllers\Clinic\DentalLabOrderController::class, 'toggleItemUsed'])->name('orders.items.toggle-used');
+            Route::post('/orders/{order}/payments', [App\Http\Controllers\Clinic\DentalLabPaymentController::class, 'store'])->name('orders.payments.store');
+            Route::delete('/payments/{payment}', [App\Http\Controllers\Clinic\DentalLabPaymentController::class, 'destroy'])->name('payments.destroy');
+            // Patient → clinic payments for an order (clinic receivable).
+            Route::post('/orders/{order}/patient-payments', [App\Http\Controllers\Clinic\DentalPatientPaymentController::class, 'store'])->name('orders.patient-payments.store');
+            Route::delete('/patient-payments/{patientPayment}', [App\Http\Controllers\Clinic\DentalPatientPaymentController::class, 'destroy'])->name('patient-payments.destroy');
+
+            // Clinic's own custom catalog items (on top of the shared catalog).
+            Route::get('/items', [App\Http\Controllers\Clinic\DentalItemController::class, 'index'])->name('items.index');
+            Route::post('/items', [App\Http\Controllers\Clinic\DentalItemController::class, 'store'])->name('items.store');
+            Route::put('/items/{item}', [App\Http\Controllers\Clinic\DentalItemController::class, 'update'])->name('items.update');
+            Route::delete('/items/{item}', [App\Http\Controllers\Clinic\DentalItemController::class, 'destroy'])->name('items.destroy');
+
+            // Materials stock.
+            Route::get('/stock', [App\Http\Controllers\Clinic\DentalStockController::class, 'index'])->name('stock.index');
+            Route::get('/stock/export', [App\Http\Controllers\Clinic\DentalStockController::class, 'export'])->name('stock.export');
+            Route::post('/stock', [App\Http\Controllers\Clinic\DentalStockController::class, 'store'])->name('stock.store');
+            Route::put('/stock/{stockItem}', [App\Http\Controllers\Clinic\DentalStockController::class, 'update'])->name('stock.update');
+            Route::post('/stock/{stockItem}/adjust', [App\Http\Controllers\Clinic\DentalStockController::class, 'adjust'])->name('stock.adjust');
+        });
 });
 
 

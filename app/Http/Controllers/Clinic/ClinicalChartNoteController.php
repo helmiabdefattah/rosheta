@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Clinic;
 
+use App\Enums\DentalToothCondition;
+use App\Enums\DentalToothTreatment;
 use App\Http\Controllers\Clinic\Concerns\ClinicContext;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
@@ -30,10 +32,21 @@ class ClinicalChartNoteController extends Controller
         $chart = ClinicalChart::forSpecialization($doctor->specialization);
         abort_if($chart === null, 404);
 
+        $isTeeth = $chart === ClinicalChart::TEETH;
+
         $rules = [
             'region' => ['required', Rule::in(array_keys(ClinicalChart::regions($chart)))],
-            'note' => ['required', 'string', 'max:2000'],
+            // On the teeth chart a mark (condition/treatment) can stand alone, so
+            // the text is only required when nothing else was recorded.
+            'note' => [$isTeeth ? 'nullable' : 'required', 'string', 'max:2000'],
         ];
+
+        // The teeth chart also records a structured condition and/or treatment.
+        if ($isTeeth) {
+            $rules['condition'] = ['nullable', Rule::in(DentalToothCondition::values())];
+            $rules['treatment'] = ['nullable', Rule::in(DentalToothTreatment::values())];
+            $rules['note'][] = 'required_without_all:condition,treatment';
+        }
 
         // Only point charts accept coordinates, and only inside the part's box.
         if (ClinicalChart::usesPoints($chart)) {
@@ -49,9 +62,11 @@ class ClinicalChartNoteController extends Controller
             'doctor_id' => $doctor->id,
             'chart' => $chart,
             'region' => $data['region'],
+            'condition' => $isTeeth ? ($data['condition'] ?? null) : null,
+            'treatment' => $isTeeth ? ($data['treatment'] ?? null) : null,
             'point_x' => $data['point_x'] ?? null,
             'point_y' => $data['point_y'] ?? null,
-            'note' => $data['note'],
+            'note' => $data['note'] ?? '',
         ]);
 
         return $this->backToRegion($appointment, $data['region'], __('app.chart.note_added'));

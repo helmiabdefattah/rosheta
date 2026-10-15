@@ -40,6 +40,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia
         'fcm_token_mobile',
         'notification_sound',
         'is_active',
+        'nav_style',
     ];
 
     /**

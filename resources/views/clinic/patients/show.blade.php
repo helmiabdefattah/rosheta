@@ -150,6 +150,50 @@
     </div>
 </div>
 
+@if(!empty($dentalOrders) && $dentalOrders->isNotEmpty())
+    {{-- Dental lab orders billed to this patient --}}
+    <div class="bg-white rounded-xl shadow-sm p-5 mb-6">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="font-semibold text-slate-800">🦷 {{ __('app.dental.patient_account.file_title') }}</h2>
+            @if(($totals['dental_due'] ?? 0) > 0)
+                <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold">
+                    {{ __('app.dental.patient_account.file_due') }}: {{ number_format($totals['dental_due'], 2) }} {{ __('app.clinic.currency') }}
+                </span>
+            @endif
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="text-slate-500">
+                    <tr>
+                        <th class="py-2 text-start font-semibold">{{ __('app.dental.order.created_at') }}</th>
+                        <th class="py-2 text-start font-semibold">{{ __('app.dental.order.lab') }}</th>
+                        <th class="py-2 text-start font-semibold">{{ __('app.dental.order.status') }}</th>
+                        <th class="py-2 text-start font-semibold">{{ __('app.dental.patient_account.charge') }}</th>
+                        <th class="py-2 text-start font-semibold">{{ __('app.dental.patient_account.paid') }}</th>
+                        <th class="py-2 text-start font-semibold">{{ __('app.dental.patient_account.balance') }}</th>
+                        <th class="py-2"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @foreach($dentalOrders as $o)
+                        <tr>
+                            <td class="py-2 text-slate-500 whitespace-nowrap">{{ $o->created_at?->translatedFormat('d M Y') }}</td>
+                            <td class="py-2 text-slate-700">{{ $o->lab?->name ?? '—' }}</td>
+                            <td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs font-medium {{ $o->status->color() }}">{{ $o->status->label() }}</span></td>
+                            <td class="py-2 text-slate-800">{{ number_format($o->patientCharge(), 2) }}</td>
+                            <td class="py-2 text-emerald-700">{{ number_format($o->patientPaidTotal(), 2) }}</td>
+                            <td class="py-2 font-medium {{ $o->patientBalance() > 0 ? 'text-amber-700' : 'text-slate-500' }}">{{ number_format($o->patientBalance(), 2) }}</td>
+                            <td class="py-2 text-end">
+                                <a href="{{ route('practice.dental-lab.orders.show', $o) }}" class="text-indigo-600 hover:underline text-xs">{{ __('app.dental.order.number', ['id' => $o->id]) }}</a>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+@endif
+
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     {{-- Appointments --}}
     <div class="bg-white rounded-xl shadow-sm p-5">

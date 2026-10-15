@@ -6,9 +6,13 @@ use App\Models\Appointment;
 use App\Models\Client;
 use App\Models\Clinic;
 use App\Models\Doctor;
+use App\Models\DentalItem;
 use App\Models\Specialization;
 use App\Services\ClinicOnboardingService;
+use App\Support\ClinicalChart;
 use Carbon\Carbon;
+use Database\Seeders\DentalItemsSeeder;
+use Database\Seeders\DentalLabTestSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -82,6 +86,10 @@ class DemoSeeder
                 // overlay has been applied.
                 app(DemoPatientLabeller::class)->label($doctor);
             });
+
+            // A dental clinic also gets sample lab/orders/stock data, so the
+            // Dental Lab module isn't empty when the visitor opens it.
+            $this->seedDentalLab($doctor, $clinic);
         } catch (\Throwable $e) {
             app(DemoPurger::class)->purgeDoctor($doctor->id);
 
@@ -142,6 +150,26 @@ class DemoSeeder
             // today instead of trailing off into empty weeks.
             'days_ahead' => DemoWindow::futureDays(),
         ];
+    }
+
+    /**
+     * Seed sample Dental Lab data (labs, orders across statuses, stock) for a
+     * dental clinic only, so the module has something to show. No-op for other
+     * specialties. Runs outside the main transaction, like the other overlays.
+     */
+    protected function seedDentalLab(Doctor $doctor, Clinic $clinic): void
+    {
+        if (ClinicalChart::forSpecialization($doctor->specialization) !== ClinicalChart::TEETH) {
+            return;
+        }
+
+        // The sample orders snapshot items from the shared catalog; make sure it
+        // exists in this (demo) database first. updateOrCreate → safe to re-run.
+        if (DentalItem::whereNull('clinic_id')->doesntExist()) {
+            app(DentalItemsSeeder::class)->run();
+        }
+
+        app(DentalLabTestSeeder::class)->seedClinic($clinic->fresh('doctor'));
     }
 
     /** Flag the tenant so the middleware, the purge and the demo bar can find it. */
