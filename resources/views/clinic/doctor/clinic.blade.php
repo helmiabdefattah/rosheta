@@ -148,7 +148,7 @@
     <p class="text-sm text-slate-500 mb-4">{{ __('app.menu.hint') }}</p>
     <form method="POST" action="{{ route('practice.nav-style') }}" class="flex flex-col sm:flex-row sm:items-center gap-3">
         @csrf
-        @php $navStyle = auth()->user()?->nav_style ?? 'buttons'; @endphp
+        @php $navStyle = auth()->user()?->nav_style ?? 'menu'; @endphp
         <label class="flex items-center gap-2 text-sm text-slate-700 border border-slate-200 rounded-lg px-4 py-2.5 cursor-pointer has-[:checked]:border-indigo-400 has-[:checked]:bg-indigo-50">
             <input type="radio" name="nav_style" value="buttons" @checked($navStyle === 'buttons')> 🔘 {{ __('app.menu.style_buttons') }}
         </label>

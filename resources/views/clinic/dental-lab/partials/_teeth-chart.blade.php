@@ -112,7 +112,7 @@
         return '<g class="tooth" data-tooth="'.$code.'" transform="translate('.$x.','.$y.') rotate('.$r.')">'
             .'<title>'.$code.'</title>'.$shapes[$typeFor($pos)]
             .'<text class="tooth-mark" data-tooth-sym="'.$code.'" transform="rotate('.(-$r).')" text-anchor="middle" dy="-9"></text>'
-            .'<text class="tooth-num" transform="rotate('.(-$r).')" text-anchor="middle" dy="3">'.$pos.'</text></g>';
+            .'<text class="tooth-num" transform="rotate('.(-$r).')" text-anchor="middle" dy="3">'.$code.'</text></g>';
     };
 @endphp
 
@@ -141,7 +141,7 @@
     .tooth .tooth-root { fill: #eef1f5; stroke: #cbd5e1; stroke-width: 1; transition: fill .12s; }
     .tooth .tooth-cervical { fill: none; stroke: #cbd5e1; stroke-width: 1; stroke-linecap: round; }
     .tooth .tooth-groove { fill: none; stroke: #cbd5e1; stroke-width: 1; stroke-linecap: round; transition: stroke .12s; }
-    .tooth .tooth-num { font-size: 9px; font-weight: 700; fill: #64748b; pointer-events: none; }
+    .tooth .tooth-num { font-size: 8px; font-weight: 700; fill: #64748b; pointer-events: none; }
     .tooth:hover .tooth-crown { fill: #eef2ff; stroke: #6366f1; }
     .tooth.is-sel .tooth-crown { fill: #4f46e5; stroke: #3730a3; }
     .tooth.is-sel .tooth-root { fill: #a5b4fc; stroke: #818cf8; }

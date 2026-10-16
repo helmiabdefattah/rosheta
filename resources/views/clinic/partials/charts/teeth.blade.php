@@ -120,9 +120,11 @@
             }
         }
 
-        return '<g class="tooth" data-region="'.$fdi.'" role="button" tabindex="0" aria-label="'.$fdi.'" transform="translate('.$x.','.$y.') rotate('.$r.')">'
-            .'<title>'.$fdi.'</title>'.$shapes[$typeFor($pos)].$overlay
-            .'<text class="tooth-code" transform="rotate('.(-$r).')" text-anchor="middle" dy="3">'.$fdi.'</text></g>';
+        // Labelled by quadrant code (UR/UL/DR/DL + 1–8), e.g. UL1, not FDI —
+        // but still keyed on FDI in data-region for the clinical-chart machinery.
+        return '<g class="tooth" data-region="'.$fdi.'" role="button" tabindex="0" aria-label="'.$code.'" transform="translate('.$x.','.$y.') rotate('.$r.')">'
+            .'<title>'.$code.'</title>'.$shapes[$typeFor($pos)].$overlay
+            .'<text class="tooth-code" transform="rotate('.(-$r).')" text-anchor="middle" dy="3">'.$code.'</text></g>';
     };
 @endphp
 

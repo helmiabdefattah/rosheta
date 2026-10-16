@@ -82,9 +82,10 @@ class ClinicalChart
     }
 
     /**
-     * The 32 adult teeth in FDI notation: quadrant digit then position, so 11 is
-     * the upper-right central incisor and 48 the lower-right third molar. It is
-     * the notation dentists already write in, so the labels need no translating.
+     * The 32 adult teeth. The region key stays in FDI notation (what is stored
+     * and validated — 11 is the upper-right central incisor, 48 the lower-right
+     * third molar), but the label shown to the doctor is the quadrant code
+     * (UR/UL/DR/DL + 1–8, e.g. UL1), matching how the chart now reads.
      *
      * @return array<string, string>
      */
@@ -92,10 +93,10 @@ class ClinicalChart
     {
         $teeth = [];
 
-        foreach ([1, 2, 3, 4] as $quadrant) {
-            foreach (range(1, 8) as $position) {
-                $code = $quadrant.$position;
-                $teeth[$code] = $code;
+        foreach (DentalTooth::codes() as $code) {
+            $fdi = DentalTooth::toFdi($code);
+            if ($fdi !== null) {
+                $teeth[$fdi] = $code;
             }
         }
 

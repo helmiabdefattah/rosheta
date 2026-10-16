@@ -13,7 +13,7 @@
         'missed' => 'bg-red-100 text-red-700',
     ];
     // In menu view the toolbar is moved into the side menu.
-    $navMenu = auth()->user()?->nav_style === 'menu';
+    $navMenu = auth()->user() && (auth()->user()->nav_style ?? 'menu') !== 'buttons';
 @endphp
 
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">

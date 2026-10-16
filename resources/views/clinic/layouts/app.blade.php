@@ -29,7 +29,12 @@
          'label' => __('app.display.assistant_screen'), 'hint' => __('app.display.assistant_screen_hint')],
     ] : [];
 @endphp
-<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" @class(['ws-menu' => auth()->user()?->nav_style === 'menu', 'ws-sidebar-open' => auth()->user()?->nav_style === 'menu'])>
+@php
+    // The side menu is the default workspace navigation; a stored 'buttons' is
+    // the only thing that turns it off (null/unset counts as the menu).
+    $wsMenu = auth()->user() && (auth()->user()->nav_style ?? 'menu') !== 'buttons';
+@endphp
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" @class(['ws-menu' => $wsMenu, 'ws-sidebar-open' => $wsMenu])>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -103,6 +108,11 @@
             html.ws-menu.ws-sidebar-open #ws-sidebar-scrim { display: none; }
             html.ws-menu.ws-sidebar-open body { margin-inline-end: 18rem; }
         }
+
+        /* The menu still scrolls when it overflows, but the scrollbar is hidden
+           so the dark panel stays clean. */
+        #ws-sidebar nav { scrollbar-width: none; -ms-overflow-style: none; }
+        #ws-sidebar nav::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
         .ws-nav-item { display: flex; align-items: center; gap: .6rem; width: 100%; padding: .6rem .8rem;
                        border-radius: .5rem; font-size: .9rem; color: #cbd5e1; text-align: start; cursor: pointer;
