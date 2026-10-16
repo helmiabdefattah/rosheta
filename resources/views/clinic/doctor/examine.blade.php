@@ -90,6 +90,12 @@
         @if ($jumpChartKey)
             <a href="#clinical-chart" data-jump class="jump-chip">🦷 <span>{{ \App\Support\ClinicalChart::title($jumpChartKey) }}</span></a>
         @endif
+        @if (\App\Support\PediatricCare::forSpecialization($doctor->specialization))
+            <a href="#pediatric" data-jump class="jump-chip">👶 <span>{{ __('app.pediatric.nav') }}</span></a>
+        @endif
+        @if (\App\Support\WomensCare::forSpecialization($doctor->specialization))
+            <a href="#pregnancy" data-jump class="jump-chip">🤰 <span>{{ __('app.pregnancy.nav') }}</span></a>
+        @endif
         <a href="#investigations" data-jump class="jump-chip">🔬 <span>{{ __('app.examine.investigations') }}</span></a>
         @if ($jumpChartKey === \App\Support\ClinicalChart::TEETH)
             <a href="#dental-lab" data-jump class="jump-chip">🧪 <span>{{ __('app.dental.nav') }}</span></a>
@@ -144,6 +150,14 @@
         {{-- The specialisation's body chart. Renders nothing for specialisations
              that do not use one. --}}
         @include('clinic.partials.clinical-chart', ['appointment' => $appointment, 'doctor' => $doctor])
+
+        {{-- Paediatric / newborn growth + vaccination record. Renders nothing
+             outside paediatric clinics. --}}
+        @include('clinic.partials.pediatric-record', ['appointment' => $appointment, 'doctor' => $doctor])
+
+        {{-- Pregnancy follow-up (dating + fetal data). Renders nothing outside
+             women's clinics. --}}
+        @include('clinic.partials.pregnancy-record', ['appointment' => $appointment, 'doctor' => $doctor])
 
         {{-- Dental lab orders for this patient (dental clinics only). --}}
         @include('clinic.partials.dental-lab-orders', ['appointment' => $appointment, 'doctor' => $doctor])
@@ -973,7 +987,7 @@
 @push('styles')
 <style>
     /* Anchored sections land below the sticky action bar, not under it. */
-    #diagnosis, #investigations, #prescription, #charges, #patient-info, #clinical-chart, #dental-lab { scroll-margin-top: 5.5rem; }
+    #diagnosis, #investigations, #prescription, #charges, #patient-info, #clinical-chart, #dental-lab, #pediatric, #pregnancy { scroll-margin-top: 5.5rem; }
     /* Folded cards: hide the native triangle. */
     details.card > summary::-webkit-details-marker { display: none; }
     details.card > summary::marker { content: ''; }

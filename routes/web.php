@@ -603,6 +603,16 @@ Route::prefix('practice')->name('practice.')->group(function () {
         // Custom examination-field values captured for a visit.
         Route::post('/appointments/{appointment}/examination-values', [App\Http\Controllers\Clinic\ExaminationValueController::class, 'store'])->name('examination-values.store');
 
+        // Paediatric / newborn growth + vaccination record (paediatric clinics only).
+        Route::post('/appointments/{appointment}/pediatric/measurement', [App\Http\Controllers\Clinic\PediatricRecordController::class, 'storeMeasurement'])->name('pediatric.measurement.store');
+        Route::post('/appointments/{appointment}/pediatric/vaccinations', [App\Http\Controllers\Clinic\PediatricRecordController::class, 'storeVaccination'])->name('pediatric.vaccinations.store');
+        Route::delete('/appointments/{appointment}/pediatric/vaccinations/{vaccination}', [App\Http\Controllers\Clinic\PediatricRecordController::class, 'destroyVaccination'])->name('pediatric.vaccinations.destroy');
+
+        // Pregnancy follow-up: dating (recomputes today's gestational age) +
+        // per-visit fetal/maternal data (women's clinics only).
+        Route::post('/appointments/{appointment}/pregnancy/record', [App\Http\Controllers\Clinic\PregnancyRecordController::class, 'storeRecord'])->name('pregnancy.record.store');
+        Route::post('/appointments/{appointment}/pregnancy/visit', [App\Http\Controllers\Clinic\PregnancyRecordController::class, 'storeVisit'])->name('pregnancy.visit.store');
+
         // Setup: clinical templates & custom examination fields.
         Route::get('/setup', [App\Http\Controllers\Clinic\SetupController::class, 'index'])->name('setup.index');
         Route::get('/setup/medical-plans', [App\Http\Controllers\Clinic\MedicalPlanController::class, 'index'])->name('setup.medical-plans');
