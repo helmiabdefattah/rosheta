@@ -634,6 +634,7 @@ Route::prefix('practice')->name('practice.')->group(function () {
         // Expenses: clinic spending with categories, receipts & part-payments.
         Route::get('/expenses', [App\Http\Controllers\Clinic\ExpenseController::class, 'index'])->name('expenses.index');
         Route::get('/expenses/create', [App\Http\Controllers\Clinic\ExpenseController::class, 'create'])->name('expenses.create');
+        Route::get('/expenses/export', [App\Http\Controllers\Clinic\ExpenseController::class, 'export'])->name('expenses.export');
         Route::post('/expenses', [App\Http\Controllers\Clinic\ExpenseController::class, 'store'])->name('expenses.store');
         Route::get('/expenses/{expense}', [App\Http\Controllers\Clinic\ExpenseController::class, 'show'])->name('expenses.show');
         Route::get('/expenses/{expense}/edit', [App\Http\Controllers\Clinic\ExpenseController::class, 'edit'])->name('expenses.edit');
@@ -641,6 +642,15 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::delete('/expenses/{expense}', [App\Http\Controllers\Clinic\ExpenseController::class, 'destroy'])->name('expenses.destroy');
         Route::post('/expenses/{expense}/payments', [App\Http\Controllers\Clinic\ExpensePaymentController::class, 'store'])->name('expenses.payments.store');
         Route::delete('/expense-payments/{payment}', [App\Http\Controllers\Clinic\ExpensePaymentController::class, 'destroy'])->name('expenses.payments.destroy');
+
+        // Vendors / suppliers: directory, statements & exports.
+        Route::get('/vendors', [App\Http\Controllers\Clinic\VendorController::class, 'index'])->name('vendors.index');
+        Route::post('/vendors', [App\Http\Controllers\Clinic\VendorController::class, 'store'])->name('vendors.store');
+        Route::get('/vendors/{vendor}/edit', [App\Http\Controllers\Clinic\VendorController::class, 'edit'])->name('vendors.edit');
+        Route::put('/vendors/{vendor}', [App\Http\Controllers\Clinic\VendorController::class, 'update'])->name('vendors.update');
+        Route::delete('/vendors/{vendor}', [App\Http\Controllers\Clinic\VendorController::class, 'destroy'])->name('vendors.destroy');
+        Route::get('/vendors/{vendor}/statement', [App\Http\Controllers\Clinic\VendorController::class, 'statement'])->name('vendors.statement');
+        Route::get('/vendors/{vendor}/statement/export', [App\Http\Controllers\Clinic\VendorController::class, 'exportStatement'])->name('vendors.statement.export');
 
         // Manager: money & insurance reporting (doctor only).
         Route::get('/manager', [App\Http\Controllers\Clinic\ManagerController::class, 'index'])->name('manager.index');

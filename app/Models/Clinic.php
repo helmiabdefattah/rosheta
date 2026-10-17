@@ -283,6 +283,12 @@ class Clinic extends Model
         return $this->hasMany(Expense::class);
     }
 
+    /** Suppliers the clinic pays (labs, landlords, utilities…). */
+    public function vendors(): HasMany
+    {
+        return $this->hasMany(Vendor::class);
+    }
+
     /**
      * Get a short opening-hours summary (e.g. "Sat-Thu 9:00 AM - 5:00 PM" or "Today 9:00-17:00").
      */

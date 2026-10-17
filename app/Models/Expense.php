@@ -25,6 +25,7 @@ class Expense extends Model implements HasMedia
     protected $fillable = [
         'clinic_id',
         'expense_category_id',
+        'vendor_id',
         'created_by',
         'title',
         'description',
@@ -55,6 +56,11 @@ class Expense extends Model implements HasMedia
     public function category(): BelongsTo
     {
         return $this->belongsTo(ExpenseCategory::class, 'expense_category_id');
+    }
+
+    public function vendor(): BelongsTo
+    {
+        return $this->belongsTo(Vendor::class);
     }
 
     public function creator(): BelongsTo

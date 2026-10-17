@@ -8,8 +8,11 @@
         <h1 class="text-2xl font-bold text-slate-900">💸 {{ __('app.expenses.title') }}</h1>
         <p class="text-slate-500 text-sm">@if ($clinic) {{ $clinic->name }} @endif</p>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 flex-wrap">
+        <a href="{{ route('practice.doctor.vendors.index') }}" class="btn btn-secondary btn-sm">🏢 {{ __('app.vendors.title') }}</a>
         <a href="{{ route('practice.doctor.setup.expense-categories') }}" class="btn btn-secondary btn-sm">🏷 {{ __('app.expenses.categories') }}</a>
+        <a href="{{ route('practice.doctor.expenses.export', array_merge(request()->query(), ['format' => 'excel'])) }}" class="btn btn-secondary btn-sm">⬇ CSV</a>
+        <a href="{{ route('practice.doctor.expenses.export', array_merge(request()->query(), ['format' => 'pdf'])) }}" class="btn btn-secondary btn-sm">⬇ PDF</a>
         <a href="{{ route('practice.doctor.expenses.create') }}" class="btn btn-primary btn-sm">➕ {{ __('app.expenses.new') }}</a>
     </div>
 </div>
@@ -35,7 +38,7 @@
 </div>
 
 {{-- Filters --}}
-<form method="GET" class="card p-4 mb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
+<form method="GET" class="card p-4 mb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 items-end">
     <div>
         <label class="block text-xs text-slate-500 mb-1">{{ __('app.expenses.f.from') }}</label>
         <input type="date" name="from" value="{{ $from }}" class="w-full rounded-lg border px-3 py-2">
@@ -50,6 +53,15 @@
             <option value="">{{ __('app.expenses.all') }}</option>
             @foreach ($categories as $cat)
                 <option value="{{ $cat->id }}" @selected((string) $categoryId === (string) $cat->id)>{{ $cat->icon }} {{ $cat->name }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div>
+        <label class="block text-xs text-slate-500 mb-1">{{ __('app.expenses.f.vendor') }}</label>
+        <select name="vendor" class="w-full rounded-lg border px-3 py-2">
+            <option value="">{{ __('app.expenses.all') }}</option>
+            @foreach ($vendors as $v)
+                <option value="{{ $v->id }}" @selected((string) $vendorId === (string) $v->id)>{{ $v->name }}</option>
             @endforeach
         </select>
     </div>

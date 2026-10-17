@@ -20,6 +20,18 @@
             </select>
         </div>
         <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">{{ __('app.expenses.f.vendor') }}</label>
+            <select name="vendor_id" class="w-full rounded-lg border px-3 py-2">
+                <option value="">{{ __('app.expenses.f.no_vendor') }}</option>
+                @foreach ($vendors as $v)
+                    <option value="{{ $v->id }}" @selected((string) old('vendor_id', $e?->vendor_id ?? '') === (string) $v->id)>{{ $v->name }}</option>
+                @endforeach
+            </select>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">{{ __('app.expenses.f.date') }} <span class="text-red-500">*</span></label>
             <input type="date" name="expense_date" value="{{ old('expense_date', isset($e) ? $e?->expense_date?->format('Y-m-d') : now()->format('Y-m-d')) }}" required class="w-full rounded-lg border px-3 py-2">
         </div>
