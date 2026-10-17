@@ -271,6 +271,18 @@ class Clinic extends Model
         return $this->hasMany(DentalStockItem::class);
     }
 
+    /** This clinic's expense categories. */
+    public function expenseCategories(): HasMany
+    {
+        return $this->hasMany(ExpenseCategory::class);
+    }
+
+    /** This clinic's recorded expenses. */
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class);
+    }
+
     /**
      * Get a short opening-hours summary (e.g. "Sat-Thu 9:00 AM - 5:00 PM" or "Today 9:00-17:00").
      */

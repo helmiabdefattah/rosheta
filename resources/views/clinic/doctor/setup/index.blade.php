@@ -35,5 +35,15 @@
             </div>
         </div>
     </a>
+    <a href="{{ route('practice.doctor.setup.expense-categories') }}"
+       class="block bg-white rounded-2xl shadow-sm hover:shadow-md transition p-6 border border-slate-100">
+        <div class="flex items-start gap-4">
+            <div class="text-4xl">🏷</div>
+            <div>
+                <h2 class="text-lg font-bold text-slate-900">{{ __('app.expenses.categories') }}</h2>
+                <p class="text-sm text-slate-500 mt-1">{{ __('app.expenses.categories_desc') }}</p>
+            </div>
+        </div>
+    </a>
 </div>
 @endsection

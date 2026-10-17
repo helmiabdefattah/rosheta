@@ -625,6 +625,23 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::put('/setup/examination-fields/{examinationField}', [App\Http\Controllers\Clinic\ExaminationFieldController::class, 'update'])->name('setup.examination-fields.update');
         Route::delete('/setup/examination-fields/{examinationField}', [App\Http\Controllers\Clinic\ExaminationFieldController::class, 'destroy'])->name('setup.examination-fields.destroy');
 
+        // Setup: expense categories (part of the expenses module).
+        Route::get('/setup/expense-categories', [App\Http\Controllers\Clinic\ExpenseCategoryController::class, 'index'])->name('setup.expense-categories');
+        Route::post('/setup/expense-categories', [App\Http\Controllers\Clinic\ExpenseCategoryController::class, 'store'])->name('setup.expense-categories.store');
+        Route::put('/setup/expense-categories/{category}', [App\Http\Controllers\Clinic\ExpenseCategoryController::class, 'update'])->name('setup.expense-categories.update');
+        Route::delete('/setup/expense-categories/{category}', [App\Http\Controllers\Clinic\ExpenseCategoryController::class, 'destroy'])->name('setup.expense-categories.destroy');
+
+        // Expenses: clinic spending with categories, receipts & part-payments.
+        Route::get('/expenses', [App\Http\Controllers\Clinic\ExpenseController::class, 'index'])->name('expenses.index');
+        Route::get('/expenses/create', [App\Http\Controllers\Clinic\ExpenseController::class, 'create'])->name('expenses.create');
+        Route::post('/expenses', [App\Http\Controllers\Clinic\ExpenseController::class, 'store'])->name('expenses.store');
+        Route::get('/expenses/{expense}', [App\Http\Controllers\Clinic\ExpenseController::class, 'show'])->name('expenses.show');
+        Route::get('/expenses/{expense}/edit', [App\Http\Controllers\Clinic\ExpenseController::class, 'edit'])->name('expenses.edit');
+        Route::put('/expenses/{expense}', [App\Http\Controllers\Clinic\ExpenseController::class, 'update'])->name('expenses.update');
+        Route::delete('/expenses/{expense}', [App\Http\Controllers\Clinic\ExpenseController::class, 'destroy'])->name('expenses.destroy');
+        Route::post('/expenses/{expense}/payments', [App\Http\Controllers\Clinic\ExpensePaymentController::class, 'store'])->name('expenses.payments.store');
+        Route::delete('/expense-payments/{payment}', [App\Http\Controllers\Clinic\ExpensePaymentController::class, 'destroy'])->name('expenses.payments.destroy');
+
         // Manager: money & insurance reporting (doctor only).
         Route::get('/manager', [App\Http\Controllers\Clinic\ManagerController::class, 'index'])->name('manager.index');
         Route::get('/manager/collections', [App\Http\Controllers\Clinic\ManagerController::class, 'collections'])->name('manager.collections');

@@ -258,6 +258,15 @@
                 <a href="{{ $homeRoute }}" class="ws-nav-item"><span>🏠</span> {{ auth()->user()->isDoctor() ? __('app.doctor.title') : __('app.assistant.title') }}</a>
                 @if (auth()->user()->isDoctor())
                     <a href="{{ route('doctor.dashboard') }}" class="ws-nav-item"><span>↩︎</span> {{ $backToMainLabel }}</a>
+
+                    {{-- Finance sub-menu (doctor only): money in and money out. --}}
+                    <details class="ws-nav-group" {{ request()->routeIs('practice.doctor.expenses.*', 'practice.doctor.manager.*', 'practice.doctor.setup.expense-categories') ? 'open' : '' }}>
+                        <summary><span>💰</span> {{ __('app.finance.menu') }} <span class="ws-chevron">▾</span></summary>
+                        <div class="ws-nav-group-body">
+                            <a href="{{ route('practice.doctor.expenses.index') }}" class="ws-nav-item"><span>💸</span> {{ __('app.expenses.title') }}</a>
+                            <a href="{{ route('practice.doctor.manager.index') }}" class="ws-nav-item"><span>📊</span> {{ __('app.manager.title') }}</a>
+                        </div>
+                    </details>
                 @endif
 
                 {{-- Dental Lab sub-menu (dental clinics only); opens on its own pages. --}}

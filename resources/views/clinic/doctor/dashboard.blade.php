@@ -63,6 +63,10 @@
            class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
             📊 {{ __('app.manager.button') }}
         </a>
+        <a href="{{ route('practice.doctor.expenses.index') }}"
+           class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg">
+            💸 {{ __('app.expenses.button') }}
+        </a>
         <a href="{{ route('practice.doctor.setup.index') }}"
            class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg">
             🧩 {{ __('app.setup.button') }}
