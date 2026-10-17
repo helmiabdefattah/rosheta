@@ -29,6 +29,18 @@
         .nav-item:hover { background-color: rgba(255,255,255,0.05); color: #f1f5f9; }
         .nav-item.active { background: linear-gradient(90deg, rgba(13, 148, 136, 0.15) 0%, transparent 100%); color: #0d9488; border-color: #0d9488; }
         .menu-header { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; margin: 24px 16px 8px; font-weight: 700; }
+        /* Collapsible nav groups (sub-menus). Built on <details>/<summary> so they
+           work without extra JS; the active group is opened on load via [open]. */
+        .nav-group { margin-bottom: 4px; }
+        .nav-group > summary { display: flex; align-items: center; padding: 12px 16px; color: #94a3b8; border-radius: 8px; transition: all 0.2s; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; list-style: none; }
+        .nav-group > summary::-webkit-details-marker { display: none; }
+        .nav-group > summary::marker { content: ''; }
+        .nav-group > summary:hover { background-color: rgba(255,255,255,0.05); color: #f1f5f9; }
+        .nav-group > summary .chevron { margin-inline-start: auto; transition: transform 0.2s; font-size: 0.8rem; opacity: 0.7; }
+        .nav-group[open] > summary .chevron { transform: rotate(180deg); }
+        .nav-group[open] > summary { color: #cbd5e1; }
+        .nav-group-body { margin-top: 2px; padding-inline-start: 8px; }
+        .nav-group-body .nav-item { font-size: 0.875rem; }
         .sidebar-transition { transition: transform 0.3s; }
         .sidebar-closed-ltr { transform: translateX(-100%); }
         .sidebar-closed-rtl { transform: translateX(100%); }
@@ -50,28 +62,49 @@
             </a>
             <button id="close-sidebar" class="lg:hidden ms-auto text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
         </div>
+        @php $isAr = app()->getLocale() === 'ar'; @endphp
         <nav class="flex-1 overflow-y-auto p-4 sidebar-scroll">
-            <div class="menu-header">{{ app()->getLocale() === 'ar' ? 'الرئيسية' : 'MAIN' }}</div>
+            {{-- Overview: a single top-level entry, no sub-menu. --}}
             <a href="{{ route('doctor.dashboard') }}" class="nav-item {{ request()->routeIs('doctor.dashboard') ? 'active' : '' }}">
-                <i class="bi bi-grid-1x2-fill me-3 opacity-70"></i><span>{{ app()->getLocale() === 'ar' ? 'لوحة التحكم' : 'Dashboard' }}</span>
+                <i class="bi bi-grid-1x2-fill me-3 opacity-70"></i><span>{{ $isAr ? 'لوحة التحكم' : 'Dashboard' }}</span>
             </a>
-            <div class="menu-header">{{ app()->getLocale() === 'ar' ? 'الحساب والعيادة' : 'ACCOUNT & CLINIC' }}</div>
-            <a href="{{ route('doctor.profile.edit') }}" class="nav-item {{ request()->routeIs('doctor.profile.*') ? 'active' : '' }}">
-                <i class="bi bi-person-badge me-3 opacity-70"></i><span>{{ app()->getLocale() === 'ar' ? 'الملف الشخصي' : 'My Profile' }}</span>
-            </a>
-            <a href="{{ route('doctor.clinics.index') }}" class="nav-item {{ request()->routeIs('doctor.clinics.*') ? 'active' : '' }}">
-                <i class="bi bi-building me-3 opacity-70"></i><span>{{ app()->getLocale() === 'ar' ? 'عياداتي' : 'My Clinics' }}</span>
-            </a>
-            <a href="{{ route('doctor.staff.index') }}" class="nav-item {{ request()->routeIs('doctor.staff.*') ? 'active' : '' }}">
-                <i class="bi bi-people me-3 opacity-70"></i><span>{{ app()->getLocale() === 'ar' ? 'المساعدون' : 'Assistants' }}</span>
-            </a>
-            <div class="menu-header">{{ app()->getLocale() === 'ar' ? 'المواعيد' : 'APPOINTMENTS' }}</div>
-            <a href="{{ route('doctor.appointments.index') }}" class="nav-item {{ request()->routeIs('doctor.appointments.*') ? 'active' : '' }}">
-                <i class="bi bi-calendar-event me-3 opacity-70"></i><span>{{ app()->getLocale() === 'ar' ? 'المواعيد' : 'Appointments' }}</span>
-            </a>
-            <a href="{{ route('doctor.calendar.index') }}" class="nav-item {{ request()->routeIs('doctor.calendar.*') ? 'active' : '' }}">
-                <i class="bi bi-calendar-week me-3 opacity-70"></i><span>{{ app()->getLocale() === 'ar' ? 'أيام العمل والإجازة' : 'Working & Off Days' }}</span>
-            </a>
+
+            {{-- Account & clinic sub-menu. Opens on load when one of its pages is active. --}}
+            <details class="nav-group" {{ request()->routeIs('doctor.profile.*', 'doctor.clinics.*', 'doctor.staff.*') ? 'open' : '' }}>
+                <summary>
+                    <i class="bi bi-person-gear me-3 opacity-70"></i><span>{{ $isAr ? 'الحساب والعيادة' : 'Account & Clinic' }}</span>
+                    <i class="bi bi-chevron-down chevron"></i>
+                </summary>
+                <div class="nav-group-body">
+                    <a href="{{ route('doctor.profile.edit') }}" class="nav-item {{ request()->routeIs('doctor.profile.*') ? 'active' : '' }}">
+                        <i class="bi bi-person-badge me-3 opacity-70"></i><span>{{ $isAr ? 'الملف الشخصي' : 'My Profile' }}</span>
+                    </a>
+                    <a href="{{ route('doctor.clinics.index') }}" class="nav-item {{ request()->routeIs('doctor.clinics.*') ? 'active' : '' }}">
+                        <i class="bi bi-building me-3 opacity-70"></i><span>{{ $isAr ? 'عياداتي' : 'My Clinics' }}</span>
+                    </a>
+                    <a href="{{ route('doctor.staff.index') }}" class="nav-item {{ request()->routeIs('doctor.staff.*') ? 'active' : '' }}">
+                        <i class="bi bi-people me-3 opacity-70"></i><span>{{ $isAr ? 'المساعدون' : 'Assistants' }}</span>
+                    </a>
+                </div>
+            </details>
+
+            {{-- Appointments & scheduling sub-menu. --}}
+            <details class="nav-group" {{ request()->routeIs('doctor.appointments.*', 'doctor.calendar.*') ? 'open' : '' }}>
+                <summary>
+                    <i class="bi bi-calendar3 me-3 opacity-70"></i><span>{{ $isAr ? 'المواعيد' : 'Scheduling' }}</span>
+                    <i class="bi bi-chevron-down chevron"></i>
+                </summary>
+                <div class="nav-group-body">
+                    <a href="{{ route('doctor.appointments.index') }}" class="nav-item {{ request()->routeIs('doctor.appointments.*') ? 'active' : '' }}">
+                        <i class="bi bi-calendar-event me-3 opacity-70"></i><span>{{ $isAr ? 'المواعيد' : 'Appointments' }}</span>
+                    </a>
+                    <a href="{{ route('doctor.calendar.index') }}" class="nav-item {{ request()->routeIs('doctor.calendar.*') ? 'active' : '' }}">
+                        <i class="bi bi-calendar-week me-3 opacity-70"></i><span>{{ $isAr ? 'أيام العمل والإجازة' : 'Working & Off Days' }}</span>
+                    </a>
+                </div>
+            </details>
+
+            {{-- Communication: single entry, kept top-level. --}}
             <div class="menu-header">{{ __('app.chat.menu_header') }}</div>
             <a href="{{ route('doctor.chat.index') }}" class="nav-item {{ request()->routeIs('doctor.chat.*') ? 'active' : '' }}">
                 <i class="bi bi-chat-dots me-3 opacity-70"></i><span>{{ __('app.chat.title') }}</span>

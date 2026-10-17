@@ -90,13 +90,15 @@
            it), an off-canvas drawer on phones. "buttons" mode hides the menu. */
         html.ws-menu .ws-buttons { display: none !important; }
 
+        /* Docked on the leading edge: left in English (LTR), right in Arabic (RTL).
+           The closed transform slides it off that same leading edge. */
         #ws-sidebar {
-            position: fixed; top: 0; bottom: 0; inset-inline-end: 0; width: 18rem; max-width: 85%;
+            position: fixed; top: 0; bottom: 0; inset-inline-start: 0; width: 18rem; max-width: 85%;
             z-index: 80; background: #0f172a; color: #cbd5e1; display: flex; flex-direction: column;
             box-shadow: 0 10px 25px rgba(15, 23, 42, .3); transition: transform .25s ease;
-            transform: translateX(100%);
+            transform: translateX(-100%);
         }
-        [dir="rtl"] #ws-sidebar { transform: translateX(-100%); }
+        [dir="rtl"] #ws-sidebar { transform: translateX(100%); }
         html.ws-sidebar-open #ws-sidebar { transform: none; }
         html:not(.ws-menu) #ws-sidebar { display: none; }
 
@@ -104,9 +106,10 @@
         html.ws-menu.ws-sidebar-open #ws-sidebar-scrim { display: block; }
 
         @media (min-width: 1024px) {
-            /* Docked: no dimming; the page content shifts to sit beside the menu. */
+            /* Docked: no dimming; the page content shifts to sit beside the menu
+               on its leading edge (left in LTR, right in RTL). */
             html.ws-menu.ws-sidebar-open #ws-sidebar-scrim { display: none; }
-            html.ws-menu.ws-sidebar-open body { margin-inline-end: 18rem; }
+            html.ws-menu.ws-sidebar-open body { margin-inline-start: 18rem; }
         }
 
         /* The menu still scrolls when it overflows, but the scrollbar is hidden
@@ -119,6 +122,20 @@
                        background: transparent; border: 0; transition: background-color .12s, color .12s; }
         .ws-nav-item:hover { background: #1e293b; color: #fff; }
         .ws-nav-item > span:first-child { width: 1.25rem; text-align: center; flex: none; }
+
+        /* Collapsible sub-menu groups. Native <details>/<summary>, so no extra JS;
+           the group for the current area is opened on load via [open]. */
+        .ws-nav-group > summary { display: flex; align-items: center; gap: .6rem; width: 100%;
+                                  padding: .55rem .8rem; border-radius: .5rem; font-size: .72rem;
+                                  text-transform: uppercase; letter-spacing: .04em; font-weight: 700;
+                                  color: #94a3b8; cursor: pointer; list-style: none; transition: background-color .12s, color .12s; }
+        .ws-nav-group > summary::-webkit-details-marker { display: none; }
+        .ws-nav-group > summary::marker { content: ''; }
+        .ws-nav-group > summary:hover { background: #1e293b; color: #fff; }
+        .ws-nav-group > summary > span:first-child { width: 1.25rem; text-align: center; flex: none; }
+        .ws-nav-group > summary .ws-chevron { margin-inline-start: auto; font-size: .7rem; opacity: .7; transition: transform .2s; }
+        .ws-nav-group[open] > summary .ws-chevron { transform: rotate(180deg); }
+        .ws-nav-group-body { margin-top: .1rem; padding-inline-start: .5rem; display: flex; flex-direction: column; gap: .15rem; }
 
         /* Page actions moved into the menu render as ordinary menu items (the
            screen's colourful toolbar buttons are neutralised to match the menu).
@@ -236,17 +253,35 @@
                 <div class="ws-page-actions [&_a]:w-full [&_button]:w-full [&>*]:mb-2 empty:hidden">
                     @stack('ws-menu-actions')
                 </div>
+
+                {{-- Primary workspace entries, kept at the top level. --}}
                 <a href="{{ $homeRoute }}" class="ws-nav-item"><span>🏠</span> {{ auth()->user()->isDoctor() ? __('app.doctor.title') : __('app.assistant.title') }}</a>
                 @if (auth()->user()->isDoctor())
                     <a href="{{ route('doctor.dashboard') }}" class="ws-nav-item"><span>↩︎</span> {{ $backToMainLabel }}</a>
                 @endif
+
+                {{-- Dental Lab sub-menu (dental clinics only); opens on its own pages. --}}
                 @if ($isDentalClinic)
-                    <a href="{{ route('practice.dental-lab.index') }}" class="ws-nav-item"><span>🦷</span> {{ __('app.dental.nav') }}</a>
-                    <a href="{{ route('practice.dental-lab.stock.index') }}" class="ws-nav-item"><span>📦</span> {{ __('app.dental.tabs.stock') }}</a>
+                    <details class="ws-nav-group" {{ request()->routeIs('practice.dental-lab.*') ? 'open' : '' }}>
+                        <summary><span>🦷</span> {{ __('app.dental.nav') }} <span class="ws-chevron">▾</span></summary>
+                        <div class="ws-nav-group-body">
+                            <a href="{{ route('practice.dental-lab.index') }}" class="ws-nav-item"><span>📋</span> {{ __('app.dental.tabs.orders') }}</a>
+                            <a href="{{ route('practice.dental-lab.stock.index') }}" class="ws-nav-item"><span>📦</span> {{ __('app.dental.tabs.stock') }}</a>
+                        </div>
+                    </details>
                 @endif
-                @foreach ($kioskLinks as $link)
-                    <a href="{{ $link['href'] }}" target="_blank" class="ws-nav-item"><span>{{ $link['icon'] }}</span> {{ $link['label'] }}</a>
-                @endforeach
+
+                {{-- Clinic screens (kiosk) sub-menu; each opens in a new tab. --}}
+                @if ($kioskLinks)
+                    <details class="ws-nav-group" open>
+                        <summary><span>🖥️</span> {{ __('app.display.menu') }} <span class="ws-chevron">▾</span></summary>
+                        <div class="ws-nav-group-body">
+                            @foreach ($kioskLinks as $link)
+                                <a href="{{ $link['href'] }}" target="_blank" class="ws-nav-item"><span>{{ $link['icon'] }}</span> {{ $link['label'] }}</a>
+                            @endforeach
+                        </div>
+                    </details>
+                @endif
             </nav>
 
             <div class="p-3 border-t border-slate-700 space-y-1">
