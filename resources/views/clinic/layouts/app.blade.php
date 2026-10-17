@@ -287,7 +287,7 @@
             <div class="p-3 border-t border-slate-700 space-y-1">
                 {{-- Return to the buttons view. --}}
                 <button type="button" data-nav-buttons class="ws-nav-item w-full text-slate-300">
-                    <span>⇄</span> {{ __('app.menu.show_buttons') }}
+                    <span>⊟</span> {{ __('app.menu.hide_menu') }}
                 </button>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

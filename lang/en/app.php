@@ -890,6 +890,7 @@ return [
 
     'menu' => [
         'show_buttons' => 'Show buttons',
+        'hide_menu' => 'Hide menu',
         'saved' => 'Navigation style saved',
         'title' => 'Workspace navigation',
         'hint' => 'Choose how the top actions appear in the clinic workspace.',
