@@ -625,6 +625,50 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::put('/setup/examination-fields/{examinationField}', [App\Http\Controllers\Clinic\ExaminationFieldController::class, 'update'])->name('setup.examination-fields.update');
         Route::delete('/setup/examination-fields/{examinationField}', [App\Http\Controllers\Clinic\ExaminationFieldController::class, 'destroy'])->name('setup.examination-fields.destroy');
 
+        // Setup: expense categories (part of the expenses module).
+        Route::get('/setup/expense-categories', [App\Http\Controllers\Clinic\ExpenseCategoryController::class, 'index'])->name('setup.expense-categories');
+        Route::post('/setup/expense-settings', [App\Http\Controllers\Clinic\ExpenseCategoryController::class, 'updateSettings'])->name('setup.expense-settings');
+        Route::post('/setup/expense-categories', [App\Http\Controllers\Clinic\ExpenseCategoryController::class, 'store'])->name('setup.expense-categories.store');
+        Route::put('/setup/expense-categories/{category}', [App\Http\Controllers\Clinic\ExpenseCategoryController::class, 'update'])->name('setup.expense-categories.update');
+        Route::delete('/setup/expense-categories/{category}', [App\Http\Controllers\Clinic\ExpenseCategoryController::class, 'destroy'])->name('setup.expense-categories.destroy');
+
+        // Expenses: clinic spending with categories, receipts & part-payments.
+        Route::get('/expenses', [App\Http\Controllers\Clinic\ExpenseController::class, 'index'])->name('expenses.index');
+        Route::get('/expenses/create', [App\Http\Controllers\Clinic\ExpenseController::class, 'create'])->name('expenses.create');
+        Route::get('/expenses/export', [App\Http\Controllers\Clinic\ExpenseController::class, 'export'])->name('expenses.export');
+        Route::post('/expenses', [App\Http\Controllers\Clinic\ExpenseController::class, 'store'])->name('expenses.store');
+        Route::get('/expenses/{expense}', [App\Http\Controllers\Clinic\ExpenseController::class, 'show'])->name('expenses.show');
+        Route::get('/expenses/{expense}/edit', [App\Http\Controllers\Clinic\ExpenseController::class, 'edit'])->name('expenses.edit');
+        Route::put('/expenses/{expense}', [App\Http\Controllers\Clinic\ExpenseController::class, 'update'])->name('expenses.update');
+        Route::delete('/expenses/{expense}', [App\Http\Controllers\Clinic\ExpenseController::class, 'destroy'])->name('expenses.destroy');
+        Route::post('/expenses/{expense}/payments', [App\Http\Controllers\Clinic\ExpensePaymentController::class, 'store'])->name('expenses.payments.store');
+        Route::delete('/expense-payments/{payment}', [App\Http\Controllers\Clinic\ExpensePaymentController::class, 'destroy'])->name('expenses.payments.destroy');
+
+        // Vendors / suppliers: directory, statements & exports.
+        Route::get('/vendors', [App\Http\Controllers\Clinic\VendorController::class, 'index'])->name('vendors.index');
+        Route::post('/vendors', [App\Http\Controllers\Clinic\VendorController::class, 'store'])->name('vendors.store');
+        Route::get('/vendors/{vendor}/edit', [App\Http\Controllers\Clinic\VendorController::class, 'edit'])->name('vendors.edit');
+        Route::put('/vendors/{vendor}', [App\Http\Controllers\Clinic\VendorController::class, 'update'])->name('vendors.update');
+        Route::delete('/vendors/{vendor}', [App\Http\Controllers\Clinic\VendorController::class, 'destroy'])->name('vendors.destroy');
+        Route::get('/vendors/{vendor}/statement', [App\Http\Controllers\Clinic\VendorController::class, 'statement'])->name('vendors.statement');
+        Route::get('/vendors/{vendor}/statement/export', [App\Http\Controllers\Clinic\VendorController::class, 'exportStatement'])->name('vendors.statement.export');
+
+        // Recurring expenses (rent, salaries…) and the manual generate action.
+        Route::get('/recurring-expenses', [App\Http\Controllers\Clinic\RecurringExpenseController::class, 'index'])->name('recurring.index');
+        Route::post('/recurring-expenses', [App\Http\Controllers\Clinic\RecurringExpenseController::class, 'store'])->name('recurring.store');
+        Route::post('/recurring-expenses/generate', [App\Http\Controllers\Clinic\RecurringExpenseController::class, 'generate'])->name('recurring.generate');
+        Route::get('/recurring-expenses/{recurring}/edit', [App\Http\Controllers\Clinic\RecurringExpenseController::class, 'edit'])->name('recurring.edit');
+        Route::put('/recurring-expenses/{recurring}', [App\Http\Controllers\Clinic\RecurringExpenseController::class, 'update'])->name('recurring.update');
+        Route::delete('/recurring-expenses/{recurring}', [App\Http\Controllers\Clinic\RecurringExpenseController::class, 'destroy'])->name('recurring.destroy');
+
+        // Monthly budgets vs. actual.
+        Route::get('/budgets', [App\Http\Controllers\Clinic\ExpenseBudgetController::class, 'index'])->name('budgets.index');
+        Route::post('/budgets', [App\Http\Controllers\Clinic\ExpenseBudgetController::class, 'store'])->name('budgets.store');
+
+        // Finance overview: income vs. expenses (profit & loss).
+        Route::get('/finance', [App\Http\Controllers\Clinic\FinanceReportController::class, 'overview'])->name('finance.overview');
+        Route::get('/finance/export', [App\Http\Controllers\Clinic\FinanceReportController::class, 'export'])->name('finance.export');
+
         // Manager: money & insurance reporting (doctor only).
         Route::get('/manager', [App\Http\Controllers\Clinic\ManagerController::class, 'index'])->name('manager.index');
         Route::get('/manager/collections', [App\Http\Controllers\Clinic\ManagerController::class, 'collections'])->name('manager.collections');

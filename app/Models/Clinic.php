@@ -36,6 +36,7 @@ class Clinic extends Model
         'printer_language',
         'print_qr',
         'notify_queue_max',
+        'expenses_autocapture',
     ];
 
     /** Languages the Bluetooth ticket printer can print in. */
@@ -65,6 +66,7 @@ class Clinic extends Model
         'printer_connected_at' => 'datetime',
         'print_qr' => 'boolean',
         'notify_queue_max' => 'integer',
+        'expenses_autocapture' => 'boolean',
     ];
 
     /** Cap for the "patients before you" queue notification (min 1, default 10). */
@@ -269,6 +271,36 @@ class Clinic extends Model
     public function dentalStockItems(): HasMany
     {
         return $this->hasMany(DentalStockItem::class);
+    }
+
+    /** This clinic's expense categories. */
+    public function expenseCategories(): HasMany
+    {
+        return $this->hasMany(ExpenseCategory::class);
+    }
+
+    /** This clinic's recorded expenses. */
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class);
+    }
+
+    /** Suppliers the clinic pays (labs, landlords, utilities…). */
+    public function vendors(): HasMany
+    {
+        return $this->hasMany(Vendor::class);
+    }
+
+    /** Recurring-expense templates (rent, salaries, subscriptions…). */
+    public function recurringExpenses(): HasMany
+    {
+        return $this->hasMany(RecurringExpense::class);
+    }
+
+    /** Monthly expense budgets. */
+    public function expenseBudgets(): HasMany
+    {
+        return $this->hasMany(ExpenseBudget::class);
     }
 
     /**

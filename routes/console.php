@@ -19,3 +19,8 @@ Schedule::command('demo:purge')
     ->everyFiveMinutes()
     ->withoutOverlapping()
     ->runInBackground();
+
+// Turn due recurring-expense templates into real expenses once a day.
+Schedule::command('expenses:generate-recurring')
+    ->dailyAt('00:30')
+    ->withoutOverlapping();
