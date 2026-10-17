@@ -12,6 +12,8 @@
         'confirmed' => 'bg-blue-100 text-blue-700',
         'missed' => 'bg-red-100 text-red-700',
     ];
+    // In menu view the toolbar is moved into the side menu.
+    $navMenu = auth()->user() && (auth()->user()->nav_style ?? 'menu') !== 'buttons';
 @endphp
 
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
@@ -21,7 +23,9 @@
             {{ now()->translatedFormat('l, d M Y') }} @if($clinic) &middot; {{ $clinic->name }} @endif
         </p>
     </div>
-    <div class="flex flex-wrap items-center gap-2">
+    @if($navMenu) @push('ws-menu-actions') @endif
+    <div class="{{ $navMenu ? 'flex flex-col items-stretch gap-2' : 'flex flex-wrap items-center gap-2' }}">
+        {{-- Dental Lab lives in the global nav / top bar, so it isn't repeated here. --}}
         {{-- Pull the queue again. A link to the current URL, not location.reload():
              it keeps the selected date and re-requests cleanly instead of
              replaying whatever navigation landed here. --}}
@@ -105,6 +109,7 @@
             {{ __('app.appointment.new') }}
         </button>
     </div>
+    @if($navMenu) @endpush @endif
 </div>
 
 {{-- New appointment form --}}

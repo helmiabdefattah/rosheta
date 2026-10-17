@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'doctor' => \App\Http\Middleware\EnsureUserIsDoctor::class,
             'clinic_staff' => \App\Http\Middleware\EnsureUserIsClinicStaff::class,
             'clinic.role' => \App\Http\Middleware\EnsureClinicRole::class,
+            'clinic.dental' => \App\Http\Middleware\EnsureDentalClinic::class,
             'client.api' => \App\Http\Middleware\EnsureAuthenticatedClient::class,
         ]);
 

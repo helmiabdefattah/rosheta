@@ -45,7 +45,19 @@ class PatientController extends Controller
         // Lab / radiology results from the labs system (client/test-results data).
         $labResults = \App\Models\Offer::labResultsForClient($patient->id);
 
-        return view('clinic.patients.show', compact('patient', 'appointments', 'doctor', 'totals', 'labResults'));
+        // Dental lab orders billed to this patient at this clinic. Their unpaid
+        // balance is money the clinic still needs from the patient, so it folds
+        // into the outstanding total shown in the file.
+        $clinic = $this->activeClinic($doctor);
+        $dentalOrders = \App\Models\DentalLabOrder::where('clinic_id', $clinic->id)
+            ->where('client_id', $patient->id)
+            ->with(['items', 'patientPayments', 'lab'])
+            ->latest()
+            ->get();
+        $totals['dental_due'] = round($dentalOrders->sum(fn ($o) => $o->patientBalance()), 2);
+        $totals['outstanding'] = round($totals['outstanding'] + $totals['dental_due'], 2);
+
+        return view('clinic.patients.show', compact('patient', 'appointments', 'doctor', 'totals', 'labResults', 'dentalOrders'));
     }
 
     /** Update a patient's file (profile details). */

@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
             ClientRequestSeeder::class,
             OfferSeeder::class,
             MedicalTestOfferSeeder::class,
+            DentalItemsSeeder::class,
         ]);
     }
 }

@@ -12,6 +12,9 @@
     // this workspace get neither the inbox nor the Alpine it needs — their
     // (vanilla-JS heavy) screens stay exactly as they were.
     $showPatientChat = (bool) $clinicUser?->isDoctor();
+    // The Dental Lab module shows only for dental clinics (teeth chart match).
+    $isDentalClinic = $clinicDoctor
+        && \App\Support\ClinicalChart::forSpecialization($clinicDoctor->specialization) === \App\Support\ClinicalChart::TEETH;
     // The site's own name, not the framework's: it heads every screen and tab.
     $brand = \App\Support\SiteBrand::name(app()->getLocale());
     $backToMainLabel = app()->getLocale() === 'ar' ? '← العودة إلى اللوحة الرئيسية' : '← Back to main dashboard';
@@ -26,7 +29,12 @@
          'label' => __('app.display.assistant_screen'), 'hint' => __('app.display.assistant_screen_hint')],
     ] : [];
 @endphp
-<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+@php
+    // The side menu is the default workspace navigation; a stored 'buttons' is
+    // the only thing that turns it off (null/unset counts as the menu).
+    $wsMenu = auth()->user() && (auth()->user()->nav_style ?? 'menu') !== 'buttons';
+@endphp
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" @class(['ws-menu' => $wsMenu, 'ws-sidebar-open' => $wsMenu])>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -76,6 +84,60 @@
         .file-field { display: flex; align-items: center; gap: .5rem; min-width: 0; cursor: pointer; }
         .file-field input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
         .file-field .file-name { font-size: .75rem; color: #64748b; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* Workspace navigation. In "menu" mode the top-bar buttons are hidden and
+           an admin-style side menu shows — docked on desktop (content sits beside
+           it), an off-canvas drawer on phones. "buttons" mode hides the menu. */
+        html.ws-menu .ws-buttons { display: none !important; }
+
+        #ws-sidebar {
+            position: fixed; top: 0; bottom: 0; inset-inline-end: 0; width: 18rem; max-width: 85%;
+            z-index: 80; background: #0f172a; color: #cbd5e1; display: flex; flex-direction: column;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, .3); transition: transform .25s ease;
+            transform: translateX(100%);
+        }
+        [dir="rtl"] #ws-sidebar { transform: translateX(-100%); }
+        html.ws-sidebar-open #ws-sidebar { transform: none; }
+        html:not(.ws-menu) #ws-sidebar { display: none; }
+
+        #ws-sidebar-scrim { position: fixed; inset: 0; z-index: 70; background: rgba(15, 23, 42, .5); display: none; }
+        html.ws-menu.ws-sidebar-open #ws-sidebar-scrim { display: block; }
+
+        @media (min-width: 1024px) {
+            /* Docked: no dimming; the page content shifts to sit beside the menu. */
+            html.ws-menu.ws-sidebar-open #ws-sidebar-scrim { display: none; }
+            html.ws-menu.ws-sidebar-open body { margin-inline-end: 18rem; }
+        }
+
+        /* The menu still scrolls when it overflows, but the scrollbar is hidden
+           so the dark panel stays clean. */
+        #ws-sidebar nav { scrollbar-width: none; -ms-overflow-style: none; }
+        #ws-sidebar nav::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+        .ws-nav-item { display: flex; align-items: center; gap: .6rem; width: 100%; padding: .6rem .8rem;
+                       border-radius: .5rem; font-size: .9rem; color: #cbd5e1; text-align: start; cursor: pointer;
+                       background: transparent; border: 0; transition: background-color .12s, color .12s; }
+        .ws-nav-item:hover { background: #1e293b; color: #fff; }
+        .ws-nav-item > span:first-child { width: 1.25rem; text-align: center; flex: none; }
+
+        /* Page actions moved into the menu render as ordinary menu items (the
+           screen's colourful toolbar buttons are neutralised to match the menu).
+           The direct children only — dropdown panels keep their own light styling
+           so their contents stay readable. */
+        .ws-page-actions > div > a,
+        .ws-page-actions > div > button,
+        .ws-page-actions > div > form > button,
+        .ws-page-actions > div > details > summary {
+            display: flex !important; align-items: center; gap: .6rem; width: 100%;
+            justify-content: flex-start; text-align: start;
+            padding: .6rem .8rem; border-radius: .5rem;
+            background: transparent !important; border: 0 !important; box-shadow: none !important;
+            color: #cbd5e1 !important; font-size: .9rem !important; font-weight: 500 !important; cursor: pointer;
+        }
+        .ws-page-actions > div > a:hover,
+        .ws-page-actions > div > button:hover,
+        .ws-page-actions > div > form > button:hover,
+        .ws-page-actions > div > details > summary:hover { background: #1e293b !important; color: #fff !important; }
     </style>
     {{-- Counterpart to @stack('scripts') at the end of the body: without it a
          view's @push('styles') is silently dropped. --}}
@@ -98,14 +160,17 @@
                 @endauth
             </div>
 
-            <div class="flex items-center gap-2 lg:gap-3">
-                {{-- Laptop and up: every action inline. --}}
-                <div class="hidden lg:flex items-center gap-3">
+            <div class="flex items-center gap-2 flex-wrap justify-end">
+                {{-- Default: navigation as buttons. Hidden when the menu view is on
+                     (html.ws-menu), where the same links live in the side menu. --}}
+                <div class="ws-buttons flex items-center gap-2 flex-wrap justify-end">
                     @if (auth()->check() && auth()->user()->isDoctor())
                         <a href="{{ route('doctor.dashboard') }}" class="btn btn-secondary btn-sm">{{ $backToMainLabel }}</a>
                     @endif
+                    @if ($isDentalClinic)
+                        <a href="{{ route('practice.dental-lab.index') }}" class="btn btn-secondary btn-sm">🦷 {{ __('app.dental.nav') }}</a>
+                    @endif
                     @if ($kioskLinks)
-                        {{-- Kiosk launcher: the three in-clinic screens. --}}
                         <details data-menu class="relative">
                             <summary class="btn btn-secondary btn-sm list-none select-none">
                                 <span aria-hidden="true">🖥️</span> {{ __('app.display.menu') }}
@@ -121,55 +186,87 @@
                             </div>
                         </details>
                     @endif
+                    @auth
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button class="btn btn-danger btn-sm">{{ __('app.logout') }}</button>
+                        </form>
+                    @endauth
                 </div>
 
-                @if ($showPatientChat)
-                    <x-chat-dropdown side="doctor" />
-                @endif
-
+                {{-- Language switch: always in the top bar, in both views. --}}
                 <a href="{{ route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                    class="btn btn-secondary btn-sm" aria-label="{{ __('app.language') }}">
                     <span aria-hidden="true">🌐</span><span class="hidden sm:inline">{{ __('app.language') }}</span>
                 </a>
 
-                @auth
-                    <div class="hidden lg:flex items-center gap-3">
-                        <span class="text-sm text-slate-600 max-w-[12rem] truncate">{{ auth()->user()->name }}</span>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button class="btn btn-danger btn-sm">{{ __('app.logout') }}</button>
-                        </form>
-                    </div>
+                @if ($showPatientChat)
+                    <x-chat-dropdown side="doctor" />
+                @endif
 
-                    {{-- Phone and tablet: one menu holds what the wide bar shows inline. --}}
-                    <details data-menu class="relative lg:hidden">
-                        <summary class="btn btn-secondary btn-sm list-none select-none" aria-label="{{ __('app.examine.menu') }}">
-                            <span aria-hidden="true" class="text-base leading-none">☰</span>
-                        </summary>
-                        <div class="absolute end-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50">
-                            <div class="px-4 py-2 text-xs text-slate-500 border-b border-slate-100 truncate">
-                                {{ auth()->user()->name }}
-                                · {{ auth()->user()->isDoctor() ? __('app.roles.doctor') : __('app.roles.assistant') }}
-                            </div>
-                            @if (auth()->user()->isDoctor())
-                                <a href="{{ route('doctor.dashboard') }}" class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50">{{ $backToMainLabel }}</a>
-                            @endif
-                            @foreach ($kioskLinks as $link)
-                                <a href="{{ $link['href'] }}" target="_blank" class="block px-4 py-2.5 hover:bg-slate-50">
-                                    <div class="text-sm font-medium {{ $link['class'] }}">{{ $link['icon'] }} {{ $link['label'] }}</div>
-                                    <div class="text-xs text-slate-400">{{ $link['hint'] }}</div>
-                                </a>
-                            @endforeach
-                            <form method="POST" action="{{ route('logout') }}" class="border-t border-slate-100 mt-1">
-                                @csrf
-                                <button class="w-full text-start px-4 py-2.5 text-sm text-red-600 hover:bg-red-50">{{ __('app.logout') }}</button>
-                            </form>
-                        </div>
-                    </details>
-                @endauth
+                {{-- Toggles between the buttons above and the side menu. --}}
+                <button type="button" id="ws-menu-toggle" class="btn btn-secondary btn-sm"
+                        aria-label="{{ __('app.examine.menu') }}" aria-controls="ws-sidebar" aria-expanded="false">
+                    <span aria-hidden="true" class="text-lg leading-none">☰</span>
+                </button>
             </div>
         </div>
     </nav>
+
+    {{-- Workspace side menu (admin-dashboard style). Opened by the ☰ toggle;
+         closed by default on load so it never covers the page. "Menu view" is a
+         remembered preference (html.ws-menu) that hides the top-bar buttons. --}}
+    @auth
+    <div id="ws-sidebar-scrim" data-sidebar-close></div>
+    <aside id="ws-sidebar" aria-label="{{ __('app.menu.title') }}">
+            <div class="flex items-center justify-between gap-2 p-4 border-b border-slate-700">
+                <div class="min-w-0">
+                    <div class="font-semibold text-white truncate">{{ auth()->user()->name }}</div>
+                    <div class="text-xs text-slate-400">
+                        {{ auth()->user()->isDoctor() ? __('app.roles.doctor') : __('app.roles.assistant') }}
+                        @if ($displayClinic) · {{ $displayClinic->name }} @endif
+                    </div>
+                </div>
+                <button type="button" data-sidebar-close class="text-slate-400 hover:text-white text-2xl leading-none" aria-label="✕">&times;</button>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto p-3 space-y-1">
+                {{-- Page-specific actions, moved here from the screen's header
+                     while the menu view is on. --}}
+                <div class="ws-page-actions [&_a]:w-full [&_button]:w-full [&>*]:mb-2 empty:hidden">
+                    @stack('ws-menu-actions')
+                </div>
+                <a href="{{ $homeRoute }}" class="ws-nav-item"><span>🏠</span> {{ auth()->user()->isDoctor() ? __('app.doctor.title') : __('app.assistant.title') }}</a>
+                @if (auth()->user()->isDoctor())
+                    <a href="{{ route('doctor.dashboard') }}" class="ws-nav-item"><span>↩︎</span> {{ $backToMainLabel }}</a>
+                @endif
+                @if ($isDentalClinic)
+                    <a href="{{ route('practice.dental-lab.index') }}" class="ws-nav-item"><span>🦷</span> {{ __('app.dental.nav') }}</a>
+                    <a href="{{ route('practice.dental-lab.stock.index') }}" class="ws-nav-item"><span>📦</span> {{ __('app.dental.tabs.stock') }}</a>
+                @endif
+                @foreach ($kioskLinks as $link)
+                    <a href="{{ $link['href'] }}" target="_blank" class="ws-nav-item"><span>{{ $link['icon'] }}</span> {{ $link['label'] }}</a>
+                @endforeach
+            </nav>
+
+            <div class="p-3 border-t border-slate-700 space-y-1">
+                {{-- Return to the buttons view. --}}
+                <button type="button" data-nav-buttons class="ws-nav-item w-full text-slate-300">
+                    <span>⇄</span> {{ __('app.menu.show_buttons') }}
+                </button>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button class="ws-nav-item w-full text-red-300 hover:bg-red-600/20 hover:text-white"><span>⎋</span> {{ __('app.logout') }}</button>
+                </form>
+            </div>
+    </aside>
+    {{-- Switching between buttons/menu reloads so each screen renders its actions
+         in the right place. --}}
+    <form id="ws-navstyle-form" method="POST" action="{{ route('practice.nav-style') }}" class="hidden">
+        @csrf
+        <input type="hidden" name="nav_style" id="ws-navstyle-input" value="">
+    </form>
+    @endauth
 
     <main class="max-w-7xl mx-auto px-4 py-6">
         @if (session('status'))
@@ -283,6 +380,46 @@
                 d.removeAttribute('open');
             });
         });
+
+        // Workspace navigation: a remembered toggle between the top-bar buttons
+        // and an admin-style side menu, docked open on desktop. The chosen view is
+        // saved per user, so it comes back the same on the next load.
+        (function () {
+            var html = document.documentElement;
+            var toggle = document.getElementById('ws-menu-toggle');
+            if (!toggle) return;
+
+            var form = document.getElementById('ws-navstyle-form');
+            var input = document.getElementById('ws-navstyle-input');
+            var onPhone = function () { return window.matchMedia('(max-width: 1023px)').matches; };
+
+            function openSidebar() { html.classList.add('ws-sidebar-open'); toggle.setAttribute('aria-expanded', 'true'); }
+            function collapseSidebar() { html.classList.remove('ws-sidebar-open'); toggle.setAttribute('aria-expanded', 'false'); }
+            // Switching mode reloads (via the form) so each screen re-renders its
+            // actions in the right place (toolbar vs side menu).
+            function setMode(style) { if (form && input) { input.value = style; form.submit(); } }
+
+            toggle.addEventListener('click', function () {
+                if (! html.classList.contains('ws-menu')) {
+                    setMode('menu');            // switch to the side menu (reloads)
+                } else {
+                    // Already in menu mode: collapse / expand the docked menu.
+                    if (html.classList.contains('ws-sidebar-open')) collapseSidebar(); else openSidebar();
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (! document.getElementById('ws-sidebar')) return;
+                if (e.target.closest('#ws-sidebar-scrim') || e.target.closest('[data-sidebar-close]')) { collapseSidebar(); return; }
+                if (e.target.closest('[data-nav-buttons]')) { setMode('buttons'); return; } // back to toolbar (reloads)
+                // On phones the menu floats over the page, so close it after
+                // picking a link; docked on desktop it stays as the page reloads.
+                if (onPhone() && e.target.closest('#ws-sidebar a')) { collapseSidebar(); }
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && html.classList.contains('ws-sidebar-open') && onPhone()) collapseSidebar();
+            });
+        })();
     </script>
     <style>
         /* Hide the native disclosure triangle on our dropdown summaries. */

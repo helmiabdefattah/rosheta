@@ -10,8 +10,11 @@
 --}}
 @php
     use App\Support\ClinicalChart;
+    use App\Enums\DentalToothCondition;
+    use App\Enums\DentalToothTreatment;
 
     $chartKey = ClinicalChart::forSpecialization($doctor->specialization);
+    $isTeeth = $chartKey === ClinicalChart::TEETH;
 @endphp
 
 @if ($chartKey)
@@ -37,11 +40,32 @@
         $openByDefault = true;
         $hasNotes = $chartNotes->isNotEmpty();
 
+        // For the teeth chart, resolve each tooth's current condition and
+        // treatment from its most recent notes. $toothMarks (enums) drives the
+        // realistic shapes drawn server-side in the teeth partial; $jsMarks
+        // carries just the condition colour the script paints the crown with.
+        $toothMarks = [];
+        $jsMarks = [];
+        if ($isTeeth) {
+            foreach ($byRegion as $regionKey => $notes) {
+                $cond = optional($notes->first(fn ($n) => $n->condition !== null))->condition;
+                $treat = optional($notes->first(fn ($n) => $n->treatment !== null))->treatment;
+                if (! $cond && ! $treat) {
+                    continue;
+                }
+                $toothMarks[(string) $regionKey] = ['condition' => $cond, 'treatment' => $treat];
+                if ($cond) {
+                    $jsMarks[(string) $regionKey] = ['fill' => $cond->color()];
+                }
+            }
+        }
+
         // Everything the script needs: which parts carry notes, and the pins.
         $chartPayload = [
             'usesPoints' => $usesPoints,
             'labels' => $regions,
             'counts' => $byRegion->map->count(),
+            'marks' => $jsMarks,
             'points' => $chartNotes->filter->hasPoint()->map(fn ($n) => [
                 'region' => $n->region,
                 'x' => $n->point_x,
@@ -77,14 +101,19 @@
                 {{ $usesPoints ? __('app.chart.hint_points') : __('app.chart.hint') }}
             </p>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {{-- Teeth: the chart spans the full width; the selected-tooth panel and
+                 the legend (the "aside") are relocated by the script into the
+                 sidebar slot under Attachments. Other charts keep two columns. --}}
+            <div class="grid grid-cols-1 {{ $isTeeth ? '' : 'lg:grid-cols-2' }} gap-5">
                 {{-- The chart itself --}}
                 <div class="min-w-0">
                     @include('clinic.partials.charts.'.$chartKey)
                 </div>
 
-                {{-- What is on the selected part, and how to add to it --}}
-                <div class="min-w-0">
+                {{-- The "aside": the selected-part panel, plus the legend (teeth).
+                     On the teeth chart the script moves this under Attachments. --}}
+                <div class="min-w-0" id="clinical-chart-aside">
+                    <div id="clinical-chart-panel-holder" data-chart-panel-root>
                     <div data-chart-empty class="{{ $selectedRegion ? 'hidden' : '' }} rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
                         {{ __('app.chart.pick_part') }}
                     </div>
@@ -105,7 +134,19 @@
                                      class="{{ $selectedRegion === (string) $regionKey ? '' : 'hidden' }} space-y-2">
                                     @forelse ($byRegion->get($regionKey, collect()) as $note)
                                         <div class="rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2">
-                                            <p class="text-sm text-slate-800 whitespace-pre-line">{{ $note->note }}</p>
+                                            @if ($isTeeth && ($note->condition || $note->treatment))
+                                                <div class="flex flex-wrap gap-1 mb-1">
+                                                    @if ($note->condition)
+                                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium text-white" style="background: {{ $note->condition->color() }}">{{ $note->condition->label() }}</span>
+                                                    @endif
+                                                    @if ($note->treatment)
+                                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium text-white" style="background: {{ $note->treatment->color() }}">{{ $note->treatment->symbol() }} {{ $note->treatment->label() }}</span>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                            @if (filled($note->note))
+                                                <p class="text-sm text-slate-800 whitespace-pre-line">{{ $note->note }}</p>
+                                            @endif
                                             <div class="mt-1 flex items-center justify-between gap-2 text-[11px] text-slate-400">
                                                 <span>
                                                     {{ (int) $note->doctor_id === (int) $doctor->id ? __('app.chart.by_you') : ($note->doctor?->name ?? '—') }}
@@ -139,8 +180,33 @@
                                     <button type="button" data-chart-clear-pin class="underline">{{ __('app.chart.clear_pin') }}</button>
                                 </p>
                             @endif
-                            <textarea name="note" rows="3" required
-                                      placeholder="{{ __('app.chart.note_placeholder') }}"
+                            @if ($isTeeth)
+                                {{-- Condition (colours the tooth) + treatment done (its symbol). --}}
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[11px] text-slate-500 mb-1">{{ __('app.chart.dental.condition') }}</label>
+                                        <select name="condition" class="w-full border rounded-lg px-2 py-1.5 text-sm">
+                                            <option value="">—</option>
+                                            @foreach (DentalToothCondition::cases() as $c)
+                                                <option value="{{ $c->value }}">{{ $c->label() }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] text-slate-500 mb-1">{{ __('app.chart.dental.treatment') }}</label>
+                                        <select name="treatment" class="w-full border rounded-lg px-2 py-1.5 text-sm">
+                                            <option value="">—</option>
+                                            @foreach (DentalToothTreatment::cases() as $t)
+                                                <option value="{{ $t->value }}">{{ $t->label() }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                @error('condition')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
+                                @error('treatment')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
+                            @endif
+                            <textarea name="note" rows="3" @required(! $isTeeth)
+                                      placeholder="{{ $isTeeth ? __('app.chart.dental.note_placeholder') : __('app.chart.note_placeholder') }}"
                                       class="w-full border rounded-lg px-3 py-2 text-sm"></textarea>
                             @error('note')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
                             <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg">
@@ -148,6 +214,31 @@
                             </button>
                         </form>
                     </div>
+                    </div>{{-- /#clinical-chart-panel-holder --}}
+
+                    @if ($isTeeth)
+                        {{-- Legend beneath the panel: colours = condition, shapes = work done. --}}
+                        <div class="mt-4 space-y-2 text-[11px]">
+                            <div>
+                                <span class="text-slate-400 me-1">{{ __('app.chart.dental.conditions') }}:</span>
+                                @foreach (DentalToothCondition::cases() as $c)
+                                    <span class="inline-flex items-center gap-1 me-2 align-middle">
+                                        <span class="inline-block w-3 h-3 rounded-sm" style="background: {{ $c->color() }}"></span>
+                                        <span class="text-slate-600">{{ $c->label() }}</span>
+                                    </span>
+                                @endforeach
+                            </div>
+                            <div>
+                                <span class="text-slate-400 me-1">{{ __('app.chart.dental.treatments') }}:</span>
+                                @foreach (DentalToothTreatment::cases() as $t)
+                                    <span class="inline-flex items-center gap-1 me-2 align-middle">
+                                        <svg width="20" height="20" viewBox="-10 -20 20 21" class="inline-block align-middle shrink-0" style="background:#f8fafc;border-radius:3px">{!! $t->marker() !!}</svg>
+                                        <span class="text-slate-600">{{ $t->label() }}</span>
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -192,19 +283,42 @@
             var counts = config.counts || {};
             var usesPoints = !!config.usesPoints;
 
-            var regionInput = root.querySelector('[data-chart-region-input]');
-            var regionLabel = root.querySelector('[data-chart-region-label]');
-            var panel = root.querySelector('[data-chart-panel]');
-            var empty = root.querySelector('[data-chart-empty]');
-            var pointX = root.querySelector('[data-chart-point-x]');
-            var pointY = root.querySelector('[data-chart-point-y]');
-            var pinHint = root.querySelector('[data-chart-pin-hint]');
+            // The selected-part panel may be relocated out of the chart card into
+            // a sidebar slot (teeth chart). Find it wherever it lives and, if a
+            // slot is present, move it there so it sits under the Attachments card.
+            var panelRoot = document.getElementById('clinical-chart-panel-holder') || root;
+            var aside = document.getElementById('clinical-chart-aside');
+            var slot = document.getElementById('clinical-chart-panel-slot');
+            if (slot && aside && aside.parentNode !== slot) {
+                slot.appendChild(aside);
+            }
+
+            var regionInput = panelRoot.querySelector('[data-chart-region-input]');
+            var regionLabel = panelRoot.querySelector('[data-chart-region-label]');
+            var panel = panelRoot.querySelector('[data-chart-panel]');
+            var empty = panelRoot.querySelector('[data-chart-empty]');
+            var pointX = panelRoot.querySelector('[data-chart-point-x]');
+            var pointY = panelRoot.querySelector('[data-chart-point-y]');
+            var pinHint = panelRoot.querySelector('[data-chart-pin-hint]');
 
             /** Mark every part that already carries notes, so the chart reads at a glance. */
             root.querySelectorAll('[data-region]').forEach(function (part) {
                 if (counts[part.dataset.region]) {
                     part.classList.add('has-notes');
                     part.setAttribute('data-count', counts[part.dataset.region]);
+                }
+            });
+
+            // Teeth: colour each tooth's crown by its condition. The realistic
+            // treatment/condition shapes are drawn server-side in the partial.
+            var marks = config.marks || {};
+            Object.keys(marks).forEach(function (region) {
+                var g = root.querySelector('[data-region="' + region + '"]');
+                if (!g) return;
+                var m = marks[region] || {};
+                if (m.fill) {
+                    g.classList.add('tooth-marked');
+                    g.style.setProperty('--mark', m.fill);
                 }
             });
 
@@ -224,7 +338,7 @@
                 panel.classList.remove('hidden');
                 empty.classList.add('hidden');
 
-                root.querySelectorAll('[data-chart-notes-for]').forEach(function (list) {
+                panelRoot.querySelectorAll('[data-chart-notes-for]').forEach(function (list) {
                     list.classList.toggle('hidden', list.dataset.chartNotesFor !== region);
                 });
                 root.querySelectorAll('[data-region]').forEach(function (part) {
@@ -282,6 +396,46 @@
             });
 
             if (root.dataset.selected) select(root.dataset.selected);
+
+            // Hover tooltip: show a part's recorded notes (condition / treatment /
+            // text) when the cursor is over it, read straight from the panel's
+            // per-region note markup so it always matches what is on file.
+            var tip = document.getElementById('chart-hover-tip');
+            if (!tip) {
+                tip = document.createElement('div');
+                tip.id = 'chart-hover-tip';
+                tip.className = 'chart-hover-tip hidden';
+                document.body.appendChild(tip);
+            }
+            function hideTip() { tip.classList.add('hidden'); }
+            function placeTip(x, y) {
+                var pad = 14, w = tip.offsetWidth, h = tip.offsetHeight;
+                var left = x + pad, top = y + pad;
+                if (left + w > window.innerWidth - 8) left = x - w - pad;
+                if (top + h > window.innerHeight - 8) top = y - h - pad;
+                tip.style.left = Math.max(8, left) + 'px';
+                tip.style.top = Math.max(8, top) + 'px';
+            }
+            function showTip(region, x, y) {
+                var src = panelRoot.querySelector('[data-chart-notes-for="' + region + '"]');
+                // Only when the part actually carries a note (a card, not the
+                // "nothing recorded" placeholder).
+                if (!src || !src.querySelector('.rounded-lg')) { hideTip(); return; }
+                tip.innerHTML = '<div class="chart-hover-tip-head">' + (labels[region] || region) + '</div>' + src.innerHTML;
+                tip.classList.remove('hidden');
+                placeTip(x, y);
+            }
+            root.addEventListener('mouseover', function (e) {
+                var part = e.target.closest('[data-region]');
+                if (part) showTip(part.dataset.region, e.clientX, e.clientY);
+            });
+            root.addEventListener('mousemove', function (e) {
+                if (!tip.classList.contains('hidden')) placeTip(e.clientX, e.clientY);
+            });
+            root.addEventListener('mouseout', function (e) {
+                var part = e.target.closest('[data-region]');
+                if (part && (!e.relatedTarget || !part.contains(e.relatedTarget))) hideTip();
+            });
         });
     </script>
     @endpush
@@ -309,6 +463,23 @@
 
         [data-clinical-chart] .chart-pin { fill: #ef4444; stroke: #fff; stroke-width: 1.5; pointer-events: none; }
         [data-clinical-chart] .chart-pin-draft { fill: #059669; }
+
+        /* Hover tooltip showing a tooth's recorded notes. Appended to <body>, so
+           it is styled globally (outside the chart scope) and never clipped. */
+        .chart-hover-tip { position: fixed; z-index: 120; max-width: 300px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 10px 25px rgba(15, 23, 42, .15); padding: 10px 12px; font-size: 12px; pointer-events: none; }
+        .chart-hover-tip.hidden { display: none; }
+        .chart-hover-tip-head { font-weight: 700; color: #334155; margin-bottom: 6px; }
+        .chart-hover-tip .max-h-56 { max-height: none; overflow: visible; }
+        .chart-hover-tip form { display: none; }
+
+        /* Teeth marks: the tooth's condition fills it, its treatment symbol sits on
+           top. These sit after the has-notes rules and match their specificity so a
+           marked tooth keeps its own colour instead of the generic "has notes" one. */
+        [data-clinical-chart] .tooth-symbol { fill: #fff; pointer-events: none; }
+        [data-clinical-chart][data-points="0"] [data-region].tooth-marked .part { fill: var(--mark); }
+        [data-clinical-chart][data-points="0"] [data-region].tooth-marked .tooth-code { fill: #fff; }
+        [data-clinical-chart][data-points="0"] [data-region].tooth-marked:hover .part { fill: var(--mark); filter: brightness(0.92); }
+        [data-clinical-chart][data-points="0"] [data-region].tooth-marked.is-selected .part { fill: var(--mark); stroke: #1e1b4b; stroke-width: 3; }
     </style>
     @endpush
     @endonce

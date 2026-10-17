@@ -159,6 +159,21 @@ class DemoPurger
             $deleted['clinic_working_hours'] = $this->deleteIn($db, 'clinic_working_hours', 'clinic_id', $clinicIds);
             $deleted['clinic_doctor'] = $this->deleteIn($db, 'clinic_doctor', 'clinic_id', $clinicIds);
 
+            // --- dental lab module (clinic-scoped); children deleted first so
+            //     this works whatever the FK cascade config is ---
+            $dentalOrderIds = $db->table('dental_lab_orders')->whereIn('clinic_id', $clinicIds)->pluck('id')->all();
+            $deleted['dental_lab_order_items'] = $this->deleteIn($db, 'dental_lab_order_items', 'dental_lab_order_id', $dentalOrderIds);
+            $deleted['dental_lab_payments'] = $this->deleteIn($db, 'dental_lab_payments', 'dental_lab_order_id', $dentalOrderIds);
+            $deleted['dental_patient_payments'] = $this->deleteIn($db, 'dental_patient_payments', 'dental_lab_order_id', $dentalOrderIds);
+            $deleted['dental_stock_movements'] = $this->deleteIn($db, 'dental_stock_movements', 'clinic_id', $clinicIds);
+            $deleted['dental_lab_orders'] = $this->deleteIn($db, 'dental_lab_orders', 'clinic_id', $clinicIds);
+            $deleted['dental_labs'] = $this->deleteIn($db, 'dental_labs', 'clinic_id', $clinicIds);
+            $deleted['dental_stock_items'] = $this->deleteIn($db, 'dental_stock_items', 'clinic_id', $clinicIds);
+            // Clinic-custom catalog items only; the shared catalog has a null clinic_id.
+            $deleted['dental_items'] = $this->deleteIn($db, 'dental_items', 'clinic_id', $clinicIds);
+            // Tooth-chart notes are anchored to the patient.
+            $deleted['clinical_chart_notes'] = $this->deleteIn($db, 'clinical_chart_notes', 'client_id', $clientIds);
+
             // --- marketplace rows the onboarding seeder creates for lab results ---
             $requestIds = $this->deleteMarketplaceTrail($db, $clientIds, $deleted);
 

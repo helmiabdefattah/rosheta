@@ -253,6 +253,24 @@ class Clinic extends Model
         return $this->hasMany(Appointment::class);
     }
 
+    /** Dental laboratories this clinic sends work to. */
+    public function dentalLabs(): HasMany
+    {
+        return $this->hasMany(DentalLab::class);
+    }
+
+    /** Dental lab work orders raised by this clinic. */
+    public function dentalLabOrders(): HasMany
+    {
+        return $this->hasMany(DentalLabOrder::class);
+    }
+
+    /** This clinic's dental materials stock. */
+    public function dentalStockItems(): HasMany
+    {
+        return $this->hasMany(DentalStockItem::class);
+    }
+
     /**
      * Get a short opening-hours summary (e.g. "Sat-Thu 9:00 AM - 5:00 PM" or "Today 9:00-17:00").
      */
