@@ -73,7 +73,7 @@
 
     {{-- Shared design layer: linked after the inline styles so its rules win,
          before @stack('styles') so page-specific overrides still take priority. --}}
-    <link rel="stylesheet" href="{{ asset('css/theme.css') }}?v=3">
+    <link rel="stylesheet" href="{{ asset('css/theme.css') }}?v=4">
 
     @stack('styles')
 </head>

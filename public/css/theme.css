@@ -189,9 +189,23 @@ body.bg-slate-100 main table tbody tr {
     transition: background-color 0.15s ease;
 }
 
+/* Gentle zebra striping so wide rows are easy to track across. Declared
+   before the hover rule so a hovered row always wins over its stripe. */
+body.bg-gray-100 main table tbody tr:nth-child(even),
+body.bg-slate-100 main table tbody tr:nth-child(even) {
+    background-color: rgba(15, 23, 42, 0.018);
+}
+
 body.bg-gray-100 main table tbody tr:hover,
 body.bg-slate-100 main table tbody tr:hover {
-    background-color: rgba(13, 148, 136, 0.05);
+    background-color: rgba(13, 148, 136, 0.06);
+}
+
+/* Roomier body cells to match the calmer header band. */
+body.bg-gray-100 main table tbody td,
+body.bg-slate-100 main table tbody td {
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
 }
 
 /* ------------------------------------------------------------------ *
