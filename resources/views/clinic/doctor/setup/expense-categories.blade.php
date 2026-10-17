@@ -9,6 +9,20 @@
     <a href="{{ route('practice.doctor.setup.index') }}" class="btn btn-secondary btn-sm">← {{ __('app.setup.title') }}</a>
 </div>
 
+@if ($isDental)
+    {{-- Dental-only: mirror clinic→lab payments into the expenses ledger. --}}
+    <form method="POST" action="{{ route('practice.doctor.setup.expense-settings') }}" class="card p-5 mb-4">
+        @csrf
+        <label class="flex items-start gap-3">
+            <input type="checkbox" name="expenses_autocapture" value="1" @checked($clinic->expenses_autocapture) onchange="this.form.submit()" class="mt-1">
+            <span>
+                <span class="font-semibold text-slate-800">{{ __('app.expenses.autocapture') }}</span>
+                <span class="block text-sm text-slate-500">{{ __('app.expenses.autocapture_hint') }}</span>
+            </span>
+        </label>
+    </form>
+@endif
+
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
     {{-- Add --}}
     <form method="POST" action="{{ route('practice.doctor.setup.expense-categories.store') }}" class="card p-5 space-y-3">

@@ -36,6 +36,7 @@ class Clinic extends Model
         'printer_language',
         'print_qr',
         'notify_queue_max',
+        'expenses_autocapture',
     ];
 
     /** Languages the Bluetooth ticket printer can print in. */
@@ -65,6 +66,7 @@ class Clinic extends Model
         'printer_connected_at' => 'datetime',
         'print_qr' => 'boolean',
         'notify_queue_max' => 'integer',
+        'expenses_autocapture' => 'boolean',
     ];
 
     /** Cap for the "patients before you" queue notification (min 1, default 10). */

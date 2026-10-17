@@ -627,6 +627,7 @@ Route::prefix('practice')->name('practice.')->group(function () {
 
         // Setup: expense categories (part of the expenses module).
         Route::get('/setup/expense-categories', [App\Http\Controllers\Clinic\ExpenseCategoryController::class, 'index'])->name('setup.expense-categories');
+        Route::post('/setup/expense-settings', [App\Http\Controllers\Clinic\ExpenseCategoryController::class, 'updateSettings'])->name('setup.expense-settings');
         Route::post('/setup/expense-categories', [App\Http\Controllers\Clinic\ExpenseCategoryController::class, 'store'])->name('setup.expense-categories.store');
         Route::put('/setup/expense-categories/{category}', [App\Http\Controllers\Clinic\ExpenseCategoryController::class, 'update'])->name('setup.expense-categories.update');
         Route::delete('/setup/expense-categories/{category}', [App\Http\Controllers\Clinic\ExpenseCategoryController::class, 'destroy'])->name('setup.expense-categories.destroy');
@@ -663,6 +664,10 @@ Route::prefix('practice')->name('practice.')->group(function () {
         // Monthly budgets vs. actual.
         Route::get('/budgets', [App\Http\Controllers\Clinic\ExpenseBudgetController::class, 'index'])->name('budgets.index');
         Route::post('/budgets', [App\Http\Controllers\Clinic\ExpenseBudgetController::class, 'store'])->name('budgets.store');
+
+        // Finance overview: income vs. expenses (profit & loss).
+        Route::get('/finance', [App\Http\Controllers\Clinic\FinanceReportController::class, 'overview'])->name('finance.overview');
+        Route::get('/finance/export', [App\Http\Controllers\Clinic\FinanceReportController::class, 'export'])->name('finance.export');
 
         // Manager: money & insurance reporting (doctor only).
         Route::get('/manager', [App\Http\Controllers\Clinic\ManagerController::class, 'index'])->name('manager.index');

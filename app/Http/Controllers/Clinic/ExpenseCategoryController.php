@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Clinic;
 use App\Http\Controllers\Clinic\Concerns\ClinicContext;
 use App\Http\Controllers\Controller;
 use App\Models\ExpenseCategory;
+use App\Support\ClinicalChart;
 use App\Support\ExpenseCategoryPresets;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,7 +30,18 @@ class ExpenseCategoryController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('clinic.doctor.setup.expense-categories', compact('categories', 'clinic'));
+        $isDental = ClinicalChart::forSpecialization($doctor->specialization) === ClinicalChart::TEETH;
+
+        return view('clinic.doctor.setup.expense-categories', compact('categories', 'clinic', 'isDental'));
+    }
+
+    /** Toggle the dental lab-payment auto-capture setting. */
+    public function updateSettings(Request $request): RedirectResponse
+    {
+        $clinic = $this->activeClinic($this->clinicDoctor($request));
+        $clinic->update(['expenses_autocapture' => $request->boolean('expenses_autocapture')]);
+
+        return back()->with('status', __('app.expenses.settings_saved'));
     }
 
     public function store(Request $request): RedirectResponse

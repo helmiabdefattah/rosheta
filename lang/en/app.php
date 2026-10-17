@@ -900,6 +900,17 @@ return [
 
     'finance' => [
         'menu' => 'Finance',
+        'title' => 'Finance overview',
+        'line' => 'Line',
+        'income' => 'Income',
+        'income_patient' => 'Patient collections',
+        'income_dental' => 'Dental patient payments',
+        'income_total' => 'Total income',
+        'expenses_total' => 'Total expenses',
+        'by_category' => 'Expenses by category',
+        'net' => 'Net profit',
+        'cash_paid' => 'Cash paid out',
+        'lab_payment' => 'Lab payment',
     ],
 
     'expenses' => [
@@ -933,6 +944,9 @@ return [
         'category_saved' => 'Category added',
         'category_updated' => 'Category updated',
         'category_deleted' => 'Category deleted',
+        'settings_saved' => 'Settings saved',
+        'autocapture' => 'Auto-capture lab payments',
+        'autocapture_hint' => 'When on, each payment you make to a dental lab is recorded here as a paid expense under “Dental Lab Fees”.',
         'f' => [
             'title' => 'Title',
             'category' => 'Category',
