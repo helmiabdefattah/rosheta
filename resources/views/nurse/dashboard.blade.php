@@ -9,29 +9,30 @@
     @endphp
 
     <!-- Quick action: Client nursing requests -->
-    <div class="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="mb-6 relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg shadow-teal-500/20">
+        <span aria-hidden="true" class="pointer-events-none absolute -top-10 -end-10 h-40 w-40 rounded-full bg-white/10 blur-2xl"></span>
+        <div class="relative p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div class="flex items-start gap-4">
-                <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white flex-shrink-0">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-800">
+                    <h3 class="text-lg font-bold">
                         {{ app()->getLocale() === 'ar' ? 'طلبات التمريض المنزلي' : 'Client nursing requests' }}
                     </h3>
-                    <p class="text-sm text-gray-500 mt-0.5">
+                    <p class="text-sm text-white/80 mt-0.5">
                         {{ app()->getLocale() === 'ar' ? 'اعرض طلبات العملاء وقدم عروضك عليها' : 'View client requests and make offers on them' }}
                     </p>
                 </div>
             </div>
             <div class="flex flex-wrap gap-2">
-                <a href="{{ route('nurse.requests.index') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium text-sm transition-colors">
+                <a href="{{ route('nurse.requests.index') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-teal-700 rounded-lg hover:bg-teal-50 font-semibold text-sm transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                     {{ app()->getLocale() === 'ar' ? 'عرض الطلبات' : 'View requests' }}
                 </a>
-                <a href="{{ route('nurse.offers.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-primary text-primary rounded-lg hover:bg-primary/5 font-medium text-sm transition-colors">
+                <a href="{{ route('nurse.offers.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 border border-white/40 text-white rounded-lg hover:bg-white/20 font-medium text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                     {{ app()->getLocale() === 'ar' ? 'تقديم عرض' : 'Make offer' }}
                 </a>
@@ -91,7 +92,8 @@
                                 {{ app()->getLocale() === 'ar' ? 'غير نشط' : 'Inactive' }}
                             </span>
                         @endif
-                        <a href="{{ route('nurses.edit', $nurse) }}" class="px-3 py-1 bg-blue-600 text-white rounded-md text-sm">
+                        <a href="{{ route('nurses.edit', $nurse) }}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                             {{ app()->getLocale() === 'ar' ? 'تعديل' : 'Edit' }}
                         </a>
                     </div>

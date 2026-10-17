@@ -3,74 +3,45 @@
 @section('title', app()->getLocale() === 'ar' ? 'لوحة تحكم الصيدلية' : 'Pharmacy Dashboard')
 @section('page-description', app()->getLocale() === 'ar' ? 'نظرة عامة على الصيدلية والإحصائيات' : 'Overview of pharmacy and statistics')
 
+@php
+    $statCards = [
+        ['ar' => 'طلبات الأدوية المعلقة', 'en' => 'Pending Medicine Requests', 'value' => $stats['pending_requests'], 'color' => 'amber',
+         'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
+        ['ar' => 'إجمالي عروض الصيدلية', 'en' => 'Total Pharmacy Offers', 'value' => $stats['total_offers'], 'color' => 'blue',
+         'icon' => 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 011 12V7a4 4 0 014-4z'],
+        ['ar' => 'العروض المقبولة', 'en' => 'Accepted Offers', 'value' => $stats['accepted_offers'], 'color' => 'emerald',
+         'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
+        ['ar' => 'مستخدمي الصيدلية', 'en' => 'Pharmacy Users', 'value' => $stats['total_users'], 'color' => 'purple',
+         'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'],
+    ];
+@endphp
+
 @section('content')
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <!-- Pending Requests -->
-        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-slate-600">{{ app()->getLocale() === 'ar' ? 'طلبات الأدوية المعلقة' : 'Pending Medicine Requests' }}</p>
-                    <p class="text-3xl font-bold text-slate-800 mt-2">{{ $stats['pending_requests'] }}</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+        @foreach($statCards as $card)
+            @php $c = $card['color']; @endphp
+            <div class="group bg-white rounded-xl shadow-sm border-s-4 border-{{ $c }}-500 p-5 flex items-center justify-between gap-4">
+                <div class="min-w-0">
+                    <p class="text-sm font-medium text-slate-600 truncate">{{ app()->getLocale() === 'ar' ? $card['ar'] : $card['en'] }}</p>
+                    <p class="mt-2 text-3xl font-bold text-slate-800">{{ $card['value'] }}</p>
                 </div>
-                <div class="bg-yellow-100 p-3 rounded-full">
-                    <svg class="w-8 h-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                <div class="w-12 h-12 rounded-2xl bg-{{ $c }}-100 text-{{ $c }}-600 flex items-center justify-center shrink-0 transition-colors duration-300 group-hover:bg-{{ $c }}-600 group-hover:text-white">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $card['icon'] }}"/>
                     </svg>
                 </div>
             </div>
-        </div>
-
-        <!-- Total Offers -->
-        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-slate-600">{{ app()->getLocale() === 'ar' ? 'إجمالي عروض الصيدلية' : 'Total Pharmacy Offers' }}</p>
-                    <p class="text-3xl font-bold text-slate-800 mt-2">{{ $stats['total_offers'] }}</p>
-                </div>
-                <div class="bg-blue-100 p-3 rounded-full">
-                    <svg class="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 011 12V7a4 4 0 014-4z"/>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <!-- Accepted Offers -->
-        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-slate-600">{{ app()->getLocale() === 'ar' ? 'العروض المقبولة' : 'Accepted Offers' }}</p>
-                    <p class="text-3xl font-bold text-slate-800 mt-2">{{ $stats['accepted_offers'] }}</p>
-                </div>
-                <div class="bg-green-100 p-3 rounded-full">
-                    <svg class="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pharmacy Users -->
-        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-500">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-slate-600">{{ app()->getLocale() === 'ar' ? 'مستخدمي الصيدلية' : 'Pharmacy Users' }}</p>
-                    <p class="text-3xl font-bold text-slate-800 mt-2">{{ $stats['total_users'] }}</p>
-                </div>
-                <div class="bg-purple-100 p-3 rounded-full">
-                    <svg class="w-8 h-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
+        @endforeach
     </div>
 
     <!-- Recent Pending Medicine Requests -->
-    <div class="bg-white rounded-lg shadow-sm mb-6">
+    <div class="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-slate-800">{{ app()->getLocale() === 'ar' ? 'طلبات الأدوية المعلقة' : 'Recent Pending Medicine Requests' }}</h2>
+            <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                <svg class="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                {{ app()->getLocale() === 'ar' ? 'طلبات الأدوية المعلقة' : 'Recent Pending Medicine Requests' }}
+            </h2>
         </div>
         <div class="p-2 sm:p-0">
             @if($recentRequests->count() > 0)
@@ -201,8 +172,9 @@
                 </table>
                 </div>
             @else
-                <div class="px-6 py-12 text-center">
-                    <p class="text-slate-500">{{ app()->getLocale() === 'ar' ? 'لا توجد طلبات معلقة حالياً' : 'No pending requests at the moment' }}</p>
+                <div class="px-6 py-14 text-center">
+                    <svg class="w-12 h-12 mx-auto text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <p class="mt-3 text-slate-500">{{ app()->getLocale() === 'ar' ? 'لا توجد طلبات معلقة حالياً' : 'No pending requests at the moment' }}</p>
                 </div>
             @endif
         </div>
