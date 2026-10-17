@@ -160,7 +160,7 @@
          view's @push('styles') is silently dropped. --}}
     {{-- Shared design layer (background, cards, colours, width). Complements
          the workspace's own .card/.btn system defined above. --}}
-    <link rel="stylesheet" href="{{ asset('css/theme.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/theme.css') }}?v=2">
     @stack('styles')
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen overflow-x-hidden">
