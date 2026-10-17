@@ -4,10 +4,9 @@
  * Every Blade layout builds its UI from the Tailwind Play CDN, so there is no
  * compiled stylesheet to centralise look-and-feel in. This file is that single
  * place: it is linked LAST in each layout's <head> (after the CDN script and
- * the inline <style> blocks) and lifts the shared surfaces — page background,
- * cards, content width, colours, tables, scrollbars — to one cohesive, modern
- * look across the admin, doctor, client, laboratory, nurse, pharmacy and
- * clinic dashboards and the public marketing pages.
+ * the inline <style> blocks) and lifts the shared surfaces to one cohesive,
+ * modern, accessible look across the admin, doctor, client, laboratory, nurse,
+ * pharmacy and clinic dashboards and the public marketing pages.
  *
  * It only ever enhances what the markup already renders; it adds no new
  * classes to the views. Rules are scoped by the layout's own <body> class
@@ -22,7 +21,9 @@
        rules reference it (and its soft tints) in one place. */
     --theme-accent: #0d9488;        /* Teal 600 */
     --theme-accent-strong: #0f766e; /* Teal 700 */
+    --theme-accent-soft: rgba(13, 148, 136, 0.12);
     --theme-ink: #0f172a;           /* Slate 900 — headings */
+    --theme-muted: #64748b;         /* Slate 500 — secondary text */
     --theme-border: rgba(15, 23, 42, 0.08);
     /* Layered card shadow — clear, soft depth rather than a hard drop. */
     --theme-card-shadow: 0 1px 2px rgba(16, 24, 40, 0.05),
@@ -33,6 +34,46 @@
     /* Max readable width for dashboard content; on wide monitors the columns
        stop stretching edge-to-edge and centre instead. */
     --theme-content-max: 1440px;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Base & accessibility
+ * ------------------------------------------------------------------ */
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* A clear, consistent keyboard focus ring everywhere — only for keyboard
+   users (:focus-visible), so it never flashes on mouse clicks. Big usability
+   and accessibility win across an app this size. */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid var(--theme-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+::selection {
+    background: var(--theme-accent-soft);
+    color: var(--theme-accent-strong);
+}
+
+/* Honour the OS "reduce motion" setting: strip the transitions and animations
+   the theme (and the layouts) add, for users who get motion sickness. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
 
 /* ------------------------------------------------------------------ *
@@ -75,9 +116,14 @@ body.bg-slate-100 main > * {
  *  Any white panel inside a dashboard main — the common
  *  `bg-white rounded-xl/2xl` block, a `rounded-lg` block that already
  *  opts into a shadow, and the clinic workspace's own `.card` — gets a
- *  unified radius, a hairline border and the soft layered shadow, with
- *  a gentle lift on hover. The two-class ancestor selector sits above
- *  Tailwind's shadow/border utilities, so this wins cleanly.
+ *  unified radius, a hairline border and the soft layered shadow. The
+ *  two-class ancestor selector sits above Tailwind's shadow/border
+ *  utilities, so this wins cleanly.
+ *
+ *  Hover deepens the shadow and warms the border; it does NOT lift the
+ *  panel, because many of these wrap tables and a translate would make a
+ *  whole listing jump. The gentle lift is reserved for anchor cards
+ *  (clickable tiles) below, which never contain tables.
  * ------------------------------------------------------------------ */
 main .bg-white.rounded-xl,
 main .bg-white.rounded-2xl,
@@ -88,7 +134,7 @@ main .bg-white.rounded-lg.shadow-lg,
 .card {
     border: 1px solid var(--theme-border);
     box-shadow: var(--theme-card-shadow);
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
 main .bg-white.rounded-xl,
@@ -103,7 +149,15 @@ main .bg-white.rounded-lg.shadow-md:hover,
 main .bg-white.rounded-lg.shadow-lg:hover,
 .card:hover {
     box-shadow: var(--theme-card-shadow-hover);
-    border-color: rgba(13, 148, 136, 0.35);
+    border-color: rgba(13, 148, 136, 0.30);
+}
+
+/* Clickable tiles (an <a> that is itself the card) get a tactile lift. */
+main a.bg-white.rounded-xl:hover,
+main a.bg-white.rounded-2xl:hover,
+main a.bg-white.rounded-lg.shadow:hover,
+main a.bg-white.rounded-lg.shadow-sm:hover,
+main a.bg-white.rounded-lg.shadow-md:hover {
     transform: translateY(-3px);
 }
 
@@ -116,8 +170,9 @@ body.bg-slate-100 main h1 {
 
 /* ------------------------------------------------------------------ *
  *  Tables
- *  Content tables get a quiet header band and a soft row-hover, so dense
- *  listings are easier to scan without restyling each view.
+ *  Content tables get a quiet header band, roomier cells and a soft
+ *  row-hover, so dense listings are easier to scan without restyling
+ *  each view.
  * ------------------------------------------------------------------ */
 body.bg-gray-100 main table thead th,
 body.bg-slate-100 main table thead th {
@@ -125,6 +180,8 @@ body.bg-slate-100 main table thead th {
     color: #475569;
     font-weight: 600;
     letter-spacing: 0.01em;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
 }
 
 body.bg-gray-100 main table tbody tr,
@@ -134,7 +191,7 @@ body.bg-slate-100 main table tbody tr {
 
 body.bg-gray-100 main table tbody tr:hover,
 body.bg-slate-100 main table tbody tr:hover {
-    background-color: rgba(13, 148, 136, 0.04);
+    background-color: rgba(13, 148, 136, 0.05);
 }
 
 /* ------------------------------------------------------------------ *
@@ -151,6 +208,39 @@ body.bg-slate-100 main textarea:focus {
     outline: none;
     border-color: var(--theme-accent);
     box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+
+/* ------------------------------------------------------------------ *
+ *  Buttons & interactive micro-feedback
+ *  A tactile press on buttons and a smooth default transition make the
+ *  dashboards feel more responsive, and a clear disabled state avoids
+ *  the "is it clickable?" ambiguity. Applies to real <button>s and
+ *  elements marked up as buttons; it never changes their colour.
+ * ------------------------------------------------------------------ */
+body.bg-gray-100 button,
+body.bg-slate-100 button,
+body.bg-gray-100 a[class*="rounded"],
+body.bg-slate-100 a[class*="rounded"] {
+    transition: background-color 0.15s ease, color 0.15s ease,
+                box-shadow 0.15s ease, transform 0.08s ease, opacity 0.15s ease;
+}
+
+body.bg-gray-100 button:active:not(:disabled),
+body.bg-slate-100 button:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+body.bg-gray-100 button:disabled,
+body.bg-slate-100 button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* Rounded-full status pills / badges get a faint hairline so light tints
+   (e.g. amber-50, green-50) still read as a defined chip. */
+body.bg-gray-100 main .rounded-full.text-xs,
+body.bg-slate-100 main .rounded-full.text-xs {
+    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
 }
 
 /* ------------------------------------------------------------------ *
