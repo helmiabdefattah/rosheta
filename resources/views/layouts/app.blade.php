@@ -71,6 +71,10 @@
         }
     </style>
 
+    {{-- Shared design layer: linked after the inline styles so its rules win,
+         before @stack('styles') so page-specific overrides still take priority. --}}
+    <link rel="stylesheet" href="{{ asset('css/theme.css') }}?v=1">
+
     @stack('styles')
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased overflow-x-hidden selection:bg-primary selection:text-white">

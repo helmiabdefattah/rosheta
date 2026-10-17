@@ -47,6 +47,8 @@
         .doctor-badge { background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
         [x-cloak] { display: none !important; }
     </style>
+    {{-- Shared design layer (background, cards, colours, width). --}}
+    <link rel="stylesheet" href="{{ asset('css/theme.css') }}?v=1">
     @stack('styles')
 </head>
 <body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-hidden">

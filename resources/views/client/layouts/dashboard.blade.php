@@ -123,6 +123,10 @@
         };
     </script>
 
+    {{-- Shared design layer (background, cards, colours, width). The client
+         main keeps its own background image; the theme only recolours the
+         flat surfaces around it. --}}
+    <link rel="stylesheet" href="{{ asset('css/theme.css') }}?v=1">
     @stack('styles')
 </head>
 <body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-hidden">

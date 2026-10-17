@@ -149,6 +149,11 @@
             notificationSound: {{ (auth()->user()?->notification_sound ?? false) ? 'true' : 'false' }}
         };
     </script>
+
+    {{-- Shared design layer: background, cards, colours and width, app-wide.
+         Linked last so it wins over the inline styles above; dashboard rules
+         are gated on this layout's bg-gray-100 body. --}}
+    <link rel="stylesheet" href="{{ asset('css/theme.css') }}?v=1">
 </head>
 <body class="bg-gray-100 text-slate-800 font-sans antialiased overflow-hidden">
 

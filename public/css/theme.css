@@ -1,0 +1,209 @@
+/*
+ * Shared design layer (theme).
+ *
+ * Every Blade layout builds its UI from the Tailwind Play CDN, so there is no
+ * compiled stylesheet to centralise look-and-feel in. This file is that single
+ * place: it is linked LAST in each layout's <head> (after the CDN script and
+ * the inline <style> blocks) and lifts the shared surfaces — page background,
+ * cards, content width, colours, tables, scrollbars — to one cohesive, modern
+ * look across the admin, doctor, client, laboratory, nurse, pharmacy and
+ * clinic dashboards and the public marketing pages.
+ *
+ * It only ever enhances what the markup already renders; it adds no new
+ * classes to the views. Rules are scoped by the layout's own <body> class
+ * (bg-gray-100 / bg-slate-100 for the dashboards, bg-slate-50 for the public
+ * site) and by structural ancestors (e.g. `main .bg-white`), which keeps the
+ * specificity above Tailwind's single-class utilities without needing
+ * !important, and keeps dashboard rules from ever touching the marketing page.
+ */
+
+:root {
+    /* The product accent is teal across the app; these tokens let the shared
+       rules reference it (and its soft tints) in one place. */
+    --theme-accent: #0d9488;        /* Teal 600 */
+    --theme-accent-strong: #0f766e; /* Teal 700 */
+    --theme-ink: #0f172a;           /* Slate 900 — headings */
+    --theme-border: rgba(15, 23, 42, 0.07);
+    /* Layered, low-contrast card shadow — reads as depth, not a hard drop. */
+    --theme-card-shadow: 0 1px 2px rgba(15, 23, 42, 0.04),
+                         0 4px 12px rgba(15, 23, 42, 0.05);
+    --theme-card-shadow-hover: 0 2px 4px rgba(15, 23, 42, 0.05),
+                               0 12px 28px rgba(15, 23, 42, 0.10);
+    --theme-radius: 1rem;           /* 16px — the unified card radius */
+    /* Max readable width for dashboard content; on wide monitors the columns
+       stop stretching edge-to-edge and centre instead. */
+    --theme-content-max: 1600px;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Page background
+ *  A soft, cool vertical wash replaces the flat grey. Painted on <body>
+ *  and fixed so it stays put while the panels scroll. The flat content
+ *  columns are made transparent (background-COLOR only, never the
+ *  shorthand) so the wash shows through while any background IMAGE a
+ *  layout sets — e.g. the client dashboard's hero texture — is kept.
+ * ------------------------------------------------------------------ */
+body.bg-gray-100,
+body.bg-slate-100 {
+    background-color: #eef2f7;
+    background-image: linear-gradient(180deg, #f7f9fc 0%, #e9eef5 100%);
+    background-attachment: fixed;
+}
+
+body.bg-gray-100 .flex-1,
+body.bg-slate-100 .flex-1,
+body.bg-gray-100 main,
+body.bg-slate-100 main {
+    background-color: transparent;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Content width
+ *  Keep each top-level block in the dashboard main column to a
+ *  comfortable measure and centre it, so cards and tables no longer
+ *  span the full width of large displays. Below the cap (laptops and
+ *  phones) nothing changes.
+ * ------------------------------------------------------------------ */
+body.bg-gray-100 main > *,
+body.bg-slate-100 main > * {
+    max-width: var(--theme-content-max);
+    margin-inline: auto;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Cards
+ *  Any white panel inside a dashboard main — the common
+ *  `bg-white rounded-xl/2xl` block, a `rounded-lg` block that already
+ *  opts into a shadow, and the clinic workspace's own `.card` — gets a
+ *  unified radius, a hairline border and the soft layered shadow, with
+ *  a gentle lift on hover. The two-class ancestor selector sits above
+ *  Tailwind's shadow/border utilities, so this wins cleanly.
+ * ------------------------------------------------------------------ */
+main .bg-white.rounded-xl,
+main .bg-white.rounded-2xl,
+main .bg-white.rounded-lg.shadow,
+main .bg-white.rounded-lg.shadow-sm,
+main .bg-white.rounded-lg.shadow-md,
+main .bg-white.rounded-lg.shadow-lg,
+.card {
+    border: 1px solid var(--theme-border);
+    box-shadow: var(--theme-card-shadow);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+main .bg-white.rounded-xl,
+main .bg-white.rounded-2xl {
+    border-radius: var(--theme-radius);
+}
+
+main .bg-white.rounded-xl:hover,
+main .bg-white.rounded-2xl:hover,
+main .bg-white.rounded-lg.shadow:hover,
+main .bg-white.rounded-lg.shadow-md:hover,
+main .bg-white.rounded-lg.shadow-lg:hover,
+.card:hover {
+    box-shadow: var(--theme-card-shadow-hover);
+    transform: translateY(-2px);
+}
+
+/* Headings in dashboard content read crisper against the soft background. */
+body.bg-gray-100 main h1,
+body.bg-slate-100 main h1 {
+    color: var(--theme-ink);
+    letter-spacing: -0.01em;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Tables
+ *  Content tables get a quiet header band and a soft row-hover, so dense
+ *  listings are easier to scan without restyling each view.
+ * ------------------------------------------------------------------ */
+body.bg-gray-100 main table thead th,
+body.bg-slate-100 main table thead th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+body.bg-gray-100 main table tbody tr,
+body.bg-slate-100 main table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+body.bg-gray-100 main table tbody tr:hover,
+body.bg-slate-100 main table tbody tr:hover {
+    background-color: rgba(13, 148, 136, 0.04);
+}
+
+/* ------------------------------------------------------------------ *
+ *  Form controls
+ *  A consistent, slightly softer focus ring in the product accent across
+ *  text inputs, selects and textareas in the dashboards.
+ * ------------------------------------------------------------------ */
+body.bg-gray-100 main input:focus,
+body.bg-gray-100 main select:focus,
+body.bg-gray-100 main textarea:focus,
+body.bg-slate-100 main input:focus,
+body.bg-slate-100 main select:focus,
+body.bg-slate-100 main textarea:focus {
+    outline: none;
+    border-color: var(--theme-accent);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+
+/* ------------------------------------------------------------------ *
+ *  Scrollbars
+ *  A thinner, rounded, lower-contrast scrollbar app-wide (Firefox + the
+ *  WebKit pseudo-elements the layouts already target for their panels).
+ * ------------------------------------------------------------------ */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.main-content-scroll::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.main-content-scroll::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+.main-content-scroll::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+    background-clip: content-box;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Public marketing pages (body.bg-slate-50)
+ *  These have no <main>, so the dashboard rules above never reach them.
+ *  Give their white feature/content cards the same soft depth and a
+ *  gentle hover, keeping the landing design but making it feel richer.
+ * ------------------------------------------------------------------ */
+body.bg-slate-50 {
+    background-image: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+    background-attachment: fixed;
+}
+
+body.bg-slate-50 .bg-white.rounded-xl,
+body.bg-slate-50 .bg-white.rounded-2xl,
+body.bg-slate-50 .bg-white.rounded-3xl {
+    border: 1px solid var(--theme-border);
+    box-shadow: var(--theme-card-shadow);
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+body.bg-slate-50 .bg-white.rounded-xl:hover,
+body.bg-slate-50 .bg-white.rounded-2xl:hover,
+body.bg-slate-50 .bg-white.rounded-3xl:hover {
+    box-shadow: var(--theme-card-shadow-hover);
+    transform: translateY(-3px);
+}
