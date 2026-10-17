@@ -652,6 +652,18 @@ Route::prefix('practice')->name('practice.')->group(function () {
         Route::get('/vendors/{vendor}/statement', [App\Http\Controllers\Clinic\VendorController::class, 'statement'])->name('vendors.statement');
         Route::get('/vendors/{vendor}/statement/export', [App\Http\Controllers\Clinic\VendorController::class, 'exportStatement'])->name('vendors.statement.export');
 
+        // Recurring expenses (rent, salaries…) and the manual generate action.
+        Route::get('/recurring-expenses', [App\Http\Controllers\Clinic\RecurringExpenseController::class, 'index'])->name('recurring.index');
+        Route::post('/recurring-expenses', [App\Http\Controllers\Clinic\RecurringExpenseController::class, 'store'])->name('recurring.store');
+        Route::post('/recurring-expenses/generate', [App\Http\Controllers\Clinic\RecurringExpenseController::class, 'generate'])->name('recurring.generate');
+        Route::get('/recurring-expenses/{recurring}/edit', [App\Http\Controllers\Clinic\RecurringExpenseController::class, 'edit'])->name('recurring.edit');
+        Route::put('/recurring-expenses/{recurring}', [App\Http\Controllers\Clinic\RecurringExpenseController::class, 'update'])->name('recurring.update');
+        Route::delete('/recurring-expenses/{recurring}', [App\Http\Controllers\Clinic\RecurringExpenseController::class, 'destroy'])->name('recurring.destroy');
+
+        // Monthly budgets vs. actual.
+        Route::get('/budgets', [App\Http\Controllers\Clinic\ExpenseBudgetController::class, 'index'])->name('budgets.index');
+        Route::post('/budgets', [App\Http\Controllers\Clinic\ExpenseBudgetController::class, 'store'])->name('budgets.store');
+
         // Manager: money & insurance reporting (doctor only).
         Route::get('/manager', [App\Http\Controllers\Clinic\ManagerController::class, 'index'])->name('manager.index');
         Route::get('/manager/collections', [App\Http\Controllers\Clinic\ManagerController::class, 'collections'])->name('manager.collections');

@@ -289,6 +289,18 @@ class Clinic extends Model
         return $this->hasMany(Vendor::class);
     }
 
+    /** Recurring-expense templates (rent, salaries, subscriptions…). */
+    public function recurringExpenses(): HasMany
+    {
+        return $this->hasMany(RecurringExpense::class);
+    }
+
+    /** Monthly expense budgets. */
+    public function expenseBudgets(): HasMany
+    {
+        return $this->hasMany(ExpenseBudget::class);
+    }
+
     /**
      * Get a short opening-hours summary (e.g. "Sat-Thu 9:00 AM - 5:00 PM" or "Today 9:00-17:00").
      */

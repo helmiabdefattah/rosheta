@@ -260,11 +260,13 @@
                     <a href="{{ route('doctor.dashboard') }}" class="ws-nav-item"><span>↩︎</span> {{ $backToMainLabel }}</a>
 
                     {{-- Finance sub-menu (doctor only): money in and money out. --}}
-                    <details class="ws-nav-group" {{ request()->routeIs('practice.doctor.expenses.*', 'practice.doctor.vendors.*', 'practice.doctor.manager.*', 'practice.doctor.setup.expense-categories') ? 'open' : '' }}>
+                    <details class="ws-nav-group" {{ request()->routeIs('practice.doctor.expenses.*', 'practice.doctor.vendors.*', 'practice.doctor.recurring.*', 'practice.doctor.budgets.*', 'practice.doctor.manager.*', 'practice.doctor.setup.expense-categories') ? 'open' : '' }}>
                         <summary><span>💰</span> {{ __('app.finance.menu') }} <span class="ws-chevron">▾</span></summary>
                         <div class="ws-nav-group-body">
                             <a href="{{ route('practice.doctor.expenses.index') }}" class="ws-nav-item"><span>💸</span> {{ __('app.expenses.title') }}</a>
                             <a href="{{ route('practice.doctor.vendors.index') }}" class="ws-nav-item"><span>🏢</span> {{ __('app.vendors.title') }}</a>
+                            <a href="{{ route('practice.doctor.recurring.index') }}" class="ws-nav-item"><span>🔁</span> {{ __('app.recurring.title') }}</a>
+                            <a href="{{ route('practice.doctor.budgets.index') }}" class="ws-nav-item"><span>🎯</span> {{ __('app.budgets.title') }}</a>
                             <a href="{{ route('practice.doctor.manager.index') }}" class="ws-nav-item"><span>📊</span> {{ __('app.manager.title') }}</a>
                         </div>
                     </details>

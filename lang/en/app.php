@@ -987,6 +987,33 @@ return [
         ],
     ],
 
+    'recurring' => [
+        'title' => 'Recurring expenses',
+        'subtitle' => 'Templates that create an expense automatically each period.',
+        'new' => 'Add recurring expense',
+        'empty' => 'No recurring expenses yet.',
+        'interval' => 'Repeats',
+        'next_run' => 'Next run',
+        'active' => 'Active',
+        'paused' => 'paused',
+        'generate_now' => 'Generate due now',
+        'saved' => 'Recurring expense saved',
+        'updated' => 'Recurring expense updated',
+        'deleted' => 'Recurring expense deleted',
+        'generated' => 'Generated :count expense(s)',
+    ],
+
+    'budgets' => [
+        'title' => 'Budgets',
+        'overall' => 'Overall (all categories)',
+        'budget' => 'Budget',
+        'actual' => 'Actual',
+        'variance' => 'Variance',
+        'usage' => 'Usage',
+        'save' => 'Save budgets',
+        'saved' => 'Budgets saved',
+    ],
+
     'dental' => [
         'title' => 'Dental Lab',
         'subtitle' => 'Lab orders, payments & clinic materials stock',
