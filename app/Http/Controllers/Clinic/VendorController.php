@@ -8,6 +8,7 @@ use App\Http\Controllers\Clinic\Concerns\TableExport;
 use App\Http\Controllers\Controller;
 use App\Models\Expense;
 use App\Models\Vendor;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -45,12 +46,18 @@ class VendorController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $clinic = $this->activeClinic($this->clinicDoctor($request));
         $data = $this->validateVendor($request);
 
-        $clinic->vendors()->create($data + ['is_active' => true]);
+        $vendor = $clinic->vendors()->create($data + ['is_active' => true]);
+
+        // The expense form adds vendors inline via fetch and needs the new row
+        // back to select it without a page reload.
+        if ($request->wantsJson()) {
+            return response()->json(['id' => $vendor->id, 'name' => $vendor->name]);
+        }
 
         return back()->with('status', __('app.vendors.saved'));
     }
