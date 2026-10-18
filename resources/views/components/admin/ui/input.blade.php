@@ -11,7 +11,7 @@
             w-full px-4 py-2.5 
             bg-white border border-slate-200 rounded-xl 
             text-slate-900 placeholder-slate-400
-            focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 focus:outline-none
+            focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none
             transition-all duration-200
             disabled:bg-slate-50 disabled:text-slate-500
             ' . ($errors->has($name) ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10' : '')

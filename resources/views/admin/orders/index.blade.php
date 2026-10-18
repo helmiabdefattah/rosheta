@@ -2,6 +2,19 @@
 
 @php
     $l = app()->getLocale() === 'ar';
+
+    // Status → pill tint and matching dot, defined once for both the mobile
+    // cards and the desktop table below.
+    $statusColors = [
+        'pending'    => 'bg-yellow-100 text-yellow-800',
+        'delivered'  => 'bg-green-100 text-green-800',
+        'delivering' => 'bg-blue-100 text-blue-800',
+    ];
+    $statusDots = [
+        'pending'    => 'bg-yellow-500',
+        'delivered'  => 'bg-green-500',
+        'delivering' => 'bg-blue-500',
+    ];
 @endphp
 
 @section('title', 'Orders')
@@ -29,19 +42,16 @@
     </div>
 
     @if($orders->count() === 0)
-        <div class="p-10 text-center text-slate-500">
-            {{ $l ? 'لا توجد طلبات.' : 'No orders found.' }}
+        <div class="p-12 text-center">
+            <svg class="w-12 h-12 mx-auto text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+            <p class="mt-3 text-slate-500">{{ $l ? 'لا توجد طلبات.' : 'No orders found.' }}</p>
         </div>
     @else
         <div class="lg:hidden space-y-3 p-4">
             @foreach($orders as $order)
                 @php
-                    $statusColors = [
-                        'pending' => 'bg-yellow-100 text-yellow-800',
-                        'delivered' => 'bg-green-100 text-green-800',
-                        'delivering' => 'bg-blue-100 text-blue-800',
-                    ];
                     $statusColor = $statusColors[$order->status] ?? 'bg-gray-100 text-gray-800';
+                    $statusDot = $statusDots[$order->status] ?? 'bg-gray-400';
                     $provider = $order->pharmacy->name ?? $order->laboratory->name ?? '—';
                 @endphp
                 <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -50,7 +60,9 @@
                             <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $l ? 'رقم الطلب' : 'Order ID' }}</p>
                             <p class="text-lg font-bold text-slate-900">#{{ $order->id }}</p>
                         </div>
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $statusColor }}">{{ ucfirst($order->status) }}</span>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full {{ $statusColor }}">
+                            <span class="w-1.5 h-1.5 rounded-full {{ $statusDot }}"></span>{{ ucfirst($order->status) }}
+                        </span>
                     </div>
                     <dl class="space-y-2 text-sm">
                         <div class="flex justify-between gap-3 border-b border-slate-100 pb-2">
@@ -99,12 +111,8 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($orders as $order)
                         @php
-                            $statusColors = [
-                                'pending' => 'bg-yellow-100 text-yellow-800',
-                                'delivered' => 'bg-green-100 text-green-800',
-                                'delivering' => 'bg-blue-100 text-blue-800',
-                            ];
                             $statusColor = $statusColors[$order->status] ?? 'bg-gray-100 text-gray-800';
+                            $statusDot = $statusDots[$order->status] ?? 'bg-gray-400';
                             $provider = $order->pharmacy->name ?? $order->laboratory->name ?? '—';
                         @endphp
                         <tr class="hover:bg-slate-50">
@@ -113,7 +121,9 @@
                             <td class="px-4 py-3 text-sm text-slate-700">{{ $order->request->client->name ?? '—' }}</td>
                             <td class="px-4 py-3 text-sm text-slate-700 max-w-xs truncate" title="{{ $provider }}">{{ $provider }}</td>
                             <td class="px-4 py-3 text-sm">
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $statusColor }}">{{ ucfirst($order->status) }}</span>
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full {{ $statusColor }}">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $statusDot }}"></span>{{ ucfirst($order->status) }}
+                                </span>
                             </td>
                             <td class="px-4 py-3 text-sm text-slate-800 font-medium">
                                 @if($order->total_price)

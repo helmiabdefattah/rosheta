@@ -288,6 +288,63 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 /* ------------------------------------------------------------------ *
+ *  DataTables controls
+ *  A few admin index pages render server-side DataTables, whose default
+ *  search box, length select, info line and pager look dated. Bring them
+ *  in line with the rest of the admin: rounded controls, a teal focus
+ *  ring and teal current-page pill. The !important flags override the
+ *  vendor stylesheet (jquery.dataTables.min.css) loaded before this file.
+ * ------------------------------------------------------------------ */
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 0.5rem !important;
+    padding: 0.4rem 0.65rem !important;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    margin-inline-start: 0.5rem;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus,
+.dataTables_wrapper .dataTables_length select:focus {
+    border-color: var(--theme-accent) !important;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+
+.dataTables_wrapper .dataTables_info {
+    color: var(--theme-muted);
+    font-size: 0.85rem;
+    padding-top: 1rem;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    border-radius: 0.5rem !important;
+    border: 1px solid transparent !important;
+    padding: 0.35rem 0.75rem !important;
+    margin: 0 2px;
+    color: #475569 !important;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: rgba(13, 148, 136, 0.08) !important;
+    border-color: rgba(13, 148, 136, 0.25) !important;
+    color: var(--theme-accent-strong) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: var(--theme-accent) !important;
+    border-color: var(--theme-accent) !important;
+    color: #fff !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------ *
  *  Public marketing pages (body.bg-slate-50)
  *  These have no <main>, so the dashboard rules above never reach them.
  *  Give their white feature/content cards the same soft depth and a
