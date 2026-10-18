@@ -224,6 +224,10 @@
                     <x-chat-dropdown side="doctor" />
                 @endif
 
+                {{-- Per-screen top-bar icons (e.g. the assistant's notifications
+                     bell). Always in the top bar, in both nav views. --}}
+                @stack('ws-topbar-actions')
+
                 {{-- Toggles between the buttons above and the side menu. --}}
                 <button type="button" id="ws-menu-toggle" class="btn btn-secondary btn-sm"
                         aria-label="{{ __('app.examine.menu') }}" aria-controls="ws-sidebar" aria-expanded="false">
